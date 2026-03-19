@@ -1,0 +1,299 @@
+{
+  "repository_name": "cyberops-v2",
+  "timestamp": "2026-03-11T13:02:03.552757+00:00",
+  "overall_score": 0.9890230515916575,
+  "check_summaries": [
+    {
+      "check_name": "function_size",
+      "description": "Checks that functions/methods do not exceed line count thresholds",
+      "language": "JavaScript",
+      "check_type": "standard",
+      "total_entities_checked": 116,
+      "findings_count": 4,
+      "warning_count": 4,
+      "score": 0.9655172413793104,
+      "finding_groups": [
+        {
+          "severity": "warning",
+          "threshold": 150,
+          "description": "Functions exceeding 150.0 lines",
+          "entities": [
+            {
+              "entity_name": "src.App.App",
+              "file_path": "src/App.tsx",
+              "line_start": 22,
+              "line_end": 299,
+              "metric_value": 277
+            },
+            {
+              "entity_name": "src.components.NetworkMap.NetworkMap",
+              "file_path": "src/components/NetworkMap.tsx",
+              "line_start": 13,
+              "line_end": 226,
+              "metric_value": 213
+            },
+            {
+              "entity_name": "src.components.FakeBrowser.FakeBrowser",
+              "file_path": "src/components/FakeBrowser.tsx",
+              "line_start": 125,
+              "line_end": 299,
+              "metric_value": 174
+            },
+            {
+              "entity_name": "src.components.Terminal.Terminal",
+              "file_path": "src/components/Terminal.tsx",
+              "line_start": 49,
+              "line_end": 204,
+              "metric_value": 155
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "check_name": "fan_out",
+      "description": "Checks efferent coupling: how many other functions each function calls",
+      "language": "JavaScript",
+      "check_type": "standard",
+      "total_entities_checked": 160,
+      "findings_count": 3,
+      "warning_count": 3,
+      "score": 0.98125,
+      "finding_groups": [
+        {
+          "severity": "warning",
+          "threshold": 10,
+          "description": "Functions calling more than 10.0 other functions",
+          "entities": [
+            {
+              "entity_name": "src.App.App",
+              "file_path": "src/App.tsx",
+              "line_start": 22,
+              "line_end": 299,
+              "metric_value": 15
+            },
+            {
+              "entity_name": "src.components.Terminal.Terminal",
+              "file_path": "src/components/Terminal.tsx",
+              "line_start": 49,
+              "line_end": 204,
+              "metric_value": 13
+            },
+            {
+              "entity_name": "src.components.FakeBrowser.FakeBrowser",
+              "file_path": "src/components/FakeBrowser.tsx",
+              "line_start": 125,
+              "line_end": 299,
+              "metric_value": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "check_name": "fan_in",
+      "description": "Checks afferent coupling: how many other functions call each function",
+      "language": "JavaScript",
+      "check_type": "standard",
+      "total_entities_checked": 160,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "god_class",
+      "description": "Detects classes with too many methods, too much code, or too many outgoing dependencies",
+      "language": "JavaScript",
+      "check_type": "standard",
+      "total_entities_checked": 0,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "circular_dependencies",
+      "description": "Detects circular dependencies between packages",
+      "language": "JavaScript",
+      "check_type": "circular_dependencies",
+      "cycles": [],
+      "packages_checked": 9,
+      "packages_in_cycles": 0
+    },
+    {
+      "check_name": "package_instability",
+      "description": "Computes Martin's instability metric (I = Ce / (Ca + Ce)) per package",
+      "language": "JavaScript",
+      "check_type": "standard",
+      "total_entities_checked": 9,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "component_cohesion",
+      "description": "Measures internal vs external edge ratio per component/cluster",
+      "language": "JavaScript",
+      "check_type": "standard",
+      "total_entities_checked": 11,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "unused_code_diagnostics",
+      "description": "Detects unused imports, variables, functions, and dead code via LSP diagnostics",
+      "language": "JavaScript",
+      "check_type": "standard",
+      "total_entities_checked": 0,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "function_size",
+      "description": "Checks that functions/methods do not exceed line count thresholds",
+      "language": "TypeScript",
+      "check_type": "standard",
+      "total_entities_checked": 114,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "fan_out",
+      "description": "Checks efferent coupling: how many other functions each function calls",
+      "language": "TypeScript",
+      "check_type": "standard",
+      "total_entities_checked": 163,
+      "findings_count": 3,
+      "warning_count": 3,
+      "score": 0.9815950920245399,
+      "finding_groups": [
+        {
+          "severity": "warning",
+          "threshold": 10,
+          "description": "Functions calling more than 10.0 other functions",
+          "entities": [
+            {
+              "entity_name": "src.components.Terminal.Terminal",
+              "file_path": "src/components/Terminal.tsx",
+              "line_start": 49,
+              "line_end": 147,
+              "metric_value": 13
+            },
+            {
+              "entity_name": "src.App.App",
+              "file_path": "src/App.tsx",
+              "line_start": 22,
+              "line_end": 103,
+              "metric_value": 11
+            },
+            {
+              "entity_name": "src.components.FakeBrowser.FakeBrowser",
+              "file_path": "src/components/FakeBrowser.tsx",
+              "line_start": 125,
+              "line_end": 232,
+              "metric_value": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "check_name": "fan_in",
+      "description": "Checks afferent coupling: how many other functions call each function",
+      "language": "TypeScript",
+      "check_type": "standard",
+      "total_entities_checked": 163,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "god_class",
+      "description": "Detects classes with too many methods, too much code, or too many outgoing dependencies",
+      "language": "TypeScript",
+      "check_type": "standard",
+      "total_entities_checked": 0,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "circular_dependencies",
+      "description": "Detects circular dependencies between packages",
+      "language": "TypeScript",
+      "check_type": "circular_dependencies",
+      "cycles": [],
+      "packages_checked": 9,
+      "packages_in_cycles": 0
+    },
+    {
+      "check_name": "package_instability",
+      "description": "Computes Martin's instability metric (I = Ce / (Ca + Ce)) per package",
+      "language": "TypeScript",
+      "check_type": "standard",
+      "total_entities_checked": 9,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "component_cohesion",
+      "description": "Measures internal vs external edge ratio per component/cluster",
+      "language": "TypeScript",
+      "check_type": "standard",
+      "total_entities_checked": 6,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    },
+    {
+      "check_name": "unused_code_diagnostics",
+      "description": "Detects unused imports, variables, functions, and dead code via LSP diagnostics",
+      "language": "TypeScript",
+      "check_type": "standard",
+      "total_entities_checked": 0,
+      "findings_count": 0,
+      "warning_count": 0,
+      "score": 1.0,
+      "finding_groups": []
+    }
+  ],
+  "file_summaries": [
+    {
+      "file_path": "src/App.tsx",
+      "total_findings": 3,
+      "warning_findings": 3,
+      "composite_risk_score": 45.0
+    },
+    {
+      "file_path": "src/components/FakeBrowser.tsx",
+      "total_findings": 3,
+      "warning_findings": 3,
+      "composite_risk_score": 45.0
+    },
+    {
+      "file_path": "src/components/Terminal.tsx",
+      "total_findings": 3,
+      "warning_findings": 3,
+      "composite_risk_score": 45.0
+    },
+    {
+      "file_path": "src/components/NetworkMap.tsx",
+      "total_findings": 1,
+      "warning_findings": 1,
+      "composite_risk_score": 15.0
+    }
+  ]
+}

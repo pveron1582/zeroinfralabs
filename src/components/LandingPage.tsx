@@ -1,0 +1,366 @@
+// ── components/LandingPage.tsx ────────────────────────────────────
+import React, { useState, useEffect, useRef } from 'react';
+import type { Scenario } from '../types';
+
+// ── Metadata visual por escenario ────────────────────────────────
+interface ScenarioMeta {
+  tagline: string;
+  tools: string[];
+  accentColor: string;
+  illustration: React.ReactNode;
+}
+
+const META: Record<string, ScenarioMeta> = {
+  'scenario-01': {
+    tagline: 'Enumera rutas ocultas, extrae credenciales y toma control de un WordPress vulnerable.',
+    tools: ['arp-scan', 'nmap', 'gobuster', 'ssh'],
+    accentColor: '#22d3ee',
+    illustration: (
+      <svg viewBox="0 0 280 170" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <rect x="30" y="18" width="160" height="105" rx="5" stroke="#22d3ee" strokeWidth="1.2" strokeOpacity="0.45"/>
+        <rect x="30" y="18" width="160" height="20" rx="5" fill="#22d3ee" fillOpacity="0.07"/>
+        <circle cx="45" cy="28" r="3.5" fill="#22d3ee" fillOpacity="0.3"/>
+        <circle cx="57" cy="28" r="3.5" fill="#22d3ee" fillOpacity="0.18"/>
+        <circle cx="69" cy="28" r="3.5" fill="#22d3ee" fillOpacity="0.1"/>
+        <rect x="82" y="23" width="90" height="10" rx="3" fill="#22d3ee" fillOpacity="0.1"/>
+        <circle cx="110" cy="85" r="30" stroke="#22d3ee" strokeWidth="0.8" strokeOpacity="0.2" strokeDasharray="3 3"/>
+        <text x="110" y="81" textAnchor="middle" fill="#22d3ee" fillOpacity="0.65" fontSize="20" fontFamily="monospace" fontWeight="bold">W</text>
+        <text x="110" y="95" textAnchor="middle" fill="#22d3ee" fillOpacity="0.35" fontSize="8" fontFamily="monospace">WordPress</text>
+        <text x="202" y="44" fill="#22d3ee" fillOpacity="0.7" fontSize="8" fontFamily="monospace">/wp-admin</text>
+        <text x="202" y="58" fill="#22d3ee" fillOpacity="0.4" fontSize="8" fontFamily="monospace">/uploads</text>
+        <text x="202" y="72" fill="#22d3ee" fillOpacity="0.2" fontSize="8" fontFamily="monospace">/backup</text>
+        <line x1="192" y1="41" x2="202" y2="41" stroke="#22d3ee" strokeWidth="0.5" strokeOpacity="0.3"/>
+        <line x1="192" y1="55" x2="202" y2="55" stroke="#22d3ee" strokeWidth="0.5" strokeOpacity="0.15"/>
+        <text x="32" y="158" fill="#22d3ee" fillOpacity="0.45" fontSize="7.5" fontFamily="monospace">gobuster dir -u http://192.168.1.11 -w rockyou.txt</text>
+        <line x1="30" y1="148" x2="248" y2="148" stroke="#22d3ee" strokeWidth="0.4" strokeOpacity="0.12"/>
+      </svg>
+    ),
+  },
+
+  'scenario-02': {
+    tagline: 'Lanza un ataque de fuerza bruta con Hydra para comprometer acceso SSH root.',
+    tools: ['arp-scan', 'nmap', 'hydra', 'ssh'],
+    accentColor: '#fbbf24',
+    illustration: (
+      <svg viewBox="0 0 280 170" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <rect x="16" y="48" width="72" height="48" rx="4" stroke="#fbbf24" strokeWidth="1.2" strokeOpacity="0.45"/>
+        <rect x="16" y="48" width="72" height="13" rx="4" fill="#fbbf24" fillOpacity="0.07"/>
+        <text x="52" y="57" textAnchor="middle" fill="#fbbf24" fillOpacity="0.45" fontSize="7" fontFamily="monospace">KALI</text>
+        <text x="22" y="76" fill="#fbbf24" fillOpacity="0.65" fontSize="7" fontFamily="monospace">$ hydra</text>
+        <text x="22" y="87" fill="#fbbf24" fillOpacity="0.35" fontSize="6.5" fontFamily="monospace">-l root -P...</text>
+        <rect x="192" y="48" width="72" height="48" rx="4" stroke="#fbbf24" strokeWidth="1.2" strokeOpacity="0.45"/>
+        <rect x="192" y="48" width="72" height="13" rx="4" fill="#fbbf24" fillOpacity="0.07"/>
+        <text x="228" y="57" textAnchor="middle" fill="#fbbf24" fillOpacity="0.45" fontSize="7" fontFamily="monospace">SSH :22</text>
+        <circle cx="228" cy="80" r="13" stroke="#fbbf24" strokeWidth="0.8" strokeOpacity="0.3"/>
+        <rect x="223" y="74" width="10" height="7" rx="1.5" fill="#fbbf24" fillOpacity="0.15"/>
+        <rect x="221" y="81" width="14" height="10" rx="2" fill="#fbbf24" fillOpacity="0.2"/>
+        {['admin','root','toor','pass','1234'].map((p, i) => (
+          <text key={p} x={95 + (i % 2)} y={56 + i * 14} fill="#fbbf24"
+            fillOpacity={i === 2 ? 0.85 : 0.2} fontSize="7.5" fontFamily="monospace">
+            {p}{i === 2 ? ' ✓' : ' ✗'}
+          </text>
+        ))}
+        <line x1="88" y1="72" x2="192" y2="72" stroke="#fbbf24" strokeWidth="1" strokeOpacity="0.25" strokeDasharray="4 3"/>
+        <polygon points="190,69 196,72 190,75" fill="#fbbf24" fillOpacity="0.4"/>
+        <text x="30" y="148" fill="#fbbf24" fillOpacity="0.5" fontSize="7.5" fontFamily="monospace">[22][ssh] login: root  password: toor</text>
+        <line x1="16" y1="153" x2="264" y2="153" stroke="#fbbf24" strokeWidth="0.4" strokeOpacity="0.12"/>
+      </svg>
+    ),
+  },
+
+  'scenario-03': {
+    tagline: 'Explota MS17-010 con Metasploit. Obtén SYSTEM en un Windows 7 sin parchear.',
+    tools: ['arp-scan', 'nmap', 'msfconsole'],
+    accentColor: '#f87171',
+    illustration: (
+      <svg viewBox="0 0 280 170" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <rect x="10" y="16" width="132" height="98" rx="4" stroke="#f87171" strokeWidth="1" strokeOpacity="0.35"/>
+        <rect x="10" y="16" width="132" height="14" rx="4" fill="#f87171" fillOpacity="0.06"/>
+        <text x="76" y="26" textAnchor="middle" fill="#f87171" fillOpacity="0.35" fontSize="6.5" fontFamily="monospace">msfconsole</text>
+        <text x="16" y="42" fill="#f87171" fillOpacity="0.5" fontSize="7" fontFamily="monospace">msf6 &gt; use exploit/windows/</text>
+        <text x="16" y="53" fill="#f87171" fillOpacity="0.5" fontSize="7" fontFamily="monospace">       smb/ms17_010_eternalblue</text>
+        <text x="16" y="67" fill="#f87171" fillOpacity="0.4" fontSize="7" fontFamily="monospace">msf6 exploit(...) &gt;</text>
+        <text x="16" y="78" fill="#f87171" fillOpacity="0.4" fontSize="7" fontFamily="monospace">set RHOSTS 10.0.0.11</text>
+        <text x="16" y="89" fill="#f87171" fillOpacity="0.4" fontSize="7" fontFamily="monospace">set LHOST 10.0.0.10</text>
+        <text x="16" y="103" fill="#f87171" fillOpacity="0.8" fontSize="8" fontFamily="monospace" fontWeight="bold">run</text>
+        <rect x="175" y="28" width="92" height="68" rx="4" stroke="#f87171" strokeWidth="1.2" strokeOpacity="0.4"/>
+        <rect x="183" y="40" width="17" height="15" rx="1.5" fill="#f87171" fillOpacity="0.28"/>
+        <rect x="204" y="40" width="17" height="15" rx="1.5" fill="#f87171" fillOpacity="0.18"/>
+        <rect x="183" y="58" width="17" height="15" rx="1.5" fill="#f87171" fillOpacity="0.18"/>
+        <rect x="204" y="58" width="17" height="15" rx="1.5" fill="#f87171" fillOpacity="0.28"/>
+        <text x="233" y="52" fill="#f87171" fillOpacity="0.4" fontSize="6.5" fontFamily="monospace">Win 7</text>
+        <text x="233" y="63" fill="#f87171" fillOpacity="0.3" fontSize="6" fontFamily="monospace">SP1 x64</text>
+        <text x="233" y="78" fill="#f87171" fillOpacity="0.3" fontSize="6" fontFamily="monospace">SMB :445</text>
+        <path d="M142 72 C158 72 162 62 175 62" stroke="#f87171" strokeWidth="1.2" strokeOpacity="0.45" strokeDasharray="3 2"/>
+        <polygon points="173,59 179,62 173,65" fill="#f87171" fillOpacity="0.55"/>
+        <rect x="10" y="124" width="262" height="34" rx="3" fill="#f87171" fillOpacity="0.04" stroke="#f87171" strokeWidth="0.4" strokeOpacity="0.18"/>
+        <text x="16" y="137" fill="#f87171" fillOpacity="0.55" fontSize="6.8" fontFamily="monospace">[+] ETERNALBLUE overwrite completed! (0xC000000D)</text>
+        <text x="16" y="150" fill="#f87171" fillOpacity="0.8" fontSize="6.8" fontFamily="monospace">meterpreter &gt; getuid  →  NT AUTHORITY\SYSTEM</text>
+      </svg>
+    ),
+  },
+};
+
+// ── Hook typewriter para el tagline de hover ──────────────────────
+function useTypewriter(text: string, active: boolean, speed = 18) {
+  const [shown, setShown] = useState('');
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (timer.current) clearTimeout(timer.current);
+    if (!active) { setShown(''); return; }
+    setShown('');
+    let i = 0;
+    const tick = () => {
+      i++;
+      setShown(text.slice(0, i));
+      if (i < text.length) timer.current = setTimeout(tick, speed);
+    };
+    timer.current = setTimeout(tick, speed);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [active, text, speed]);
+
+  return shown;
+}
+
+// ── Tarjeta individual ────────────────────────────────────────────
+function ScenarioCard({ scenario, index, onSelect }: {
+  scenario: Scenario; index: number; onSelect: (id: string) => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const meta = META[scenario.id];
+  const tagline = useTypewriter(meta?.tagline ?? '', hovered);
+  const accent = meta?.accentColor ?? '#10b981';
+
+  const diffLabel = scenario.difficulty === 'Easy' ? 'Fácil'
+    : scenario.difficulty === 'Medium' ? 'Medio' : 'Difícil';
+  const diffColor = scenario.difficulty === 'Easy' ? '#10b981'
+    : scenario.difficulty === 'Medium' ? '#f59e0b' : '#f87171';
+
+  return (
+    <article
+      onClick={() => onSelect(scenario.id)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="flex flex-col cursor-pointer overflow-hidden select-none"
+      style={{
+        background: '#0d1117',
+        border: `1px solid ${hovered ? accent + '70' : '#1e2d2d'}`,
+        borderRadius: '10px',
+        boxShadow: hovered
+          ? `0 0 0 1px ${accent}20, 0 16px 48px ${accent}12, inset 0 1px 0 ${accent}15`
+          : '0 2px 10px #00000060',
+        transform: hovered ? 'translateY(-4px)' : 'none',
+        transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        animationDelay: `${index * 90}ms`,
+        animation: 'cardIn 0.4s ease-out both',
+      }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && onSelect(scenario.id)}
+    >
+
+      {/* ── Zona de ilustración ── */}
+      <div className="relative overflow-hidden" style={{ height: '170px', background: '#090d12' }}>
+
+        {/* Scanlines overlay */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px)',
+          zIndex: 2,
+        }}/>
+
+        {/* Ilustración SVG — se desvanece en hover */}
+        <div className="absolute inset-2 transition-opacity duration-300" style={{ opacity: hovered ? 0.18 : 1, zIndex: 1 }}>
+          {meta?.illustration}
+        </div>
+
+        {/* Overlay de hover — tagline con typewriter */}
+        <div className="absolute inset-0 flex items-center justify-center px-5 transition-all duration-200" style={{
+          background: hovered ? `radial-gradient(ellipse at center, ${accent}15, #040608dd 68%)` : 'transparent',
+          zIndex: 3,
+        }}>
+          {hovered && (
+            <p className="text-center text-sm leading-relaxed font-mono"
+              style={{ color: accent, textShadow: `0 0 20px ${accent}90` }}>
+              {tagline}
+              <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse"
+                style={{ background: accent }} />
+            </p>
+          )}
+        </div>
+
+        {/* Badge número hex */}
+        <div className="absolute top-3 left-3 font-mono text-xs font-bold px-2 py-0.5 rounded"
+          style={{ background: '#00000090', color: accent, border: `1px solid ${accent}28`, zIndex: 4 }}>
+          0x0{index + 1}
+        </div>
+
+        {/* Badge dificultad */}
+        <div className="absolute top-3 right-3 font-mono text-xs font-bold px-2 py-0.5 rounded"
+          style={{ background: '#00000090', color: diffColor, border: `1px solid ${diffColor}28`, zIndex: 4 }}>
+          {diffLabel}
+        </div>
+
+        {/* Línea inferior de "scan" */}
+        <div className="absolute bottom-0 left-0 right-0 h-px transition-opacity duration-200"
+          style={{
+            background: `linear-gradient(90deg, transparent 0%, ${accent} 50%, transparent 100%)`,
+            opacity: hovered ? 0.8 : 0,
+            zIndex: 4,
+          }}/>
+      </div>
+
+      {/* ── Info inferior ── */}
+      <div className="p-4 flex flex-col gap-2.5">
+        {/* Categoría + red */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono px-1.5 py-0.5 rounded"
+            style={{ background: `${accent}12`, color: accent, border: `1px solid ${accent}20` }}>
+            {scenario.category}
+          </span>
+          <span className="text-xs font-mono text-gray-600">{scenario.network_range}</span>
+        </div>
+
+        {/* Nombre y descripción */}
+        <div>
+          <h3 className="text-sm font-bold font-mono leading-snug transition-colors duration-200"
+            style={{ color: hovered ? accent : '#d1d5db' }}>
+            {scenario.name}
+          </h3>
+          <p className="text-xs font-mono text-gray-500 mt-0.5 leading-relaxed" style={{
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {scenario.description}
+          </p>
+        </div>
+
+        {/* Herramientas */}
+        <div className="flex flex-wrap gap-1.5">
+          {meta?.tools.map(t => (
+            <span key={t} className="text-xs font-mono px-1.5 py-0.5 rounded"
+              style={{ background: '#111c1c', color: '#6b7280', border: '1px solid #243030' }}>
+              {t}
+            </span>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid #1e2d2d' }}>
+          <span className="text-xs font-mono text-gray-600">
+            {scenario.missions?.length ?? 5} misiones
+          </span>
+          <div className="flex items-center gap-1.5 text-xs font-mono font-bold transition-colors duration-200"
+            style={{ color: hovered ? accent : '#3d5050' }}>
+            INICIAR
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+              style={{ transform: hovered ? 'translateX(2px)' : 'none', transition: 'transform 0.2s' }}>
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ── Componente raíz ───────────────────────────────────────────────
+interface Props {
+  scenarios: Scenario[];
+  onSelect: (id: string) => void;
+}
+
+export function LandingPage({ scenarios, onSelect }: Props) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setReady(true), 50); return () => clearTimeout(t); }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{
+      background: '#0b1015',
+      fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace",
+    }}>
+
+      {/* Grid de puntos de fondo */}
+      <div className="fixed inset-0 pointer-events-none" style={{
+        backgroundImage: 'radial-gradient(circle, #243030 1px, transparent 1px)',
+        backgroundSize: '30px 30px',
+        opacity: 0.7,
+      }}/>
+      {/* Halo verde central */}
+      <div className="fixed pointer-events-none" style={{
+        inset: 0,
+        background: 'radial-gradient(ellipse 55% 35% at 50% 42%, #10b98118 0%, transparent 70%)',
+      }}/>
+
+      {/* ── Header ── */}
+      <header className="relative z-10 flex items-center justify-between px-8 py-4"
+        style={{ borderBottom: '1px solid #1c2a2a' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #10b981, #047857)', boxShadow: '0 0 14px #10b98138' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5">
+              <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+            </svg>
+          </div>
+          <span className="text-sm font-bold text-gray-200 tracking-tight">CyberOps</span>
+          <span className="text-xs text-gray-500">v4.5</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+            style={{ boxShadow: '0 0 6px #10b981' }}/>
+          {scenarios.length} labs disponibles
+        </div>
+      </header>
+
+      {/* ── Hero ── */}
+      <section className="relative z-10 px-8 pt-16 pb-10 text-center" style={{
+        opacity: ready ? 1 : 0,
+        transform: ready ? 'none' : 'translateY(10px)',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+      }}>
+        <div className="flex items-center justify-center gap-3 mb-7">
+          <div className="h-px w-16" style={{ background: 'linear-gradient(90deg, transparent, #2d3f3f)' }}/>
+          <span className="text-xs font-mono text-gray-500 tracking-widest uppercase">
+            Pentesting Lab Simulator
+          </span>
+          <div className="h-px w-16" style={{ background: 'linear-gradient(90deg, #2d3f3f, transparent)' }}/>
+        </div>
+
+        <h1 className="text-4xl font-bold tracking-tight mb-4" style={{ lineHeight: 1.1 }}>
+          <span style={{ color: '#e5e7eb' }}>Elegí un </span>
+          <span style={{
+            background: 'linear-gradient(100deg, #10b981 0%, #22d3ee 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>laboratorio</span>
+        </h1>
+
+        <p className="text-sm text-gray-500 max-w-xs mx-auto leading-relaxed">
+          Pasá el cursor sobre cada tarjeta para ver de qué trata.
+          Hacé clic para iniciar.
+        </p>
+      </section>
+
+      {/* ── Grilla ── */}
+      <main className="relative z-10 flex-1 px-6 pb-14">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {scenarios.map((s, i) => (
+            <ScenarioCard key={s.id} scenario={s} index={i} onSelect={onSelect} />
+          ))}
+        </div>
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="relative z-10 py-4 text-center text-xs text-gray-600"
+        style={{ borderTop: '1px solid #1c2a2a' }}>
+        CyberOps · Entorno de práctica controlado · Todos los escenarios son ficticios
+      </footer>
+
+      <style>{`
+        @keyframes cardIn {
+          from { opacity: 0; transform: translateY(16px) scale(0.98); }
+          to   { opacity: 1; transform: none; }
+        }
+      `}</style>
+    </div>
+  );
+}

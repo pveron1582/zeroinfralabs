@@ -1,0 +1,13 @@
+name: LocalModels
+version: 1.0.0
+schema: v1
+
+models:
+  - name: DeepSeek Local
+    provider: ollama
+    model: deepseek-coder-v2
+    apiBase: http://localhost:11434
+    roles:
+      - chat
+      - edit
+      - autocomplete

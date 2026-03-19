@@ -1,0 +1,421 @@
+{
+  "metadata": {
+    "generated_at": "2026-03-11T13:03:33.949947+00:00",
+    "repo_name": "cyberops-v2",
+    "depth_level": 2,
+    "file_coverage_summary": {
+      "total_files": 0,
+      "analyzed": 0,
+      "not_analyzed": 0,
+      "not_analyzed_by_reason": {}
+    }
+  },
+  "description": "The cyberops-v2 architecture provides a state-driven cybersecurity lab simulation where a central Simulation Orchestrator manages a global scenario store representing virtual machines, networks, and mission objectives. A Scenario Factory programmatically generates lab environments, which are then interacted with via a Terminal Interaction Engine that parses user commands and dispatches them to a modular Command Registry & Toolset. Executed tools update the shared simulation state, while a Virtualized Web Environment offers a synchronized browser UI for web-based exercises. All components share a common domain model ensuring consistent data structures across the system.",
+  "components": [
+    {
+      "name": "Simulation Orchestrator & State Management",
+      "description": "The central hub of the application. It maintains the global scenarioStore, managing the state of all virtual machines, network topologies, and mission objectives. It synchronizes high-level UI components like the Network Map and Mission Tracker.",
+      "key_entities": [
+        {
+          "qualified_name": "useScenarioStore",
+          "reference_file": "src/store/scenarioStore.ts",
+          "reference_start_line": 59,
+          "reference_end_line": 207
+        },
+        {
+          "qualified_name": "App",
+          "reference_file": "src/App.tsx",
+          "reference_start_line": 23,
+          "reference_end_line": 300
+        },
+        {
+          "qualified_name": "NetworkMap",
+          "reference_file": "src/App.tsx",
+          "reference_start_line": 32,
+          "reference_end_line": 32
+        },
+        {
+          "qualified_name": "MissionPanel",
+          "reference_file": "src/components/MissionPanel.tsx",
+          "reference_start_line": 13,
+          "reference_end_line": 108
+        }
+      ],
+      "assigned_files": [
+        "src/App.tsx",
+        "src/components/LandingPage.tsx",
+        "src/store/scenarioStore.ts",
+        "src/commands/index.ts",
+        "src/components/MissionPanel.tsx",
+        "src/commands/tools/gobuster.ts",
+        "src/components/NetworkMap.tsx",
+        "src/components/MachineLoader.tsx",
+        "src/main.tsx",
+        "src/store/index.ts",
+        "src/vite-env.d.ts"
+      ],
+      "source_cluster_ids": [
+        1,
+        7,
+        9,
+        22,
+        25
+      ],
+      "component_id": "eff1c03eff0dab36",
+      "can_expand": true
+    },
+    {
+      "name": "Terminal Interaction Engine",
+      "description": "The primary interface for user interaction. It handles keyboard input, command parsing, and history management. It also maintains the complex internal state for the Metasploit (msfconsole) simulator.",
+      "key_entities": [
+        {
+          "qualified_name": "Terminal",
+          "reference_file": "src/components/Terminal.tsx",
+          "reference_start_line": 50,
+          "reference_end_line": 205
+        },
+        {
+          "qualified_name": "executeCommand",
+          "reference_file": "src/commands/index.ts",
+          "reference_start_line": 70,
+          "reference_end_line": 92
+        }
+      ],
+      "assigned_files": [
+        "src/commands/index.ts",
+        "src/components/Terminal.tsx",
+        "src/commands/tools/hydra.ts",
+        "src/commands/tools/msfconsole.ts"
+      ],
+      "source_cluster_ids": [
+        2,
+        6,
+        24
+      ],
+      "component_id": "5e0b00c0926ea1ce",
+      "can_expand": true
+    },
+    {
+      "name": "Scenario Factory & Content",
+      "description": "Responsible for the programmatic generation of lab environments. It uses templates to build network topologies, assign IP addresses, and populate virtual machines with files, services, and vulnerabilities.",
+      "key_entities": [
+        {
+          "qualified_name": "buildScenario",
+          "reference_file": "src/exercises/templates.ts",
+          "reference_start_line": 58,
+          "reference_end_line": 107
+        },
+        {
+          "qualified_name": "SCENARIO_TEMPLATES",
+          "reference_file": "src/exercises/templates.ts",
+          "reference_start_line": 173,
+          "reference_end_line": 312
+        },
+        {
+          "qualified_name": "MachineLoader",
+          "reference_file": "src/App.tsx",
+          "reference_start_line": 35,
+          "reference_end_line": 35
+        }
+      ],
+      "assigned_files": [
+        "src/utils/network.ts",
+        "src/exercises/exercise02.ts",
+        "src/exercises/templates.ts",
+        "src/commands/tools/arp-scan.ts",
+        "src/exercises/exercise03.ts",
+        "src/components/MachineLoader.tsx",
+        "src/exercises/exercise01.ts",
+        "src/types.ts",
+        "src/exercises/scenarios.ts"
+      ],
+      "source_cluster_ids": [
+        5,
+        11,
+        13,
+        15,
+        18
+      ],
+      "component_id": "bcf7b235e2eea87c",
+      "can_expand": true
+    },
+    {
+      "name": "Command Registry & Toolset",
+      "description": "A collection of plug-and-play cybersecurity tools and Unix-like built-ins. Each tool is a discrete module that interacts with the virtualized state to simulate real-world behavior (e.g., scanning ports, brute-forcing passwords).",
+      "key_entities": [
+        {
+          "qualified_name": "commandRegistry",
+          "reference_file": "src/commands/index.ts"
+        },
+        {
+          "qualified_name": "nmap",
+          "reference_file": "src/commands/tools/nmap.ts",
+          "reference_start_line": 6,
+          "reference_end_line": 54
+        },
+        {
+          "qualified_name": "ls",
+          "reference_file": "src/App.tsx",
+          "reference_start_line": 46,
+          "reference_end_line": 46
+        },
+        {
+          "qualified_name": "hydra",
+          "reference_file": "src/commands/tools/hydra.ts",
+          "reference_start_line": 6,
+          "reference_end_line": 79
+        }
+      ],
+      "assigned_files": [
+        "src/commands/builtin/ifconfig.ts",
+        "src/commands/builtin/clear.ts",
+        "src/commands/tools/ssh.ts",
+        "src/store/scenarioStore.ts",
+        "src/commands/builtin/cat.ts",
+        "src/commands/builtin/whoami.ts",
+        "src/commands/index.ts",
+        "src/commands/tools/nmap.ts",
+        "src/commands/tools/hydra.ts",
+        "src/commands/builtin/ls.ts",
+        "src/commands/builtin/hashcat.ts",
+        "src/commands/builtin/help.ts",
+        "src/commands/builtin/index.ts",
+        "src/commands/tools/index.ts"
+      ],
+      "source_cluster_ids": [
+        10,
+        12,
+        14,
+        16,
+        17,
+        19,
+        20,
+        21,
+        23,
+        26
+      ],
+      "component_id": "f816c603af58ea13",
+      "can_expand": true
+    },
+    {
+      "name": "Virtualized Web Environment",
+      "description": "Implements the \"Mocked Infrastructure\" pattern by providing a functional browser UI and a set of internal \"fake sites\" (e.g., WordPress, Google) used for web enumeration and exploitation exercises.",
+      "key_entities": [
+        {
+          "qualified_name": "FakeBrowser",
+          "reference_file": "src/components/FakeBrowser.tsx",
+          "reference_start_line": 126,
+          "reference_end_line": 300
+        },
+        {
+          "qualified_name": "WPLogin",
+          "reference_file": "src/components/fakesites/wordpress/wp01/Login.tsx",
+          "reference_start_line": 11,
+          "reference_end_line": 63
+        }
+      ],
+      "assigned_files": [
+        "src/components/fakesites/wordpress/wp01/Uploads.tsx",
+        "src/components/fakesites/wordpress/wp01/ConfigBak.tsx",
+        "src/components/fakesites/wordpress/wp01/Login.tsx",
+        "src/components/FakeBrowser.tsx",
+        "src/exercises/templates.ts",
+        "src/utils/network.ts",
+        "src/commands/tools/nmap.ts",
+        "src/components/fakesites/wordpress/wp01/Dashboard.tsx",
+        "src/components/fakesites/wordpress/wp01/Index.tsx"
+      ],
+      "source_cluster_ids": [
+        3,
+        4,
+        8
+      ],
+      "component_id": "acbec0ee0ac046bb",
+      "can_expand": true,
+      "components": [
+        {
+          "name": "FakeBrowser Engine",
+          "description": "Manages the simulated browser's state, including the URL bar, navigation history, and the rendering of the browser UI. It serves as the primary interface for web-based tasks.",
+          "key_entities": [
+            {
+              "qualified_name": "FakeBrowser",
+              "reference_file": "src/components/FakeBrowser.tsx",
+              "reference_start_line": 126,
+              "reference_end_line": 300
+            }
+          ],
+          "assigned_files": [
+            "src/components/FakeBrowser.tsx"
+          ],
+          "source_cluster_ids": [],
+          "component_id": "fad425ca3a17f81c",
+          "can_expand": true
+        },
+        {
+          "name": "Simulation Router",
+          "description": "A virtual dispatcher that maps the current simulated URL to the corresponding mock application component (e.g., mapping http://wordpress.local to the WordPress mock).",
+          "key_entities": [],
+          "assigned_files": [],
+          "source_cluster_ids": [],
+          "component_id": "c93d48202ca48398",
+          "can_expand": false
+        },
+        {
+          "name": "WordPress Mock App",
+          "description": "A high‑fidelity emulation of a vulnerable WordPress instance, including login forms and dashboard functionality designed for credential harvesting or file‑upload exploits.",
+          "key_entities": [
+            {
+              "qualified_name": "WPLogin",
+              "reference_file": "src/components/fakesites/wordpress/wp01/Login.tsx",
+              "reference_start_line": 11,
+              "reference_end_line": 63
+            }
+          ],
+          "assigned_files": [
+            "src/components/fakesites/wordpress/wp01/Login.tsx",
+            "src/components/fakesites/wordpress/wp01/Uploads.tsx"
+          ],
+          "source_cluster_ids": [],
+          "component_id": "897cb46bb6bc4ed0",
+          "can_expand": true
+        },
+        {
+          "name": "Scenario Factory",
+          "description": "Orchestrates the runtime setup of the simulation. It populates the virtual environment, configures machine identities, and initializes the browser's starting state.",
+          "key_entities": [],
+          "assigned_files": [
+            "src/exercises/templates.ts",
+            "src/utils/network.ts"
+          ],
+          "source_cluster_ids": [
+            7
+          ],
+          "component_id": "cffa5ca7b6ae522e",
+          "can_expand": true
+        },
+        {
+          "name": "Template Registry",
+          "description": "A static data store containing blueprints for various scenarios (e.g., WordPress exploits, Brute Force). It defines the initial conditions for the factory.",
+          "key_entities": [],
+          "assigned_files": [
+            "src/exercises/templates.ts",
+            "src/components/FakeBrowser.tsx",
+            "src/components/fakesites/wordpress/wp01/Dashboard.tsx",
+            "src/components/fakesites/wordpress/wp01/ConfigBak.tsx",
+            "src/components/fakesites/wordpress/wp01/Index.tsx"
+          ],
+          "source_cluster_ids": [
+            2
+          ],
+          "component_id": "e9bcbc7e9906f534",
+          "can_expand": true
+        },
+        {
+          "name": "Network Utility",
+          "description": "Handles internal connectivity logic, such as assigning virtual IP addresses and managing the network map between simulated machines.",
+          "key_entities": [],
+          "assigned_files": [
+            "src/exercises/templates.ts",
+            "src/utils/network.ts",
+            "src/commands/tools/nmap.ts"
+          ],
+          "source_cluster_ids": [
+            7
+          ],
+          "component_id": "6efee569451dbd0b",
+          "can_expand": true
+        },
+        {
+          "name": "Security Event Reporter",
+          "description": "Captures specific user actions within mock applications (like entering credentials or uploading a shell) and reports them to the simulation context for progress tracking.",
+          "key_entities": [],
+          "assigned_files": [],
+          "source_cluster_ids": [],
+          "component_id": "1fce3147e570b976",
+          "can_expand": false
+        }
+      ],
+      "components_relations": [
+        {
+          "relation": "passes the current URL state to",
+          "src_name": "FakeBrowser Engine",
+          "dst_name": "Simulation Router",
+          "src_id": "fad425ca3a17f81c",
+          "dst_id": "c93d48202ca48398"
+        },
+        {
+          "relation": "maps URL to mock application and mounts",
+          "src_name": "Simulation Router",
+          "dst_name": "WordPress Mock App",
+          "src_id": "c93d48202ca48398",
+          "dst_id": "897cb46bb6bc4ed0"
+        },
+        {
+          "relation": "triggers URL updates in the Engine's state during internal navigation",
+          "src_name": "WordPress Mock App",
+          "dst_name": "FakeBrowser Engine",
+          "src_id": "897cb46bb6bc4ed0",
+          "dst_id": "fad425ca3a17f81c"
+        },
+        {
+          "relation": "initializes the Engine with a specific starting URL and session state",
+          "src_name": "Scenario Factory",
+          "dst_name": "FakeBrowser Engine",
+          "src_id": "cffa5ca7b6ae522e",
+          "dst_id": "fad425ca3a17f81c"
+        },
+        {
+          "relation": "sends captured credentials or exploit triggers to",
+          "src_name": "WordPress Mock App",
+          "dst_name": "Security Event Reporter",
+          "src_id": "897cb46bb6bc4ed0",
+          "dst_id": "1fce3147e570b976"
+        },
+        {
+          "relation": "invokes the Utility to assign IP addresses and establish connectivity",
+          "src_name": "Scenario Factory",
+          "dst_name": "Network Utility",
+          "src_id": "cffa5ca7b6ae522e",
+          "dst_id": "6efee569451dbd0b"
+        }
+      ]
+    }
+  ],
+  "components_relations": [
+    {
+      "relation": "populates global state for",
+      "src_name": "Scenario Factory & Content",
+      "dst_name": "Simulation Orchestrator & State Management",
+      "src_id": "bcf7b235e2eea87c",
+      "dst_id": "eff1c03eff0dab36"
+    },
+    {
+      "relation": "dispatches parsed input to",
+      "src_name": "Terminal Interaction Engine",
+      "dst_name": "Command Registry & Toolset",
+      "src_id": "5e0b00c0926ea1ce",
+      "dst_id": "f816c603af58ea13"
+    },
+    {
+      "relation": "updates virtual state via",
+      "src_name": "Command Registry & Toolset",
+      "dst_name": "Simulation Orchestrator & State Management",
+      "src_id": "f816c603af58ea13",
+      "dst_id": "eff1c03eff0dab36"
+    },
+    {
+      "relation": "provides machine context to",
+      "src_name": "Simulation Orchestrator & State Management",
+      "dst_name": "Terminal Interaction Engine",
+      "src_id": "eff1c03eff0dab36",
+      "dst_id": "5e0b00c0926ea1ce"
+    },
+    {
+      "relation": "synchronizes web services with",
+      "src_name": "Simulation Orchestrator & State Management",
+      "dst_name": "Virtualized Web Environment",
+      "src_id": "eff1c03eff0dab36",
+      "dst_id": "acbec0ee0ac046bb"
+    }
+  ]
+}
