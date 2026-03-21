@@ -86,6 +86,11 @@ export interface CommandResponse {
   isError?: boolean;
   completedMissionId?: number;
   newMachineId?: string;
+  blockingCommand?: {
+    message: string;  // Mensaje de estado (ej: "Escuchando en puerto 4444...")
+    cancelKey: string; // Tecla para cancelar (ej: 'c')
+    listeningPort?: number; // Puerto en el que nc está escuchando (para validar payload)
+  };
   foundCredentials?: {
     machineId: string;
     user: string;

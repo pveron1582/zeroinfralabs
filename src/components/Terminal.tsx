@@ -55,6 +55,8 @@ export function Terminal({
 }: Props) {
   const color = termColor;
   const setMsfState = useScenarioStore(state => state.setMsfState);
+  const setListeningPort = useScenarioStore(state => state.setListeningPort) || (() => {});
+  const listeningPort = useScenarioStore(state => state.listeningPort);
 
   const makeWelcome = (machines: Machine[]): HistoryEntry => {
     const atk = machines.find(m => m.id === 'attacker-01');
@@ -70,6 +72,7 @@ export function Terminal({
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIdx, setHistIdx]       = useState(-1);
   const [busy, setBusy]             = useState(false);
+  const [blockingCommand, setBlockingCommand] = useState<{ message: string; cancelKey: string; listeningPort?: number } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
@@ -90,8 +93,40 @@ export function Terminal({
   useEffect(() => {
     setHistory([makeWelcome(allMachines)]);
     setCmdHistory([]); setHistIdx(-1); setInput(''); setBusy(false);
+    setBlockingCommand(null);
+    setListeningPort(null);
     setTimeout(() => inputRef.current?.focus(), 80);
   }, [scenarioId]);
+
+  // Detectar cuando se completa misión 6 (RCE) para cerrar listener y cambiar sesión
+  useEffect(() => {
+    if (currentMissionId >= 6 && blockingCommand && listeningPort) {
+      // Buscar la máquina víctima (la que no es el atacante)
+      const victimMachine = allMachines.find(m => m.id !== 'attacker-01');
+
+      // Simular que la conexión RCE se recibió en el listener
+      setHistory(prev => [...prev, {
+        command: null,
+        output: [
+          `connect to [${allMachines.find(m => m.id === 'attacker-01')?.machine_info.ip || '...'}] from (UNKNOWN) [${victimMachine?.machine_info.ip || '...'}] ${listeningPort}`,
+          `/bin/sh: 0: can't access tty; job control turned off`,
+          `$ `,
+        ].join('\n'),
+        streaming: false,
+        prompt,
+        timestamp: Date.now()
+      }]);
+
+      setBlockingCommand(null);
+      setBusy(false);
+      setListeningPort(null);
+
+      // Cambiar sesión activa a la máquina víctima
+      if (victimMachine) {
+        onChangeMachine(victimMachine.id);
+      }
+    }
+  }, [currentMissionId, blockingCommand, listeningPort, prompt, allMachines, onChangeMachine]);
 
   const runCommand = (cmd: string) => {
     const trimmed = cmd.trim();
@@ -109,6 +144,13 @@ export function Terminal({
     if (!useStreaming) {
       setHistory(prev => [...prev, { command: trimmed, output: result.output, streaming: false, prompt, timestamp: Date.now() }]);
       if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+      if (result.blockingCommand) {
+        setBlockingCommand(result.blockingCommand);
+        if (result.blockingCommand.listeningPort) {
+          setListeningPort(result.blockingCommand.listeningPort);
+        }
+        setBusy(true);
+      }
       if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file);
       if (result.newMachineId)       onChangeMachine(result.newMachineId);
       return;
@@ -124,6 +166,13 @@ export function Terminal({
     setTimeout(() => {
       setBusy(false);
       if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+      if (result.blockingCommand) {
+        setBlockingCommand(result.blockingCommand);
+        if (result.blockingCommand.listeningPort) {
+          setListeningPort(result.blockingCommand.listeningPort);
+        }
+        setBusy(true);
+      }
       if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file);
       if (result.newMachineId)       onChangeMachine(result.newMachineId);
       setHistory(prev => prev.map(e =>
@@ -134,6 +183,24 @@ export function Terminal({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Si hay un comando bloqueante, solo aceptar la tecla de cancelación
+    if (blockingCommand) {
+      if (e.key.toLowerCase() === blockingCommand.cancelKey.toLowerCase()) {
+        e.preventDefault();
+        setBlockingCommand(null);
+        setBusy(false);
+        setHistory(prev => [...prev, {
+          command: null,
+          output: `Conexión cancelada.`,
+          streaming: false,
+          prompt,
+          timestamp: Date.now()
+        }]);
+      }
+      e.preventDefault();
+      return;
+    }
+
     if (e.key === 'Enter') { e.preventDefault(); runCommand(input); }
     else if (e.key === 'ArrowUp') {
       e.preventDefault();
@@ -184,7 +251,7 @@ export function Terminal({
           </div>
         ))}
 
-        {!busy && (
+        {!busy && !blockingCommand && (
           <div className="flex items-center gap-2">
             <span className="font-bold text-xs flex-shrink-0" style={{ color }}>{prompt}</span>
             <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)}
@@ -194,7 +261,19 @@ export function Terminal({
               autoFocus spellCheck={false} autoComplete="off" autoCorrect="off" autoCapitalize="off" />
           </div>
         )}
-        {busy && (
+        {busy && blockingCommand && (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-xs flex-shrink-0" style={{ color }}>⏳ </span>
+              <span className="text-xs animate-pulse" style={{ color }}>{blockingCommand.message}</span>
+            </div>
+            <input ref={inputRef} type="text" value={''} onChange={() => {}}
+              onKeyDown={handleKeyDown}
+              className="sr-only"
+              autoFocus spellCheck={false} autoComplete="off" />
+          </>
+        )}
+        {busy && !blockingCommand && (
           <div className="flex items-center gap-2 opacity-40">
             <span className="font-bold text-xs flex-shrink-0" style={{ color }}>{prompt}</span>
             <span className="text-xs animate-pulse" style={{ color }}>▌</span>

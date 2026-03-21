@@ -1,5 +1,5 @@
 // ── components/FakeBrowser.tsx ────────────────────────────────────
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
 import { WPIndex }     from './fakesites/wordpress/wp01/Index';
@@ -120,6 +120,7 @@ export function FakeBrowser({
 
   const [urlInput, setUrlInput] = useState(browserCurrentUrl);
   const [reloading, setReloading] = useState(false);
+  const rceCompletedRef = useRef(false);
 
   // Máquinas de escenarios específicos
   const wpMachine = allMachines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress'));
@@ -144,6 +145,14 @@ export function FakeBrowser({
     // Lógica global de misión inicial de descubrimiento web
     if (scenarioHasWeb && !mission3Already && wpMachine && wpDiscoveryLevel >= 2 && clean.includes(wpMachine.machine_info.ip)) {
       onMissionComplete(3);
+    }
+    
+    // Lógica LFI: detectar misión 3 (etc/passwd)
+    if (lfiMachine && clean.includes(lfiMachine.machine_info.ip)) {
+      const fullPath = clean.replace(`http://${lfiMachine.machine_info.ip}`, '');
+      if (fullPath.includes('etc/passwd')) {
+        onMissionComplete(3);
+      }
     }
   };
 
@@ -171,6 +180,22 @@ export function FakeBrowser({
     onVerifyCredentials(wpMachine!.id);
     navigate(`http://${wpMachine!.machine_info.ip}/wp-admin/dashboard`);
   };
+
+  // Efecto para completar misiones de LFI 6 (RCE) cuando se incluye un archivo
+  // Usa ref guard para evitar múltiples llamadas y congelamiento del popup
+  useEffect(() => {
+    if (!lfiMachine || !browserCurrentUrl.includes(lfiMachine.machine_info.ip)) return;
+    if (rceCompletedRef.current) return; // Guard: solo una vez
+    
+    const fullPath = browserCurrentUrl.replace(`http://${lfiMachine.machine_info.ip}`, '');
+    
+    // Misión 6: RCE (Incluir archivo subido en uploads con extensión .php)
+    if (fullPath.includes('?page=uploads/') && fullPath.endsWith('.php')) {
+      rceCompletedRef.current = true; // Marcar como completado para evitar repetición
+      onMissionComplete(6);
+      onVerifyCredentials(lfiMachine.id);
+    }
+  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials]);
 
   const renderPage = () => {
     const currentUrl = browserCurrentUrl;
@@ -204,24 +229,21 @@ export function FakeBrowser({
     if (lfiMachine && currentUrl.includes(lfiMachine.machine_info.ip)) {
       const ip = lfiMachine.machine_info.ip;
       const fullPath = currentUrl.replace(`http://${ip}`, '');
-      
-      // Misión 3: Discovery de LFI (leer /etc/passwd)
-      if (fullPath.includes('etc/passwd')) {
-        onMissionComplete(3);
-      }
-      
-      // Misión 5: RCE (Incluir archivo subido en uploads)
-      if (fullPath.includes('?page=uploads/') && fullPath.endsWith('.php')) {
-        onMissionComplete(5);
-        onVerifyCredentials(lfiMachine.id); 
-      }
+
+      // Obtener la máquina atacante para sus archivos
+      const attackerMachine = allMachines.find(m => m.machine_info.type === 'workstation' && m.machine_info.os?.includes('Kali'));
+      const attackerFiles = attackerMachine?.files?.map(f => ({
+        path: f.path,
+        name: f.path.split('/').pop() || f.path,
+      })) || [];
 
       return (
         <InclusionSite 
           ip={ip} 
           currentUrl={currentUrl} 
           onNavigate={navigate} 
-          onUploadSuccess={() => onMissionComplete(4)} 
+          onUploadSuccess={() => onMissionComplete(5)}
+          attackerFiles={attackerFiles}
         />
       );
     }

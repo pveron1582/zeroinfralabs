@@ -8,3 +8,4 @@ export { cmd_ifconfig } from './ifconfig';
 export { cmd_ls } from './ls';
 export { cmd_cat } from './cat';
 export { cmd_hashcat } from './hashcat';
+export { cmd_sudo } from './sudo';

@@ -43,6 +43,9 @@ interface ScenarioState {
   browserNavHistory: string[];
   browserNavIdx: number;
 
+  // NC Listener state (para validación de payload)
+  listeningPort: number | null;
+
   // MSF Console state (persisted)
   msfState: MsfState | null;
 
@@ -64,6 +67,7 @@ interface ScenarioState {
   setBrowserUrl: (url: string) => void;
   setBrowserLoggedIn: (loggedIn: boolean) => void;
   setBrowserNavHistory: (history: string[], idx: number) => void;
+  setListeningPort: (port: number | null) => void;
   setMsfState: (state: MsfState | null) => void;
 }
 
@@ -92,6 +96,7 @@ export const useScenarioStore = create<ScenarioState>()(
       browserIsLoggedIn: false,
       browserNavHistory: ['https://www.google.com'],
       browserNavIdx: 0,
+      listeningPort: null,
       msfState: null,
 
       // ── Actions ───────────────────────────────────────────────────────
@@ -130,6 +135,7 @@ export const useScenarioStore = create<ScenarioState>()(
             browserIsLoggedIn: false,
             browserNavHistory: ['https://www.google.com'],
             browserNavIdx: 0,
+            listeningPort: null,
             msfState: null,
           });
           window.history.pushState({ view: 'workspace', scenarioId: id }, '');
@@ -224,6 +230,7 @@ export const useScenarioStore = create<ScenarioState>()(
           browserIsLoggedIn: false,
           browserNavHistory: ['https://www.google.com'],
           browserNavIdx: 0,
+          listeningPort: null,
           msfState: null,
         });
         if (window.history.state?.view === 'workspace') {
@@ -236,6 +243,7 @@ export const useScenarioStore = create<ScenarioState>()(
       setBrowserLoggedIn: (loggedIn) => set({ browserIsLoggedIn: loggedIn }),
 
       setBrowserNavHistory: (history, idx) => set({ browserNavHistory: history, browserNavIdx: idx }),
+      setListeningPort: (port) => set({ listeningPort: port }),
 
       getActiveMachine: () => {
         const { machines, activeMachineId } = get();

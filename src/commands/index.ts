@@ -7,11 +7,11 @@
 import type { CommandContext, CommandResponse } from '../types';
 import {
   cmd_help, cmd_clear, cmd_whoami, cmd_ifconfig,
-  cmd_ls, cmd_cat, cmd_hashcat
+  cmd_ls, cmd_cat, cmd_hashcat, cmd_sudo
 } from './builtin';
 import {
   cmd_arpScan, cmd_nmap, cmd_gobuster, cmd_hydra,
-  cmd_ssh, cmd_msfconsole, executeMsfCommand, type MsfState
+  cmd_ssh, cmd_nc, cmd_msfconsole, executeMsfCommand, type MsfState
 } from './tools';
 
 interface Command {
@@ -32,12 +32,14 @@ const COMMANDS: Command[] = [
   cmd_ls,
   cmd_cat,
   cmd_hashcat,
+  cmd_sudo,
   // Pentesting tools
   cmd_arpScan,
   cmd_nmap,
   cmd_gobuster,
   cmd_hydra,
   cmd_ssh,
+  cmd_nc,
   // MSF console wrapper (handles stateful sessions)
   {
     name: 'msfconsole',

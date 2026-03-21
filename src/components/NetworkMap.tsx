@@ -55,11 +55,9 @@ export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Pro
                               : '#374151';
             const glowColor   = isCurrentLocation ? '#10b981' : null;
 
-            const topBadge = isAttacker
-              ? { label: 'Tu Estación', bg: '#374151', fg: '#9ca3af' }
-              : isCurrentLocation
-                ? { label: 'Sesión Activa', bg: '#10b981', fg: '#000' }
-                : null;
+            const topBadge = isCurrentLocation
+              ? { label: 'Sesión Activa', bg: '#10b981', fg: '#000' }
+              : null;
 
             // Badge nivel 3 usa el nombre del step 3 de la máquina (dinámico por escenario)
             const step3Label = machine.learning_steps?.find(s => s.id === 3)?.task?.split(' ')[0] || 'Enum';

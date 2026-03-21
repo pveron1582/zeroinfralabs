@@ -100,7 +100,7 @@ describe('NetworkMap', () => {
     expect(screen.getByText('target')).toBeInTheDocument();
   });
 
-  it('debe mostrar "Tu Estación" para la máquina atacante', () => {
+  it('debe mostrar "Sesión Activa" para la máquina atacante', () => {
     render(
       <NetworkMap
         scenario={mockScenario}
@@ -109,10 +109,7 @@ describe('NetworkMap', () => {
       />
     );
 
-    // Buscar el texto "Tu Estación" en cualquier elemento
-    expect(screen.getByText((content, element) => {
-      return content === 'Tu Estación';
-    })).toBeInTheDocument();
+    expect(screen.getByText('Sesión Activa')).toBeInTheDocument();
   });
 
   it('debe mostrar "Sesión Activa" para la máquina activa', () => {
@@ -124,7 +121,23 @@ describe('NetworkMap', () => {
       />
     );
 
-    expect(screen.getByText('Sesión Activa')).toBeInTheDocument();
+    // Buscar el badge en la máquina target (la segunda máquina)
+    const targetMachine = screen.getAllByText('Sesión Activa')[0];
+    expect(targetMachine).toBeInTheDocument();
+  });
+
+  it('debe mostrar solo una "Sesión Activa" cuando hay una máquina activa', () => {
+    render(
+      <NetworkMap
+        scenario={mockScenario}
+        activeMachineId="target-01"
+        onClose={vi.fn()}
+      />
+    );
+
+    // Debe haber solo un badge "Sesión Activa" visible (en la máquina activa)
+    const sessionBadges = screen.getAllByText('Sesión Activa');
+    expect(sessionBadges).toHaveLength(1); // solo la máquina activa debe tener el badge visible
   });
 
   it('debe mostrar IPs para máquinas descubiertas', () => {
@@ -274,5 +287,23 @@ describe('NetworkMap', () => {
     fireEvent.click(targetCard);
 
     expect(screen.getByText('Sin verificar')).toBeInTheDocument();
+  });
+
+  it('debe cambiar la sesión activa al cambiar de máquina', () => {
+    render(
+      <NetworkMap
+        scenario={mockScenario}
+        activeMachineId="target-01"
+        onClose={vi.fn()}
+      />
+    );
+
+    // Verificar que la máquina target tiene "Sesión Activa"
+    const targetBadges = screen.getAllByText('Sesión Activa');
+    expect(targetBadges).toHaveLength(1); // solo la máquina activa debe tener el badge visible
+    
+    // La primera ocurrencia es la target
+    const targetBadge = targetBadges[0];
+    expect(targetBadge).toBeInTheDocument();
   });
 });

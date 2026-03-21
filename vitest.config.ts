@@ -12,7 +12,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'src/**/*.d.ts', 'src/test/**/*'],
+      exclude: [
+        'node_modules/',
+        'src/**/*.d.ts',
+        'src/test/**/*',
+        // Barrel files: solo re-exportan, no tienen lógica propia
+        'src/commands/builtin/index.ts',
+        'src/commands/tools/index.ts',
+      ],
     },
   },
 });

@@ -8,6 +8,8 @@
 - **Enumeración web** (Gobuster)
 - **Acceso remoto** (SSH, Hydra)
 - **Explotación con Metasploit Framework**
+- **Vulnerabilidades web** (LFI, RCE via PHP)
+- **Networking** (Netcat listeners para reverse shells)
 - **Análisis forense** (lectura de archivos, permisos, etc)
 
 El proyecto está diseñado como un **simulador educativo** con misiones progresivas que guían al usuario a través de escenarios realistas de laboratorios de ciberseguridad.
@@ -15,12 +17,15 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 ### 🎯 Características Principales
 
 - **Terminal interactiva** - Emula una shell Linux con comandos funcionales
-- **Múltiples escenarios** - WordPress Lab, SSH Brute Force, EternalBlue exploit
+- **Múltiples escenarios** - WordPress Lab, SSH Brute Force, EternalBlue, LFI-RCE + Próximo
 - **Misiones progresivas** - Objetivos claros con niveles de descubrimiento
 - **Navegador web simulado** - Acceso a sitios vulnerables dentro del simulador
 - **Mapa de red** - Visualización del estado de máquinas (atacante y objetivos)
 - **Persistencia de estado** - El progreso se guarda automáticamente
-- **Tests completos** - 166+ tests unitarios e integración (todos pasando ✓)
+- **Tests completos** - 195+ tests unitarios e integración (todos pasando ✓)
+- **Comando Netcat (nc)** - Listener activo con flexibilidad de argumentos
+- **LFI-RCE Scenario** - Exploit completo de Local File Inclusion con reverse shell
+- **Terminal bloqueante** - Soporte para comandos que requieren escucha (nc -nlvp)
 
 ### 🏗️ Arquitectura Modular
 
@@ -91,10 +96,34 @@ src/
 ## 📚 Documentación
 
 - **[REFACTORING.md](REFACTORING.md)** - Cambios de arquitectura (Zustand, templates, modularización)
-- **[TESTING.md](TESTING.md)** - Tests implementados (166+ tests, todos pasando ✓)
+- **[TESTING.md](TESTING.md)** - Tests implementados (195+ tests, todos pasando ✓)
 - **[SECURITY.md](SECURITY.md)** - Consideraciones de seguridad
 
-## Cómo agregar un nuevo escenario
+---
+
+## 🚀 Actualizaciones Recientes (Marzo 2026)
+
+### Comando Netcat (nc)
+- ✅ Implementación de `nc` con soporte a listener (`-nlvp puerto`)
+- ✅ Argumentos flexibles: acepta cualquier orden (`-nlvp`, `-pvnl`, `-lvnp`, etc.)
+- ✅ Validación de puertos (1-65535)
+- ✅ Terminal bloqueante: presiona 'c' para cancelar escucha
+- ✅ 7+ tests para cobertura completa
+
+### LFI-RCE Scenario (Escenario 4)
+- ✅ Exploit completo de Local File Inclusion (LFI)
+- ✅ Payload PHP con reverse shell realista
+- ✅ Nuevo paso "Setup Listener" antes de ejecutar payload
+- ✅ Detección automática de conexión RCE en terminal
+- ✅ Validación de puerto de escucha vs payload
+
+### Mejoras en Terminal
+- ✅ Soporte para comandos bloqueantes (nc, listeners)
+- ✅ Cierre automático al recibir conexión RCE
+- ✅ Input oculto pero funcional para captura de teclas
+- ✅ Persistencia de puerto de escucha en Zustand
+
+---
 
 1. Crear `src/hosts/serverXX.ts` con los datos de la máquina objetivo
 2. Crear `src/exercises/exerciseXX.ts` con la configuración del escenario
@@ -201,7 +230,7 @@ src/
 ## 📚 Documentación Completa
 
 - **[REFACTORING.md](REFACTORING.md)** - Cambios de arquitectura (Zustand, templates, modularización)
-- **[TESTING.md](TESTING.md)** - Tests implementados (166+ tests, todos pasando ✓)
+- **[TESTING.md](TESTING.md)** - Tests implementados (195+ tests, todos pasando ✓)
 - **[SECURITY.md](SECURITY.md)** - Consideraciones de seguridad
 
 ---
@@ -294,10 +323,20 @@ npm test
 - [ ] Sistema de badges/logros
 
 ### 📋 BUGS ENCONTRADOS / MEJORAS
-- [ ] Sesion activa de maquina atacante dice TU ESTACION y deberia decir SESION ACTIVA
-- [ ] al ejecutar whoami en la conexion ssh, me dice admin y ademas me devuelve el hostname y la ip, cuando solo deberia ser el usuario
-- [ ] luego del escaneo con arp-scan, al ver en la topologia la maquina victima no dice el Sistema Operativo, pero al hacer click en la info si y no deberia verse hasta luego del escaneo del nmap.
-
+- [ ] 1. Sesion activa de maquina atacante dice TU ESTACION y deberia decir SESION ACTIVA
+- [ ] 2. al ejecutar whoami en la conexion ssh, me dice admin y ademas me devuelve el hostname y la ip, cuando solo deberia ser el usuario
+- [ ] 3. luego del escaneo con arp-scan, al ver en la topologia la maquina victima no dice el Sistema Operativo, pero al hacer click en la info si y no deberia verse hasta luego del escaneo del nmap.
+- [ ] 4. los pasos de resolucion para eternalblue necesitan ser mas. para verificar la vulnerabilidad es demasiado berve para alguien que no sabe usarla. hay que agregar mas pasos. luego del escaneo de nmap paso 3. ingresar a metasploit con msfconsole 4. buscar exploit con comando "search ms17-010" 5. seleccionar con "use 0" para seleccionar auxiliar 6. ejecutar "show options" para ver opciones 7. ingresar "set rhosts 172.16.0.11" para indicar ip victima. 8. ejecutar run o exploit para comprobar si es vulnerable 9. ingresar back para salir del modulo 10. repetir comando "search ms17" para buscar exploit. 11. ingresar "use 1" 12. repetir configuracion de rhosts 13. configurar lhost con ip local 14. run o exploit. 15. ejecutar getuid para comprobar usuario admin windows
+- [x] 5. agregar un sistema de directorios en las maquinas lo mas real posible con al menos algunos 
+directorios importantes como el home de usuario y el root, algunos directorios de /etc con los archivos passwd y shadow. tambien el directorio /var/www/html y alguno otro que se considere muy importante para empezar.
+- [ ] 6. revisar la carga de google en el browser. el navegador solamente valida www.gooogle.com y https://www.google.com pero tambien deberia validar al menos http://www.google.com y https://google.com y redirigir ambas a https://www.google.com
+- [ ] 7. el escenario 5 de privesc funciona pero al escalar no cambia el prompt a root. y el dato del usuario developer lo brinda el step pero no dice en ningun lado de donde sale, asume que con el nmap directamente lo saca. podriamos poner un web site muy simple con alguna nota en el codigo que pida al usuario developer que cambie la contraseña por ser muy facil, asi el usuario interpreta que debe hacer bruteforce con hydra primero.
+- [ ] 8. completar los test de los comandos nuevos como sudo y otros elementos agregados mas que nada dede el escenario 4 y 5.
+- [ ] 9. Añadir si se ingresa el comando exit en la terminal sin ningun entonrno en especial, que al hacerlo me saque del laboratorio y vuelva al landingpage
+- [ ] 10. tener en cuenta: El truco del "Comando no implementado" con Estilo
+En lugar de un aburrido "Command not found", usa el realismo a tu favor. Si el usuario escribe un comando que existe en Linux pero tú no has programado (ej. iptables o tcpdump), puedes devolver mensajes como:
+"Error: El binario /usr/bin/tcpdump requiere privilegios de kernel que no están disponibles en esta terminal restringida."
+"Comando no instalado. El administrador ha eliminado esta herramienta para endurecer el sistema (Hardening)."
 ---
 
 ## 🔒 Seguridad
@@ -306,7 +345,7 @@ El proyecto simula comandos reales pero en un entorno controlado. **No hay códi
 
 Para más detalles sobre consideraciones de seguridad, ver [SECURITY.md](SECURITY.md).
 
----
+--
 
 ## 📝 Licencia
 

@@ -42,9 +42,7 @@ export const cmd_gobuster = {
     }
 
     const canComplete = currentMissionId === (missionId || 4);
-    if (canComplete) {
-      target.discovery_level = Math.max(target.discovery_level || 0, 3);
-    }
+    // No mutar directamente el estado aquí; el discovery_level se actualiza en completeMission
 
     return {
       output,
