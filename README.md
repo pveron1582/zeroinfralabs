@@ -98,6 +98,7 @@ src/
 - **[REFACTORING.md](REFACTORING.md)** - Cambios de arquitectura (Zustand, templates, modularización)
 - **[TESTING.md](TESTING.md)** - Tests implementados (195+ tests, todos pasando ✓)
 - **[SECURITY.md](SECURITY.md)** - Consideraciones de seguridad
+- **[ANALISIS_CRITICO.md](ANALISIS_CRITICO.md)** - Analisis realizado el 20/03/26 por un agente detallando bugs, errores, fortalezas recomendaciones del proyecto
 
 ---
 
