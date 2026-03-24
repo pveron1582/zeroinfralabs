@@ -86,9 +86,6 @@ src/
 └── store/
     └── scenarioStore.ts              # Estado global (Zustand)
 ```
-
----
-
 ## 🔧 Fixes Aplicados (Completados)
 
 ### ✅ Fix #1: Resetear MSF State entre escenarios
