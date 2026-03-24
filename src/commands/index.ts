@@ -7,7 +7,8 @@
 import type { CommandContext, CommandResponse } from '../types';
 import {
   cmd_help, cmd_clear, cmd_whoami, cmd_ifconfig,
-  cmd_ls, cmd_cat, cmd_hashcat, cmd_sudo
+  cmd_ls, cmd_cat, cmd_hashcat, cmd_sudo,
+  cmd_cd, cmd_exit, cmd_end
 } from './builtin';
 import {
   cmd_arpScan, cmd_nmap, cmd_gobuster, cmd_hydra,
@@ -33,6 +34,9 @@ const COMMANDS: Command[] = [
   cmd_cat,
   cmd_hashcat,
   cmd_sudo,
+  cmd_cd,
+  cmd_exit,
+  cmd_end,
   // Pentesting tools
   cmd_arpScan,
   cmd_nmap,
@@ -76,7 +80,9 @@ export const executeCommand = (
   machine: CommandContext['machine'],
   allMachines: CommandContext['allMachines'],
   currentMissionId: number,
-  onMsfStateChange?: (state: MsfState | null) => void
+  onMsfStateChange?: (state: MsfState | null) => void,
+  currentDir: string = '/',
+  setCurrentDir?: (dir: string) => void
 ): CommandResponse => {
   const parts = line.trim().split(/\s+/);
   const cmdName = parts[0].toLowerCase();
@@ -84,17 +90,19 @@ export const executeCommand = (
 
   let result: CommandResponse;
 
+  const ctx: CommandContext = { machine, allMachines, currentMissionId, currentDir, setCurrentDir };
+
   // ── If inside an active MSF session, forward ALL commands to MSF handler
   if (_msfState?.active) {
     const msfCmd = COMMANDS.find(c => c.name === 'msfconsole')!;
-    result = msfCmd.execute([line], { machine, allMachines, currentMissionId });
+    result = msfCmd.execute([line], ctx);
   } else {
     const cmd = COMMANDS.find(c => c.name === cmdName);
     if (!cmd) return {
       output: `Command not found: ${cmdName}\nEscribe 'help' para ver los comandos disponibles.`,
       isError: true
     };
-    result = cmd.execute(args, { machine, allMachines, currentMissionId });
+    result = cmd.execute(args, ctx);
   }
 
   // Sync MSF state with Zustand store ALWAYS

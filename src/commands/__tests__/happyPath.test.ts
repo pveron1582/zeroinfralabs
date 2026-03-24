@@ -35,7 +35,7 @@ const exec = (
   machine: Machine,
   allMachines: Machine[],
   currentMissionId: number
-) => executeCommand(line, machine, allMachines, currentMissionId);
+) => executeCommand(line, machine, allMachines, currentMissionId, undefined, '/');
 
 // ═══════════════════════════════════════════════════════════════════
 // SCENARIO 01: WordPress Vulnerable Lab
@@ -436,12 +436,13 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
     },
     web_enumeration: { web_server: 'Apache/2.4.41', cms: 'none', directories: [] },
     learning_steps: [
-      { id: 1, task: 'Reconocimiento de red', text: 'arp-scan', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 1 },
-      { id: 2, task: 'Escaneo de puertos', text: 'nmap -sV', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 2 },
-      { id: 3, task: 'Acceso SSH inicial', text: 'ssh developer@ip', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
-      { id: 4, task: 'Enumeración de sudo', text: 'sudo -l', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
-      { id: 5, task: 'Escalada de privilegios', text: 'sudo vim -c !bash', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
-      { id: 6, task: 'Capturar la flag de root', text: 'cat /root/root.txt', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
+      { id: 1, task: 'Reconocimiento de red', text: 'Descubrí el host activo: arp-scan <network/cidr>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 1 },
+      { id: 2, task: 'Escaneo de puertos', text: 'Identificá servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 2 },
+      { id: 3, task: 'Fuerza bruta SSH', text: 'Obtené credenciales: hydra -l developer -P rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
+      { id: 4, task: 'Acceso SSH', text: 'Conectate: ssh developer@<target-ip> <password>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
+      { id: 5, task: 'Enumeración de sudo', text: 'Listá permisos: sudo -l', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
+      { id: 6, task: 'Escalada de privilegios', text: 'Usá vim para escalar: sudo vim -c \'!bash\'', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
+      { id: 7, task: 'Capturar la flag de root', text: 'Leé la flag: cat /root/root.txt', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
     ],
     files: [
       { path: '/etc/sudoers', content: 'developer ALL=(ALL) NOPASSWD: /usr/bin/vim', type: 'text' },
@@ -475,30 +476,36 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
     expect(result.completedMissionId).toBe(3);
   });
 
-  it('Paso 3: ssh conecta como developer (completa misión 3, no la última)', () => {
+  it('Paso 4: ssh conecta como developer', () => {
     const target = { ...privescTarget, discovery_level: 3 };
-    const result = exec('ssh developer@192.168.30.11 dev2024', attacker, [attacker, target], 3);
+    const result = exec('ssh developer@192.168.30.11 dev2024', attacker, [attacker, target], 4);
     expect(result.output).toContain('Welcome to');
     expect(result.newMachineId).toBe('lab-scenario-05-privesc');
-    // Debe completar el step 3 (Acceso SSH inicial), NO el 6 (último del escenario)
-    expect(result.completedMissionId).toBe(3);
-  });
-
-  it('Paso 4: sudo -l muestra permisos de vim', () => {
-    const target = { ...privescTarget, discovery_level: 3 };
-    const result = exec('sudo -l', target, [attacker, target], 4);
-    expect(result.output).toContain('developer');
-    expect(result.output).toContain('NOPASSWD');
-    expect(result.output).toContain('vim');
     expect(result.completedMissionId).toBe(4);
   });
 
-  it('Paso 5: sudo vim -c !bash escala a root', () => {
+  it('Paso 5: sudo -l muestra permisos de vim', () => {
     const target = { ...privescTarget, discovery_level: 3 };
-    const result = exec("sudo vim -c '!bash'", target, [attacker, target], 5);
+    const result = exec('sudo -l', target, [attacker, target], 5);
+    expect(result.output).toContain('developer');
+    expect(result.output).toContain('NOPASSWD');
+    expect(result.output).toContain('vim');
+    expect(result.completedMissionId).toBe(5);
+  });
+
+  it('Paso 6: sudo vim -c !bash escala a root', () => {
+    const target = { ...privescTarget, discovery_level: 3 };
+    const result = exec("sudo vim -c '!bash'", target, [attacker, target], 6);
     expect(result.output).toContain('root');
     expect(result.output).toContain('uid=0');
-    expect(result.completedMissionId).toBe(5);
+    expect(result.completedMissionId).toBe(6);
+  });
+
+  it('Paso 7: cat /root/root.txt obtiene la flag', () => {
+    const target = { ...privescTarget, discovery_level: 4 };
+    const result = exec('cat /root/root.txt', target, [attacker, target], 7);
+    expect(result.output).toContain('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
+    expect(result.completedMissionId).toBe(7);
   });
 
   it('Debe rechazar ssh sin fuerza bruta previa', () => {
@@ -554,7 +561,8 @@ describe('Comandos básicos funcionan en todos los contextos', () => {
         { path: '/root/notes.txt', content: 'My notes', type: 'text' as const },
       ],
     };
-    const result = exec('ls', attackerWithFiles, [attackerWithFiles], 1);
+    // Especificar directorio /root para listar archivos dentro de él
+    const result = exec('ls /root', attackerWithFiles, [attackerWithFiles], 1);
     expect(result.output).toContain('payload.php');
     expect(result.output).toContain('notes.txt');
   });

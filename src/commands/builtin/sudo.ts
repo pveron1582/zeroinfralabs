@@ -48,7 +48,7 @@ function isDirectRoot(args: string[]): boolean {
 
 export const cmd_sudo = {
   name: 'sudo',
-  execute: (args: string[], { machine, currentMissionId }: CommandContext): CommandResponse => {
+  execute: (args: string[], { machine, allMachines, currentMissionId }: CommandContext): CommandResponse => {
     // Sin argumentos
     if (args.length === 0) {
       return {
@@ -100,22 +100,42 @@ export const cmd_sudo = {
         })
         .join('\n');
 
+      // Buscar el step que contenga "sudo -l" o "Enumeración de sudo"
+      let missionId: number | undefined;
+      for (const m of allMachines) {
+        const step = m.learning_steps.find(s =>
+          s.task.toLowerCase().includes('sudo') || s.task.toLowerCase().includes('enumeración')
+        );
+        if (step) { missionId = step.id; break; }
+      }
+
       return {
         output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may run the following commands on ${hostname} (${ip}):\n${rulesFormatted}`,
-        completedMissionId: currentMissionId === 4 ? 4 : undefined,
+        completedMissionId: missionId,
         isError: false,
       };
     }
 
     // ── sudo vim -c '!bash' → escalada de privilegios ──────────────
     if (isVimPrivesc(args)) {
+      // Buscar el step de escalada de privilegios dinámicamente
+      let missionId: number | undefined;
+      for (const m of allMachines) {
+        const step = m.learning_steps.find(s =>
+          s.task.toLowerCase().includes('escalada') ||
+          s.task.toLowerCase().includes('privilegios') ||
+          s.text.toLowerCase().includes('vim')
+        );
+        if (step) { missionId = step.id; break; }
+      }
+
       return {
         output: `\n# vim abriendo shell como root...
 root@${machine.machine_info.hostname}:/home/developer# id
 uid=0(root) gid=0(root) groups=0(root)
 root@${machine.machine_info.hostname}:/home/developer# whoami
 root`,
-        completedMissionId: currentMissionId === 5 ? 5 : undefined,
+        completedMissionId: missionId,
         newMachineId: undefined, // La sesión ya está en la víctima, solo cambia el usuario
         isError: false,
       };
@@ -134,9 +154,19 @@ root`,
         };
       }
 
+      // Buscar el step de escalada de privilegios dinámicamente
+      let missionId: number | undefined;
+      for (const m of allMachines) {
+        const step = m.learning_steps.find(s =>
+          s.task.toLowerCase().includes('escalada') ||
+          s.task.toLowerCase().includes('privilegios')
+        );
+        if (step) { missionId = step.id; break; }
+      }
+
       return {
         output: `root@${machine.machine_info.hostname}:/home/developer# `,
-        completedMissionId: currentMissionId === 5 ? 5 : undefined,
+        completedMissionId: missionId,
         isError: false,
       };
     }

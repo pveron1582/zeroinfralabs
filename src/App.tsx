@@ -63,16 +63,23 @@ export default function App() {
     }
   }, [setView]);
 
-  // ── Escuchar botón Atrás ───────────────────────────────────────
+  // ── Escuchar botón Atrás/Adelante del navegador ─────────────────
   useEffect(() => {
     const onPop = (e: PopStateEvent) => {
-      if (!e.state || e.state.view !== 'workspace') {
+      if (e.state?.view === 'workspace' && e.state.scenarioId) {
+        // Usuario presionó Adelante para volver al workspace
+        const scenario = SCENARIOS.find(s => s.id === e.state.scenarioId);
+        if (scenario) {
+          setView('workspace');
+        }
+      } else {
+        // Usuario presionó Atrás para ir al landing
         goHome();
       }
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [goHome]);
+  }, [goHome, setView]);
 
   // ── Reset MSF state al cambiar de escenario ─────────────────────
   useEffect(() => {
@@ -240,6 +247,7 @@ export default function App() {
                   currentMissionId={currentMissionId}
                   onMissionComplete={completeMission}
                   onCredentialsFound={findCredentials}
+                  onVerifyCredentials={verifyCredentials}
                   onChangeMachine={changeMachine}
                   termColor={termColor}
                 />

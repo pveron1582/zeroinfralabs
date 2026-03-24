@@ -9,11 +9,21 @@ export const cmd_gobuster = {
     const urlIdx = args.indexOf('-u');
     const wIdx = args.indexOf('-w');
     if (args[0] !== 'dir' || urlIdx === -1 || wIdx === -1)
-      return { output: 'Uso: gobuster dir -u http://<IP> -w rockyou.txt', isError: true };
+      return { output: 'Uso: gobuster dir -u http://<IP> -w <wordlist>', isError: true };
 
     const url = args[urlIdx + 1];
     const wl = args[wIdx + 1];
     if (!url || url.includes('<IP>')) return { output: 'Error: Reemplaza <IP> por la IP real.', isError: true };
+
+    // Validar wordlist soportada
+    const validWordlists = ['rockyou.txt', 'common.txt', 'directory-list-2.3-medium.txt', 'directory-list-2.3-small.txt'];
+    const wlName = wl?.split('/').pop() || wl;
+    if (!validWordlists.includes(wlName)) {
+      return { 
+        output: `Error: Wordlist "${wl}" no válida.\nWordlists disponibles: ${validWordlists.join(', ')}`, 
+        isError: true 
+      };
+    }
 
     const target = allMachines.find(m => url.includes(m.machine_info.ip));
     if (!target) return { output: `Error: ${url} no es alcanzable.`, isError: true };

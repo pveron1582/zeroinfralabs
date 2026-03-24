@@ -103,4 +103,8 @@ export interface CommandContext {
   machine: Machine;
   allMachines: Machine[];
   currentMissionId: number;
+  currentDir: string;
+  setCurrentDir?: (dir: string) => void;
+  listeningPort?: number | null;
+  isSshSession?: boolean;
 }

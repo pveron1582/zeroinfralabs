@@ -9,3 +9,6 @@ export { cmd_ls } from './ls';
 export { cmd_cat } from './cat';
 export { cmd_hashcat } from './hashcat';
 export { cmd_sudo } from './sudo';
+export { cmd_cd } from './cd';
+export { cmd_exit } from './exit';
+export { cmd_end } from './end';

@@ -8,25 +8,24 @@ export const cmd_whoami = {
   execute: (_: string[], { machine }: CommandContext): CommandResponse => {
     // Determinar el usuario actual basado en la máquina
     const isAttacker = machine.id.includes('attacker');
-    const currentMachine = machine;
     
-    // Para máquinas objetivo, intentar obtener el usuario desde las credenciales encontradas
-    let currentUser = 'admin'; // Valor por defecto para máquinas objetivo
+    // Para máquinas objetivo, usar el usuario de las credenciales SSH encontradas
+    // Las credenciales se llenan después de un SSH exitoso via foundCredentials en ssh.ts
+    let currentUser = 'user'; // Valor por defecto genérico
     
-    if (!isAttacker && currentMachine.found_credentials) {
-      // Si hay credenciales encontradas, usar el usuario
-      currentUser = currentMachine.found_credentials.user;
+    if (!isAttacker && machine.found_credentials) {
+      // Si hay credenciales encontradas (después de SSH exitoso), usar ese usuario
+      currentUser = machine.found_credentials.user;
     } else if (!isAttacker) {
-      // Para escenarios específicos, usar el usuario correcto basado en el hostname
-      if (currentMachine.machine_info.hostname === 'privesc-lab') {
-        currentUser = 'developer';
+      // Fallback: intentar obtener el usuario de las credenciales SSH del puerto
+      const sshPort = machine.scan_results.ports.find(p => p.service === 'ssh');
+      if (sshPort?.credentials?.user) {
+        currentUser = sshPort.credentials.user;
       }
     }
 
     return {
-      output: isAttacker
-        ? `root\nuid=0(root) gid=0(root)\nHostname: ${machine.machine_info.hostname}\nIP: ${machine.machine_info.ip}\nOS: ${machine.machine_info.os}`
-        : `${currentUser}\nHostname: ${machine.machine_info.hostname}\nIP: ${machine.machine_info.ip}`
+      output: isAttacker ? 'root' : currentUser
     };
   }
 };

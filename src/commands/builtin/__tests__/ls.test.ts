@@ -19,7 +19,7 @@ describe('cmd_ls', () => {
       { path: '/root/file1.txt', content: 'test', type: 'text' },
       { path: '/root/file2.txt', content: 'test', type: 'text' },
     ]);
-    const result = cmd_ls.execute([], { machine } as any);
+    const result = cmd_ls.execute([], { machine, currentDir: '/root/' } as any);
     expect(result.output).toContain('file1.txt');
     expect(result.output).toContain('file2.txt');
     expect(result.output).toContain('total');
@@ -27,7 +27,7 @@ describe('cmd_ls', () => {
 
   it('debe mostrar total 0 si no hay archivos', () => {
     const machine = createMachine([]);
-    const result = cmd_ls.execute([], { machine } as any);
+    const result = cmd_ls.execute([], { machine, currentDir: '/' } as any);
     expect(result.output).toBe('total 0');
   });
 
@@ -36,7 +36,7 @@ describe('cmd_ls', () => {
       { path: '/var/www/html/index.php', content: 'test', type: 'text' },
       { path: '/var/www/html/config.php', content: 'test', type: 'text' },
     ]);
-    const result = cmd_ls.execute(['/var/www/html'], { machine } as any);
+    const result = cmd_ls.execute(['/var/www/html'], { machine, currentDir: '/' } as any);
     expect(result.output).toContain('index.php');
     expect(result.output).toContain('config.php');
   });
@@ -46,7 +46,7 @@ describe('cmd_ls', () => {
       { path: '/var/www/html/uploads/file.txt', content: 'test', type: 'text' },
       { path: '/var/www/html/index.php', content: 'test', type: 'text' },
     ]);
-    const result = cmd_ls.execute(['/var/www/html'], { machine } as any);
+    const result = cmd_ls.execute(['/var/www/html'], { machine, currentDir: '/' } as any);
     expect(result.output).toContain('uploads/');
     expect(result.output).toContain('drwxr-xr-x');
   });
@@ -55,7 +55,7 @@ describe('cmd_ls', () => {
     const machine = createMachine([
       { path: '/root/file.txt', content: 'test', type: 'text' },
     ]);
-    const result = cmd_ls.execute(['/var/empty'], { machine } as any);
+    const result = cmd_ls.execute(['/var/empty'], { machine, currentDir: '/' } as any);
     expect(result.output).toBe('total 0');
   });
 
@@ -63,7 +63,7 @@ describe('cmd_ls', () => {
     const machine = createMachine([
       { path: '/root/test.txt', content: 'test', type: 'text' },
     ]);
-    const result = cmd_ls.execute([], { machine } as any);
+    const result = cmd_ls.execute([], { machine, currentDir: '/root/' } as any);
     expect(result.output).toContain('-rw-r--r--');
     expect(result.output).toContain('admin');
   });
@@ -72,7 +72,7 @@ describe('cmd_ls', () => {
     const machine = createMachine([
       { path: '/var/www/html/uploads/file.txt', content: 'test', type: 'text' },
     ]);
-    const result = cmd_ls.execute(['/var/www/html'], { machine } as any);
+    const result = cmd_ls.execute(['/var/www/html'], { machine, currentDir: '/' } as any);
     expect(result.output).toContain('drwxr-xr-x');
     expect(result.output).toContain('root');
   });
@@ -83,7 +83,7 @@ describe('cmd_ls', () => {
       { path: '/root/alpha.txt', content: 'test', type: 'text' },
       { path: '/root/middle.txt', content: 'test', type: 'text' },
     ]);
-    const result = cmd_ls.execute([], { machine } as any);
+    const result = cmd_ls.execute([], { machine, currentDir: '/root/' } as any);
     expect(result.output).toContain('alpha.txt');
     expect(result.output).toContain('middle.txt');
     expect(result.output).toContain('zebra.txt');

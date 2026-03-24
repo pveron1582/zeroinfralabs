@@ -18,7 +18,10 @@ export const cmd_help = {
   hashcat [args] - Crackeo de contraseñas
   ssh user@ip    - Conectar por SSH
   msfconsole     - Iniciar Metasploit Framework
-  ls             - Listar archivos
-  cat [archivo]  - Mostrar contenido de archivo`
+  ls [dir]       - Listar archivos
+  cd [dir]       - Cambiar directorio
+  cat [archivo]  - Mostrar contenido de archivo
+  exit           - Cerrar sesión SSH
+  end            - Salir del laboratorio`
   })
 };

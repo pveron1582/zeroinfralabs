@@ -33,16 +33,23 @@ export const cmd_nmap = {
     });
     output += `\nNmap done: 1 IP address (1 host up) scanned in 2.45 seconds`;
 
+    // Buscar si nmap completa una misión de este escenario
     let missionId: number | undefined;
     for (const m of allMachines) {
       const step = m.learning_steps.find(s =>
-        s.task.toLowerCase().includes('escaneo') || s.task.toLowerCase().includes('puerto')
+        s.task.toLowerCase().includes('escaneo') || 
+        s.task.toLowerCase().includes('puerto') ||
+        s.task.toLowerCase().includes('nmap')
       );
       if (step) { missionId = step.id; break; }
     }
 
     const canComplete = currentMissionId === (missionId || 2);
-    // No mutar directamente el estado aquí; el discovery_level se actualiza en completeMission
+
+    // FIX #9: nmap descubre el sistema operativo (discovery_level 2)
+    // Esto se debe reflejar en la máquina objetivo para que el mapa la muestre
+    target.discovery_level = Math.max(target.discovery_level ?? 0, 2);
+
     return {
       output,
       completedMissionId: canComplete ? (missionId || 2) : undefined

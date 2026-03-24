@@ -1,5 +1,5 @@
 // ── components/FakeBrowser.tsx ────────────────────────────────────
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
 import { WPIndex }     from './fakesites/wordpress/wp01/Index';
@@ -122,9 +122,9 @@ export function FakeBrowser({
   const [reloading, setReloading] = useState(false);
   const rceCompletedRef = useRef(false);
 
-  // Máquinas de escenarios específicos
-  const wpMachine = allMachines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress'));
-  const lfiMachine = allMachines.find(m => m.id.includes('lfi'));
+  // Máquinas de escenarios específicos (memoizadas para evitar re-renders innecesarios)
+  const wpMachine = useMemo(() => allMachines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress')), [allMachines]);
+  const lfiMachine = useMemo(() => allMachines.find(m => m.id.includes('lfi')), [allMachines]);
 
   const reload = () => { 
     setReloading(true); 
@@ -181,21 +181,35 @@ export function FakeBrowser({
     navigate(`http://${wpMachine!.machine_info.ip}/wp-admin/dashboard`);
   };
 
+  // Store para obtener listeningPort
+  const listeningPort = useScenarioStore(state => state.listeningPort);
+
   // Efecto para completar misiones de LFI 6 (RCE) cuando se incluye un archivo
   // Usa ref guard para evitar múltiples llamadas y congelamiento del popup
   useEffect(() => {
-    if (!lfiMachine || !browserCurrentUrl.includes(lfiMachine.machine_info.ip)) return;
+    if (!lfiMachine) return;
     if (rceCompletedRef.current) return; // Guard: solo una vez
+    if (!browserCurrentUrl.includes(lfiMachine.machine_info.ip)) return;
     
     const fullPath = browserCurrentUrl.replace(`http://${lfiMachine.machine_info.ip}`, '');
     
     // Misión 6: RCE (Incluir archivo subido en uploads con extensión .php)
     if (fullPath.includes('?page=uploads/') && fullPath.endsWith('.php')) {
+      // Validar que el puerto del listener esté configurado
+      if (!listeningPort) {
+        // No completar misión si no hay listener activo
+        return;
+      }
       rceCompletedRef.current = true; // Marcar como completado para evitar repetición
       onMissionComplete(6);
       onVerifyCredentials(lfiMachine.id);
     }
-  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials]);
+  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, listeningPort]);
+
+  // Reset rceCompletedRef cuando cambia el escenario para evitar bloqueo al volver al LFI
+  useEffect(() => {
+    rceCompletedRef.current = false;
+  }, [allMachines]);
 
   const renderPage = () => {
     const currentUrl = browserCurrentUrl;
@@ -244,6 +258,7 @@ export function FakeBrowser({
           onNavigate={navigate} 
           onUploadSuccess={() => onMissionComplete(5)}
           attackerFiles={attackerFiles}
+          listeningPort={listeningPort ?? undefined}
         />
       );
     }

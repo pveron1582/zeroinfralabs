@@ -29,22 +29,31 @@ function getBaseName(path: string): string {
 
 export const cmd_ls = {
   name: 'ls',
-  execute: (args: string[], { machine }: CommandContext): CommandResponse => {
+  execute: (args: string[], { machine, currentDir }: CommandContext): CommandResponse => {
     if (!machine.files) machine.files = [];
     
-    // Si no se pasa argumento, listar todos los archivos (comportamiento antiguo para compatibilidad)
+    // Separar flags y directorio
+    let showAll = false;
+    let showLong = false;
+    let targetDir = currentDir || '/';
+    
+    args.forEach(arg => {
+      if (arg.startsWith('-')) {
+        // Es un flag
+        if (arg.includes('a')) showAll = true;
+        if (arg.includes('l')) showLong = true;
+      } else {
+        // Es un directorio
+        targetDir = getCurrentDir(arg);
+      }
+    });
+    
+    // Si no se pasa argumento, usar el directorio actual
     if (!args[0]) {
-      if (!machine.files.length) return { output: 'total 0' };
-      let out = `total ${machine.files.length * 4}\n`;
-      machine.files.forEach(f => {
-        const name = f.path.split('/').pop()!;
-        out += `-rw-r--r-- 1 admin admin ${stableSize(f.path)} Jan 01 00:00 ${name}\n`;
-      });
-      return { output: out };
+      targetDir = currentDir || '/';
     }
 
-    // Si se pasa un argumento (directorio), filtrar archivos en ese directorio
-    const targetDir = getCurrentDir(args[0]);
+    // Filtrar archivos en el directorio
     const items = new Set<string>();
     
     // Procesar los paths de los archivos para extraer directorios y archivos

@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 interface Props {
   ip: string; currentUrl: string; onNavigate: (url: string) => void;
   onUploadSuccess: () => void; attackerFiles?: Array<{ path: string; name: string }>;
+  listeningPort?: number;
 }
 
 // Archivos del servidor que se pueden leer mediante LFI (Local File Inclusion)
@@ -96,7 +97,7 @@ const PHP_PAGES: Record<string, React.ReactNode> = {
   ),
 };
 
-export function InclusionSite({ ip, currentUrl, onNavigate, onUploadSuccess, attackerFiles = [] }: Props) {
+export function InclusionSite({ ip, currentUrl, onNavigate, onUploadSuccess, attackerFiles = [], listeningPort }: Props) {
   const [uploadMsg, setUploadMsg] = useState('');
   const [selectedFile, setSelectedFile] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -116,7 +117,9 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onUploadSuccess, att
       const url = new URL(currentUrl);
       const rawPage = url.searchParams.get('page');
       if (!rawPage) return null;
-      const normalized = rawPage.replace(/^\.\//, '').replace(/^(\.\.\/)*/g, '').replace(/^\/+/, '');
+      // FIX Bug #6: Remover sanitización que bloquea LFI educativo
+      // Solo limpiar slashes iniciales, permitir ../ para que funcione el LFI
+      const normalized = rawPage.replace(/^\/+/, '');
       return normalized || null;
     } catch { return null; }
   }, [currentUrl]);
@@ -219,7 +222,8 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onUploadSuccess, att
   }
 
   if (page) {
-    const normalizedPage = page.replace(/^\.\//, '');
+    // Normalizar path para buscar en SERVER_FILES: remover ../ y ./ para encontrar el archivo
+    const normalizedPage = page.replace(/^(\.\.\/)*/, '').replace(/^\.\//, '');
     const serverFile = SERVER_FILES[normalizedPage];
     if (serverFile) {
       return (

@@ -46,6 +46,9 @@ interface ScenarioState {
   // NC Listener state (para validación de payload)
   listeningPort: number | null;
 
+  // Current directory for terminal navigation
+  currentDir: string;
+
   // MSF Console state (persisted)
   msfState: MsfState | null;
 
@@ -68,6 +71,7 @@ interface ScenarioState {
   setBrowserLoggedIn: (loggedIn: boolean) => void;
   setBrowserNavHistory: (history: string[], idx: number) => void;
   setListeningPort: (port: number | null) => void;
+  setCurrentDir: (dir: string) => void;
   setMsfState: (state: MsfState | null) => void;
 }
 
@@ -78,10 +82,10 @@ const DEFAULT_TERM_COLOR = '#10b981';
 export const useScenarioStore = create<ScenarioState>()(
   persist(
     (set, get) => ({
-      // Estado inicial
+      // Estado inicial - reiniciar discovery_level para empezar limpio
       view: 'landing',
       currentScenario: SCENARIOS[0],
-      machines: SCENARIOS[0].machines,
+      machines: SCENARIOS[0].machines.map(m => ({ ...m, discovery_level: 0 })),
       missions: SCENARIOS[0].missions,
       currentMissionId: 1,
       activeMachineId: SCENARIOS[0].initialMachineId,
@@ -97,6 +101,7 @@ export const useScenarioStore = create<ScenarioState>()(
       browserNavHistory: ['https://www.google.com'],
       browserNavIdx: 0,
       listeningPort: null,
+      currentDir: '/',
       msfState: null,
 
       // ── Actions ───────────────────────────────────────────────────────
@@ -119,7 +124,8 @@ export const useScenarioStore = create<ScenarioState>()(
         setTimeout(() => {
           set({
             currentScenario: scenario,
-            machines: scenario.machines.map(m => ({ ...m })),
+            // Reiniciar machines con discovery_level: 0 para empezar limpio
+            machines: scenario.machines.map(m => ({ ...m, discovery_level: 0 })),
             missions: scenario.missions.map((m, i) => ({
               ...m,
               status: i === 0 ? 'active' : 'pending'
@@ -244,6 +250,7 @@ export const useScenarioStore = create<ScenarioState>()(
 
       setBrowserNavHistory: (history, idx) => set({ browserNavHistory: history, browserNavIdx: idx }),
       setListeningPort: (port) => set({ listeningPort: port }),
+      setCurrentDir: (dir) => set({ currentDir: dir }),
 
       getActiveMachine: () => {
         const { machines, activeMachineId } = get();

@@ -12,6 +12,7 @@ interface Props {
   onMissionComplete: (id: number) => void;
   onChangeMachine: (id: string) => void;
   onCredentialsFound: (machineId: string, user: string, pass: string, file: string) => void;
+  onVerifyCredentials?: (machineId: string) => void;
   termColor?: string;
 }
 
@@ -51,12 +52,16 @@ function StreamingOutput({ lines, color }: { lines: string[]; color: string }) {
 export function Terminal({
   scenarioId, machine, allMachines, currentMissionId,
   onMissionComplete, onChangeMachine, onCredentialsFound,
+  onVerifyCredentials,
   termColor = '#10b981'
 }: Props) {
   const color = termColor;
   const setMsfState = useScenarioStore(state => state.setMsfState);
   const setListeningPort = useScenarioStore(state => state.setListeningPort) || (() => {});
   const listeningPort = useScenarioStore(state => state.listeningPort);
+  const currentDir = useScenarioStore(state => state.currentDir);
+  const setCurrentDir = useScenarioStore(state => state.setCurrentDir);
+  const goHome = useScenarioStore(state => state.goHome);
 
   const makeWelcome = (machines: Machine[]): HistoryEntry => {
     const atk = machines.find(m => m.id === 'attacker-01');
@@ -96,7 +101,7 @@ export function Terminal({
     setBlockingCommand(null);
     setListeningPort(null);
     setTimeout(() => inputRef.current?.focus(), 80);
-  }, [scenarioId]);
+  }, [scenarioId, allMachines.length]);
 
   // Detectar cuando se completa misión 6 (RCE) para cerrar listener y cambiar sesión
   useEffect(() => {
@@ -110,7 +115,7 @@ export function Terminal({
         output: [
           `connect to [${allMachines.find(m => m.id === 'attacker-01')?.machine_info.ip || '...'}] from (UNKNOWN) [${victimMachine?.machine_info.ip || '...'}] ${listeningPort}`,
           `/bin/sh: 0: can't access tty; job control turned off`,
-          `$ `,
+          `www-data@${victimMachine?.machine_info.hostname || 'dev-portal-backup'}:/var/www/html$ `,
         ].join('\n'),
         streaming: false,
         prompt,
@@ -134,8 +139,9 @@ export function Terminal({
     setCmdHistory(prev => [trimmed, ...prev]);
     setInput(''); setHistIdx(-1);
 
-    const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState);
+    const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
     if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
+    if (result.output === 'EXIT_TO_LANDING') { goHome(); return; }
 
     const cmdName = trimmed.split(/\s+/)[0].toLowerCase();
     const cfg = CMD_DELAYS[cmdName] || CMD_DELAYS['default'];
@@ -153,6 +159,10 @@ export function Terminal({
       }
       if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file);
       if (result.newMachineId)       onChangeMachine(result.newMachineId);
+      // Si SSH fue exitoso (newMachineId + foundCredentials), marcar credenciales como verificadas
+      if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
+        onVerifyCredentials(result.foundCredentials.machineId);
+      }
       return;
     }
 
@@ -175,6 +185,10 @@ export function Terminal({
       }
       if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file);
       if (result.newMachineId)       onChangeMachine(result.newMachineId);
+      // Si SSH fue exitoso (newMachineId + foundCredentials), marcar credenciales como verificadas
+      if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
+        onVerifyCredentials(result.foundCredentials.machineId);
+      }
       setHistory(prev => prev.map(e =>
         e.timestamp === entryTs ? { ...e, streaming: false, output: result.output } : e
       ));

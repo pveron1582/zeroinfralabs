@@ -102,7 +102,12 @@ export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Pro
                   <div className="text-center w-full">
                     <p className="font-bold text-gray-200 truncate text-sm">{hidden ? 'Objetivo Desconocido' : machine.machine_info.hostname}</p>
                     <p className="text-xs font-mono mt-1" style={{ color: isActive ? '#10b981' : '#6b7280' }}>{hidden ? '?.?.?.?' : machine.machine_info.ip}</p>
-                    <p className="text-xs text-gray-600 mt-0.5">{(machine.discovery_level ?? 0) >= 2 ? machine.machine_info.os : 'Sistema: Desconocido'}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {machine.id.includes('attacker') 
+                        ? 'Kali Linux 2023.4' 
+                        : (machine.discovery_level ?? 0) >= 2 ? machine.machine_info.os : 'Sistema: Desconocido'
+                      }
+                    </p>
                   </div>
 
                   {!isAttacker && visibleBadges.length > 0 && (

