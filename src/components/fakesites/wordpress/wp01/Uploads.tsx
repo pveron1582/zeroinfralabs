@@ -4,7 +4,7 @@ import React from 'react';
 interface Props {
   ip: string;
   onNavigate: (url: string) => void;
-  onCredentialsFound: (user: string, pass: string) => void;
+  onCredentialsFound: (user: string, pass: string, file?: string, service?: string) => void;
 }
 
 export function WPUploads({ ip, onNavigate, onCredentialsFound }: Props) {
@@ -47,7 +47,10 @@ export function WPUploads({ ip, onNavigate, onCredentialsFound }: Props) {
                 <td className="px-3 py-2">
                   {'isLink' in f && f.isLink
                     ? <button
-                        onClick={() => { onCredentialsFound('admin', 'P@ssw0rd123!'); onNavigate(`http://${ip}${f.href}`); }}
+                        onClick={() => {
+                          onCredentialsFound('admin', 'P@ssw0rd123!', '/uploads/config.bak', 'wp-admin');
+                          onNavigate(`http://${ip}${f.href}`);
+                        }}
                         className="text-blue-600 hover:underline font-mono text-xs flex items-center gap-1">
                         📄 {f.name}
                       </button>

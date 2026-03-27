@@ -85,7 +85,7 @@ export function MissionPanel({ missions, allMachines, networkRange, onOpenBrowse
                     <span className="text-xs font-mono text-gray-600">{String(m.id).padStart(2, '0')}</span>
                     <h4 className={`text-xs font-semibold leading-tight ${done ? 'text-emerald-400' : active ? 'text-amber-300' : 'text-gray-600'}`}>{m.title}</h4>
                   </div>
-                  {!pending && <p className="text-xs text-gray-500 leading-relaxed font-mono mt-1">{resolve(m.description, m.targetMachineId)}</p>}
+                  {!pending && <p className="text-xs text-gray-500 leading-relaxed font-mono mt-1 break-all">{resolve(m.description, m.targetMachineId)}</p>}
                 </div>
               </div>
             </div>

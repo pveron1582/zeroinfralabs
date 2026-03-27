@@ -8,7 +8,7 @@ import type { CommandContext, CommandResponse } from '../types';
 import {
   cmd_help, cmd_clear, cmd_whoami, cmd_ifconfig,
   cmd_ls, cmd_cat, cmd_hashcat, cmd_sudo,
-  cmd_cd, cmd_exit, cmd_end
+  cmd_cd, cmd_exit, cmd_end, cmd_mkdir, cmd_rmdir
 } from './builtin';
 import {
   cmd_arpScan, cmd_nmap, cmd_gobuster, cmd_hydra,
@@ -35,6 +35,8 @@ const COMMANDS: Command[] = [
   cmd_hashcat,
   cmd_sudo,
   cmd_cd,
+  cmd_mkdir,
+  cmd_rmdir,
   cmd_exit,
   cmd_end,
   // Pentesting tools

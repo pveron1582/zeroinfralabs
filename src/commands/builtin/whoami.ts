@@ -14,8 +14,17 @@ export const cmd_whoami = {
     let currentUser = 'user'; // Valor por defecto genérico
     
     if (!isAttacker && machine.found_credentials) {
-      // Si hay credenciales encontradas (después de SSH exitoso), usar ese usuario
-      currentUser = machine.found_credentials.user;
+      // Buscar credencial SSH verificada
+      const sshCred = machine.found_credentials.find(c => c.service === 'ssh' && c.verified);
+      if (sshCred) {
+        currentUser = sshCred.user;
+      } else {
+        // Fallback: buscar cualquier credencial verificada
+        const verifiedCred = machine.found_credentials.find(c => c.verified);
+        if (verifiedCred) {
+          currentUser = verifiedCred.user;
+        }
+      }
     } else if (!isAttacker) {
       // Fallback: intentar obtener el usuario de las credenciales SSH del puerto
       const sshPort = machine.scan_results.ports.find(p => p.service === 'ssh');

@@ -32,12 +32,12 @@ describe('cmd_hydra', () => {
     } as any);
 
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('rockyou.txt');
+    expect(result.output).toContain('/usr/share/wordlists/rockyou.txt');
   });
 
   it('debe requerir escaneo previo (discovery_level >= 2)', () => {
     const machines = [createMockMachine(0)]; // Sin escaneo previo
-    const result = cmd_hydra.execute(['-l', 'root', '-P', 'rockyou.txt', '10.10.10.10', 'ssh'], {
+    const result = cmd_hydra.execute(['-l', 'root', '-P', '/usr/share/wordlists/rockyou.txt', '10.10.10.10', 'ssh'], {
       allMachines: machines,
       currentMissionId: 1
     } as any);
@@ -48,7 +48,7 @@ describe('cmd_hydra', () => {
 
   it('debe encontrar credenciales correctas', () => {
     const machines = [createMockMachine(2)];
-    const result = cmd_hydra.execute(['-l', 'root', '-P', 'rockyou.txt', '10.10.10.10', 'ssh'], {
+    const result = cmd_hydra.execute(['-l', 'root', '-P', '/usr/share/wordlists/rockyou.txt', '10.10.10.10', 'ssh'], {
       allMachines: machines,
       currentMissionId: 3
     } as any);
@@ -61,13 +61,14 @@ describe('cmd_hydra', () => {
       machineId: 'target-01',
       user: 'root',
       pass: 'toor',
-      file: '/etc/hydra_ssh.txt'
+      file: '/etc/hydra_ssh.txt',
+      service: 'ssh'
     });
   });
 
   it('debe fallar si el servicio no existe', () => {
     const machines = [createMockMachine(2)];
-    const result = cmd_hydra.execute(['-l', 'root', '-P', 'rockyou.txt', '10.10.10.10', 'ftp'], {
+    const result = cmd_hydra.execute(['-l', 'root', '-P', '/usr/share/wordlists/rockyou.txt', '10.10.10.10', 'ftp'], {
       allMachines: machines,
       currentMissionId: 1
     } as any);

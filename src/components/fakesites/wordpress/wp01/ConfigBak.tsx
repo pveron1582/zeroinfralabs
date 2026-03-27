@@ -9,13 +9,6 @@ const getFileLines = (ip: string) => [
   '# Generated: 2023-11-01 03:17:42',
   '# DO NOT EXPOSE TO PUBLIC — AUTO-GENERATED',
   '',
-  '## Database',
-  'DB_HOST     = localhost',
-  'DB_PORT     = 3306',
-  'DB_NAME     = wordpress_db',
-  'DB_USER     = wpuser',
-  'DB_PASS     = Sup3rS3cr3t!',
-  '',
   '## WordPress Admin',
   'WP_ADMIN_USER  = admin',
   'WP_ADMIN_PASS  = P@ssw0rd123!',
@@ -25,11 +18,6 @@ const getFileLines = (ip: string) => [
   'WP_ROOT     = /var/www/html',
   'UPLOADS_DIR = /var/www/html/uploads',
   'BACKUP_DIR  = /var/www/html/backup',
-  '',
-  '## SSH (dev access)',
-  `SSH_HOST    = ${ip}`,
-  'SSH_USER    = admin',
-  'SSH_PASS    = P@ssw0rd123!',
 ];
 
 export function WPConfigBak({ ip, onNavigate }: { ip: string; onNavigate: (url: string) => void }) {

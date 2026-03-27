@@ -1,6 +1,22 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 // ── components/fakesites/wordpress/wp01/Dashboard.tsx ────────────
-export function WPDashboard({ ip, onNavigate }: { ip: string; onNavigate: (url: string) => void }) {
+interface Props {
+  ip: string;
+  onNavigate: (url: string) => void;
+  onLogout?: () => void;
+  onCredentialsFound?: (user: string, pass: string, file?: string, service?: string) => void;
+}
+
+export function WPDashboard({ ip, onNavigate, onLogout, onCredentialsFound }: Props) {
+  const credentialsDiscovered = useRef(false);
+  
+  useEffect(() => {
+    if (onCredentialsFound && !credentialsDiscovered.current) {
+      credentialsDiscovered.current = true;
+      // Al acceder al dashboard, descubrimos credenciales SSH root
+      onCredentialsFound('root', 'R00t@SSH2024!', '/wp-admin/wp-config.php', 'ssh');
+    }
+  }, [onCredentialsFound]);
   return (
     <div className="min-h-full bg-gray-100 flex">
       <div className="w-44 bg-gray-900 text-gray-300 flex flex-col flex-shrink-0">
@@ -18,7 +34,14 @@ export function WPDashboard({ ip, onNavigate }: { ip: string; onNavigate: (url: 
             <span className="text-blue-400">WordPress 6.0</span>
             <button onClick={() => onNavigate(`http://${ip}/`)} className="text-gray-400 hover:text-blue-300">Ver sitio</button>
           </div>
-          <span className="text-green-400">● admin</span>
+          <div className="flex items-center gap-3">
+            <span className="text-green-400">● admin</span>
+            {onLogout && (
+              <button onClick={onLogout} className="text-red-400 hover:text-red-300 text-xs">
+                Cerrar sesión
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex-1 p-5 space-y-4 overflow-auto">
           <div className="bg-green-50 border border-green-200 rounded p-3 text-sm text-green-800">
@@ -33,8 +56,19 @@ export function WPDashboard({ ip, onNavigate }: { ip: string; onNavigate: (url: 
               </div>
             ))}
           </div>
+          {/* Credenciales SSH descubiertas en el dashboard */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+            <h3 className="text-sm font-bold text-yellow-800 mb-2">🔑 Credenciales SSH encontradas</h3>
+            <div className="bg-gray-900 rounded p-2 font-mono text-xs">
+              <div className="text-gray-400"># Servidor de desarrollo - acceso root</div>
+              <div className="text-green-400">SSH_USER = root</div>
+              <div className="text-green-400">SSH_PASS = R00t@SSH2024!</div>
+              <div className="text-gray-500"># Archivo: /wp-admin/wp-config.php</div>
+            </div>
+          </div>
+
+          {/* Flag del usuario */}
           <div className="bg-gray-900 rounded p-3 font-mono text-xs">
-            <div className="text-green-400 mb-1">root@vulnerable-wp-lab:~# cat /home/admin/user.txt</div>
             <div className="text-white">THM&#123;WP_ADMIN_COMPROMISED_GG&#125;</div>
           </div>
         </div>

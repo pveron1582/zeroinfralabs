@@ -46,7 +46,7 @@ export function WPLogin({ ip, credentials, onNavigate, onLoginSuccess }: Props) 
             <input id="username" type="text" value={user} onChange={e => { setUser(e.target.value); handleInputChange(); }}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
-              placeholder="admin" />
+              placeholder="" />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>

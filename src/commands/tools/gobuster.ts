@@ -9,18 +9,16 @@ export const cmd_gobuster = {
     const urlIdx = args.indexOf('-u');
     const wIdx = args.indexOf('-w');
     if (args[0] !== 'dir' || urlIdx === -1 || wIdx === -1)
-      return { output: 'Uso: gobuster dir -u http://<IP> -w <wordlist>', isError: true };
+      return { output: 'Uso: gobuster dir -u http://<IP> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', isError: true };
 
     const url = args[urlIdx + 1];
     const wl = args[wIdx + 1];
     if (!url || url.includes('<IP>')) return { output: 'Error: Reemplaza <IP> por la IP real.', isError: true };
 
-    // Validar wordlist soportada
-    const validWordlists = ['rockyou.txt', 'common.txt', 'directory-list-2.3-medium.txt', 'directory-list-2.3-small.txt'];
-    const wlName = wl?.split('/').pop() || wl;
-    if (!validWordlists.includes(wlName)) {
+    // Validar wordlist - debe ser common.txt de SecLists en la ruta correcta
+    if (!wl || !wl.includes('SecLists/Discovery/Web-Content/common.txt')) {
       return { 
-        output: `Error: Wordlist "${wl}" no válida.\nWordlists disponibles: ${validWordlists.join(', ')}`, 
+        output: `Error: Wordlist "${wl}" no válida para enumeración de directorios.\nUsa: -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt`, 
         isError: true 
       };
     }

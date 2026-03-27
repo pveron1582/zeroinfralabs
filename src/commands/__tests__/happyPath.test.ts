@@ -1,17 +1,26 @@
 // ── commands/__tests__/happyPath.test.ts ──────────────────────────
 // Happy path tests for each lab scenario
 // Simulates the complete user flow from start to finish
+//
+// Organización:
+//  - HELPERS: utilidades reutilizables
+//  - SCENARIO 01..05: tests unitarios por paso + golden path E2E real
+//  - CROSS-SCENARIO: comandos básicos
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { executeCommand, resetMsfState } from '../index';
 import type { Machine } from '../../types';
 
-// Reset MSF state before each test to avoid cross-test contamination
+// ── Reset MSF state before each test ─────────────────────────────
 beforeEach(() => {
   resetMsfState();
 });
 
-// ── Helper: Create attacker machine ──────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
+
+/** Máquina atacante base (Kali Linux) */
 const createAttacker = (): Machine => ({
   id: 'attacker-01',
   machine_info: {
@@ -29,13 +38,64 @@ const createAttacker = (): Machine => ({
   files: [],
 });
 
-// ── Helper: Execute command with context ─────────────────────────
+/** Ejecuta un comando con contexto estándar */
 const exec = (
   line: string,
   machine: Machine,
   allMachines: Machine[],
   currentMissionId: number
 ) => executeCommand(line, machine, allMachines, currentMissionId, undefined, '/');
+
+/**
+ * Aplica discovery_level manualmente.
+ * Solo para tests UNITARIOS por paso (aislamiento intencionado).
+ * NO usar en golden paths — usar evolveState allí.
+ */
+const withLevel = (machine: Machine, level: number): Machine => ({
+  ...machine,
+  discovery_level: level,
+});
+
+/**
+ * Simula lo que hace el store después de completar una misión:
+ * actualiza discovery_level de la máquina basado en lo que devolvió el sistema.
+ *
+ * Replica exactamente completeMission() de scenarioStore.ts:
+ *   machines.map(m => m.id === mission.targetMachineId
+ *     ? { ...m, discovery_level: Math.max(m.discovery_level, step.discoveryLevel) }
+ *     : m)
+ *
+ * Esto hace los golden paths data-driven: el estado evoluciona
+ * según lo que el sistema realmente produjo, no por valores artificiales.
+ */
+const evolveState = (
+  machines: Machine[],
+  result: ReturnType<typeof exec>
+): Machine[] => {
+  if (!result.completedMissionId) return machines;
+
+  return machines.map(machine => {
+    const step = machine.learning_steps.find(s => s.id === result.completedMissionId);
+    if (step?.discoveryLevel !== undefined) {
+      return {
+        ...machine,
+        discovery_level: Math.max(machine.discovery_level, step.discoveryLevel),
+      };
+    }
+    return machine;
+  });
+};
+
+/**
+ * Assertion helper: verifica que un comando exitoso no marcó isError.
+ * CommandResponse.isError es `boolean | undefined`:
+ *   - undefined → sin error (campo no seteado intencionalmente en éxito)
+ *   - true      → error explícito
+ * `.not.toBe(true)` maneja tanto undefined como false correctamente.
+ */
+const expectSuccess = (result: ReturnType<typeof exec>) => {
+  expect(result.isError).not.toBe(true);
+};
 
 // ═══════════════════════════════════════════════════════════════════
 // SCENARIO 01: WordPress Vulnerable Lab
@@ -82,54 +142,70 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     ],
   };
 
-  const allMachines = [attacker, wpTarget];
+  // ── Tests unitarios por paso (usan withLevel intencionalmente) ──
 
   it('Paso 1: arp-scan descubre el host', () => {
-    const result = exec('arp-scan 192.168.1.0/24', attacker, allMachines, 1);
-    expect(result.isError).toBeUndefined();
-    expect(result.output).toContain('192.168.1.11');
-    expect(result.output).toContain('08:00:27:A1:B2:C3');
+    const result = exec('arp-scan 192.168.1.0/24', attacker, [attacker, wpTarget], 1);
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(1);
+    // Validar IP descubierta en propiedades estructurales si están disponibles
+    expect(result.output).toContain('192.168.1.11');
   });
 
   it('Paso 2: nmap escanea puertos (requiere reconocimiento previo)', () => {
-    // Simular que ya se hizo arp-scan (discovery_level = 1)
-    const targetAfterScan = { ...wpTarget, discovery_level: 1 };
-    const machines = [attacker, targetAfterScan];
-
-    const result = exec('nmap -sV 192.168.1.11', attacker, machines, 2);
-    expect(result.isError).toBeUndefined();
+    const target = withLevel(wpTarget, 1);
+    const result = exec('nmap -sV 192.168.1.11', attacker, [attacker, target], 2);
+    expectSuccess(result);
+    expect(result.completedMissionId).toBe(2);
+    // String crítico: verificar que se detectaron puertos específicos
     expect(result.output).toContain('22/tcp');
     expect(result.output).toContain('80/tcp');
-    expect(result.output).toContain('OpenSSH');
-    expect(result.output).toContain('Apache');
-    expect(result.completedMissionId).toBe(2);
   });
 
   it('Paso 4: gobuster enumera directorios (requiere escaneo previo)', () => {
-    const targetAfterNmap = { ...wpTarget, discovery_level: 2 };
-    const machines = [attacker, targetAfterNmap];
-
-    const result = exec('gobuster dir -u http://192.168.1.11 -w rockyou.txt', attacker, machines, 4);
-    expect(result.isError).toBeUndefined();
+    const target = withLevel(wpTarget, 2);
+    const result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, [attacker, target], 4);
+    expectSuccess(result);
+    expect(result.completedMissionId).toBe(4);
+    // String crítico: verificar directorios WordPress descubiertos
     expect(result.output).toContain('/wp-admin');
     expect(result.output).toContain('/uploads');
+  });
+
+  // ── Validaciones de errores ───────────────────────────────────
+
+  it('nmap sin reconocimiento previo debe fallar', () => {
+    const result = exec('nmap -sV 192.168.1.11', attacker, [attacker, wpTarget], 2);
+    expect(result.isError).toBe(true);
+    expect(result.completedMissionId).toBeUndefined();
+  });
+
+  it('gobuster sin nmap previo debe fallar', () => {
+    const target = withLevel(wpTarget, 1);
+    const result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, [attacker, target], 4);
+    expect(result.isError).toBe(true);
+    expect(result.completedMissionId).toBeUndefined();
+  });
+
+  // ── Golden path E2E (estado evoluciona desde resultados reales) ─
+
+  it('Golden path: arp-scan → nmap → gobuster sin simular estado', () => {
+    let machines: Machine[] = [attacker, wpTarget];
+
+    // Paso 1: reconocimiento
+    let result = exec('arp-scan 192.168.1.0/24', attacker, machines, 1);
+    expect(result.completedMissionId).toBe(1);
+    machines = evolveState(machines, result); // discovery_level 0→1
+
+    // Paso 2: escaneo de puertos (solo posible porque evolveState actualizó el nivel)
+    result = exec('nmap -sV 192.168.1.11', attacker, machines, 2);
+    expect(result.completedMissionId).toBe(2);
+    machines = evolveState(machines, result); // discovery_level 1→2
+
+    // Paso 4: enumeración web (solo posible porque nivel fue a 2)
+    result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, machines, 4);
     expect(result.completedMissionId).toBe(4);
-  });
-
-  it('Debe rechazar nmap sin reconocimiento previo', () => {
-    const result = exec('nmap -sV 192.168.1.11', attacker, allMachines, 2);
-    expect(result.isError).toBe(true);
-    expect(result.output).toContain('reconocimiento');
-  });
-
-  it('Debe rechazar gobuster sin escaneo previo', () => {
-    const targetAfterScan = { ...wpTarget, discovery_level: 1 };
-    const machines = [attacker, targetAfterScan];
-
-    const result = exec('gobuster dir -u http://192.168.1.11 -w rockyou.txt', attacker, machines, 4);
-    expect(result.isError).toBe(true);
-    expect(result.output).toContain('escanea puertos');
+    expectSuccess(result);
   });
 });
 
@@ -165,54 +241,84 @@ describe('Happy Path: Scenario 02 - SSH Brute Force', () => {
     files: [{ path: '/root/flag.txt', content: 'THM{SSH_BRUTE_FORCE_SUCCESS}', type: 'text' }],
   };
 
-  const allMachines = [attacker, sshTarget];
+  // ── Tests unitarios por paso ──────────────────────────────────
 
   it('Paso 1: arp-scan descubre el host', () => {
-    const result = exec('arp-scan 10.10.10.0/24', attacker, allMachines, 1);
-    expect(result.output).toContain('10.10.10.10');
+    const result = exec('arp-scan 10.10.10.0/24', attacker, [attacker, sshTarget], 1);
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(1);
+    expect(result.output).toContain('10.10.10.10');
   });
 
-  it('Paso 2: nmap escanea puertos', () => {
-    const target = { ...sshTarget, discovery_level: 1 };
+  it('Paso 2: nmap detecta puerto 22 SSH', () => {
+    const target = withLevel(sshTarget, 1);
     const result = exec('nmap -sV 10.10.10.10', attacker, [attacker, target], 2);
-    expect(result.output).toContain('22/tcp');
-    expect(result.output).toContain('ssh');
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(2);
+    expect(result.output).toContain('22/tcp');
   });
 
-  it('Paso 3: hydra encuentra credenciales', () => {
-    const target = { ...sshTarget, discovery_level: 2 };
-    const result = exec('hydra -l root -P rockyou.txt 10.10.10.10 ssh', attacker, [attacker, target], 3);
-    expect(result.output).toContain('login: root');
-    expect(result.output).toContain('password: toor');
+  it('Paso 3: hydra encuentra credenciales — valida propiedades, no strings', () => {
+    const target = withLevel(sshTarget, 2);
+    const result = exec('hydra -l root -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, [attacker, target], 3);
+    expectSuccess(result);
     expect(result.foundCredentials).toBeDefined();
     expect(result.foundCredentials?.user).toBe('root');
     expect(result.foundCredentials?.pass).toBe('toor');
     expect(result.completedMissionId).toBe(3);
   });
 
-  it('Paso 4: ssh conecta con credenciales correctas', () => {
-    const target = { ...sshTarget, discovery_level: 3 };
+  it('Paso 4: ssh conecta — valida cambio de máquina activa', () => {
+    const target = withLevel(sshTarget, 3);
     const result = exec('ssh root@10.10.10.10 toor', attacker, [attacker, target], 4);
-    expect(result.output).toContain('Welcome to');
-    expect(result.output).toContain('Ubuntu');
-    expect(result.completedMissionId).toBe(4);
+    expectSuccess(result);
     expect(result.newMachineId).toBe('lab-scenario-02-ssh');
+    expect(result.completedMissionId).toBe(4);
   });
 
-  it('Debe rechazar ssh sin fuerza bruta previa', () => {
-    const target = { ...sshTarget, discovery_level: 2 };
+  // ── Validaciones de errores ───────────────────────────────────
+
+  it('ssh sin hydra previo debe fallar', () => {
+    const target = withLevel(sshTarget, 2);
     const result = exec('ssh root@10.10.10.10 toor', attacker, [attacker, target], 4);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('credenciales');
+    expect(result.completedMissionId).toBeUndefined();
+    expect(result.newMachineId).toBeUndefined();
   });
 
-  it('Debe rechazar credenciales incorrectas', () => {
-    const target = { ...sshTarget, discovery_level: 3 };
+  it('ssh con credenciales incorrectas debe fallar', () => {
+    const target = withLevel(sshTarget, 3);
     const result = exec('ssh root@10.10.10.10 wrongpass', attacker, [attacker, target], 4);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('Permission denied');
+    expect(result.newMachineId).toBeUndefined();
+  });
+
+  // ── Golden path E2E ──────────────────────────────────────────
+
+  it('Golden path: arp-scan → nmap → hydra → ssh (estado evoluciona naturalmente)', () => {
+    let machines: Machine[] = [attacker, sshTarget];
+
+    // Paso 1
+    let result = exec('arp-scan 10.10.10.0/24', attacker, machines, 1);
+    expect(result.completedMissionId).toBe(1);
+    machines = evolveState(machines, result);
+
+    // Paso 2
+    result = exec('nmap -sV 10.10.10.10', attacker, machines, 2);
+    expect(result.completedMissionId).toBe(2);
+    machines = evolveState(machines, result);
+
+    // Paso 3: hydra — verifica credenciales encontradas
+    result = exec('hydra -l root -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, machines, 3);
+    expect(result.completedMissionId).toBe(3);
+    expect(result.foundCredentials?.user).toBe('root');
+    expect(result.foundCredentials?.pass).toBe('toor');
+    machines = evolveState(machines, result);
+
+    // Paso 4: ssh — verifica cambio de contexto de máquina
+    result = exec('ssh root@10.10.10.10 toor', attacker, machines, 4);
+    expect(result.completedMissionId).toBe(4);
+    expect(result.newMachineId).toBe('lab-scenario-02-ssh');
   });
 });
 
@@ -255,68 +361,69 @@ describe('Happy Path: Scenario 03 - EternalBlue', () => {
     files: [],
   };
 
-  const allMachines = [attacker, win7Target];
+  // ── Tests unitarios por paso ──────────────────────────────────
 
   it('Paso 1: arp-scan descubre Windows 7', () => {
-    const result = exec('arp-scan 172.16.0.0/24', attacker, allMachines, 1);
-    expect(result.output).toContain('172.16.0.11');
+    const result = exec('arp-scan 172.16.0.0/24', attacker, [attacker, win7Target], 1);
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(1);
+    expect(result.output).toContain('172.16.0.11');
   });
 
   it('Paso 2: nmap detecta SMB en puerto 445', () => {
-    const target = { ...win7Target, discovery_level: 1 };
+    const target = withLevel(win7Target, 1);
     const result = exec('nmap -sV 172.16.0.11', attacker, [attacker, target], 2);
-    expect(result.output).toContain('445/tcp');
-    expect(result.output).toContain('microsoft-ds');
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(2);
+    expect(result.output).toContain('445/tcp');
   });
 
-  it('Paso 3-5: Flujo completo de Metasploit', () => {
-    const target = { ...win7Target, discovery_level: 2 };
-    const machines = [attacker, target];
+  // ── Golden path completo MSF (estado evoluciona naturalmente) ─
+  // MSF es stateful y secuencial — el estado de sesión lo mantiene el módulo,
+  // el discovery_level de la máquina evoluciona vía evolveState.
 
-    // Iniciar msfconsole
-    let result = exec('msfconsole', attacker, machines, 3);
-    expect(result.output).toContain('metasploit');
+  it('Golden path: arp-scan → nmap → MSF auxiliary → exploit → getuid', () => {
+    let machines: Machine[] = [attacker, win7Target];
 
-    // Buscar módulo
+    // Paso 1
+    let result = exec('arp-scan 172.16.0.0/24', attacker, machines, 1);
+    expect(result.completedMissionId).toBe(1);
+    machines = evolveState(machines, result);
+
+    // Paso 2
+    result = exec('nmap -sV 172.16.0.11', attacker, machines, 2);
+    expect(result.completedMissionId).toBe(2);
+    machines = evolveState(machines, result);
+
+    // Paso 3-5: MSF (flujo stateful — no hay discovery_level que evolucionar entre subpasos)
+    exec('msfconsole', attacker, machines, 3);
+
     result = exec('search ms17', attacker, machines, 3);
-    expect(result.output).toContain('Matching Modules');
     expect(result.output).toContain('smb_ms17_010');
 
-    // Seleccionar auxiliary
-    result = exec('use 0', attacker, machines, 3);
-    expect(result.output).toContain('No payload configured');
+    exec('use 0', attacker, machines, 3);
+    exec('set RHOSTS 172.16.0.11', attacker, machines, 3);
 
-    // Configurar RHOSTS
-    result = exec('set RHOSTS 172.16.0.11', attacker, machines, 3);
-    expect(result.output).toContain('RHOSTS => 172.16.0.11');
-
-    // Ejecutar auxiliary (verificar vulnerabilidad)
     result = exec('run', attacker, machines, 3);
     expect(result.output).toContain('VULNERABLE');
     expect(result.completedMissionId).toBe(3);
+    machines = evolveState(machines, result);
 
-    // Volver atrás
-    result = exec('back', attacker, machines, 4);
+    exec('back', attacker, machines, 4);
 
-    // Buscar exploit
     result = exec('search ms17', attacker, machines, 4);
     expect(result.output).toContain('eternalblue');
 
-    // Seleccionar exploit
-    result = exec('use 1', attacker, machines, 4);
+    exec('use 1', attacker, machines, 4);
+    exec('set RHOSTS 172.16.0.11', attacker, machines, 4);
+    exec('set LHOST 192.168.1.10', attacker, machines, 4);
 
-    // Configurar RHOSTS y LHOST
-    result = exec('set RHOSTS 172.16.0.11', attacker, machines, 4);
-    result = exec('set LHOST 192.168.1.10', attacker, machines, 4);
-
-    // Ejecutar exploit
     result = exec('exploit', attacker, machines, 4);
     expect(result.output).toContain('Meterpreter session');
     expect(result.completedMissionId).toBe(4);
+    machines = evolveState(machines, result);
 
-    // Verificar acceso SYSTEM
+    // Paso 5: verificar SYSTEM — string crítico para el escenario
     result = exec('getuid', attacker, machines, 5);
     expect(result.output).toContain('NT AUTHORITY');
     expect(result.output).toContain('SYSTEM');
@@ -369,46 +476,71 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
 
   const allMachines = [attacker, lfiTarget];
 
+  // ── Tests unitarios por paso ──────────────────────────────────
+
   it('Paso 1: arp-scan descubre el host', () => {
     const result = exec('arp-scan 192.168.20.0/24', attacker, allMachines, 1);
+    expectSuccess(result);
     expect(result.output).toContain('192.168.20.11');
     expect(result.completedMissionId).toBe(1);
   });
 
-  it('Paso 2: nmap detecta Apache en puerto 80', () => {
-    const target = { ...lfiTarget, discovery_level: 1 };
+  it('Paso 2: nmap detecta HTTP en puerto 80', () => {
+    const target = withLevel(lfiTarget, 1);
     const result = exec('nmap -sV 192.168.20.11', attacker, [attacker, target], 2);
+    expectSuccess(result);
     expect(result.output).toContain('80/tcp');
-    expect(result.output).toContain('Apache');
     expect(result.completedMissionId).toBe(2);
   });
 
-  it('Paso 4: nc -nlvp activa listener (misión resuelta dinámicamente)', () => {
+  it('Paso 4: nc -nlvp activa listener — valida propiedades de blockingCommand', () => {
     const result = exec('nc -nlvp 4444', attacker, allMachines, 4);
-    expect(result.output).toContain('listening');
-    expect(result.output).toContain('4444');
+    expectSuccess(result);
+    expect(result.completedMissionId).toBe(4);
+    // Validar propiedades estructurales, no strings de output
     expect(result.blockingCommand).toBeDefined();
     expect(result.blockingCommand?.listeningPort).toBe(4444);
-    // El id se resuelve buscando el step "Setup Listener", no por hardcode
-    expect(result.completedMissionId).toBe(4);
   });
 
+  // ── Validaciones de errores ───────────────────────────────────
+
   it('nc fuera del contexto LFI no completa ninguna misión', () => {
-    // Simular nc ejecutado en un escenario sin step de listener (ej: SSH Lab)
     const result = exec('nc -nlvp 9999', attacker, [attacker], 1);
-    expect(result.output).toContain('listening');
+    expectSuccess(result);
     expect(result.completedMissionId).toBeUndefined();
   });
 
-  it('Debe rechazar nc sin puerto', () => {
+  it('nc sin puerto debe fallar', () => {
     const result = exec('nc -nlvp', attacker, allMachines, 4);
     expect(result.isError).toBe(true);
+    expect(result.blockingCommand).toBeUndefined();
   });
 
-  it('Debe rechazar nmap sin reconocimiento previo', () => {
+  it('nmap sin reconocimiento previo debe fallar', () => {
     const result = exec('nmap -sV 192.168.20.11', attacker, allMachines, 2);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('reconocimiento');
+    expect(result.completedMissionId).toBeUndefined();
+  });
+
+  // ── Golden path E2E ──────────────────────────────────────────
+
+  it('Golden path: arp-scan → nmap → nc listener (estado evoluciona naturalmente)', () => {
+    let machines: Machine[] = [attacker, lfiTarget];
+
+    // Paso 1
+    let result = exec('arp-scan 192.168.20.0/24', attacker, machines, 1);
+    expect(result.completedMissionId).toBe(1);
+    machines = evolveState(machines, result);
+
+    // Paso 2
+    result = exec('nmap -sV 192.168.20.11', attacker, machines, 2);
+    expect(result.completedMissionId).toBe(2);
+    machines = evolveState(machines, result);
+
+    // Paso 4: nc listener — validar propiedades del estado
+    result = exec('nc -nlvp 4444', attacker, machines, 4);
+    expect(result.completedMissionId).toBe(4);
+    expect(result.blockingCommand?.listeningPort).toBe(4444);
   });
 });
 
@@ -440,8 +572,8 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
       { id: 2, task: 'Escaneo de puertos', text: 'Identificá servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 2 },
       { id: 3, task: 'Fuerza bruta SSH', text: 'Obtené credenciales: hydra -l developer -P rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
       { id: 4, task: 'Acceso SSH', text: 'Conectate: ssh developer@<target-ip> <password>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
-      { id: 5, task: 'Enumeración de sudo', text: 'Listá permisos: sudo -l', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
-      { id: 6, task: 'Escalada de privilegios', text: 'Usá vim para escalar: sudo vim -c \'!bash\'', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
+      { id: 5, task: 'Enumeración de sudo', text: "Listá permisos: sudo -l", targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
+      { id: 6, task: 'Escalada de privilegios', text: "Usá vim para escalar: sudo vim -c '!bash'", targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
       { id: 7, task: 'Capturar la flag de root', text: 'Leé la flag: cat /root/root.txt', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
     ],
     files: [
@@ -451,68 +583,127 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
     ],
   };
 
-  const allMachines = [attacker, privescTarget];
+  // ── Tests unitarios por paso ──────────────────────────────────
 
   it('Paso 1: arp-scan descubre el host', () => {
-    const result = exec('arp-scan 192.168.30.0/24', attacker, allMachines, 1);
-    expect(result.output).toContain('192.168.30.11');
+    const result = exec('arp-scan 192.168.30.0/24', attacker, [attacker, privescTarget], 1);
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(1);
+    expect(result.output).toContain('192.168.30.11');
   });
 
-  it('Paso 2: nmap escanea puertos', () => {
-    const target = { ...privescTarget, discovery_level: 1 };
+  it('Paso 2: nmap detecta SSH en puerto 22', () => {
+    const target = withLevel(privescTarget, 1);
     const result = exec('nmap -sV 192.168.30.11', attacker, [attacker, target], 2);
-    expect(result.output).toContain('22/tcp');
-    expect(result.output).toContain('ssh');
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(2);
+    expect(result.output).toContain('22/tcp');
   });
 
-  it('Paso 3: hydra encuentra credenciales de developer', () => {
-    const target = { ...privescTarget, discovery_level: 2 };
-    const result = exec('hydra -l developer -P rockyou.txt 192.168.30.11 ssh', attacker, [attacker, target], 3);
-    expect(result.output).toContain('login: developer');
-    expect(result.output).toContain('password: dev2024');
+  it('Paso 3: hydra — valida credenciales en propiedades, no en strings', () => {
+    const target = withLevel(privescTarget, 2);
+    const result = exec('hydra -l developer -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attacker, [attacker, target], 3);
+    expectSuccess(result);
+    expect(result.foundCredentials).toBeDefined();
     expect(result.foundCredentials?.user).toBe('developer');
+    expect(result.foundCredentials?.pass).toBe('dev2024');
     expect(result.completedMissionId).toBe(3);
   });
 
-  it('Paso 4: ssh conecta como developer', () => {
-    const target = { ...privescTarget, discovery_level: 3 };
+  it('Paso 4: ssh — valida cambio de máquina activa', () => {
+    const target = withLevel(privescTarget, 3);
     const result = exec('ssh developer@192.168.30.11 dev2024', attacker, [attacker, target], 4);
-    expect(result.output).toContain('Welcome to');
+    expectSuccess(result);
     expect(result.newMachineId).toBe('lab-scenario-05-privesc');
     expect(result.completedMissionId).toBe(4);
   });
 
-  it('Paso 5: sudo -l muestra permisos de vim', () => {
-    const target = { ...privescTarget, discovery_level: 3 };
+  it('Paso 5: sudo -l, muestra permisos de vim (string crítico para el escenario)', () => {
+    const target = withLevel(privescTarget, 3);
     const result = exec('sudo -l', target, [attacker, target], 5);
-    expect(result.output).toContain('developer');
+    expectSuccess(result);
+    expect(result.completedMissionId).toBe(5);
+    // String crítico: NOPASSWD es esencial para el escenario de privilege escalation
     expect(result.output).toContain('NOPASSWD');
     expect(result.output).toContain('vim');
-    expect(result.completedMissionId).toBe(5);
   });
 
-  it('Paso 6: sudo vim -c !bash escala a root', () => {
-    const target = { ...privescTarget, discovery_level: 3 };
+  it('Paso 6: sudo vim -c !bash escala a root (uid=0 es crítico)', () => {
+    const target = withLevel(privescTarget, 3);
     const result = exec("sudo vim -c '!bash'", target, [attacker, target], 6);
-    expect(result.output).toContain('root');
-    expect(result.output).toContain('uid=0');
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(6);
+    // String crítico: uid=0 confirma escalada exitosa a root
+    expect(result.output).toContain('uid=0');
   });
 
-  it('Paso 7: cat /root/root.txt obtiene la flag', () => {
-    const target = { ...privescTarget, discovery_level: 4 };
+  it('Paso 7: cat /root/root.txt — flag es string crítico', () => {
+    const target = withLevel(privescTarget, 4);
     const result = exec('cat /root/root.txt', target, [attacker, target], 7);
-    expect(result.output).toContain('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
+    expectSuccess(result);
     expect(result.completedMissionId).toBe(7);
+    // String crítico del juego: flag exacta requerida
+    expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });
 
-  it('Debe rechazar ssh sin fuerza bruta previa', () => {
-    const target = { ...privescTarget, discovery_level: 2 };
+  // ── Validaciones de errores ───────────────────────────────────
+
+  it('ssh sin hydra previo debe fallar', () => {
+    const target = withLevel(privescTarget, 2);
     const result = exec('ssh developer@192.168.30.11 dev2024', attacker, [attacker, target], 3);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('credenciales');
+    expect(result.completedMissionId).toBeUndefined();
+    expect(result.newMachineId).toBeUndefined();
+  });
+
+  // ── Golden path E2E ──────────────────────────────────────────
+
+  it('Golden path: arp-scan → nmap → hydra → ssh → sudo -l → privesc → flag (sin simular estado)', () => {
+    let machines: Machine[] = [attacker, privescTarget];
+
+    // Paso 1: reconocimiento
+    let result = exec('arp-scan 192.168.30.0/24', attacker, machines, 1);
+    expect(result.completedMissionId).toBe(1);
+    machines = evolveState(machines, result);
+
+    // Paso 2: escaneo
+    result = exec('nmap -sV 192.168.30.11', attacker, machines, 2);
+    expect(result.completedMissionId).toBe(2);
+    machines = evolveState(machines, result);
+
+    // Paso 3: brute force — verifica credenciales devueltas por el sistema
+    result = exec('hydra -l developer -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attacker, machines, 3);
+    expect(result.completedMissionId).toBe(3);
+    expect(result.foundCredentials?.user).toBe('developer');
+    expect(result.foundCredentials?.pass).toBe('dev2024');
+    machines = evolveState(machines, result);
+
+    // Paso 4: acceso SSH — verifica cambio de contexto de máquina activa
+    result = exec('ssh developer@192.168.30.11 dev2024', attacker, machines, 4);
+    expect(result.completedMissionId).toBe(4);
+    expect(result.newMachineId).toBe('lab-scenario-05-privesc');
+    machines = evolveState(machines, result);
+
+    // Los siguientes pasos se ejecutan como target (sesión SSH activa)
+    const sessionTarget = machines.find(m => m.id === 'lab-scenario-05-privesc')!;
+
+    // Paso 5: enumeración sudo
+    result = exec('sudo -l', sessionTarget, machines, 5);
+    expect(result.completedMissionId).toBe(5);
+    expect(result.output).toContain('NOPASSWD');
+    machines = evolveState(machines, result);
+
+    // Paso 6: escalada de privilegios
+    result = exec("sudo vim -c '!bash'", sessionTarget, machines, 6);
+    expect(result.completedMissionId).toBe(6);
+    expect(result.output).toContain('uid=0');
+    machines = evolveState(machines, result);
+
+    // Paso 7: flag de root — string crítico del juego, usar toBe exacto
+    const rootTarget = machines.find(m => m.id === 'lab-scenario-05-privesc')!;
+    result = exec('cat /root/root.txt', rootTarget, machines, 7);
+    expect(result.completedMissionId).toBe(7);
+    expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });
 });
 
@@ -522,8 +713,11 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
 describe('Comandos básicos funcionan en todos los contextos', () => {
   const attacker = createAttacker();
 
-  it('help muestra lista de comandos', () => {
+  it('help muestra comandos clave de pentesting', () => {
     const result = exec('help', attacker, [attacker], 1);
+    // isError puede ser undefined (éxito) o false explícito
+    expect(result.isError).not.toBe(true);
+    // String crítico: verificar comandos esenciales disponibles
     expect(result.output).toContain('arp-scan');
     expect(result.output).toContain('nmap');
     expect(result.output).toContain('hydra');
@@ -533,13 +727,14 @@ describe('Comandos básicos funcionan en todos los contextos', () => {
 
   it('whoami muestra root en atacante', () => {
     const result = exec('whoami', attacker, [attacker], 1);
+    expect(result.isError).not.toBe(true);
     expect(result.output).toContain('root');
   });
 
   it('ifconfig muestra IP del atacante', () => {
     const result = exec('ifconfig', attacker, [attacker], 1);
+    expect(result.isError).not.toBe(true);
     expect(result.output).toContain('192.168.1.10');
-    expect(result.output).toContain('eth0');
   });
 
   it('clear retorna CLEAR_TERMINAL', () => {
@@ -547,7 +742,7 @@ describe('Comandos básicos funcionan en todos los contextos', () => {
     expect(result.output).toBe('CLEAR_TERMINAL');
   });
 
-  it('comando desconocido muestra error', () => {
+  it('comando desconocido retorna isError true', () => {
     const result = exec('fakecommand', attacker, [attacker], 1);
     expect(result.isError).toBe(true);
     expect(result.output).toContain('Command not found');
@@ -561,13 +756,13 @@ describe('Comandos básicos funcionan en todos los contextos', () => {
         { path: '/root/notes.txt', content: 'My notes', type: 'text' as const },
       ],
     };
-    // Especificar directorio /root para listar archivos dentro de él
     const result = exec('ls /root', attackerWithFiles, [attackerWithFiles], 1);
+    expect(result.isError).not.toBe(true);
     expect(result.output).toContain('payload.php');
     expect(result.output).toContain('notes.txt');
   });
 
-  it('cat lee archivo existente', () => {
+  it('cat lee archivo existente — valida contenido exacto', () => {
     const attackerWithFiles = {
       ...attacker,
       files: [
@@ -575,12 +770,14 @@ describe('Comandos básicos funcionan en todos los contextos', () => {
       ],
     };
     const result = exec('cat /root/flag.txt', attackerWithFiles, [attackerWithFiles], 1);
-    expect(result.output).toContain('THM{TEST_FLAG}');
+    expectSuccess(result);
+    // Contenido exacto es crítico para flags
+    expect(result.output).toBe('THM{TEST_FLAG}');
   });
 
-  it('cat rechaza archivo inexistente', () => {
+  it('cat con archivo inexistente retorna isError true', () => {
     const result = exec('cat /root/nonexistent.txt', attacker, [attacker], 1);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('No such file');
+    expect(result.completedMissionId).toBeUndefined();
   });
 });

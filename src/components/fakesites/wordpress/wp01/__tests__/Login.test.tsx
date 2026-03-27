@@ -60,13 +60,17 @@ describe('WordPress Lab (wp01) - Componentes Vulnerables', () => {
       const backupFile = screen.getByText(/config.bak/i);
       fireEvent.click(backupFile);
       
-      expect(onCredentialsFound).toHaveBeenCalledWith('admin', 'P@ssw0rd123!');
+      expect(onCredentialsFound).toHaveBeenCalledTimes(1);
+      expect(onCredentialsFound).toHaveBeenCalledWith('admin', 'P@ssw0rd123!', '/uploads/config.bak', 'wp-admin');
     });
 
-    it('WPConfigBak debe mostrar el contenido sensible', () => {
+    it('WPConfigBak debe mostrar solo credenciales WP-Admin', () => {
       render(<WPConfigBak ip="10.0.0.15" onNavigate={vi.fn()} />);
-      expect(screen.getByText((c) => c.includes('SSH_PASS'))).toBeInTheDocument();
-      expect(screen.getByText((c) => c.includes('Sup3rS3cr3t!'))).toBeInTheDocument();
+      expect(screen.getByText((c) => c.includes('WP_ADMIN_PASS'))).toBeInTheDocument();
+      expect(screen.getByText((c) => c.includes('P@ssw0rd123!'))).toBeInTheDocument();
+      // No debe tener credenciales SSH ni DB
+      expect(screen.queryByText((c) => c.includes('SSH_PASS'))).not.toBeInTheDocument();
+      expect(screen.queryByText((c) => c.includes('DB_PASS'))).not.toBeInTheDocument();
     });
   });
 });

@@ -55,8 +55,8 @@ interface ScenarioState {
   // Actions
   selectScenario: (id: string) => void;
   completeMission: (id: number) => void;
-  findCredentials: (machineId: string, user: string, pass: string, file?: string) => void;
-  verifyCredentials: (machineId: string) => void;
+  findCredentials: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
+  verifyCredentials: (machineId: string, service?: string) => void;
   changeMachine: (machineId: string) => void;
   setActiveApp: (app: 'terminal' | 'browser') => void;
   refreshBrowser: () => void;
@@ -143,6 +143,7 @@ export const useScenarioStore = create<ScenarioState>()(
             browserNavIdx: 0,
             listeningPort: null,
             msfState: null,
+            currentDir: '/root',
           });
           window.history.pushState({ view: 'workspace', scenarioId: id }, '');
         }, 4500);
@@ -184,25 +185,41 @@ export const useScenarioStore = create<ScenarioState>()(
         }
       },
 
-      findCredentials: (machineId, user, pass, file) => {
+      findCredentials: (machineId, user, pass, file, service = 'unknown') => {
         const { machines } = get();
         set({
-          machines: machines.map(m =>
-            m.id === machineId
-              ? { ...m, found_credentials: { file: file || '/uploads/config.bak', user, pass, verified: false } }
-              : m
-          )
+          machines: machines.map(m => {
+            if (m.id !== machineId) return m;
+            const existing = m.found_credentials || [];
+            // Verificar si ya existe una credencial para este servicio
+            const existingCred = existing.find(c => c.service === service);
+            const filtered = existing.filter(c => c.service !== service);
+            return {
+              ...m,
+              found_credentials: [...filtered, { 
+                file: file || '/etc/passwd', 
+                user, 
+                pass, 
+                verified: existingCred?.verified || false, 
+                service 
+              }]
+            };
+          })
         });
       },
 
-      verifyCredentials: (machineId) => {
+      verifyCredentials: (machineId, service) => {
         const { machines } = get();
         set({
-          machines: machines.map(m =>
-            m.id === machineId && m.found_credentials
-              ? { ...m, found_credentials: { ...m.found_credentials, verified: true } }
-              : m
-          )
+          machines: machines.map(m => {
+            if (m.id !== machineId || !m.found_credentials) return m;
+            return {
+              ...m,
+              found_credentials: m.found_credentials.map(c =>
+                (!service || c.service === service) ? { ...c, verified: true } : c
+              )
+            };
+          })
         });
       },
 

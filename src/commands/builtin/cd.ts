@@ -57,7 +57,7 @@ export const cmd_cd = {
     resolvedPath = normalized.length === 0 ? '/' : '/' + normalized.join('/') + '/';
 
     // Verificar si el directorio existe (tiene archivos dentro o es un directorio conocido)
-    const knownDirs = ['/', '/home/', '/home/user/', '/etc/', '/var/', '/var/www/', '/var/www/html/', '/tmp/', '/root/', '/usr/', '/usr/bin/', '/usr/share/', '/usr/share/wordlists/', '/opt/'];
+    const knownDirs = ['/', '/home/', '/home/user/', '/home/kali/', '/etc/', '/var/', '/var/www/', '/var/www/html/', '/tmp/', '/root/', '/usr/', '/usr/bin/', '/usr/share/', '/usr/share/wordlists/', '/opt/'];
     
     const hasFilesInDir = machine.files.some(f => {
       const filePath = f.path;

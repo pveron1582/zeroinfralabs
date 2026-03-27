@@ -14,6 +14,33 @@ import { InclusionSite } from './fakesites/lfi_lab/InclusionSIte';
 function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
   const [query, setQuery] = useState('');
   const suggestions = ['nmap tutorial', 'wordpress exploit', 'gobuster wordlist', 'ssh brute force'];
+  
+  const randomSearches = [
+    'how to hack wifi',
+    'sql injection tutorial',
+    'metasploit guide',
+    'kali linux tools',
+    'reverse shell payload',
+    'xss attack example',
+    'password cracking methods',
+    'network scanning techniques',
+    'privilege escalation linux',
+    'buffer overflow exploit'
+  ];
+
+  const handleSearch = () => {
+    if (query.trim()) {
+      onNavigate(`https://www.google.com/search?q=${encodeURIComponent(query)}`);
+    } else {
+      const randomQuery = randomSearches[Math.floor(Math.random() * randomSearches.length)];
+      onNavigate(`https://www.google.com/search?q=${encodeURIComponent(randomQuery)}`);
+    }
+  };
+
+  const handleLucky = () => {
+    onNavigate('chrome://dino');
+  };
+
   return (
     <div className="min-h-full bg-white flex flex-col items-center justify-center gap-6 px-4">
       <div className="flex items-center select-none" style={{ fontSize: '68px', fontFamily: 'Product Sans,Arial,sans-serif', fontWeight: 400 }}>
@@ -27,9 +54,19 @@ function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             placeholder="Buscar en Google o escribir una URL"
             className="flex-1 outline-none text-sm text-gray-800 bg-transparent"
-            onKeyDown={e => { if (e.key === 'Enter' && query.trim()) onNavigate(`https://www.google.com/search?q=${encodeURIComponent(query)}`); }} />
+            onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }} />
         </div>
-        <div className="mt-2 flex flex-wrap gap-2 justify-center">
+        <div className="mt-4 flex gap-3 justify-center">
+          <button onClick={handleSearch}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">
+            Buscar con Google
+          </button>
+          <button onClick={handleLucky}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">
+            Voy a tener suerte
+          </button>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 justify-center">
           {suggestions.map(s => (
             <button key={s} onClick={() => setQuery(s)}
               className="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors">{s}</button>
@@ -57,8 +94,10 @@ function GoogleSearch({ url, onNavigate }: { url: string; onNavigate: (url: stri
   return (
     <div className="min-h-full bg-white">
       <div className="border-b border-gray-200 px-4 py-3 flex items-center gap-4">
-        <button onClick={() => onNavigate('https://www.google.com')} style={{ fontFamily: 'Product Sans,Arial,sans-serif', fontSize: '24px' }}>
+        <button onClick={() => onNavigate('https://www.google.com')} style={{ fontFamily: 'Product Sans,Arial,sans-serif', fontSize: '20px', flexShrink: 0 }}>
           <span style={{ color: '#4285F4' }}>G</span><span style={{ color: '#EA4335' }}>o</span>
+          <span style={{ color: '#FBBC05' }}>o</span><span style={{ color: '#4285F4' }}>g</span>
+          <span style={{ color: '#34A853' }}>l</span><span style={{ color: '#EA4335' }}>e</span>
         </button>
         <div className="flex-1 max-w-lg flex items-center gap-2 px-3 py-2 rounded-full border border-gray-300 text-sm">{q}</div>
       </div>
@@ -77,6 +116,52 @@ function GoogleSearch({ url, onNavigate }: { url: string; onNavigate: (url: stri
   );
 }
 
+function HttpSecurityError({ url, onNavigate }: { url: string; onNavigate: (url: string) => void }) {
+  const secureUrl = url.replace(/^http:\/\//i, 'https://');
+  
+  return (
+    <div className="min-h-full bg-white flex flex-col items-center justify-center px-4">
+      <div className="text-center max-w-lg">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <h1 className="text-2xl font-medium text-gray-800 mb-2">Tu conexión no es privada</h1>
+        <p className="text-gray-600 mb-2">
+          Los atacantes podrían estar intentando robar tu información de <strong>{url.replace(/^http:\/\//i, '')}</strong>
+        </p>
+        <p className="text-gray-500 text-sm mb-6">
+          (por ejemplo, contraseñas, mensajes o tarjetas de crédito).{' '}
+          <a href="#" className="text-blue-600 hover:underline">Más información</a>
+        </p>
+        <div className="text-red-600 text-sm mb-6 font-mono bg-red-50 p-3 rounded">
+          NET::ERR_CERT_AUTHORITY_INVALID
+        </div>
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={() => onNavigate(secureUrl)}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
+          >
+            Usar HTTPS seguro
+          </button>
+          <button 
+            onClick={() => onNavigate('https://www.google.com')}
+            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors"
+          >
+            Volver a Google (seguro)
+          </button>
+        </div>
+        <p className="mt-6 text-xs text-gray-400">
+          El protocolo HTTP ya no es seguro. Los sitios modernos usan HTTPS.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function PageNotFound({ url }: { url: string }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3 bg-white">
@@ -87,14 +172,36 @@ function PageNotFound({ url }: { url: string }) {
   );
 }
 
+function DinoGame() {
+  return (
+    <div className="min-h-full bg-white flex flex-col items-center justify-center px-4">
+      <div className="text-center">
+        <div className="text-8xl mb-6 select-none">🦖</div>
+        <h1 className="text-2xl font-medium text-gray-700 mb-2">No hay conexión</h1>
+        <p className="text-gray-500 text-sm mb-6">Esto es un simulador, no puedo mostrar nada muy útil desde acá. 😅</p>
+        <div className="flex items-center justify-center gap-2 text-gray-400 text-xs">
+          <div className="w-4 h-4 border-2 border-gray-300 rounded-sm"></div>
+          <span>Presiona espacio para jugar</span>
+        </div>
+        <div className="mt-8 flex gap-1 justify-center">
+          {[...Array(20)].map((_, i) => (
+            <div key={i} className={`w-3 h-8 ${i % 3 === 0 ? 'bg-gray-300' : 'bg-gray-200'} rounded-sm`}></div>
+          ))}
+        </div>
+        <p className="mt-6 text-xs text-gray-400">ERR_INTERNET_SIMULATOR_MODE</p>
+      </div>
+    </div>
+  );
+}
+
 // ── Componente Principal FakeBrowser ────────────────────────────────
 
 interface FakeBrowserProps {
   allMachines: Machine[];
   onClose: () => void;
   onMissionComplete: (id: number) => void;
-  onCredentialsFound: (machineId: string, user: string, pass: string, file?: string) => void;
-  onVerifyCredentials: (machineId: string) => void;
+  onCredentialsFound: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
+  onVerifyCredentials: (machineId: string, service?: string) => void;
   scenarioHasWeb: boolean;
   wpDiscoveryLevel: number;
   mission3Already: boolean;
@@ -132,7 +239,26 @@ export function FakeBrowser({
   };
 
   const navigate = (rawUrl: string) => {
-    const withScheme = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : `http://${rawUrl.trim()}`;
+    const trimmed = rawUrl.trim();
+    
+    // Para Google, siempre usar HTTPS - rechazar HTTP explícitamente
+    const isGoogleDomain = /google\.com/i.test(trimmed);
+    
+    // Manejar URLs especiales como chrome://
+    let withScheme: string;
+    if (/^(https?:\/\/|chrome:\/\/)/i.test(trimmed)) {
+      withScheme = trimmed;
+    } else {
+      // Sin esquema: usar https para Google, http para el resto
+      withScheme = isGoogleDomain ? `https://${trimmed}` : `http://${trimmed}`;
+    }
+    
+    // Forzar HTTPS para Google si viene como HTTP
+    if (isGoogleDomain && withScheme.startsWith('http://')) {
+      // Permitir la navegación HTTP para mostrar el error de seguridad
+      // No redirigir automáticamente para que el usuario vea el mensaje
+    }
+    
     const clean = withScheme.replace(/\/$/, '') || withScheme;
 
     const newHistory = [...browserNavHistory.slice(0, browserNavIdx + 1), clean];
@@ -177,7 +303,7 @@ export function FakeBrowser({
   const doLogin = (id: number) => {
     setBrowserLoggedIn(true);
     onMissionComplete(id);
-    onVerifyCredentials(wpMachine!.id);
+    onVerifyCredentials(wpMachine!.id, 'wp-admin');
     navigate(`http://${wpMachine!.machine_info.ip}/wp-admin/dashboard`);
   };
 
@@ -202,7 +328,7 @@ export function FakeBrowser({
       }
       rceCompletedRef.current = true; // Marcar como completado para evitar repetición
       onMissionComplete(6);
-      onVerifyCredentials(lfiMachine.id);
+      onVerifyCredentials(lfiMachine.id, 'lfi-rce');
     }
   }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, listeningPort]);
 
@@ -213,14 +339,39 @@ export function FakeBrowser({
 
   const renderPage = () => {
     const currentUrl = browserCurrentUrl;
-    if (currentUrl === HOME_URL || currentUrl === 'about:blank') return <GoogleHome onNavigate={navigate} />;
-    if (currentUrl.startsWith('https://www.google.com/search'))   return <GoogleSearch url={currentUrl} onNavigate={navigate} />;
+    
+    // Detectar HTTP inseguro para Google - mostrar error de seguridad
+    if (currentUrl.startsWith('http://') && currentUrl.includes('google.com')) {
+      return <HttpSecurityError url={currentUrl} onNavigate={navigate} />;
+    }
+    
+    // Normalizar URL para comparación (manejar https, www, etc.)
+    const normalizeForComparison = (url: string): string => {
+      return url
+        .replace(/^https?:\/\//i, '')
+        .replace(/^www\./i, '')
+        .replace(/\/$/, '');
+    };
+    
+    const normalizedCurrent = normalizeForComparison(currentUrl);
+    const normalizedHome = normalizeForComparison(HOME_URL);
+    
+    // Coincidir google.com con o sin www (solo HTTPS aceptado aquí)
+    if (normalizedCurrent === normalizedHome || normalizedCurrent === 'google.com' || currentUrl === 'about:blank') {
+      return <GoogleHome onNavigate={navigate} />;
+    }
+    if (currentUrl.startsWith('https://www.google.com/search') || currentUrl.startsWith('https://google.com/search')) {
+      return <GoogleSearch url={currentUrl} onNavigate={navigate} />;
+    }
+    if (currentUrl === 'chrome://dino') return <DinoGame />;
 
     // ── LÓGICA WORDPRESS (Escenario 01) ──
     if (wpMachine && currentUrl.includes(wpMachine.machine_info.ip)) {
       const ip = wpMachine.machine_info.ip;
       const path = currentUrl.replace(`http://${ip}`, '').split('?')[0] || '/';
       const sshCreds = wpMachine.scan_results.ports.find(p => p.service === 'ssh')?.credentials || null;
+      // Credenciales WP-Admin para login (no SSH)
+      const wpCreds = { user: 'admin', pass: 'P@ssw0rd123!' };
       const level = wpMachine.discovery_level ?? 0;
 
       if (path === '/' || path === '') return <WPIndex ip={ip} onNavigate={navigate} />;
@@ -228,13 +379,13 @@ export function FakeBrowser({
       if (path === '/wp-admin' || path === '/wp-admin/dashboard') {
         if (level < 2) return <div className="flex flex-col items-center justify-center h-full p-10 text-center">⏳ Realizá un escaneo nmap -sV {ip} primero.</div>;
         return browserIsLoggedIn
-          ? <WPDashboard ip={ip} onNavigate={navigate} />
-          : <WPLogin ip={ip} credentials={sshCreds} onNavigate={navigate} onLoginSuccess={doLogin} />;
+          ? <WPDashboard ip={ip} onNavigate={navigate} onLogout={() => { setBrowserLoggedIn(false); navigate(`http://${ip}/wp-admin`); }} onCredentialsFound={(u, p, f, s) => onCredentialsFound(wpMachine.id, u, p, f || '/wp-admin/wp-config.php', s || 'ssh')} />
+          : <WPLogin ip={ip} credentials={wpCreds} onNavigate={navigate} onLoginSuccess={doLogin} />;
       }
 
       if (path === '/uploads' || path === '/uploads/config.bak') {
         if (level < 3) return <div className="flex flex-col items-center justify-center h-full p-10 text-center">🔒 Directorio no enumerado. Usá gobuster.</div>;
-        if (path === '/uploads') return <WPUploads ip={ip} onNavigate={navigate} onCredentialsFound={(u, p) => onCredentialsFound(wpMachine.id, u, p)} />;
+        if (path === '/uploads') return <WPUploads ip={ip} onNavigate={navigate} onCredentialsFound={(u, p, f, s) => onCredentialsFound(wpMachine.id, u, p, f || '/uploads/config.bak', s || 'wp-admin')} />;
         return <WPConfigBak ip={ip} onNavigate={navigate} />;
       }
     }

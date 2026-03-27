@@ -46,6 +46,7 @@ describe('cmd_nc', () => {
     machine: mockMachine,
     allMachines: [mockMachine],
     currentMissionId: 1,
+    currentDir: '/',
   };
 
   // Contexto con step de listener activo (misión 4)
@@ -53,6 +54,7 @@ describe('cmd_nc', () => {
     machine: mockMachine,
     allMachines: [mockMachine, lfiTarget],
     currentMissionId: 4,
+    currentDir: '/',
   };
 
   it('debe mostrar ayuda si no hay argumentos', () => {
@@ -70,8 +72,9 @@ describe('cmd_nc', () => {
     expect(result.completedMissionId).toBe(4); // Resuelto dinámicamente, no hardcodeado
     expect(result.blockingCommand).toBeDefined();
     expect(result.blockingCommand?.message).toContain('4444');
-    expect(result.blockingCommand?.cancelKey).toBe('c');
+    expect(result.blockingCommand?.message).toContain('Ctrl+C'); // Verificar nuevo mensaje
     expect(result.blockingCommand?.listeningPort).toBe(4444);
+    expect(result.blockingCommand?.cancelKey).toBeUndefined(); // cancelKey es opcional ahora
   });
 
   it('nc sin step de listener activo no completa ninguna misión', () => {

@@ -83,8 +83,9 @@ describe('Integración de Comandos y Lógica de Pentesting', () => {
       const resAtk = executeCommand('whoami', attacker, scenario.machines, 1);
       expect(resAtk.output).toContain('root');
 
+      // La máquina objetivo ahora usa credenciales root para SSH
       const resTarget = executeCommand('whoami', target, scenario.machines, 1);
-      expect(resTarget.output).toContain('admin');
+      expect(resTarget.output).toContain('root');
     });
   });
 });

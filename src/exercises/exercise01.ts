@@ -18,6 +18,7 @@ const scenario01Data = {
   credentials: {
     user: 'admin',
     pass: 'P@ssw0rd123!',
+    root: 'R00t@SSH2024!',
   },
   targetMachine: {
     id: 'lab-scenario-01-wp',
@@ -43,8 +44,9 @@ const scenario01Data = {
     { task: 'Reconocimiento de red', text: 'Descubrir hosts activos: arp-scan <network/cidr>', discoveryLevel: 1 },
     { task: 'Escaneo de puertos', text: 'Escanear puertos: nmap -sV <target-ip>', discoveryLevel: 2 },
     { task: 'Enumeración Web', text: 'Acceder al sitio web desde el botón de Firefox arriba.', discoveryLevel: 2 },
-    { task: 'Descubrimiento de directorios', text: 'Enumerar rutas: gobuster dir -u http://<target-ip> -w rockyou.txt', discoveryLevel: 3 },
-    { task: 'Compromiso del servidor', text: 'Buscar credenciales en /uploads y acceder a /wp-admin.', discoveryLevel: 4 },
+    { task: 'Descubrimiento de directorios', text: 'Enumerar rutas: gobuster dir -u http://<target-ip> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', discoveryLevel: 3 },
+    { task: 'Compromiso WP-Admin', text: 'Buscar credenciales en /uploads y acceder a /wp-admin.', discoveryLevel: 4 },
+    { task: 'Conexión SSH', text: 'Conectarse por SSH como root para completar el laboratorio: ssh root@<target-ip> R00t@SSH2024!', discoveryLevel: 4 },
   ],
 };
 
@@ -68,7 +70,7 @@ export const scenario_01: Scenario = buildScenario({
     discovery_level: 0,
     scan_results: { ports: [] },
     ports: [
-      { ...scenario01Data.targetMachine.ports[0], credentials: scenario01Data.credentials },
+      { ...scenario01Data.targetMachine.ports[0], credentials: { user: 'root', pass: scenario01Data.credentials.root } },
       scenario01Data.targetMachine.ports[1],
       scenario01Data.targetMachine.ports[2],
     ],

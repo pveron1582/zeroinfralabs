@@ -5,7 +5,7 @@ import type { Machine } from '../../../types';
 
 describe('cmd_whoami', () => {
   const createMockMachine = (id: string, hostname: string, ip: string, os: string, options?: {
-    found_credentials?: { file: string; user: string; pass: string; verified: boolean };
+    found_credentials?: { file: string; user: string; pass: string; verified: boolean; service?: string }[];
     ssh_credentials?: { user: string; pass: string };
   }): Machine => ({
     id,
@@ -29,9 +29,9 @@ describe('cmd_whoami', () => {
     expect(result.output).toBe('root');
   });
 
-  it('debe mostrar usuario de found_credentials si existe (después de SSH)', () => {
+  it('debe mostrar usuario de found_credentials SSH si existe (después de SSH)', () => {
     const machine = createMockMachine('target-01', 'web-server', '192.168.1.20', 'Ubuntu', {
-      found_credentials: { file: '/etc/passwd', user: 'developer', pass: 'dev2024', verified: true }
+      found_credentials: [{ file: '/etc/passwd', user: 'developer', pass: 'dev2024', verified: true, service: 'ssh' }]
     });
     const result = cmd_whoami.execute([], { machine } as any);
 

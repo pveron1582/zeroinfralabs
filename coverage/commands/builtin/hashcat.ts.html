@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.66% </span>
+                <span class="strong">93.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/15</span>
+                <span class='fraction'>14/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">93.75% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>15/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.66% </span>
+                <span class="strong">93.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/15</span>
+                <span class='fraction'>14/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -103,26 +103,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -137,24 +137,24 @@ import type { CommandResponse } from '../../types';
 &nbsp;
 export const cmd_hashcat = {
   name: 'hashcat',
-  execute: <span class="fstat-no" title="function not covered" >(a</span>rgs: string[]): CommandResponse =&gt; {
-    const mIdx = <span class="cstat-no" title="statement not covered" >args.indexOf('-m');</span>
-<span class="cstat-no" title="statement not covered" >    if (mIdx === -1 || args.length &lt; 4)</span>
+  execute: (args: string[]): CommandResponse =&gt; {
+    const mIdx = args.indexOf('-m');
+    if (mIdx === -1 || args.length &lt; 4)
+      return { output: 'Uso: hashcat -m 0 hash.txt rockyou.txt', isError: true };
+    const mode = args[mIdx + 1];
+    if (!mode || isNaN(Number(mode)))
+      return { output: `Error: modo inválido "${mode}". Ejemplo: -m 0`, isError: true };
+    const hf = args[args.length - 2];
+    const wf = args[args.length - 1];
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!hf || !wf || hf.startsWith('-') || wf.startsWith('-'))
 <span class="cstat-no" title="statement not covered" >      return { output: 'Uso: hashcat -m 0 hash.txt rockyou.txt', isError: true };</span>
-    const mode = <span class="cstat-no" title="statement not covered" >args[mIdx + 1];</span>
-<span class="cstat-no" title="statement not covered" >    if (!mode || isNaN(Number(mode)))</span>
-<span class="cstat-no" title="statement not covered" >      return { output: `Error: modo inválido "${mode}". Ejemplo: -m 0`, isError: true };</span>
-    const hf = <span class="cstat-no" title="statement not covered" >args[args.length - 2];</span>
-    const wf = <span class="cstat-no" title="statement not covered" >args[args.length - 1];</span>
-<span class="cstat-no" title="statement not covered" >    if (!hf || !wf || hf.startsWith('-') || wf.startsWith('-'))</span>
-<span class="cstat-no" title="statement not covered" >      return { output: 'Uso: hashcat -m 0 hash.txt rockyou.txt', isError: true };</span>
-<span class="cstat-no" title="statement not covered" >    if (!wf.includes('rockyou'))</span>
-<span class="cstat-no" title="statement not covered" >      return { output: `Error: wordlist "${wf}" no soportada. Usa rockyou.txt`, isError: true };</span>
+    if (!wf.includes('rockyou'))
+      return { output: `Error: wordlist "${wf}" no soportada. Usa rockyou.txt`, isError: true };
 &nbsp;
     // Hash ficticio para demo educativo - MD5 de "hello"
-    const demoHash = <span class="cstat-no" title="statement not covered" >'5d41402abc4b2a76b9719d911017c592';</span>
+    const demoHash = '5d41402abc4b2a76b9719d911017c592';
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return {</span>
+    return {
       output: `hashcat (v6.2.5) starting...\n* Device #1: Intel Core i7 [12.5 MH/s]\n* Device #2: NVIDIA RTX 3080 [450 MH/s]\n\n[+] Hash.Target: ${hf}\n[+] Status: Cracked\n\n${demoHash}:hello\n\nSession: Cracked ✓\n\n⚠️  NOTA: Este es un simulador educativo. Los hashes mostrados son ficticios.`
     };
   }
@@ -166,7 +166,7 @@ export const cmd_hashcat = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-19T00:45:21.985Z
+                at 2026-03-27T04:05:13.890Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

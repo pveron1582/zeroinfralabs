@@ -41,9 +41,10 @@ describe('WPIndex', () => {
   it('debe mostrar artículos del blog', () => {
     render(<WPIndex {...defaultProps} />);
     
-    expect(screen.getByText(/Hello World!/i)).toBeInTheDocument();
-    expect(screen.getByText(/Sample Post/i)).toBeInTheDocument();
-    expect(screen.getByText(/Another Entry/i)).toBeInTheDocument();
+    // Verificar que los 3 artículos están presentes (Claude 4 aparece en título y contenido)
+    expect(screen.getAllByText(/Claude 4/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Ciberseguridad e IA/i)).toBeInTheDocument();
+    expect(screen.getByText(/vulnerabilidad crítica reportada en WordPress/i)).toBeInTheDocument();
   });
 
   it('debe mostrar sección Meta con enlace a Acceder', () => {
@@ -78,10 +79,12 @@ describe('WPIndex', () => {
     expect(screen.getAllByText(/Publicado el/i).length).toBeGreaterThan(0);
   });
 
-  it('debe mostrar contenido Lorem ipsum', () => {
+  it('debe mostrar contenido de los artículos', () => {
     render(<WPIndex {...defaultProps} />);
     
-    // Puede haber múltiples Lorem ipsum (uno por artículo)
-    expect(screen.getAllByText(/Lorem ipsum/i).length).toBeGreaterThan(0);
+    // Verificar que hay contenido en los artículos
+    expect(screen.getByText(/Anthropic ha lanzado Claude 4/i)).toBeInTheDocument();
+    expect(screen.getByText(/integración de inteligencia artificial en ciberseguridad/i)).toBeInTheDocument();
+    expect(screen.getByText(/ejecución remota de código/i)).toBeInTheDocument();
   });
 });

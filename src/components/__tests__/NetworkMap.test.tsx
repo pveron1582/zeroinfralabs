@@ -232,12 +232,13 @@ describe('NetworkMap', () => {
 
   it('debe mostrar credenciales encontradas', () => {
     const machineWithCreds = createMockMachine({
-      found_credentials: {
+      found_credentials: [{
         file: '/uploads/config.bak',
         user: 'admin',
         pass: 'password123',
         verified: true,
-      },
+        service: 'wp-admin'
+      }],
     });
     const scenarioWithCreds = {
       ...mockScenario,
@@ -256,19 +257,20 @@ describe('NetworkMap', () => {
     const targetCard = screen.getByText('target');
     fireEvent.click(targetCard);
 
-    expect(screen.getByText('Credenciales')).toBeInTheDocument();
+    expect(screen.getByText('Credenciales Encontradas')).toBeInTheDocument();
     expect(screen.getByText('admin')).toBeInTheDocument();
     expect(screen.getByText('password123')).toBeInTheDocument();
   });
 
   it('debe mostrar credenciales sin verificar', () => {
     const machineWithUnverifiedCreds = createMockMachine({
-      found_credentials: {
+      found_credentials: [{
         file: '/uploads/config.bak',
         user: 'admin',
         pass: 'password123',
         verified: false,
-      },
+        service: 'wp-admin'
+      }],
     });
     const scenarioWithUnverified = {
       ...mockScenario,

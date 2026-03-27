@@ -15,7 +15,7 @@ export const cmd_hydra = {
     const wl = args[pIdx + 1];
 
     if (!wl || !wl.includes('rockyou.txt')) {
-      return { output: `Error: wordlist "${wl}" no válida para este laboratorio.\nUsa: -P rockyou.txt`, isError: true };
+      return { output: `Error: wordlist "${wl}" no válida para este laboratorio.\nUsa: -P /usr/share/wordlists/rockyou.txt`, isError: true };
     }
 
     let ip = '', svc = '';
@@ -66,7 +66,8 @@ export const cmd_hydra = {
           machineId: target.id,
           user,
           pass: port.credentials.pass,
-          file: `/etc/hydra_${svc}.txt`
+          file: `/etc/hydra_${svc}.txt`,
+          service: svc.toLowerCase() // 'ssh', 'ftp', etc.
         }
       };
     }

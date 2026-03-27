@@ -57,7 +57,8 @@ export interface Machine {
     user: string;
     pass: string;
     verified: boolean;
-  };
+    service?: string; // 'ssh', 'wp-admin', 'ftp', etc.
+  }[];
 }
 
 export interface Mission {
@@ -88,7 +89,7 @@ export interface CommandResponse {
   newMachineId?: string;
   blockingCommand?: {
     message: string;  // Mensaje de estado (ej: "Escuchando en puerto 4444...")
-    cancelKey: string; // Tecla para cancelar (ej: 'c')
+    cancelKey?: string; // Tecla para cancelar (deprecated, ahora usa Ctrl+C)
     listeningPort?: number; // Puerto en el que nc está escuchando (para validar payload)
   };
   foundCredentials?: {
@@ -96,6 +97,7 @@ export interface CommandResponse {
     user: string;
     pass: string;
     file: string;
+    service?: string; // 'ssh', 'wp-admin', 'ftp', etc.
   };
 }
 

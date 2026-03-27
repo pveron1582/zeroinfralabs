@@ -39,7 +39,11 @@ export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Pro
             const level        = machine.discovery_level ?? 0;
             const isActive     = machine.id === activeMachineId;
             const isAttacker   = machine.id.includes('attacker');
-            const isCompromised = level >= 4 && !isAttacker;
+            // Comprometida solo si hay credenciales SSH verificadas (no solo WP-Admin)
+            const hasVerifiedSsh = machine.found_credentials?.some(
+              c => c.service === 'ssh' && c.verified
+            ) ?? false;
+            const isCompromised = hasVerifiedSsh && !isAttacker;
             const hidden       = level === 0 && !isAttacker;
 
             // MSF vulnerability state for this machine
@@ -229,43 +233,67 @@ export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Pro
                   </div>
                 );
               })()}
-              {selected.found_credentials && (() => {
-                const creds    = selected.found_credentials;
-                const verified = creds.verified === true;
-                const accent      = verified ? '#10b981' : '#f59e0b';
-                const bgAlpha     = verified ? '#10b98115' : '#f59e0b15';
-                const borderAlpha = verified ? '#10b98140' : '#f59e0b40';
-                return (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs uppercase tracking-widest text-gray-600 font-bold">Credenciales</p>
-                      <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: bgAlpha, color: accent, border: `1px solid ${borderAlpha}` }}>
-                        {verified
-                          ? <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg> Verificadas</>
-                          : <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Sin verificar</>}
-                      </span>
-                    </div>
-                    <div className="rounded-lg font-mono text-xs overflow-hidden"
-                      style={{ border: `1px solid ${borderAlpha}`, background: bgAlpha }}>
-                      <div className="px-3 py-1.5 flex items-center gap-1.5 border-b" style={{ borderColor: borderAlpha, background: '#0000002a' }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        <span style={{ color: accent }} className="text-xs">{creds.file}</span>
-                      </div>
-                      <div className="p-3 space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">usuario</span>
-                          <span className="text-gray-200 font-semibold">{creds.user}</span>
+              {selected.found_credentials && selected.found_credentials.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-gray-600 font-bold mb-2">Credenciales Encontradas</p>
+                  <div className="space-y-3">
+                    {selected.found_credentials.map((cred, idx) => {
+                      const verified = cred.verified === true;
+                      const accent = verified ? '#10b981' : '#f59e0b';
+                      const bgAlpha = verified ? '#10b98115' : '#f59e0b15';
+                      const borderAlpha = verified ? '#10b98140' : '#f59e0b40';
+                      const serviceLabel = cred.service === 'wp-admin' ? 'WordPress Admin' :
+                                           cred.service === 'ssh' ? 'SSH' :
+                                           cred.service === 'ftp' ? 'FTP' :
+                                           cred.service || 'Desconocido';
+                      return (
+                        <div key={idx} className="rounded-lg font-mono text-xs overflow-hidden"
+                          style={{ border: `1px solid ${borderAlpha}`, background: bgAlpha }}>
+                          <div className="px-3 py-1.5 flex items-center justify-between border-b"
+                            style={{ borderColor: borderAlpha, background: '#0000002a' }}>
+                            <div className="flex items-center gap-1.5">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                              </svg>
+                              <span style={{ color: accent }} className="text-xs">{cred.file}</span>
+                            </div>
+                            <span className="text-xs px-1.5 py-0.5 rounded"
+                              style={{ background: bgAlpha, color: accent }}>
+                              {serviceLabel}
+                            </span>
+                          </div>
+                          <div className="p-3 space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500">usuario</span>
+                              <span className="text-gray-200 font-semibold">{cred.user}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500">password</span>
+                              <span style={{ color: accent }} className="font-semibold">{cred.pass}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-1 mt-1 border-t"
+                              style={{ borderColor: borderAlpha }}>
+                              <span className="text-gray-500">estado</span>
+                              <span className="flex items-center gap-1" style={{ color: accent }}>
+                                {verified ? (
+                                  <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                  </svg> Verificado</>
+                                ) : (
+                                  <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                  </svg> Sin verificar</>
+                                )}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">password</span>
-                          <span style={{ color: accent }} className="font-semibold">{creds.pass}</span>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              })()}
+                </div>
+              )}
             </div>
           </div>
         </div>

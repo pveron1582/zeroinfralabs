@@ -55,7 +55,8 @@ export const cmd_ssh = {
           machineId: target.id,
           user: user,
           pass: pw,
-          file: '/etc/passwd'
+          file: '/etc/passwd',
+          service: 'ssh'
         }
       };
     }
