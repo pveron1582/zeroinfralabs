@@ -65,10 +65,15 @@ describe('WordPress Lab (wp01) - Componentes Vulnerables', () => {
     });
 
     it('WPConfigBak debe mostrar solo credenciales WP-Admin', () => {
-      render(<WPConfigBak ip="10.0.0.15" onNavigate={vi.fn()} />);
+      const mockMachine = {
+        files: [
+          { path: '/uploads/config.bak', content: 'WP_ADMIN_USER = admin\nWP_ADMIN_PASS = P@ssw0rd123!\nWP_ADMIN_EMAIL = admin@lab.local' }
+        ]
+      } as any;
+      render(<WPConfigBak ip="10.0.0.15" onNavigate={vi.fn()} machine={mockMachine} />);
       expect(screen.getByText((c) => c.includes('WP_ADMIN_PASS'))).toBeInTheDocument();
       expect(screen.getByText((c) => c.includes('P@ssw0rd123!'))).toBeInTheDocument();
-      // No debe tener credenciales SSH ni DB
+      // No debe tener credenciales SSH ni DB (en este mock no están)
       expect(screen.queryByText((c) => c.includes('SSH_PASS'))).not.toBeInTheDocument();
       expect(screen.queryByText((c) => c.includes('DB_PASS'))).not.toBeInTheDocument();
     });

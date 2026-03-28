@@ -4,8 +4,12 @@
 // Similar al comportamiento de bash/zsh en Linux
 
 import type { Machine } from '../types';
+import { MSF_MODULES } from '../commands/tools/msfModules';
 
-// Lista completa de comandos disponibles en el simulador
+// Comandos de Metasploit para autocompletar
+const MSF_COMMANDS = [
+  'use', 'show', 'set', 'back', 'run', 'exploit', 'check', 'exit', 'help', 'search', 'options', 'info'
+];
 // Se usa para autocompletar cuando el usuario escribe el primer argumento
 const AVAILABLE_COMMANDS = [
   'help',
@@ -116,6 +120,37 @@ export function autocompleteCommand(partial: string): string[] {
  * - autocompleteFile('/etc/pa', machine, '/') → ['passwd']
  * - autocompleteFile('', machine, '/etc/') → todos los items de /etc/
  */
+/**
+ * Autocompleta dentro de Metasploit
+ */
+export function autocompleteMsf(word: string, input: string, isFirstWord: boolean, msfState?: any): string[] {
+  const lowerWord = word.toLowerCase();
+  
+  if (isFirstWord) {
+    return MSF_COMMANDS.filter(c => c.startsWith(lowerWord));
+  }
+  
+  const cmd = input.trim().split(/\s+/)[0].toLowerCase();
+  
+  if (cmd === 'use') {
+    // Autocompleta módulos (auxiliary/, exploit/, etc)
+    return MSF_MODULES.map(m => m.path).filter(p => p.startsWith(lowerWord));
+  }
+  
+  if (cmd === 'set') {
+    // Autocompleta opciones (RHOSTS, LHOST, etc)
+    const options = msfState?.options ? Object.keys(msfState.options) : ['RHOSTS', 'LHOST', 'RPORT', 'LPORT', 'PAYLOAD', 'THREADS'];
+    return options.map(o => o.toUpperCase()).filter(o => o.startsWith(word.toUpperCase()));
+  }
+  
+  if (cmd === 'show') {
+    const opts = ['options', 'info', 'payloads', 'targets', 'exploits', 'auxiliary'];
+    return opts.filter(o => o.startsWith(lowerWord));
+  }
+  
+  return [];
+}
+
 export function autocompleteFile(
   partial: string,
   machine: Machine,
@@ -189,7 +224,8 @@ export function getAutocompleteSuggestions(
   input: string,
   cursorPos: number,
   machine: Machine,
-  currentDir: string
+  currentDir: string,
+  msfState?: any
 ): { suggestions: string[]; completedText: string; replaceStart: number; replaceEnd: number } {
   // Extraer la parte del input hasta el cursor
   const textBeforeCursor = input.slice(0, cursorPos);
@@ -208,8 +244,11 @@ export function getAutocompleteSuggestions(
   
   let suggestions: string[];
   
-  if (isFirstWord) {
-    // Autocompletar comando
+  if (msfState) {
+    // Autocompletar Metasploit
+    suggestions = autocompleteMsf(wordToComplete, input, isFirstWord, msfState);
+  } else if (isFirstWord) {
+    // Autocompletar comando del sistema
     suggestions = autocompleteCommand(wordToComplete);
   } else {
     // Autocompletar archivo/directorio

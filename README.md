@@ -11,6 +11,7 @@
 - **Vulnerabilidades web** (LFI, RCE via PHP)
 - **Networking** (Netcat listeners para reverse shells)
 - **Análisis forense** (lectura de archivos, permisos, etc)
+- **OSINT Básico** (Reconocimiento en sitios web para recolectar información de empleados)
 
 El proyecto está diseñado como un **simulador educativo** con misiones progresivas que guían al usuario a través de escenarios realistas de laboratorios de ciberseguridad.
 
@@ -28,12 +29,17 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 - **Prompt dinámico** - Muestra directorio actual y conserva historial
 - **Múltiples escenarios** - WordPress Lab, SSH Brute Force, EternalBlue, LFI-RCE + Próximo
 - **Misiones progresivas** - Objetivos claros con niveles de descubrimiento
+- **Escenarios Dinámicos**: 5 laboratorios progresivos (WP, SSH Brute, EternalBlue, etc.).
+- **Meterpreter Realista**: Verificación de privilegios mediante `getuid` necesaria para marcar objetivos como comprometidos.
+- **Enumeración Avanzada**: Panel de detalles que muestra progreso visual (naranja para sospecha, verde para explotación).
+- **Sistema de Archivos Virtual**: Archivos editables que impactan la lógica del simulador en tiempo real.
 - **Navegador web simulado** - Acceso a sitios vulnerables dentro del simulador
-- **Mapa de red** - Visualización del estado de máquinas (atacante y objetivos)
-- **Persistencia de estado** - El progreso se guarda automáticamente
+- **Mapa de red y Panel de Enumeración** - Visualización detallada de máquinas, puertos y vulnerabilidades. El panel de **Enumeración** muestra información dinámica (directorios, credenciales) extraída en tiempo real de los archivos de la máquina (ej: `config.bak`).
+- **Credenciales Dinámicas** - El sistema de login de sitios web (WordPress) y el panel de enumeración son sensibles a cambios en los archivos virtuales. Si un usuario edita un archivo de configuración, las credenciales aceptadas por el simulador cambian automáticamente.
+- **Seguimiento de Reconocimiento** - Muestra posibles usuarios SSH descubiertos y resalta fallos en rojo o éxitos en verde.
+- **Persistencia de estado** - El progreso se guarda automáticamente con Zustand persist
 - **Tests completos** - 436 tests unitarios e integración (todos pasando ✓)
 - **Comando Netcat (nc)** - Listener activo con flexibilidad de argumentos
-- **LFI-RCE Scenario** - Exploit completo de Local File Inclusion con reverse shell
 - **Terminal bloqueante** - Soporte para comandos que requieren escucha (nc -nlvp)
 - **Sistema de directorios Linux realista** - Estructura completa de directorios (/etc, /var, /home, /root, /usr, etc.)
 - **Archivos del sistema completos** - /etc/passwd, /etc/shadow, /etc/hostname, /etc/hosts, logs del sistema
@@ -49,6 +55,33 @@ El proyecto está completamente refactorizado con:
 - **Tailwind CSS** - Estilos responsive
 - **Comandos modularizados** - Fácil agregar nuevos comandos y escenarios
 - **Separación clara** - Built-in commands vs Pentesting tools
+
+---
+
+## 🧪 Laboratorios Disponibles
+
+ZeroInfra Labs incluye una serie de escenarios progresivos:
+
+### Laboratorio 01: WordPress Exploitation
+Enfocado en enumeración web, descubrimiento de archivos sensibles (`config.bak`) y explotación de vulnerabilidades conocidas en CMS.
+
+### Laboratorio 02: SSH Brute Force
+Práctica de recolección de información (OSINT) en sitios corporativos para generar listas de usuarios y ataque de fuerza bruta con `hydra`.
+
+### Laboratorio 03: EternalBlue (MS17-010)
+Explotación de vulnerabilidades criticas en Windows mediante Metasploit, manejo de sesiones de Meterpreter y confirmación de privilegios.
+
+### Laboratorio 04: Local File Inclusion (LFI)
+Laboratorio avanzado de vulnerabilidades web donde se aprende a leer archivos del sistema y escalar a RCE mediante la subida de payloads PHP.
+
+**Objetivos:**
+- Enumeración de aplicaciones web.
+- Descubrimiento de LFI guiado paso a paso.
+- Preparación e inspección de payloads PHP.
+- Uso de `nc` para recibir conexiones reversas (Reverse Shell).
+
+### Laboratorio 05: Privilege Escalation (Próximamente)
+Escenario centrado en la post-explotación y elevación de privilegios en sistemas Linux.
 
 ### 🛠️ Stack Tecnológico
 
@@ -100,10 +133,10 @@ src/
 │       │   ├── msfMeterpreter.ts, msfShell.ts
 │       └── __tests__/                # Tests de herramientas
 │
-├── exercises/                        # Configuración de escenarios
-│   ├── scenarios.ts                  # Registry central
-│   ├── exercise01.ts ~ exercise05.ts # Escenarios
-│   └── templates.ts                  # Plantillas reutilizables
+├── laboratorios/                      # Configuración de laboratorios (escenarios)
+│   ├── laboratorios.ts                # Registro central (antes laboratorios.ts)
+│   ├── laboratorio01.ts ~ laboratorio05.ts # Escenarios numerados
+│   └── templates.ts                   # Plantillas de máquinas y servicios
 │
 ├── components/                       # Componentes React
 │   ├── Terminal.tsx
@@ -206,7 +239,7 @@ src/
 **Prioridad:** Baja
 
 ### ✅ Bug resuelto: Escenarios 3 y 4 — `ls` y `cd` no funcionaban
-**Descripción:** Resuelto en v2.5.0. `exercise03.ts` y `exercise04.ts` tenían su propia copia de `createAttackerMachine` que retornaba `files: []`, dejando la máquina atacante sin sistema de archivos. Ahora usan `templates.ts`.
+**Descripción:** Resuelto en v2.5.0. `laboratorio03.ts` y `laboratorio04.ts` tenían su propia copia de `createAttackerMachine` que retornaba `files: []`, dejando la máquina atacante sin sistema de archivos. Ahora usan `templates.ts`.
 
 ### ✅ Bug resuelto: `ls` mostraba directorios como subdirectorios de sí mismos
 **Descripción:** Resuelto en v2.5.1. El parser de marcadores `.dir` usaba `slice(0,-4)` dejando barra diagonal, causando que `/var/mail` apareciera dentro de `/var/mail/`.

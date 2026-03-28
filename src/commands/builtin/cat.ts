@@ -47,15 +47,24 @@ export const cmd_cat = {
       content = content.replace(/LISTENER_PORT/g, String(listeningPort));
     }
 
-    // Si es /root/root.txt, buscar la misión de capturar flag
+    // Si es /root/root.txt o /root/payload.php, buscar la misión de inspeccionar/capturar
     let completedMissionId: number | undefined;
-    if (file.path === '/root/root.txt') {
+    const isPayload = file.path === '/root/payload.php';
+    const isFlag = file.path === '/root/root.txt';
+    
+    if (isPayload || isFlag) {
       for (const m of allMachines) {
-        const step = m.learning_steps.find(s =>
-          s.task.toLowerCase().includes('flag') ||
-          s.task.toLowerCase().includes('capturar') ||
-          s.text.toLowerCase().includes('/root/root.txt')
-        );
+        const step = m.learning_steps.find(s => {
+          const lTask = s.task.toLowerCase();
+          const lText = s.text.toLowerCase();
+          if (isPayload) {
+            return (lTask.includes('payload') || lText.includes('payload.php')) && lText.includes('cat');
+          }
+          if (isFlag) {
+            return lTask.includes('flag') || lTask.includes('capturar') || lText.includes('/root/root.txt');
+          }
+          return false;
+        });
         if (step) { completedMissionId = step.id; break; }
       }
     }

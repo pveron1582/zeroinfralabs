@@ -257,7 +257,7 @@ describe('NetworkMap', () => {
     const targetCard = screen.getByText('target');
     fireEvent.click(targetCard);
 
-    expect(screen.getByText('Credenciales Encontradas')).toBeInTheDocument();
+    expect(screen.getByText('Credenciales Comprometidas')).toBeInTheDocument();
     expect(screen.getByText('admin')).toBeInTheDocument();
     expect(screen.getByText('password123')).toBeInTheDocument();
   });
@@ -288,7 +288,7 @@ describe('NetworkMap', () => {
     const targetCard = screen.getByText('target');
     fireEvent.click(targetCard);
 
-    expect(screen.getByText('Sin verificar')).toBeInTheDocument();
+    expect(screen.getByText('Pendiente de Validación')).toBeInTheDocument();
   });
 
   it('debe cambiar la sesión activa al cambiar de máquina', () => {

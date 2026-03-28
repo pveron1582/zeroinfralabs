@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.46% </span>
+                <span class="strong">78.26% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>51/65</span>
+                <span class='fraction'>54/69</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">89.74% </span>
+                <span class="strong">89.13% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>35/39</span>
+                <span class='fraction'>41/46</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.69% </span>
+                <span class="strong">59.25% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>15/26</span>
+                <span class='fraction'>16/27</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">79.66% </span>
+                <span class="strong">79.36% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>47/59</span>
+                <span class='fraction'>50/63</span>
             </div>
         
             
@@ -362,7 +362,17 @@
 <a name='L297'></a><a href='#L297'>297</a>
 <a name='L298'></a><a href='#L298'>298</a>
 <a name='L299'></a><a href='#L299'>299</a>
-<a name='L300'></a><a href='#L300'>300</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -542,7 +552,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -565,6 +574,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -834,10 +854,9 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onUploadSuccess, att
               &lt;div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded"&gt;
                 &lt;p className="font-semibold text-blue-800 mb-2"&gt;📋 Instrucciones:&lt;/p&gt;
                 &lt;ol className="list-decimal list-inside space-y-1 text-sm text-blue-700"&gt;
-                  &lt;li&gt;Lee el payload: &lt;code className="bg-blue-100 px-1 rounded"&gt;cat /root/payload.php&lt;/code&gt;&lt;/li&gt;
-                  &lt;li&gt;Selecciona el archivo abajo&lt;/li&gt;
-                  &lt;li&gt;Haz clic en "Subir Archivo"&lt;/li&gt;
-                  &lt;li&gt;Accede via LFI: &lt;code className="bg-blue-100 px-1 rounded"&gt;?page=uploads/payload.php&lt;/code&gt;&lt;/li&gt;
+                  &lt;li&gt;Sube el archivo para la reverse shell (payload.php)&lt;/li&gt;
+                  &lt;li&gt;Inicia la escucha en tu terminal Kali: &lt;code className="bg-blue-100 px-1 rounded"&gt;nc -nlvp 4444&lt;/code&gt;&lt;/li&gt;
+                  &lt;li&gt;Ejecútalo mediante el parámetro LFI: &lt;code className="bg-blue-100 px-1 rounded"&gt;?page=uploads/payload.php&lt;/code&gt;&lt;/li&gt;
                 &lt;/ol&gt;
               &lt;/div&gt;
               &lt;div&gt;
@@ -867,6 +886,17 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onUploadSuccess, att
       &lt;/div&gt;
     );
   }
+&nbsp;
+  // Detectar ejecución de reverse shell mediante LFI
+  React.useEffect(() =&gt; {
+    if (page &amp;&amp; (page.includes('payload.php') || page.includes('shell.php'))) {
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (listeningPort === 4444) {
+        // En un entorno real esto dispararía la conexión. 
+        // Aquí notificamos al componente padre para que desbloquee la terminal.
+<span class="cstat-no" title="statement not covered" >        onUploadSuccess(); // Por ahora usamos esto para validar el paso final</span>
+      }
+    }
+  }, [page, listeningPort, onUploadSuccess]);
 &nbsp;
   const phpPage = page &amp;&amp; PHP_PAGES[page];
   if (phpPage) {
@@ -967,7 +997,7 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onUploadSuccess, att
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-27T04:05:13.890Z
+                at 2026-03-28T02:04:24.138Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

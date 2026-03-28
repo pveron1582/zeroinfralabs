@@ -1,4 +1,4 @@
-// ── exercises/templates.ts ──────────────────────────────────────
+// ── laboratorios/templates.ts ──────────────────────────────────────
 // Plantillas reutilizables para crear escenarios de pentesting
 // Evita duplicación de código en los archivos de ejercicios
 
@@ -36,7 +36,9 @@ export interface ScenarioBuilderConfig {
 
 export function buildScenario(config: ScenarioBuilderConfig): Scenario {
   const attacker = createAttackerMachine(config.networkRange);
-  if (config.attackerFiles?.length) attacker.files = config.attackerFiles;
+  if (config.attackerFiles?.length) {
+    attacker.files = [...attacker.files, ...config.attackerFiles];
+  }
   const target: Machine = {
     ...config.targetMachine,
     machine_info: { ...config.targetMachine.machine_info, ip: '' } as MachineInfo,

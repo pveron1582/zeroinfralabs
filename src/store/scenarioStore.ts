@@ -4,8 +4,9 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Machine, Mission, Scenario } from '../types';
-import { SCENARIOS } from '../exercises/scenarios';
+import { assignDHCP } from '../utils/network';
+import type { Machine, Scenario, MachineInfo, Port, LearningStep, Mission, FileEntry, BlockingCommand } from '../types';
+import { SCENARIOS } from '../laboratorios/laboratorios';
 import type { MsfState } from '../commands/tools/msfconsole';
 
 // ── Tipos del Store ────────────────────────────────────────────────
@@ -45,6 +46,7 @@ interface ScenarioState {
 
   // NC Listener state (para validación de payload)
   listeningPort: number | null;
+  blockingCommand: BlockingCommand | null; // New state variable
 
   // Current directory for terminal navigation
   currentDir: string;
@@ -57,6 +59,11 @@ interface ScenarioState {
   completeMission: (id: number) => void;
   findCredentials: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
   verifyCredentials: (machineId: string, service?: string) => void;
+  setPossibleUsers: (machineId: string, users: string[]) => void;
+  addFailedUser: (machineId: string, user: string) => void;
+  addFileToMachine: (machineId: string, file: FileEntry) => void;
+  addExploredDirectory: (machineId: string, path: string) => void;
+  confirmRCE: (machineId: string, user: string, method: string) => void;
   changeMachine: (machineId: string) => void;
   setActiveApp: (app: 'terminal' | 'browser') => void;
   refreshBrowser: () => void;
@@ -71,8 +78,10 @@ interface ScenarioState {
   setBrowserLoggedIn: (loggedIn: boolean) => void;
   setBrowserNavHistory: (history: string[], idx: number) => void;
   setListeningPort: (port: number | null) => void;
+  setBlockingCommand: (command: BlockingCommand | null) => void; // New action
   setCurrentDir: (dir: string) => void;
   setMsfState: (state: MsfState | null) => void;
+  reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 }
 
 // ── Constantes ─────────────────────────────────────────────────────
@@ -101,6 +110,7 @@ export const useScenarioStore = create<ScenarioState>()(
       browserNavHistory: ['https://www.google.com'],
       browserNavIdx: 0,
       listeningPort: null,
+      blockingCommand: null, // Initialize new state variable
       currentDir: '/',
       msfState: null,
 
@@ -142,8 +152,9 @@ export const useScenarioStore = create<ScenarioState>()(
             browserNavHistory: ['https://www.google.com'],
             browserNavIdx: 0,
             listeningPort: null,
+            blockingCommand: null, // Reset new state variable
             msfState: null,
-            currentDir: '/root',
+            currentDir: '/root/',
           });
           window.history.pushState({ view: 'workspace', scenarioId: id }, '');
         }, 4500);
@@ -223,6 +234,77 @@ export const useScenarioStore = create<ScenarioState>()(
         });
       },
 
+      setPossibleUsers: (machineId, users) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m => 
+            m.id === machineId ? { ...m, possible_ssh_users: users } : m
+          )
+        });
+      },
+
+      addFailedUser: (machineId, user) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m => {
+            if (m.id !== machineId) return m;
+            const failed = m.failed_ssh_users || [];
+            return { ...m, failed_ssh_users: [...failed, user] };
+          })
+        });
+      },
+
+      addFileToMachine: (machineId: string, file: FileEntry) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m => {
+            if (m.id !== machineId) return m;
+            // Evitar duplicados (con el mismo path)
+            const filtered = (m.files || []).filter(f => f.path !== file.path);
+            return {
+              ...m,
+              files: [...filtered, file]
+            };
+          })
+        });
+      },
+
+      addExploredDirectory: (machineId: string, path: string) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m => {
+            if (m.id !== machineId) return m;
+            const dirs = m.web_enumeration?.directories || [];
+            if (dirs.some(d => d.path === path)) return m;
+            return {
+              ...m,
+              web_enumeration: {
+                ...m.web_enumeration!,
+                directories: [...dirs, { path, status: 200, description: 'Navegación' }]
+              }
+            };
+          })
+        });
+      },
+
+      confirmRCE: (machineId: string, user: string, method: string) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m => {
+            if (m.id !== machineId) return m;
+            const creds = m.found_credentials || [];
+            if (creds.some(c => c.user === user)) return m;
+            return {
+              ...m,
+              found_credentials: [
+                ...creds, 
+                { user, pass: 'vía shell', file: method, verified: true, service: 'reverse-shell' }
+              ]
+            };
+          })
+        });
+      },
+
       changeMachine: (machineId) => {
         set({ activeMachineId: machineId });
       },
@@ -267,6 +349,7 @@ export const useScenarioStore = create<ScenarioState>()(
 
       setBrowserNavHistory: (history, idx) => set({ browserNavHistory: history, browserNavIdx: idx }),
       setListeningPort: (port) => set({ listeningPort: port }),
+      setBlockingCommand: (command) => set({ blockingCommand: command }),
       setCurrentDir: (dir) => set({ currentDir: dir }),
 
       getActiveMachine: () => {
@@ -279,6 +362,28 @@ export const useScenarioStore = create<ScenarioState>()(
         return machines.filter(m =>
           currentScenario.machines.some(sm => sm.id === m.id)
         );
+      },
+
+      reportVulnerability: (machineId, vulnId, status) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m => {
+            if (m.id !== machineId) return m;
+            const vulnerabilities = m.vulnerabilities || [];
+            const existingIdx = vulnerabilities.findIndex(v => v.id === vulnId);
+            
+            if (existingIdx >= 0) {
+              const updated = [...vulnerabilities];
+              updated[existingIdx] = { ...updated[existingIdx], status };
+              return { ...m, vulnerabilities: updated };
+            }
+            
+            return { 
+              ...m, 
+              vulnerabilities: [...vulnerabilities, { id: vulnId, name: vulnId, status }] 
+            };
+          })
+        });
       },
     }),
     {

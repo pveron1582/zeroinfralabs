@@ -98,7 +98,8 @@ Priv: Elevate Commands
   }
 
   if (cmd === 'getuid') {
-    const res = { output: `MSF_STATE:${JSON.stringify(state)}\nServer username: NT AUTHORITY\\SYSTEM\n` };
+    const newState: MsfState = { ...state, uidChecked: true };
+    const res = withState(`Server username: NT AUTHORITY\\SYSTEM\n`, newState);
     return { ...res, completedMissionId: ctx.currentMissionId === 5 ? 5 : undefined };
   }
 

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.9% </span>
+                <span class="strong">91.83% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>40/44</span>
+                <span class='fraction'>45/49</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.72% </span>
+                <span class="strong">84.31% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>36/43</span>
+                <span class='fraction'>43/51</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">93.75% </span>
+                <span class="strong">94.28% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>30/32</span>
+                <span class='fraction'>33/35</span>
             </div>
         
             
@@ -140,12 +140,24 @@
 <a name='L75'></a><a href='#L75'>75</a>
 <a name='L76'></a><a href='#L76'>76</a>
 <a name='L77'></a><a href='#L77'>77</a>
-<a name='L78'></a><a href='#L78'>78</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">9x</span>
@@ -186,17 +198,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
@@ -215,6 +232,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// ── commands/tools/hydra.ts ──────────────────────────────────────
@@ -263,7 +287,12 @@ export const cmd_hydra = {
 &nbsp;
     let output = `Hydra v9.2 starting at ${new Date().toLocaleString()}\n[DATA] target: ${ip}, service: ${svc}, port: ${port.port}\n[ATTACK] user "${user}" | wordlist "${wl}"\n`;
 &nbsp;
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (port.credentials &amp;&amp; port.credentials.user === user) {
+    // Buscar la máquina atacante para leer su wordlist real
+    const attacker = allMachines.find(m =&gt; m.machine_info.type === 'workstation' || m.machine_info.hostname.includes('kali'));
+    const wordlistFile = attacker?.files.find(f =&gt; f.path === wl || (<span class="branch-1 cbranch-no" title="branch not covered" >wl.length &gt; 0 &amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >f</span>.path.endsWith(`/${wl}`)))</span>;
+    const hasCorrectPass = port.credentials &amp;&amp; wordlistFile?.content.includes(port.credentials.pass);
+&nbsp;
+    if (port.credentials &amp;&amp; port.credentials.user === user &amp;&amp; hasCorrectPass) {
       output += `\n[${port.port}][${svc}] host: ${ip}   login: ${user}   password: ${port.credentials.pass}\n1 of 1 target successfully completed, 1 valid password found`;
 &nbsp;
       let missionId: number | undefined;
@@ -291,7 +320,14 @@ export const cmd_hydra = {
       };
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return { output: output + `\n[ERROR] No valid password found for user "${user}"`, isError: true };</span>
+<span class="cstat-no" title="statement not covered" >    return { </span>
+      output: output + `\n[ERROR] No valid password found for user "${user}"`, 
+      isError: true,
+      failedUser: {
+        machineId: target.id,
+        user
+      }
+    };
   }
 };
 &nbsp;</pre></td></tr></table></pre>
@@ -301,7 +337,7 @@ export const cmd_hydra = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-27T04:05:13.890Z
+                at 2026-03-28T02:04:24.138Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

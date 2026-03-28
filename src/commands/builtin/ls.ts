@@ -52,7 +52,7 @@ export const cmd_ls = {
     // Separar flags y directorio
     let showAll = false;
     let showLong = false;
-    let targetDir = currentDir || '/';
+    let targetDir = getCurrentDir(currentDir || '/');
     
     // Parsear argumentos correctamente
     args.forEach(arg => {
@@ -68,7 +68,7 @@ export const cmd_ls = {
     
     // Si no se pasa argumento, usar el directorio actual
     if (!args[0]) {
-      targetDir = currentDir || '/';
+      targetDir = getCurrentDir(currentDir || '/');
     }
 
     // Filtrar archivos en el directorio

@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useScenarioStore } from './store/scenarioStore';
-import { SCENARIOS } from './exercises/scenarios';
+import { SCENARIOS } from './laboratorios/laboratorios';
 import { resetMsfState, restoreMsfState, getMsfState } from './commands';
 import { LandingPage }  from './components/LandingPage';
 import { Terminal }     from './components/Terminal';
@@ -48,6 +48,8 @@ export default function App() {
   const verifyCredentials = useScenarioStore(state => state.verifyCredentials);
   const changeMachine = useScenarioStore(state => state.changeMachine);
   const setView = useScenarioStore(state => state.setView);
+  const setPossibleUsers = useScenarioStore(state => state.setPossibleUsers);
+  const addFailedUser = useScenarioStore(state => state.addFailedUser);
 
   const currentMissionId = useScenarioStore(state => state.currentMissionId);
 
@@ -249,6 +251,7 @@ export default function App() {
                   onCredentialsFound={findCredentials}
                   onVerifyCredentials={verifyCredentials}
                   onChangeMachine={changeMachine}
+                  onFailedUser={addFailedUser}
                   termColor={termColor}
                 />
               )}
@@ -267,6 +270,7 @@ export default function App() {
                 scenarioHasWeb={true}
                 wpDiscoveryLevel={wpDiscoveryLevel}
                 mission3Already={mission3Already}
+                onSetPossibleUsers={setPossibleUsers}
               />
             </div>
             )}

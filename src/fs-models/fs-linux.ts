@@ -453,7 +453,8 @@ guest
 user
 demo
 temp
-backup`, type: 'text' },
+backup
+Quier0unaument0`, type: 'text' },
 
     // ═══════════════════════════════════════════════════════════════
     // /tmp/ - Archivos temporales

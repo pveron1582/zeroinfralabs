@@ -215,7 +215,7 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #047857)', boxShadow: '0 0 14px #10b98138' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
           </div>
-          <span className="text-sm font-bold text-gray-200 tracking-tight">CyberOps</span>
+          <span className="text-sm font-bold text-gray-200 tracking-tight">ZI Labs</span>
           <span className="text-xs text-gray-500">v4.5</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -240,7 +240,7 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           {scenarios.map((s, i) => (<ScenarioCard key={s.id} scenario={s} index={i} onSelect={onSelect} />))}
         </div>
       </main>
-      <footer className="relative z-10 py-4 text-center text-xs text-gray-600" style={{ borderTop: '1px solid #1c2a2a' }}>CyberOps · Entorno de práctica controlado · Todos los escenarios son ficticios</footer>
+      <footer className="relative z-10 py-4 text-center text-xs text-gray-600" style={{ borderTop: '1px solid #1c2a2a' }}>ZI Labs · Entorno de práctica controlado · Todos los escenarios son ficticios</footer>
       <style>{`@keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }`}</style>
     </div>
   );

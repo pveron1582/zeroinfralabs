@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useScenarioStore } from '../scenarioStore';
-import { SCENARIOS } from '../../exercises/scenarios';
+import { SCENARIOS } from '../../laboratorios/laboratorios';
 
 // Mock de persistencia para que no interfiera con el estado limpio de los tests
 // Esto evita que Zustand persista el estado entre tests

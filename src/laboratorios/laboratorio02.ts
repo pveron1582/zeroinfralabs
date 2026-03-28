@@ -1,8 +1,7 @@
-// ── exercises/exercise02.ts ───────────────────────────────────────
 // Scenario 2 — SSH Brute Force Lab
 // Datos específicos para este escenario
 
-import { buildScenario, COMMON_PORTS, createFile, createLinuxFileSystem } from './templates';
+import { buildScenario, createFile, createLinuxFileSystem } from './templates';
 import type { Scenario } from '../types';
 
 // Datos específicos del escenario SSH Brute Force
@@ -11,11 +10,12 @@ const scenario02Data = {
   name: 'SSH Brute Force Lab',
   networkRange: '10.10.10.0/24',
   flags: {
+    user: 'THM{SSH_USER_ACCESS_GRANTED}',
     root: 'THM{SSH_BRUTE_FORCE_SUCCESS}',
   },
   credentials: {
-    user: 'root',
-    pass: 'toor',
+    user: 'gonzalo',
+    pass: 'Quier0unaument0',
   },
   targetMachine: {
     id: 'lab-scenario-02-ssh',
@@ -25,17 +25,20 @@ const scenario02Data = {
     type: 'server',
     ports: [
       { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.9p1 Ubuntu' },
-      { port: 8080, protocol: 'tcp', state: 'open', service: 'http-alt', version: 'nginx/1.18.0' },
+      { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache/2.4.41' },
     ],
-    webServer: 'nginx/1.18.0',
+    webServer: 'Apache/2.4.41',
     cms: 'none',
-    directories: [],
+    directories: [
+      { path: '/', status: 200, description: 'Consultancy Site' }
+    ],
   },
   learningSteps: [
-    { task: 'Reconocimiento de red', text: 'Descubrir hosts: arp-scan <network/cidr>', discoveryLevel: 1 },
-    { task: 'Escaneo de puertos', text: 'Identificar servicios: nmap -sV <target-ip>', discoveryLevel: 2 },
-    { task: 'Fuerza bruta SSH', text: 'Obtener credenciales: hydra -l root -P rockyou.txt <target-ip> ssh', discoveryLevel: 3 },
-    { task: 'Acceso por SSH', text: 'Conectarse: ssh root@<target-ip> <password>', discoveryLevel: 4 },
+    { id: 1, task: 'Reconocimiento de red', text: 'Descubrir hosts: arp-scan <network/cidr>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 1 },
+    { id: 2, task: 'Escaneo de puertos', text: 'Identificar servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 2 },
+    { id: 3, task: 'Reconocimiento Web', text: 'Acceder al sitio web para identificar empleados y posibles usuarios.', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
+    { id: 4, task: 'Fuerza bruta SSH', text: 'Obtener credenciales: hydra -l <username> -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
+    { id: 5, task: 'Acceso por SSH', text: 'Conectarse: ssh <username>@<target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4 },
   ],
 };
 
@@ -43,9 +46,9 @@ const scenario02Data = {
 export const scenario_02: Scenario = buildScenario({
   id: scenario02Data.id,
   name: scenario02Data.name,
-  description: 'Escaneo de red y ataque de fuerza bruta por SSH.',
+  description: 'Escaneo de red y ataque de fuerza bruta por SSH basado en inteligencia de fuentes abiertas (OSINT) básica en un sitio web.',
   difficulty: 'Easy',
-  category: 'Network',
+  category: 'Web', // Cambiado a Web para habilitar el navegador
   networkRange: scenario02Data.networkRange,
   targetMachine: {
     id: scenario02Data.targetMachine.id,
@@ -68,8 +71,8 @@ export const scenario_02: Scenario = buildScenario({
       directories: scenario02Data.targetMachine.directories,
     },
     files: [
-      ...createLinuxFileSystem({ username: 'root' }),
-      createFile('/root/flag.txt', scenario02Data.flags.root),
+      ...createLinuxFileSystem({ username: 'gonzalo' }),
+      createFile('/home/gonzalo/user.txt', scenario02Data.flags.user),
     ],
   },
   learningSteps: scenario02Data.learningSteps,

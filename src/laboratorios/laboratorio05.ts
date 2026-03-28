@@ -1,4 +1,4 @@
-// ── exercises/exercise05.ts ───────────────────────────────────────
+// ── laboratorios/laboratorio05.ts ───────────────────────────────────────
 // Scenario 5 — Privilege Escalation Lab
 // Datos y configuración específicos para este escenario
 

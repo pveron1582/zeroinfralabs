@@ -9,6 +9,7 @@ export interface MsfState {
   sessionOpen: boolean;     // meterpreter/shell session established
   shellMode: boolean;       // dropped into Windows cmd shell via 'shell' cmd
   auxChecked: boolean;      // auxiliary smb_ms17_010 ran successfully
+  uidChecked: boolean;      // getuid executed in meterpreter
   lastSearchResults?: string[]; // paths from last search command
 }
 
@@ -18,4 +19,5 @@ export const INITIAL_STATE: MsfState = {
   sessionOpen: false,
   shellMode: false,
   auxChecked: false,
+  uidChecked: false,
 };

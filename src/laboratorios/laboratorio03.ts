@@ -1,4 +1,4 @@
-// ── exercises/exercise03.ts ───────────────────────────────────────
+// ── laboratorios/laboratorio03.ts ───────────────────────────────────────
 // Scenario 3 — EternalBlue / MS17-010 Windows 7
 // Datos y configuración específicos para este escenario
 

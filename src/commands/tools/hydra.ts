@@ -44,7 +44,12 @@ export const cmd_hydra = {
 
     let output = `Hydra v9.2 starting at ${new Date().toLocaleString()}\n[DATA] target: ${ip}, service: ${svc}, port: ${port.port}\n[ATTACK] user "${user}" | wordlist "${wl}"\n`;
 
-    if (port.credentials && port.credentials.user === user) {
+    // Buscar la máquina atacante para leer su wordlist real
+    const attacker = allMachines.find(m => m.machine_info.type === 'workstation' || m.machine_info.hostname.includes('kali'));
+    const wordlistFile = attacker?.files.find(f => f.path === wl || (wl.length > 0 && f.path.endsWith(`/${wl}`)));
+    const hasCorrectPass = port.credentials && wordlistFile?.content.includes(port.credentials.pass);
+
+    if (port.credentials && port.credentials.user === user && hasCorrectPass) {
       output += `\n[${port.port}][${svc}] host: ${ip}   login: ${user}   password: ${port.credentials.pass}\n1 of 1 target successfully completed, 1 valid password found`;
 
       let missionId: number | undefined;
@@ -72,6 +77,13 @@ export const cmd_hydra = {
       };
     }
 
-    return { output: output + `\n[ERROR] No valid password found for user "${user}"`, isError: true };
+    return { 
+      output: output + `\n[ERROR] No valid password found for user "${user}"`, 
+      isError: true,
+      failedUser: {
+        machineId: target.id,
+        user
+      }
+    };
   }
 };

@@ -23,23 +23,23 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.9% </span>
+                <span class="strong">64.28% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>26/42</span>
+                <span class='fraction'>27/42</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">56.6% </span>
+                <span class="strong">60.37% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>30/53</span>
+                <span class='fraction'>32/53</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.5% </span>
+                <span class="strong">68.75% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>10/16</span>
+                <span class='fraction'>11/16</span>
             </div>
         
             
@@ -450,9 +450,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">42x</span>
-<span class="cline-any cline-yes">42x</span>
-<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -460,18 +460,18 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">42x</span>
-<span class="cline-any cline-yes">42x</span>
-<span class="cline-any cline-yes">42x</span>
-<span class="cline-any cline-yes">42x</span>
-<span class="cline-any cline-yes">42x</span>
-<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-yes">45x</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -498,7 +498,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">154x</span>
+<span class="cline-any cline-yes">165x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -514,12 +514,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -548,7 +546,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -761,7 +761,7 @@ interface Props { scenarios: Scenario[]; onSelect: (id: string) =&gt; void; }
 &nbsp;
 export function LandingPage({ scenarios, onSelect }: Props) {
   const [ready, setReady] = useState(false);
-  useEffect(() =&gt; { const t = setTimeout(<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >s</span>etReady(true), 5</span>0); return () =&gt; clearTimeout(t); }, []);
+  useEffect(() =&gt; { const t = setTimeout(() =&gt; setReady(true), 50); return () =&gt; clearTimeout(t); }, []);
 &nbsp;
   return (
     &lt;div className="min-h-screen flex flex-col" style={{ background: '#0b1015', fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}&gt;
@@ -772,7 +772,7 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           &lt;div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #047857)', boxShadow: '0 0 14px #10b98138' }}&gt;
             &lt;svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5"&gt;&lt;polyline points="4 17 10 11 4 5"/&gt;&lt;line x1="12" y1="19" x2="20" y2="19"/&gt;&lt;/svg&gt;
           &lt;/div&gt;
-          &lt;span className="text-sm font-bold text-gray-200 tracking-tight"&gt;CyberOps&lt;/span&gt;
+          &lt;span className="text-sm font-bold text-gray-200 tracking-tight"&gt;ZI Labs&lt;/span&gt;
           &lt;span className="text-xs text-gray-500"&gt;v4.5&lt;/span&gt;
         &lt;/div&gt;
         &lt;div className="flex items-center gap-2 text-xs text-gray-500"&gt;
@@ -780,7 +780,7 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           {scenarios.length} labs disponibles
         &lt;/div&gt;
       &lt;/header&gt;
-      &lt;section className="relative z-10 px-8 pt-16 pb-10 text-center" style={{ opacity: ready ? <span class="branch-0 cbranch-no" title="branch not covered" >1 : 0</span>, transform: ready ? <span class="branch-0 cbranch-no" title="branch not covered" >'none' : '</span>translateY(10px)', transition: 'opacity 0.5s ease-out, transform 0.5s ease-out' }}&gt;
+      &lt;section className="relative z-10 px-8 pt-16 pb-10 text-center" style={{ opacity: ready ? 1 : 0, transform: ready ? 'none' : 'translateY(10px)', transition: 'opacity 0.5s ease-out, transform 0.5s ease-out' }}&gt;
         &lt;div className="flex items-center justify-center gap-3 mb-7"&gt;
           &lt;div className="h-px w-16" style={{ background: 'linear-gradient(90deg, transparent, #2d3f3f)' }}/&gt;
           &lt;span className="text-xs font-mono text-gray-500 tracking-widest uppercase"&gt;Pentesting Lab Simulator&lt;/span&gt;
@@ -797,7 +797,7 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           {scenarios.map((s, i) =&gt; (&lt;ScenarioCard key={s.id} scenario={s} index={i} onSelect={onSelect} /&gt;))}
         &lt;/div&gt;
       &lt;/main&gt;
-      &lt;footer className="relative z-10 py-4 text-center text-xs text-gray-600" style={{ borderTop: '1px solid #1c2a2a' }}&gt;CyberOps · Entorno de práctica controlado · Todos los escenarios son ficticios&lt;/footer&gt;
+      &lt;footer className="relative z-10 py-4 text-center text-xs text-gray-600" style={{ borderTop: '1px solid #1c2a2a' }}&gt;ZI Labs · Entorno de práctica controlado · Todos los escenarios son ficticios&lt;/footer&gt;
       &lt;style&gt;{`@keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }`}&lt;/style&gt;
     &lt;/div&gt;
   );
@@ -808,7 +808,7 @@ export function LandingPage({ scenarios, onSelect }: Props) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-27T04:05:13.890Z
+                at 2026-03-28T02:04:24.138Z
             </div>
         <script src="../prettify.js"></script>
         <script>

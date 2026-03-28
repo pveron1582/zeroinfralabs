@@ -51,7 +51,7 @@ export interface Machine {
   };
   learning_steps: LearningStep[];
   files: FileEntry[];
-  vulnerabilities?: { id: string; name?: string; module_aux?: string; module_exploit?: string }[];
+  vulnerabilities?: { id: string; name?: string; module_aux?: string; module_exploit?: string; status?: 'detected' | 'confirmed' }[];
   found_credentials?: {
     file: string;
     user: string;
@@ -59,6 +59,8 @@ export interface Machine {
     verified: boolean;
     service?: string; // 'ssh', 'wp-admin', 'ftp', etc.
   }[];
+  possible_ssh_users?: string[];
+  failed_ssh_users?: string[];
 }
 
 export interface Mission {
@@ -82,22 +84,34 @@ export interface Scenario {
   missions: Mission[];
 }
 
+export interface BlockingCommand {
+  message: string;
+  cancelKey?: string;
+  listeningPort?: number;
+  connected?: boolean;
+}
+
 export interface CommandResponse {
   output: string;
   isError?: boolean;
   completedMissionId?: number;
   newMachineId?: string;
-  blockingCommand?: {
-    message: string;  // Mensaje de estado (ej: "Escuchando en puerto 4444...")
-    cancelKey?: string; // Tecla para cancelar (deprecated, ahora usa Ctrl+C)
-    listeningPort?: number; // Puerto en el que nc está escuchando (para validar payload)
-  };
+  blockingCommand?: BlockingCommand;
   foundCredentials?: {
     machineId: string;
     user: string;
     pass: string;
     file: string;
     service?: string; // 'ssh', 'wp-admin', 'ftp', etc.
+  };
+  failedUser?: {
+    machineId: string;
+    user: string;
+  };
+  foundVulnerability?: {
+    machineId: string;
+    vulnId: string;
+    status: 'detected' | 'confirmed';
   };
 }
 

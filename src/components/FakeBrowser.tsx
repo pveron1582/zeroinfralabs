@@ -7,7 +7,28 @@ import { WPLogin }     from './fakesites/wordpress/wp01/Login';
 import { WPDashboard } from './fakesites/wordpress/wp01/Dashboard';
 import { WPUploads }   from './fakesites/wordpress/wp01/Uploads';
 import { WPConfigBak } from './fakesites/wordpress/wp01/ConfigBak';
+
+// Utilidad para extraer credenciales dinámicas de un archivo de configuración
+const parseWPConfig = (content: string) => {
+  const lines = content.split('\n');
+  let user = 'admin';
+  let pass = 'P@ssw0rd123!';
+  
+  lines.forEach(line => {
+    const cleanLine = line.trim();
+    if (cleanLine.startsWith('#') || !cleanLine.includes('=')) return;
+
+    const parts = cleanLine.split('=');
+    const key = parts[0].trim().toUpperCase();
+    const value = parts[1].trim().replace(/['"]/g, '');
+
+    if (key.includes('USER') || key.includes('DB_USER')) user = value;
+    if (key.includes('PASS') || key.includes('DB_PASS')) pass = value;
+  });
+  return { user, pass };
+};
 import { InclusionSite } from './fakesites/lfi_lab/InclusionSIte';
+import { ConsultancySite } from './fakesites/ConsultancySite';
 
 // ── Componentes de Soporte (Google, 404, etc) ──────────────────────
 
@@ -205,12 +226,14 @@ interface FakeBrowserProps {
   scenarioHasWeb: boolean;
   wpDiscoveryLevel: number;
   mission3Already: boolean;
+  onSetPossibleUsers: (machineId: string, users: string[]) => void;
 }
 
 export function FakeBrowser({
   allMachines, onClose, onMissionComplete,
   onCredentialsFound, onVerifyCredentials,
-  scenarioHasWeb, wpDiscoveryLevel, mission3Already
+  scenarioHasWeb, wpDiscoveryLevel, mission3Already,
+  onSetPossibleUsers
 }: FakeBrowserProps) {
   
   const HOME_URL = 'https://www.google.com';
@@ -224,6 +247,9 @@ export function FakeBrowser({
   const setBrowserUrl = useScenarioStore(state => state.setBrowserUrl);
   const setBrowserLoggedIn = useScenarioStore(state => state.setBrowserLoggedIn);
   const setBrowserNavHistory = useScenarioStore(state => state.setBrowserNavHistory);
+  const addFileToMachine = useScenarioStore(state => state.addFileToMachine);
+  const addExploredDirectory = useScenarioStore(state => state.addExploredDirectory);
+  const confirmRCE = useScenarioStore(state => state.confirmRCE);
 
   const [urlInput, setUrlInput] = useState(browserCurrentUrl);
   const [reloading, setReloading] = useState(false);
@@ -232,11 +258,17 @@ export function FakeBrowser({
   // Máquinas de escenarios específicos (memoizadas para evitar re-renders innecesarios)
   const wpMachine = useMemo(() => allMachines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress')), [allMachines]);
   const lfiMachine = useMemo(() => allMachines.find(m => m.id.includes('lfi')), [allMachines]);
+  const sshMachine = useMemo(() => allMachines.find(m => m.id === 'lab-scenario-02-ssh'), [allMachines]);
 
   const reload = () => { 
     setReloading(true); 
     setTimeout(() => setReloading(false), 400); 
   };
+
+  const handleViewTeam = useCallback((users: string[]) => {
+    if (!sshMachine) return;
+    onSetPossibleUsers(sshMachine.id, users);
+  }, [sshMachine, onSetPossibleUsers]);
 
   const navigate = (rawUrl: string) => {
     const trimmed = rawUrl.trim();
@@ -273,12 +305,23 @@ export function FakeBrowser({
       onMissionComplete(3);
     }
     
-    // Lógica LFI: detectar misión 3 (etc/passwd)
+    // Lógica LFI: detectar misión 3 (etc/passwd) y registrar directorios
     if (lfiMachine && clean.includes(lfiMachine.machine_info.ip)) {
       const fullPath = clean.replace(`http://${lfiMachine.machine_info.ip}`, '');
+      // Registrar directorio explorado (ignorando parámetros query para la ruta limpia)
+      const cleanPath = fullPath.split('?')[0] || '/';
+      if (cleanPath && cleanPath !== '/') {
+        addExploredDirectory(lfiMachine.id, cleanPath);
+      }
+      
       if (fullPath.includes('etc/passwd')) {
         onMissionComplete(3);
       }
+    }
+
+    // Lógica Escenario 02: Descubrimiento Web
+    if (sshMachine && clean.includes(sshMachine.machine_info.ip)) {
+      onMissionComplete(3);
     }
   };
 
@@ -310,6 +353,8 @@ export function FakeBrowser({
   // Store para obtener listeningPort
   const listeningPort = useScenarioStore(state => state.listeningPort);
 
+  const setBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
+
   // Efecto para completar misiones de LFI 6 (RCE) cuando se incluye un archivo
   // Usa ref guard para evitar múltiples llamadas y congelamiento del popup
   useEffect(() => {
@@ -327,15 +372,46 @@ export function FakeBrowser({
         return;
       }
       rceCompletedRef.current = true; // Marcar como completado para evitar repetición
+      
+      // Notificar a la terminal que se recibió la conexión
+      setBlockingCommand({
+        message: '[*] Connection received from ' + lfiMachine.machine_info.ip + ' : shell opened!',
+        listeningPort: 4444,
+        connected: true
+      });
+
       onMissionComplete(6);
       onVerifyCredentials(lfiMachine.id, 'lfi-rce');
     }
-  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, listeningPort]);
+  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, listeningPort, setBlockingCommand]);
 
   // Reset rceCompletedRef cuando cambia el escenario para evitar bloqueo al volver al LFI
   useEffect(() => {
     rceCompletedRef.current = false;
   }, [allMachines]);
+
+  const handleLFIUploadSuccess = useCallback((fileName: string) => {
+    if (fileName === 'reverse_shell_triggered' || fileName === 'CHECKPOINT_RCE') {
+      onMissionComplete(5);
+      if (lfiMachine) {
+        confirmRCE(lfiMachine.id, 'www-data', '/var/www/html/uploads/payload.php');
+      }
+      return;
+    }
+    if (lfiMachine) {
+      // Encontrar el contenido del archivo original en Kali (attacker-01)
+      const attackerMachine = allMachines.find(m => m.machine_info?.type === 'workstation' && m.machine_info?.os?.includes('Kali'));
+      const originalFile = attackerMachine?.files?.find(f => f.path.endsWith('/' + fileName) || f.path === fileName);
+      
+      if (originalFile) {
+        addFileToMachine(lfiMachine.id, {
+          path: `/var/www/html/uploads/${fileName}`,
+          content: originalFile.content,
+          type: originalFile.type
+        });
+      }
+    }
+  }, [lfiMachine, allMachines, addFileToMachine, onMissionComplete]);
 
   const renderPage = () => {
     const currentUrl = browserCurrentUrl;
@@ -376,27 +452,36 @@ export function FakeBrowser({
 
       if (path === '/' || path === '') return <WPIndex ip={ip} onNavigate={navigate} />;
 
-      if (path === '/wp-admin' || path === '/wp-admin/dashboard') {
+      // WordPress: /wp-admin, /dashboard
+      if (path === '/wp-admin' || path === '/wp-admin/dashboard' || path === '/dashboard' || path === '/wp-login.php') {
         if (level < 2) return <div className="flex flex-col items-center justify-center h-full p-10 text-center">⏳ Realizá un escaneo nmap -sV {ip} primero.</div>;
-        return browserIsLoggedIn
-          ? <WPDashboard ip={ip} onNavigate={navigate} onLogout={() => { setBrowserLoggedIn(false); navigate(`http://${ip}/wp-admin`); }} onCredentialsFound={(u, p, f, s) => onCredentialsFound(wpMachine.id, u, p, f || '/wp-admin/wp-config.php', s || 'ssh')} />
-          : <WPLogin ip={ip} credentials={wpCreds} onNavigate={navigate} onLoginSuccess={doLogin} />;
+        if (browserIsLoggedIn) return <WPDashboard ip={ip} onNavigate={navigate} onLogout={() => { setBrowserLoggedIn(false); navigate(`http://${ip}/wp-admin`); }} onCredentialsFound={(u, p, f, s) => onCredentialsFound(wpMachine.id, u, p, f || '/wp-admin/wp-config.php', s || 'ssh')} />;
+        
+        // Si intenta acceder a dashboard sin estar logueado, redirigir a login
+        if (path.includes('dashboard')) {
+          setTimeout(() => navigate(`http://${ip}/wp-admin`), 0);
+          return null;
+        }
+
+        const configFile = wpMachine?.files.find(f => f.path === '/uploads/config.bak');
+        const dynamicCreds = configFile ? parseWPConfig(configFile.content) : null;
+        return <WPLogin ip={ip} credentials={dynamicCreds} onNavigate={navigate} onLoginSuccess={doLogin} />;
       }
 
+      // WordPress: /uploads/config.bak
       if (path === '/uploads' || path === '/uploads/config.bak') {
         if (level < 3) return <div className="flex flex-col items-center justify-center h-full p-10 text-center">🔒 Directorio no enumerado. Usá gobuster.</div>;
         if (path === '/uploads') return <WPUploads ip={ip} onNavigate={navigate} onCredentialsFound={(u, p, f, s) => onCredentialsFound(wpMachine.id, u, p, f || '/uploads/config.bak', s || 'wp-admin')} />;
-        return <WPConfigBak ip={ip} onNavigate={navigate} />;
+        return <WPConfigBak ip={ip} onNavigate={navigate} machine={wpMachine} />;
       }
     }
 
     // ── LÓGICA LFI (Escenario 04) ──
-    if (lfiMachine && currentUrl.includes(lfiMachine.machine_info.ip)) {
+    if (lfiMachine && lfiMachine.machine_info?.ip && currentUrl.includes(lfiMachine.machine_info.ip)) {
       const ip = lfiMachine.machine_info.ip;
-      const fullPath = currentUrl.replace(`http://${ip}`, '');
-
-      // Obtener la máquina atacante para sus archivos
-      const attackerMachine = allMachines.find(m => m.machine_info.type === 'workstation' && m.machine_info.os?.includes('Kali'));
+      
+      // Obtener la máquina atacante para sus archivos (filtrado para /root/ en el componente)
+      const attackerMachine = allMachines.find(m => m.machine_info?.type === 'workstation' && m.machine_info?.os?.includes('Kali'));
       const attackerFiles = attackerMachine?.files?.map(f => ({
         path: f.path,
         name: f.path.split('/').pop() || f.path,
@@ -407,9 +492,19 @@ export function FakeBrowser({
           ip={ip} 
           currentUrl={currentUrl} 
           onNavigate={navigate} 
-          onUploadSuccess={() => onMissionComplete(5)}
+          onFileUpload={handleLFIUploadSuccess}
           attackerFiles={attackerFiles}
           listeningPort={listeningPort ?? undefined}
+          victimFiles={lfiMachine.files || []}
+        />
+      );
+    }
+
+    // ── LÓGICA CONSULTANCY (Escenario 02) ──
+    if (sshMachine && currentUrl.includes(sshMachine.machine_info.ip)) {
+      return (
+        <ConsultancySite 
+          onViewTeam={handleViewTeam} 
         />
       );
     }

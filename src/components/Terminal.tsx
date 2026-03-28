@@ -14,6 +14,7 @@ interface Props {
   onChangeMachine: (id: string) => void;
   onCredentialsFound: (machineId: string, user: string, pass: string, file: string, service?: string) => void;
   onVerifyCredentials?: (machineId: string, service?: string) => void;
+  onFailedUser?: (machineId: string, user: string) => void;
   termColor?: string;
 }
 
@@ -53,16 +54,20 @@ function StreamingOutput({ lines, color }: { lines: string[]; color: string }) {
 export function Terminal({
   scenarioId, machine, allMachines, currentMissionId,
   onMissionComplete, onChangeMachine, onCredentialsFound,
-  onVerifyCredentials,
+  onVerifyCredentials, onFailedUser,
   termColor = '#10b981'
 }: Props) {
   const color = termColor;
+  const msfState = useScenarioStore(state => state.msfState);
   const setMsfState = useScenarioStore(state => state.setMsfState);
+  const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
   const setListeningPort = useScenarioStore(state => state.setListeningPort) || (() => {});
   const listeningPort = useScenarioStore(state => state.listeningPort);
   const currentDir = useScenarioStore(state => state.currentDir);
   const setCurrentDir = useScenarioStore(state => state.setCurrentDir);
   const goHome = useScenarioStore(state => state.goHome);
+  const blockingCommand = useScenarioStore(state => state.blockingCommand);
+  const setBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
 
   const makeWelcome = (machines: Machine[]): HistoryEntry => {
     const atk = machines.find(m => m.id === 'attacker-01');
@@ -78,15 +83,18 @@ export function Terminal({
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIdx, setHistIdx]       = useState(-1);
   const [busy, setBusy]             = useState(false);
-  const [blockingCommand, setBlockingCommand] = useState<{ message: string; cancelKey?: string; listeningPort?: number } | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [suggestionIdx, setSuggestionIdx] = useState(-1);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
-  const sshUser = (machine.found_credentials as any)?.user
-    || machine.scan_results?.ports?.find((p: any) => p.service === 'ssh')?.credentials?.user
+  const rceCred = Array.isArray(machine.found_credentials) 
+    ? machine.found_credentials.find(c => c.service === 'reverse-shell')
+    : null;
+  const sshUser = rceCred?.user
+    || (Array.isArray(machine.found_credentials) ? machine.found_credentials[0]?.user : (machine.found_credentials as any)?.user)
+    || (machine.scan_results?.ports as any[])?.find((p: any) => p.service === 'ssh')?.credentials?.user
     || 'user';
   const isRoot = sshUser === 'root' || machine.id === 'attacker-01';
   
@@ -121,6 +129,14 @@ export function Terminal({
     bracket: '#0000ff',   // Azul para corchetes y paréntesis
     line: '#0000ff',      // Azul para líneas
   };
+
+  // Enfocar input automáticamente cuando la terminal queda libre o entra en comando bloqueante
+  useEffect(() => {
+    if (!busy || (busy && blockingCommand)) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 10);
+      return () => clearTimeout(timer);
+    }
+  }, [busy, blockingCommand]);
 
   // Determina si un texto de prompt pertenece a Metasploit
   const isMsfPromptText = (promptText: string): boolean =>
@@ -187,12 +203,29 @@ export function Terminal({
     setCmdHistory([]); setHistIdx(-1); setInput(''); setBusy(false);
     setBlockingCommand(null);
     setListeningPort(null);
-    setTimeout(() => inputRef.current?.focus(), 80);
+    // Asegurar foco inicial con pequeño delay para que el DOM esté listo
+    const timer = setTimeout(() => inputRef.current?.focus(), 150);
+    return () => clearTimeout(timer);
   }, [scenarioId, allMachines.length]);
 
-  // Detectar cuando se completa misión 6 (RCE) para cerrar listener y cambiar sesión
+  // Re-enfocar cuando cambia el estado busy para comandos bloqueantes o al volver a la ventana
   useEffect(() => {
-    if (currentMissionId >= 6 && blockingCommand && listeningPort) {
+    const focusTimer = setTimeout(() => inputRef.current?.focus(), 50);
+    
+    const handleWindowFocus = () => {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    };
+    
+    window.addEventListener('focus', handleWindowFocus);
+    return () => {
+      clearTimeout(focusTimer);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, [busy, blockingCommand, scenarioId]);
+
+  // Detectar cuando el comando bloqueante se "conecta" (ej: reverse shell desde el navegador)
+  useEffect(() => {
+    if (blockingCommand?.connected && busy) {
       // Buscar la máquina víctima (la que no es el atacante)
       const victimMachine = allMachines.find(m => m.id !== 'attacker-01');
 
@@ -202,7 +235,7 @@ export function Terminal({
         output: [
           `connect to [${allMachines.find(m => m.id === 'attacker-01')?.machine_info.ip || '...'}] from (UNKNOWN) [${victimMachine?.machine_info.ip || '...'}] ${listeningPort}`,
           `/bin/sh: 0: can't access tty; job control turned off`,
-          `www-data@${victimMachine?.machine_info.hostname || 'dev-portal-backup'}:/var/www/html$ `,
+          `${victimMachine?.id.includes('lfi') ? 'www-data' : 'admin'}@${victimMachine?.machine_info.hostname || 'target'}:/var/www/html$ `,
         ].join('\n'),
         streaming: false,
         prompt,
@@ -213,12 +246,13 @@ export function Terminal({
       setBusy(false);
       setListeningPort(null);
 
-      // Cambiar sesión activa a la máquina víctima
+      // Cambiar sesión activa a la máquina víctima si es un RCE
       if (victimMachine) {
         onChangeMachine(victimMachine.id);
+        setCurrentDir('/var/www/html/');
       }
     }
-  }, [currentMissionId, blockingCommand, listeningPort, prompt, allMachines, onChangeMachine]);
+  }, [blockingCommand?.connected, busy, allMachines, listeningPort, prompt, setBlockingCommand, setListeningPort, onChangeMachine, setCurrentDir]);
 
   const runCommand = (cmd: string) => {
     const trimmed = cmd.trim();
@@ -248,6 +282,8 @@ export function Terminal({
       }
       if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
       if (result.newMachineId)       onChangeMachine(result.newMachineId);
+      if (result.failedUser && onFailedUser) onFailedUser(result.failedUser.machineId, result.failedUser.user);
+      if (result.foundVulnerability) reportVulnerability(result.foundVulnerability.machineId, result.foundVulnerability.vulnId, result.foundVulnerability.status);
       // Si SSH fue exitoso (newMachineId + foundCredentials), marcar credenciales como verificadas
       if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
         onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
@@ -274,6 +310,7 @@ export function Terminal({
       }
       if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
       if (result.newMachineId)       onChangeMachine(result.newMachineId);
+      if (result.failedUser && onFailedUser) onFailedUser(result.failedUser.machineId, result.failedUser.user);
       // Si SSH fue exitoso (newMachineId + foundCredentials), marcar credenciales como verificadas
       if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
         onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
@@ -316,7 +353,7 @@ export function Terminal({
         setSuggestionIdx(nextIdx);
         
         // Aplicar la sugerencia seleccionada
-        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir);
+        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState);
         if (result.suggestions.length > 0) {
           const selectedSuggestion = result.suggestions[nextIdx];
           const textBeforeCursor = input.slice(0, result.replaceStart);
@@ -324,7 +361,7 @@ export function Terminal({
         }
       } else {
         // Obtener sugerencias de autocompletado
-        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir);
+        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState);
         
         if (result.suggestions.length === 1) {
           // Una sola sugerencia: completar automáticamente
@@ -415,11 +452,11 @@ export function Terminal({
       setSuggestions([]);
       setSuggestionIdx(-1);
     }
-    else if (e.ctrlKey && e.key === 'c') {
+    else if (e.ctrlKey && e.key.toLowerCase() === 'c') {
       // Ctrl+C: Detener proceso o salir de programa
       e.preventDefault();
-      if (busy && blockingCommand) {
-        // Detener comando bloqueante (nc listener)
+      if (busy) {
+        // Detener comando bloqueante o streaming
         setBlockingCommand(null);
         setBusy(false);
         setListeningPort(null);
@@ -486,7 +523,12 @@ export function Terminal({
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3" style={{ scrollbarWidth: 'thin', scrollbarColor: '#374151 transparent' }}>
+      <div 
+        ref={scrollRef} 
+        className="flex-1 overflow-y-auto p-5 space-y-3 cursor-text bg-gray-950" 
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#374151 transparent' }}
+        onClick={() => inputRef.current?.focus()}
+      >
         {history.map((entry, i) => (
           <div key={entry.timestamp + i} className="space-y-0.5" style={{ animation: 'fadeInEntry 0.12s ease-out' }}>
             {entry.command !== null && (
@@ -581,9 +623,9 @@ export function Terminal({
         )}
         {busy && blockingCommand && (
           <>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-blue-900/20 py-1 px-2 rounded -ml-2 border-l-2 border-blue-500">
               <span className="font-bold text-xs flex-shrink-0" style={{ color }}>⏳ </span>
-              <span className="text-xs animate-pulse" style={{ color }}>{blockingCommand.message}</span>
+              <span className="text-xs font-mono" style={{ color }}>{blockingCommand.message}</span>
             </div>
             <input ref={inputRef} type="text" value={''} onChange={() => {}}
               onKeyDown={handleKeyDown}
@@ -592,13 +634,19 @@ export function Terminal({
           </>
         )}
         {busy && !blockingCommand && (
-          <div className="flex flex-col gap-0.5 opacity-40">
-            <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt)}</span>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol()}</span>
-              <span className="text-xs animate-pulse" style={{ color }}>▌</span>
+          <>
+            <div className="flex flex-col gap-0.5 opacity-40">
+              <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt)}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol()}</span>
+                <span className="text-sm animate-pulse">_</span>
+              </div>
             </div>
-          </div>
+            <input ref={inputRef} type="text" value={''} onChange={() => {}}
+              onKeyDown={handleKeyDown}
+              className="sr-only"
+              autoFocus spellCheck={false} autoComplete="off" />
+          </>
         )}
       </div>
       <style>{`@keyframes fadeInEntry{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}`}</style>

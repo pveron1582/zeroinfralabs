@@ -6,7 +6,27 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Terminal } from '../Terminal';
+import { useScenarioStore } from '../../store/scenarioStore';
 import type { Machine } from '../../types';
+
+// Mock dinámico del store para simular el comportamiento global
+vi.mock('../../store/scenarioStore', () => ({
+  useScenarioStore: vi.fn((selector) => {
+    const state = {
+      msfState: null,
+      setMsfState: vi.fn(),
+      reportVulnerability: vi.fn(),
+      setListeningPort: vi.fn(),
+      listeningPort: null,
+      currentDir: '/',
+      setCurrentDir: vi.fn(),
+      goHome: vi.fn(),
+      blockingCommand: null,
+      setBlockingCommand: vi.fn(),
+    };
+    return selector(state);
+  })
+}));
 
 const createMockMachine = (overrides: Partial<Machine> = {}): Machine => ({
   id: 'attacker-01',
@@ -573,7 +593,7 @@ describe('Terminal', () => {
 
   it('debe mostrar prompt de usuario regular con $', () => {
     const userMachine = createTargetMachine();
-    userMachine.found_credentials = { user: 'admin', pass: 'admin123', file: '/etc/passwd', verified: true };
+    userMachine.found_credentials = [{ user: 'admin', pass: 'admin123', file: '/etc/passwd', verified: true, service: 'ssh' }];
     
     const { container } = render(
       <Terminal

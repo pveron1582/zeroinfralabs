@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **Escenario 02 mejorado**: Laboratorio de fuerza bruta SSH con fase de reconocimiento Web.
+- **ConsultancySite**: Nuevo sitio web simulado para el escenario 02 que permite descubrir nombres de empleados/usuarios.
+- **Mejora en Terminal (Ctrl+C)**: Se ha corregido la interrupción de comandos mediante `Ctrl+C`. Ahora es insensible a mayúsculas/minúsculas y funciona correctamente para procesos bloqueantes como `nc` o flujos de texto (streaming).
+- **Laboratorio 04: Local File Inclusion (LFI)**:
+  Un laboratorio avanzado que enseña a descubrir vulnerabilidades de inclusión de archivos, escalada a RCE mediante subida de archivos y captura de shells reversas con `nc`.
+
+  **Objetivos:**
+  - Enumeración de aplicaciones web.
+  - Descubrimiento de LFI guiado paso a paso.
+  - Preparación y subida de payloads PHP.
+  - Uso de `nc` para recibir conexiones reversas (Reverse Shell).
+- **Persistencia de Vulnerabilidades**: Los hallazgos de vulnerabilidades (específicamente MS17-010) ahora se persisten en el estado de la máquina. Esto permite que la información no desaparezca al cerrar Metasploit.
+
+---
+
 ## [2.6.0] - 2026-03-26
 
 ### ✨ Nuevas Características
@@ -525,14 +543,15 @@
 
 #### Netcat (nc) - Cancelación con Ctrl+C estandarizado
 **Archivos:** `src/commands/tools/nc.ts`, `src/types.ts`, `src/components/Terminal.tsx`
-- **Mensaje actualizado**: Ahora indica "Presiona Ctrl+C para cancelar" en lugar de "Presiona 'c' para cancelar"
-- **Comportamiento estándar**: La tecla 'c' simple ya no cancela el listener de nc
-- **Ctrl+C exclusivo**: Solo Ctrl+C puede detener comandos bloqueantes como nc listener
-- **Consistencia**: Todos los comandos bloqueantes usan el mismo atajo (Ctrl+C)
-- **Tipo actualizado**: `cancelKey` ahora es opcional en `blockingCommand` (deprecated)
-
-#### Comportamiento mejorado
-- **Experiencia Linux real**: Comportamiento consistente con terminales Linux reales
+- **LFI Laboratory (Lab 04)**: Refactored with a dynamic file upload system, Kali guides (/root/notas.txt, /root/escaneo.txt), and a new interactive '/files' section on the victim server for RCE simulation.
+- **Consolidación de Identidad**: Transición completa de "CyberOps" a "ZI Labs" en interfaz y tests.
+- **Terminal Dinámica**: Mejora en la detección de reverse shells; el comando `nc`
+### Laboratorio 04: LFI a RCE (Refinamiento y Shell)
+- **Identidad de Shell**: El usuario tras la explotación ahora se identifica correctamente como `www-data`, reflejando un entorno web real.
+- **Enumeración Dinámica**: El panel de información ahora registra los directorios visitados en el navegador automáticamente.
+- **Reporte de RCE**: Nueva sección en el panel de enumeración que detalla el método de acceso (payload, puerto de escucha, usuario).
+- **Limpieza de UI**: Eliminadas vulnerabilidades no relacionadas (MS17-010) del flujo de trabajo de LFI.
+- **Robustez**: Corregidos errores de acceso a campos anidados en el panel de información y sincronización entre el store y los componentes.
 - **Mensaje claro**: Los usuarios saben exactamente qué tecla usar
 - **Sin ambigüedad**: Eliminada la confusión entre 'c' y Ctrl+C
 
@@ -817,10 +836,12 @@ Al conectarse por SSH exitosamente, las credenciales se marcan como verificadas 
 Refactorización completa para eliminar código duplicado:
 - `templates.ts`: Contiene solo funciones comunes reutilizables
 - `exercise01.ts`: Solo datos específicos del escenario WordPress
-- `exercise02.ts`: Solo datos específicos del escenario SSH Brute Force
-- Cada escenario importa funciones de `templates.ts` vía `buildScenario()`
-
-**Pendiente:** Aplicar la misma modularización a:
+- `exercise02.ts`: Solo datos específicos del
+### Escenario 2: SSH Brute Force
+Enfoque en reconocimiento web (OSINT básico) y ataques de fuerza bruta.
+- **Objetivo**: Obtener acceso al servidor SSH.
+- **Flujo**: Escaneo -> Web Recon (Descubrir empleados) -> Hydra (Fuerza bruta) -> SSH Access.
+- **Credenciales**: Encontradas vía reconocimiento en el sitio de la consultoría.
 - [ ] `exercise03.ts` (EternalBlue)
 - [ ] `exercise04.ts` (LFI-RCE)
 - [ ] `exercise05.ts` (PrivEsc)

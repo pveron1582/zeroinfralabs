@@ -1,4 +1,4 @@
-// ── exercises/exercise01.ts ───────────────────────────────────────
+// ── laboratorios/laboratorio01.ts ───────────────────────────────────────
 // Scenario 1 — WordPress Vulnerable Lab
 // Datos específicos para este escenario
 
@@ -12,13 +12,18 @@ const scenario01Data = {
   networkRange: '192.168.1.0/24',
   wpVersion: '6.0',
   flags: {
-    user: 'THM{USER_ACCESS_GRANTED}',
-    root: 'THM{ROOT_ACCESS_ACHIEVED}',
+    user: 'THM{USER_WP_GRANTED}',
+    root: 'THM{ROOT_WP_ACHIEVED}',
   },
   credentials: {
-    user: 'admin',
-    pass: 'P@ssw0rd123!',
-    root: 'R00t@SSH2024!',
+    wpAdmin: {
+      user: 'admin',
+      pass: 'P@ssw0rd123!',
+    },
+    ssh: {
+      user: 'root',
+      pass: 'R00t@SSH2024!',
+    },
   },
   targetMachine: {
     id: 'lab-scenario-01-wp',
@@ -70,7 +75,7 @@ export const scenario_01: Scenario = buildScenario({
     discovery_level: 0,
     scan_results: { ports: [] },
     ports: [
-      { ...scenario01Data.targetMachine.ports[0], credentials: { user: 'root', pass: scenario01Data.credentials.root } },
+      { ...scenario01Data.targetMachine.ports[0], credentials: { user: 'root', pass: scenario01Data.credentials.ssh.pass } },
       scenario01Data.targetMachine.ports[1],
       scenario01Data.targetMachine.ports[2],
     ],
@@ -83,7 +88,23 @@ export const scenario_01: Scenario = buildScenario({
       ...createLinuxFileSystem({ username: 'admin' }),
       createFile('/home/admin/user.txt', scenario01Data.flags.user),
       createFile('/root/flag.txt', scenario01Data.flags.root),
-      createFile('/uploads/config.bak', `DB_USER=${scenario01Data.credentials.user}\nDB_PASS=${scenario01Data.credentials.pass}`, 'text'),
+      createFile('/uploads/config.bak', `
+# WordPress Configuration Backup
+# Generated: 2024-03-27
+# WARNING: Internal use only
+
+## WP Database
+DB_NAME = wordpress_db
+DB_HOST = localhost
+
+## WordPress Admin Credentials
+# Redacted for security? NO, still here:
+WP_ADMIN_USER = ${scenario01Data.credentials.wpAdmin.user}
+WP_ADMIN_PASS = ${scenario01Data.credentials.wpAdmin.pass}
+
+## Server Paths
+WP_ROOT = /var/www/html
+      `.trim(), 'text'),
     ],
   },
   learningSteps: scenario01Data.learningSteps,

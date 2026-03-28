@@ -53,7 +53,7 @@ describe('LandingPage', () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText('CyberOps')).toBeInTheDocument();
+      expect(screen.getByText('ZI Labs')).toBeInTheDocument();
       expect(screen.getByText('v4.5')).toBeInTheDocument();
     });
   });
@@ -170,7 +170,7 @@ describe('LandingPage', () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/CyberOps · Entorno de práctica controlado/)).toBeInTheDocument();
+      expect(screen.getByText(/ZI Labs · Entorno de práctica controlado/)).toBeInTheDocument();
     });
   });
 

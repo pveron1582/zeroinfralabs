@@ -3,25 +3,11 @@ import React from 'react';
 // Simulates the raw file view of /uploads/config.bak
 // This file is intentionally left exposed on the vulnerable server.
 
-const getFileLines = (ip: string) => [
-  '# WordPress Configuration Backup',
-  '# Server: vulnerable-wp-lab',
-  '# Generated: 2023-11-01 03:17:42',
-  '# DO NOT EXPOSE TO PUBLIC — AUTO-GENERATED',
-  '',
-  '## WordPress Admin',
-  'WP_ADMIN_USER  = admin',
-  'WP_ADMIN_PASS  = P@ssw0rd123!',
-  'WP_ADMIN_EMAIL = admin@vulnerable-wp-lab.local',
-  '',
-  '## Paths',
-  'WP_ROOT     = /var/www/html',
-  'UPLOADS_DIR = /var/www/html/uploads',
-  'BACKUP_DIR  = /var/www/html/backup',
-];
+import type { Machine } from '../../../../types';
 
-export function WPConfigBak({ ip, onNavigate }: { ip: string; onNavigate: (url: string) => void }) {
-  const FILE_LINES = getFileLines(ip);
+export function WPConfigBak({ ip, onNavigate, machine }: { ip: string; onNavigate: (url: string) => void; machine: Machine }) {
+  const configFile = machine.files.find(f => f.path === '/uploads/config.bak');
+  const FILE_LINES = configFile ? configFile.content.split('\n') : ['# Error: File not found'];
   return (
     <div className="min-h-full bg-gray-50">
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-3">

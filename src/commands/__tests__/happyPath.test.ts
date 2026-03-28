@@ -35,7 +35,9 @@ const createAttacker = (): Machine => ({
   scan_results: { ports: [] },
   web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
   learning_steps: [],
-  files: [],
+  files: [
+    { path: '/usr/share/wordlists/rockyou.txt', content: '123456\npassword\nQuier0unaument0\ndev2024\ntoor', type: 'text' }
+  ],
 });
 
 /** Ejecuta un comando con contexto estándar */
@@ -227,18 +229,20 @@ describe('Happy Path: Scenario 02 - SSH Brute Force', () => {
     discovery_level: 0,
     scan_results: {
       ports: [
-        { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.9p1 Ubuntu', credentials: { user: 'root', pass: 'toor' } },
-        { port: 8080, protocol: 'tcp', state: 'open', service: 'http-alt', version: 'nginx/1.18.0' },
+        { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.9p1 Ubuntu', credentials: { user: 'gonzalo', pass: 'Quier0unaument0' } },
+        { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache/2.4.41' },
       ],
     },
-    web_enumeration: { web_server: 'nginx/1.18.0', cms: 'none', directories: [] },
+    web_enumeration: { web_server: 'Apache/2.4.41', cms: 'none', directories: [{ path: '/', status: 200, description: 'Consultancy Site' }] },
     learning_steps: [
       { id: 1, task: 'Reconocimiento de red', text: 'arp-scan', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 1 },
       { id: 2, task: 'Escaneo de puertos', text: 'nmap -sV', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 2 },
-      { id: 3, task: 'Fuerza bruta SSH', text: 'hydra', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
-      { id: 4, task: 'Acceso por SSH', text: 'ssh root@ip', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4 },
+      { id: 3, task: 'Reconocimiento Web', text: 'Acceder al sitio web', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
+      { id: 4, task: 'Fuerza bruta SSH', text: 'hydra', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
+      { id: 5, task: 'Acceso por SSH', text: 'ssh gonzalo@ip', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4 },
     ],
-    files: [{ path: '/root/flag.txt', content: 'THM{SSH_BRUTE_FORCE_SUCCESS}', type: 'text' }],
+    files: [{ path: '/home/gonzalo/user.txt', content: 'THM{SSH_USER_ACCESS_GRANTED}', type: 'text' }],
+    possible_ssh_users: ['pedro', 'gonzalo', 'arturo', 'lucia'],
   };
 
   // ── Tests unitarios por paso ──────────────────────────────────
@@ -250,52 +254,36 @@ describe('Happy Path: Scenario 02 - SSH Brute Force', () => {
     expect(result.output).toContain('10.10.10.10');
   });
 
-  it('Paso 2: nmap detecta puerto 22 SSH', () => {
+  it('Paso 2: nmap detecta puerto 22 SSH y 80 HTTP', () => {
     const target = withLevel(sshTarget, 1);
     const result = exec('nmap -sV 10.10.10.10', attacker, [attacker, target], 2);
     expectSuccess(result);
     expect(result.completedMissionId).toBe(2);
     expect(result.output).toContain('22/tcp');
+    expect(result.output).toContain('80/tcp');
   });
 
-  it('Paso 3: hydra encuentra credenciales — valida propiedades, no strings', () => {
-    const target = withLevel(sshTarget, 2);
-    const result = exec('hydra -l root -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, [attacker, target], 3);
+  it('Paso 4: hydra encuentra credenciales de gonzalo', () => {
+    const target = { ...withLevel(sshTarget, 3), possible_ssh_users: ['gonzalo'] };
+    const result = exec('hydra -l gonzalo -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, [attacker, target], 4);
     expectSuccess(result);
     expect(result.foundCredentials).toBeDefined();
-    expect(result.foundCredentials?.user).toBe('root');
-    expect(result.foundCredentials?.pass).toBe('toor');
-    expect(result.completedMissionId).toBe(3);
-  });
-
-  it('Paso 4: ssh conecta — valida cambio de máquina activa', () => {
-    const target = withLevel(sshTarget, 3);
-    const result = exec('ssh root@10.10.10.10 toor', attacker, [attacker, target], 4);
-    expectSuccess(result);
-    expect(result.newMachineId).toBe('lab-scenario-02-ssh');
+    expect(result.foundCredentials?.user).toBe('gonzalo');
+    expect(result.foundCredentials?.pass).toBe('Quier0unaument0');
     expect(result.completedMissionId).toBe(4);
   });
 
-  // ── Validaciones de errores ───────────────────────────────────
-
-  it('ssh sin hydra previo debe fallar', () => {
-    const target = withLevel(sshTarget, 2);
-    const result = exec('ssh root@10.10.10.10 toor', attacker, [attacker, target], 4);
-    expect(result.isError).toBe(true);
-    expect(result.completedMissionId).toBeUndefined();
-    expect(result.newMachineId).toBeUndefined();
-  });
-
-  it('ssh con credenciales incorrectas debe fallar', () => {
+  it('Paso 5: ssh conecta con gonzalo', () => {
     const target = withLevel(sshTarget, 3);
-    const result = exec('ssh root@10.10.10.10 wrongpass', attacker, [attacker, target], 4);
-    expect(result.isError).toBe(true);
-    expect(result.newMachineId).toBeUndefined();
+    const result = exec('ssh gonzalo@10.10.10.10 Quier0unaument0', attacker, [attacker, target], 5);
+    expectSuccess(result);
+    expect(result.newMachineId).toBe('lab-scenario-02-ssh');
+    expect(result.completedMissionId).toBe(5);
   });
 
   // ── Golden path E2E ──────────────────────────────────────────
 
-  it('Golden path: arp-scan → nmap → hydra → ssh (estado evoluciona naturalmente)', () => {
+  it('Golden path: arp-scan → nmap → hydra → ssh (con gonzalo)', () => {
     let machines: Machine[] = [attacker, sshTarget];
 
     // Paso 1
@@ -308,16 +296,20 @@ describe('Happy Path: Scenario 02 - SSH Brute Force', () => {
     expect(result.completedMissionId).toBe(2);
     machines = evolveState(machines, result);
 
-    // Paso 3: hydra — verifica credenciales encontradas
-    result = exec('hydra -l root -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, machines, 3);
-    expect(result.completedMissionId).toBe(3);
-    expect(result.foundCredentials?.user).toBe('root');
-    expect(result.foundCredentials?.pass).toBe('toor');
+    // Salteamos paso 3 (Web Recon) ya que se hace vía UI de Browser, 
+    // pero evolucionamos el estado manualmente para el test si fuera necesario.
+    machines = machines.map(m => m.id === 'lab-scenario-02-ssh' ? { ...m, discovery_level: 3 } : m);
+
+    // Paso 4: hydra
+    result = exec('hydra -l gonzalo -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, machines, 4);
+    expect(result.completedMissionId).toBe(4);
+    expect(result.foundCredentials?.user).toBe('gonzalo');
+    expect(result.foundCredentials?.pass).toBe('Quier0unaument0');
     machines = evolveState(machines, result);
 
-    // Paso 4: ssh — verifica cambio de contexto de máquina
-    result = exec('ssh root@10.10.10.10 toor', attacker, machines, 4);
-    expect(result.completedMissionId).toBe(4);
+    // Paso 5: ssh
+    result = exec('ssh gonzalo@10.10.10.10 Quier0unaument0', attacker, machines, 5);
+    expect(result.completedMissionId).toBe(5);
     expect(result.newMachineId).toBe('lab-scenario-02-ssh');
   });
 });

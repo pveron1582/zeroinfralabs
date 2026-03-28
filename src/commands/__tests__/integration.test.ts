@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { executeCommand, resetMsfState, isMsfActive, getMsfPrompt } from '../index';
-import { SCENARIOS } from '../../exercises/scenarios';
+import { SCENARIOS } from '../../laboratorios/laboratorios';
 
 describe('Integración de Comandos y Lógica de Pentesting', () => {
   const scenario = SCENARIOS[0]; // WordPress Lab
