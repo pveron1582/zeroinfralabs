@@ -41,10 +41,7 @@ export const SCENARIO_TEMPLATES_LFI = {
       web_enumeration: {
         web_server: 'Apache/2.4.52',
         cms: 'Custom PHP Portal',
-        directories: [
-          { path: '/', status: 200, description: 'Página principal' },
-          { path: '/upload.php', status: 200, description: 'Subida de archivos' },
-        ],
+        directories: [],
       },
       files: [
         ...createLinuxFileSystem({ username: 'www-data' }),

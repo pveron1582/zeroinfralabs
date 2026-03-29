@@ -308,12 +308,6 @@ export function FakeBrowser({
     // Lógica LFI: detectar misión 3 (etc/passwd) y registrar directorios
     if (lfiMachine && clean.includes(lfiMachine.machine_info.ip)) {
       const fullPath = clean.replace(`http://${lfiMachine.machine_info.ip}`, '');
-      // Registrar directorio explorado (ignorando parámetros query para la ruta limpia)
-      const cleanPath = fullPath.split('?')[0] || '/';
-      if (cleanPath && cleanPath !== '/') {
-        addExploredDirectory(lfiMachine.id, cleanPath);
-      }
-      
       if (fullPath.includes('etc/passwd')) {
         onMissionComplete(3);
       }
@@ -364,8 +358,8 @@ export function FakeBrowser({
     
     const fullPath = browserCurrentUrl.replace(`http://${lfiMachine.machine_info.ip}`, '');
     
-    // Misión 6: RCE (Incluir archivo subido en uploads con extensión .php)
-    if (fullPath.includes('?page=uploads/') && fullPath.endsWith('.php')) {
+    // Misión 6: RCE (Incluir archivo subido en uploads/files con extensión .php)
+    if ((fullPath.includes('?page=uploads/') || fullPath.includes('?page=files/')) && fullPath.endsWith('.php')) {
       // Validar que el puerto del listener esté configurado
       if (!listeningPort) {
         // No completar misión si no hay listener activo
@@ -383,7 +377,8 @@ export function FakeBrowser({
       onMissionComplete(6);
       onVerifyCredentials(lfiMachine.id, 'lfi-rce');
     }
-  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, listeningPort, setBlockingCommand]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, setBlockingCommand]);
 
   // Reset rceCompletedRef cuando cambia el escenario para evitar bloqueo al volver al LFI
   useEffect(() => {

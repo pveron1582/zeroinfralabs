@@ -89,13 +89,33 @@ export function Terminal({
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
+  // Identical logic to whoami.ts to accurately display the connected SSH user
   const rceCred = Array.isArray(machine.found_credentials) 
     ? machine.found_credentials.find(c => c.service === 'reverse-shell')
     : null;
-  const sshUser = rceCred?.user
-    || (Array.isArray(machine.found_credentials) ? machine.found_credentials[0]?.user : (machine.found_credentials as any)?.user)
-    || (machine.scan_results?.ports as any[])?.find((p: any) => p.service === 'ssh')?.credentials?.user
-    || 'user';
+
+  const getSshUser = () => {
+    if (machine.id.includes('attacker')) return 'root';
+    if (rceCred) return rceCred.user;
+    
+    if (machine.found_credentials) {
+      // Find verified SSH credential
+      const sshCred = machine.found_credentials.find(c => c.service === 'ssh' && c.verified);
+      if (sshCred) return sshCred.user;
+      
+      // Fallback: any verified credential
+      const verified = machine.found_credentials.find(c => c.verified);
+      if (verified) return verified.user;
+    }
+    
+    // Fallback: any available unverified SSH port credential mapping
+    const sshPort = machine.scan_results?.ports?.find(p => p.service === 'ssh');
+    if (sshPort?.credentials?.user) return sshPort.credentials.user;
+    
+    return 'user';
+  };
+  
+  const sshUser = getSshUser();
   const isRoot = sshUser === 'root' || machine.id === 'attacker-01';
   
   // Función para obtener la ruta corta del directorio (~/... o /...)
@@ -629,7 +649,7 @@ export function Terminal({
             </div>
             <input ref={inputRef} type="text" value={''} onChange={() => {}}
               onKeyDown={handleKeyDown}
-              className="sr-only"
+              className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
               autoFocus spellCheck={false} autoComplete="off" />
           </>
         )}
@@ -644,7 +664,7 @@ export function Terminal({
             </div>
             <input ref={inputRef} type="text" value={''} onChange={() => {}}
               onKeyDown={handleKeyDown}
-              className="sr-only"
+              className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
               autoFocus spellCheck={false} autoComplete="off" />
           </>
         )}

@@ -97,7 +97,7 @@ describe('NetworkMap', () => {
     );
 
     expect(screen.getByText('kali')).toBeInTheDocument();
-    expect(screen.getByText('target')).toBeInTheDocument();
+    expect(screen.getAllByText('target')[0]).toBeInTheDocument();
   });
 
   it('debe mostrar "Sesión Activa" para la máquina atacante', () => {
@@ -253,11 +253,9 @@ describe('NetworkMap', () => {
       />
     );
 
-    // Hacer clic en la máquina target para abrir el modal
-    const targetCard = screen.getByText('target');
-    fireEvent.click(targetCard);
+    // No es necesario hacer clic porque la máquina con discovery_level > 0 se selecciona por defecto
 
-    expect(screen.getByText('Credenciales Comprometidas')).toBeInTheDocument();
+    expect(screen.getByText('Credenciales')).toBeInTheDocument();
     expect(screen.getByText('admin')).toBeInTheDocument();
     expect(screen.getByText('password123')).toBeInTheDocument();
   });
@@ -285,10 +283,8 @@ describe('NetworkMap', () => {
       />
     );
 
-    const targetCard = screen.getByText('target');
-    fireEvent.click(targetCard);
-
-    expect(screen.getByText('Pendiente de Validación')).toBeInTheDocument();
+    // No es necesario hacer clic
+    expect(screen.getByText('PENDIENTE')).toBeInTheDocument();
   });
 
   it('debe cambiar la sesión activa al cambiar de máquina', () => {

@@ -33,6 +33,7 @@ interface ScenarioState {
   activeApp: 'terminal' | 'browser';
   browserKey: number;
   showNetworkMap: boolean;
+  hasNewNetworkInfo: boolean; // New state variable
   notification: Notification | null;
   termColor: string;
   showMachineLoader: boolean;
@@ -68,6 +69,7 @@ interface ScenarioState {
   setActiveApp: (app: 'terminal' | 'browser') => void;
   refreshBrowser: () => void;
   toggleNetworkMap: (show?: boolean) => void;
+  setHasNewNetworkInfo: (val: boolean) => void; // New action
   setTermColor: (color: string) => void;
   showNotification: (text: string) => void;
   clearNotification: () => void;
@@ -101,6 +103,7 @@ export const useScenarioStore = create<ScenarioState>()(
       activeApp: 'terminal',
       browserKey: 0,
       showNetworkMap: false,
+      hasNewNetworkInfo: false,
       notification: null,
       termColor: DEFAULT_TERM_COLOR,
       showMachineLoader: false,
@@ -144,6 +147,7 @@ export const useScenarioStore = create<ScenarioState>()(
             activeMachineId: scenario.initialMachineId,
             activeApp: 'terminal',
             showNetworkMap: false,
+            hasNewNetworkInfo: false,
             view: 'workspace',
             showMachineLoader: false,
             loadingMachine: null,
@@ -162,6 +166,10 @@ export const useScenarioStore = create<ScenarioState>()(
 
       completeMission: (id) => {
         const { missions, machines, currentMissionId } = get();
+        
+        // Prevent re-triggering completion logic if already completed
+        const mission = missions.find(m => m.id === id);
+        if (mission?.status === 'completed') return;
 
         // Actualizar misiones
         const updatedMissions = missions.map(m => {
@@ -171,7 +179,6 @@ export const useScenarioStore = create<ScenarioState>()(
         });
 
         // Actualizar discovery level de máquinas
-        const mission = missions.find(m => m.id === id);
         const updatedMachines = mission?.targetMachineId
           ? machines.map(m =>
               m.id === mission.targetMachineId
@@ -184,6 +191,7 @@ export const useScenarioStore = create<ScenarioState>()(
           missions: updatedMissions,
           machines: updatedMachines,
           currentMissionId: id === currentMissionId ? currentMissionId + 1 : currentMissionId,
+          hasNewNetworkInfo: (mission?.discoveryLevel || 0) > 0 ? true : get().hasNewNetworkInfo
         });
 
         // Mostrar notificación
@@ -215,7 +223,8 @@ export const useScenarioStore = create<ScenarioState>()(
                 service 
               }]
             };
-          })
+          }),
+          hasNewNetworkInfo: true
         });
       },
 
@@ -283,7 +292,8 @@ export const useScenarioStore = create<ScenarioState>()(
                 directories: [...dirs, { path, status: 200, description: 'Navegación' }]
               }
             };
-          })
+          }),
+          hasNewNetworkInfo: true
         });
       },
 
@@ -301,7 +311,8 @@ export const useScenarioStore = create<ScenarioState>()(
                 { user, pass: 'vía shell', file: method, verified: true, service: 'reverse-shell' }
               ]
             };
-          })
+          }),
+          hasNewNetworkInfo: true
         });
       },
 
@@ -313,9 +324,15 @@ export const useScenarioStore = create<ScenarioState>()(
 
       refreshBrowser: () => set(state => ({ browserKey: state.browserKey + 1 })),
 
-      toggleNetworkMap: (show) => set(state => ({
-        showNetworkMap: show !== undefined ? show : !state.showNetworkMap
-      })),
+      toggleNetworkMap: (show) => {
+        const nextState = show !== undefined ? show : !get().showNetworkMap;
+        set({
+          showNetworkMap: nextState,
+          ...(nextState ? { hasNewNetworkInfo: false } : {})
+        });
+      },
+
+      setHasNewNetworkInfo: (val) => set({ hasNewNetworkInfo: val }),
 
       setTermColor: (color) => set({ termColor: color }),
 
@@ -330,6 +347,7 @@ export const useScenarioStore = create<ScenarioState>()(
         set({ 
           view: 'landing', 
           showNetworkMap: false, 
+          hasNewNetworkInfo: false,
           notification: null,
           browserCurrentUrl: 'https://www.google.com',
           browserIsLoggedIn: false,
@@ -382,7 +400,8 @@ export const useScenarioStore = create<ScenarioState>()(
               ...m, 
               vulnerabilities: [...vulnerabilities, { id: vulnId, name: vulnId, status }] 
             };
-          })
+          }),
+          hasNewNetworkInfo: true
         });
       },
     }),

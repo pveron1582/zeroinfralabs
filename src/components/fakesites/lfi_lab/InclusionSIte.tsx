@@ -138,10 +138,14 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
 
   // RCE Detection
   useEffect(() => {
+    // Only trigger RCE if the user explicitly navigates to the payload
+    // and the listening port is already established. 
+    // We intentionally omit listeningPort from deps to avoid triggering retroactively.
     if (page && page.includes('payload.php') && listeningPort === 4444) {
       onFileUpload('CHECKPOINT_RCE');
     }
-  }, [page, listeningPort, onFileUpload]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, onFileUpload]);
 
   const Nav = ({ active }: { active?: string }) => (
     <nav className="bg-slate-800 text-white px-6 py-3 flex items-center gap-6">
@@ -150,7 +154,7 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
       <button onClick={() => onNavigate(`http://${ip || ''}/?page=about.php`)} className={`text-sm ${active === 'about' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>ℹ️ Acerca de</button>
       <button onClick={() => onNavigate(`http://${ip || ''}/?page=contact.php`)} className={`text-sm ${active === 'contact' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>✉️ Contacto</button>
       <button onClick={() => onNavigate(`http://${ip}/upload.php`)} className={`text-sm ${active === 'upload' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>📤 Upload</button>
-      <button onClick={() => onNavigate(`http://${ip}/files`)} className={`text-sm ${active === 'files' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>📁 Archivos</button>
+      <button onClick={() => onNavigate(`http://${ip}/files`)} className={`text-sm ${active === 'files' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>📁 Files</button>
     </nav>
   );
 
@@ -215,7 +219,7 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
                     return (
                       <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="p-4">
-                          <button onClick={() => onNavigate(`http://${ip}/?page=uploads/${name}`)}
+                          <button onClick={() => onNavigate(`http://${ip}/?page=files/${name}`)}
                             className="text-blue-600 font-bold hover:underline flex items-center gap-2">
                             <span>📄</span>
                             {name}

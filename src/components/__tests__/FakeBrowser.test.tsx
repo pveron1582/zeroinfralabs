@@ -172,7 +172,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={onMissionComplete} onCredentialsFound={vi.fn()} onVerifyCredentials={onVerifyCredentials} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra la página de error 404 (shell.php no existe en SERVER_FILES)
-    expect(screen.getByText(/Error 404/i)).toBeInTheDocument();
+    expect(screen.getByText(/404 NOT FOUND/i)).toBeInTheDocument();
     // Verifica que no se congela el navegador (el test no se tarda mas de lo esperado)
   });
 

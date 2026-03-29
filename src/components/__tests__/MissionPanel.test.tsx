@@ -2,8 +2,8 @@
 // Tests para el componente MissionPanel
 
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MissionPanel } from '../MissionPanel';
 import type { Mission, Machine } from '../../types';
 
@@ -54,7 +54,15 @@ const mockMachines: Machine[] = [
 ];
 
 describe('MissionPanel', () => {
-  it('debe renderizar el título del panel', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('debe renderizar el título del panel y empezar en modo sin ayuda', () => {
     render(
       <MissionPanel
         missions={mockMissions}
@@ -66,6 +74,32 @@ describe('MissionPanel', () => {
     );
 
     expect(screen.getByText('Misiones')).toBeInTheDocument();
+    expect(screen.getByText('Modo sin ayuda.')).toBeInTheDocument();
+  });
+
+  it('debe habilitar las misiones (solo activas y completadas) animadas al hacer clic en ayuda', () => {
+    render(
+      <MissionPanel
+        missions={mockMissions}
+        allMachines={mockMachines}
+        networkRange="192.168.1.0/24"
+        onOpenBrowser={vi.fn()}
+        onOpenNetworkMap={vi.fn()}
+      />
+    );
+
+    const helpBtn = screen.getByTitle('Habilitar ayuda');
+    fireEvent.click(helpBtn);
+
+    // Avanzar temporizadores para animaciones iniciales
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(screen.getByText('Descubrir red')).toBeInTheDocument();
+    expect(screen.getByText('Escanear puertos')).toBeInTheDocument();
+    // Acceso SSH está pending, no se renderiza
+    expect(screen.queryByText('Acceso SSH')).not.toBeInTheDocument();
   });
 
   it('debe mostrar el progreso correcto', () => {
@@ -82,22 +116,6 @@ describe('MissionPanel', () => {
     // 1 de 3 completadas = 33%
     expect(screen.getByText('33%')).toBeInTheDocument();
     expect(screen.getByText('1/3 completadas')).toBeInTheDocument();
-  });
-
-  it('debe mostrar todas las misiones', () => {
-    render(
-      <MissionPanel
-        missions={mockMissions}
-        allMachines={mockMachines}
-        networkRange="192.168.1.0/24"
-        onOpenBrowser={vi.fn()}
-        onOpenNetworkMap={vi.fn()}
-      />
-    );
-
-    expect(screen.getByText('Descubrir red')).toBeInTheDocument();
-    expect(screen.getByText('Escanear puertos')).toBeInTheDocument();
-    expect(screen.getByText('Acceso SSH')).toBeInTheDocument();
   });
 
   it('debe llamar onOpenNetworkMap al hacer clic en el botón Ver red', () => {
@@ -119,22 +137,6 @@ describe('MissionPanel', () => {
     expect(onOpenNetworkMap).toHaveBeenCalled();
   });
 
-  it('debe mostrar el hint de la misión activa', () => {
-    const { container } = render(
-      <MissionPanel
-        missions={mockMissions}
-        allMachines={mockMachines}
-        networkRange="192.168.1.0/24"
-        onOpenBrowser={vi.fn()}
-        onOpenNetworkMap={vi.fn()}
-      />
-    );
-
-    // El hint de la misión activa debe estar visible en el contenedor
-    const activeMission = mockMissions.find(m => m.status === 'active');
-    expect(container.textContent).toContain(activeMission!.description);
-  });
-
   it('debe mostrar 100% cuando todas las misiones están completadas', () => {
     const allCompletedMissions = mockMissions.map(m => ({ ...m, status: 'completed' as const }));
 
@@ -151,7 +153,7 @@ describe('MissionPanel', () => {
     expect(screen.getByText('● COMPROMETIDA')).toBeInTheDocument();
   });
 
-  it('debe mostrar los números de misión formateados', () => {
+  it('debe mostrar los números de misión formateados cuando se habilita ayuda', () => {
     render(
       <MissionPanel
         missions={mockMissions}
@@ -161,23 +163,16 @@ describe('MissionPanel', () => {
         onOpenNetworkMap={vi.fn()}
       />
     );
+
+    fireEvent.click(screen.getByTitle('Habilitar ayuda'));
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
 
     expect(screen.getByText('01')).toBeInTheDocument();
     expect(screen.getByText('02')).toBeInTheDocument();
-    expect(screen.getByText('03')).toBeInTheDocument();
-  });
-
-  it('debe mostrar el texto de progreso', () => {
-    render(
-      <MissionPanel
-        missions={mockMissions}
-        allMachines={mockMachines}
-        networkRange="192.168.1.0/24"
-        onOpenBrowser={vi.fn()}
-        onOpenNetworkMap={vi.fn()}
-      />
-    );
-
-    expect(screen.getByText('Progreso')).toBeInTheDocument();
+    // 03 es pending, no se muestra
+    expect(screen.queryByText('03')).not.toBeInTheDocument();
   });
 });

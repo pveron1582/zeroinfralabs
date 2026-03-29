@@ -14,8 +14,20 @@
   - Descubrimiento de LFI guiado paso a paso.
   - Preparación y subida de payloads PHP.
   - Uso de `nc` para recibir conexiones reversas (Reverse Shell).
-- **Persistencia de Vulnerabilidades**: Los hallazgos de vulnerabilidades (específicamente MS17-010) ahora se persisten en el estado de la máquina. Esto permite que la información no desaparezca al cerrar Metasploit.
+- **Persistencia de Vulnerabilidades**: Los hallazgos de vulnerabilidades (específicamente MS17-010) ahora se persisten en el estado de la máquina. Esto permite que la información no desaparezca al cerrar Metasploit.- **Panel de Enumeración Integrado (Inline Side-Panel)**: La vista de tipología ("Mapa de Red") ahora integra directamente el Panel de Enumeración en el lateral derecho de la pantalla para la máquina objetivo activa. Ya no requiere hacer clic para abrirlo como un pop-up, otorgando una experiencia de monitorización continua side-by-side centrando el mapa dinámicamente.
+- **Sistema Integrado de Ayuda Condicional**: Ahora las misiones se ocultan por defecto tras un panel que indica "Modo sin ayuda". Al hacer clic en "Habilitar ayuda", las misiones completadas y la activa se revelan en cascada dinámica desde la derecha con un efecto estilo máquina de escribir (typewriter).
+- **Indicador de Notificaciones de Red**: Se agregó un sistema de alerta por parpadeos verdes en el botón "Ver red" que se activa intermitentemente cada vez que se descubre nueva información relevante en la topología u otro componente, indicando visualmente que hay algo nuevo por revisar.
 
+### 🐛 Fixes
+- **Laboratorio 04 (LFI)**: 
+  - **Lógica de Shell Reversa**: ahora es un requisito estricto que el listener (`nc -nlvp 4444`) esté en ejecución *antes* de navegar al archivo payload para que la conexión funcione de manera realista. El payload ya no se auto-conecta retroactivamente.
+  - **Notificaciones del Sistema LFI**: Solucionado el problema por el cual el popup de misión completada re-lanzaba su confirmación repetidamente si el usuario perdía temporalmente la conexión o recargaba el payload tras terminar el RCE.
+  - **Enumeración Limpia**: Eliminado el registro automático de directorios web en el panel de enumeración, asegurando que los escaneos (como `arp-scan` o NetworkMap) no revelen prematuramente la estructura del sitio sin utilizar herramientas como `gobuster`.
+  - **Identidad Visual**: Renombrada la pestaña de "Archivos" a "Files" en la web vulnerable para mantener coherencia en las rutas.
+  - **Rutas de Ejecución**: Actualizadas las rutas del payload cargado (ahora se lanzan desde `?page=files/` en lugar de `?page=uploads/`) para unificación temática LFI.
+- **Evaluación de Usuario en Terminal**: Se implementó una lógica determinística compartida con el comando `whoami` (en `getSshUser`) que garantiza identificar de forma inequívoca qué usuario de SSH es el de la sesión actual al evaluar las credenciales obtenidas.
+- **Símbolos de Superusuario en Prompt**: Al obtener acceso Root a una máquina comprometida vía SSH (y no sólo en la maquina atacante por defecto), el prompt ahora cambiará correctamente su indicador de privilegio terminal de `$` a `#`, permitiendo un mayor realismo de contexto.
+- **Topología**: Corregidos los estilos visuales rojos del apartado "Control Remoto Establecido" y "Vulnerabilidades Criticas" en el mapa de Enumeración a un verde (`emerald`) más coherente con la señalización de compromisos exitosos en las interfaces de la terminal.
 ---
 
 ## [2.6.0] - 2026-03-26

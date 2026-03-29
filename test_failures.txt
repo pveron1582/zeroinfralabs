@@ -1,0 +1,2233 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/pablo/cyberops-v2[39m
+
+ [31m❯[39m src/components/__tests__/NetworkMap.test.tsx [2m([22m[2m13 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 1256[2mms[22m[39m
+     [32m✓[39m debe renderizar el nombre del escenario[32m 194[2mms[22m[39m
+     [32m✓[39m debe mostrar todas las máquinas[32m 30[2mms[22m[39m
+     [32m✓[39m debe mostrar "Sesión Activa" para la máquina atacante[32m 39[2mms[22m[39m
+     [32m✓[39m debe mostrar "Sesión Activa" para la máquina activa[32m 29[2mms[22m[39m
+     [32m✓[39m debe mostrar solo una "Sesión Activa" cuando hay una máquina activa[32m 25[2mms[22m[39m
+     [32m✓[39m debe mostrar IPs para máquinas descubiertas[32m 37[2mms[22m[39m
+     [32m✓[39m debe mostrar ??? para máquinas no descubiertas[32m 57[2mms[22m[39m
+     [33m[2m✓[22m[39m debe llamar onClose al hacer clic en el botón cerrar [33m 614[2mms[22m[39m
+     [32m✓[39m debe mostrar badges de progreso para máquinas descubiertas[32m 36[2mms[22m[39m
+     [32m✓[39m debe mostrar la leyenda de niveles[32m 44[2mms[22m[39m
+[31m     [31m×[31m debe mostrar credenciales encontradas[39m[32m 66[2mms[22m[39m
+[31m     [31m×[31m debe mostrar credenciales sin verificar[39m[32m 55[2mms[22m[39m
+     [32m✓[39m debe cambiar la sesión activa al cambiar de máquina[32m 25[2mms[22m[39m
+ [31m❯[39m src/components/__tests__/FakeBrowser.test.tsx [2m([22m[2m14 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1342[2mms[22m[39m
+     [32m✓[39m debe iniciar en la página de Google[32m 101[2mms[22m[39m
+     [32m✓[39m debe mostrar mensaje de bloqueo si el nivel de descubrimiento es insuficiente (Escenario 1)[32m 37[2mms[22m[39m
+     [32m✓[39m debe permitir ver el sitio de WordPress si el nivel es 2[32m 55[2mms[22m[39m
+     [32m✓[39m debe renderizar correctamente el navegador con CyberBrowser[32m 16[2mms[22m[39m
+[31m     [31m×[31m debe dar acceso total (RCE) al incluir un archivo de uploads (Escenario 4)[39m[32m 63[2mms[22m[39m
+     [32m✓[39m debe navegar a WordPress index cuando se accede a la IP[32m 58[2mms[22m[39m
+     [32m✓[39m debe mostrar bloqueo en /uploads si el nivel de descubrimiento es menor a 3[32m 45[2mms[22m[39m
+     [32m✓[39m debe mostrar uploads cuando el nivel de descubrimiento es 3 o mayor[32m 57[2mms[22m[39m
+     [32m✓[39m debe mostrar config.bak cuando se accede a /uploads/config.bak[32m 67[2mms[22m[39m
+     [32m✓[39m debe mostrar página 404 para URLs desconocidas[32m 54[2mms[22m[39m
+     [33m[2m✓[22m[39m debe llamar onClose al hacer clic en el botón rojo [33m 663[2mms[22m[39m
+     [32m✓[39m debe mostrar sugerencias de búsqueda en Google[32m 20[2mms[22m[39m
+     [32m✓[39m debe navegar a Google Search al presionar Enter con una búsqueda[32m 31[2mms[22m[39m
+     [32m✓[39m debe permitir ver el sitio de consultoría (Escenario 2)[32m 69[2mms[22m[39m
+ [31m❯[39m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx [2m([22m[2m26 tests[22m[2m | [22m[31m18 failed[39m[2m)[22m[33m 3191[2mms[22m[39m
+       [32m✓[39m debe renderizar la página principal con navegación[32m 98[2mms[22m[39m
+       [32m✓[39m debe mostrar el contenido de home.php[32m 17[2mms[22m[39m
+       [32m✓[39m debe mostrar el contenido de about.php[32m 16[2mms[22m[39m
+[31m       [31m×[31m debe mostrar el contenido de contact.php[39m[32m 46[2mms[22m[39m
+[31m       [31m×[31m debe renderizar la página de upload[39m[32m 22[2mms[22m[39m
+[31m       [31m×[31m debe mostrar el selector de archivos[39m[32m 13[2mms[22m[39m
+[31m       [31m×[31m debe mostrar archivos por defecto si no se proporcionan attackerFiles[39m[33m 589[2mms[22m[39m
+       [32m✓[39m debe mostrar archivos personalizados de attackerFiles[32m 171[2mms[22m[39m
+[31m       [31m×[31m debe subir archivo correctamente[39m[33m 1127[2mms[22m[39m
+[31m       [31m×[31m debe mostrar archivos subidos como links[39m[33m 1031[2mms[22m[39m
+[31m       [31m×[31m debe mostrar etc/passwd cuando se accede via LFI[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m debe mostrar etc/shadow cuando se accede via LFI[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m debe mostrar etc/hosts cuando se accede via LFI[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m debe mostrar proc/self/environ cuando se accede via LFI[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m debe mostrar config.php cuando se accede via LFI[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m debe mostrar apache2.conf cuando se accede via LFI[39m[32m 3[2mms[22m[39m
+[31m       [31m×[31m debe mostrar access.log cuando se accede via LFI[39m[32m 3[2mms[22m[39m
+[31m       [31m×[31m debe mostrar error 404 para archivo inexistente[39m[32m 4[2mms[22m[39m
+[31m       [31m×[31m debe mostrar sugerencias en página de error 404[39m[32m 2[2mms[22m[39m
+       [32m✓[39m debe llamar onNavigate al hacer clic en Inicio[32m 3[2mms[22m[39m
+       [32m✓[39m debe llamar onNavigate al hacer clic en Acerca de[32m 5[2mms[22m[39m
+       [32m✓[39m debe llamar onNavigate al hacer clic en Contacto[32m 5[2mms[22m[39m
+       [32m✓[39m debe llamar onNavigate al hacer clic en Upload[32m 3[2mms[22m[39m
+[31m       [31m×[31m debe llamar onNavigate al hacer clic en Volver al portal desde LFI[39m[32m 4[2mms[22m[39m
+[31m       [31m×[31m debe mostrar info del servidor en página de upload[39m[32m 6[2mms[22m[39m
+[31m       [31m×[31m debe mostrar Content-Type en vista de archivo LFI[39m[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 21 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/components/__tests__/FakeBrowser.test.tsx[2m > [22mFakeBrowser - Integración de Navegación y Lógica de Hacking[2m > [22mdebe dar acceso total (RCE) al incluir un archivo de uploads (Escenario 4)
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /Error 404/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full w-full bg-gray-950"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2 px-3 py-2 bg-gray-800 border-b border-gray-700 flex-shrink-0"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex gap-1.5"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"w-3 h-3 rounded-full bg-yellow-500/50"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"w-3 h-3 rounded-full bg-green-500/50"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex gap-0.5"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1 rounded text-gray-400 disabled:opacity-30 hover:enabled:bg-gray-700 transition-colors"[39m
+            [33mdisabled[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-width[39m=[32m"2.5"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"14"[39m
+            [36m>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"15 18 9 12 15 6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1 rounded text-gray-400 disabled:opacity-30 hover:enabled:bg-gray-700 transition-colors"[39m
+            [33mdisabled[39m=[32m""[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-width[39m=[32m"2.5"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"14"[39m
+            [36m>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"9 18 15 12 9 6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1 rounded text-gray-400 hover:bg-gray-700 "[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-width[39m=[32m"2.5"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"14"[39m
+            [36m>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"23 4 23 10 17 10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20.49 15a9 9 0 1 1-2.12-9.36L23 10"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 flex items-center gap-2 bg-gray-900 rounded-full px-3 py-1.5 border border-gray-700"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"11"[39m
+            [33mstroke[39m=[32m"#6b7280"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"11"[39m
+          [36m>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"11"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mx[39m=[32m"3"[39m
+              [33my[39m=[32m"11"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M7 11V7a5 5 0 0 1 10 0v4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex-1 bg-transparent text-gray-300 text-xs outline-none font-mono"[39m
+            [33mspellcheck[39m=[32m"false"[39m
+            [33mtype[39m=[32m"text"[39m
+            [33mvalue[39m=[32m"http://10.10.20.11/?page=uploads/shell.php"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1.5 px-2 py-1 bg-gray-700 rounded text-xs text-gray-400 font-mono"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0mCyberBrowser[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto bg-white"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-h-full bg-white font-sans text-gray-800"[39m
+        [36m>[39m
+          [36m<nav[39m
+            [33mclass[39m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[39m
+            [36m>[39m
+              [0mDevPortal[0m
+            [36m</span>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+            [36m>[39m
+              [0m🏠 Inicio[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+            [36m>[39m
+              [0mℹ️ Acerca de[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+            [36m>[39m
+              [0m✉️ Contacto[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+            [36m>[39m
+              [0m📤 Upload[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+            [36m>[39m
+              [0m📁 Archivos[0m
+            [36m</button>[39m
+          [36m</nav>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"p-10 max-w-2xl mx-auto"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bg-red-50 border border-red-200 rounded-lg p-6"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-xl font-bold text-red-800 mb-2 font-mono"[39m
+              [36m>[39m
+                [0m❌ 404 NOT FOUND[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-sm text-red-700 mb-4 font-mono"[39m
+              [36m>[39m
+                [0mFile: [0m
+                [0muploads/shell.php[0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bg-gray-900 text-green-400 font-mono text-xs p-4 rounded shadow-inner"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [0mPHP Warning: include([0m
+                  [0muploads/shell.php[0m
+                  [0m): failed to open stream[0m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [0min /var/www/html/index.php on line 5[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/__tests__/FakeBrowser.test.tsx:[2m175:19[22m[39m
+    [90m173| [39m
+    [90m174| [39m    // Verifica que se muestra la página de error 404 (shell.php no ex…
+    [90m175| [39m    [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/Error 404/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                  [31m^[39m
+    [90m176| [39m    // Verifica que no se congela el navegador (el test no se tarda ma…
+    [90m177| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/__tests__/NetworkMap.test.tsx[2m > [22mNetworkMap[2m > [22mdebe mostrar credenciales encontradas
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Credenciales Comprometidas. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"absolute inset-0 z-50 bg-gray-950/95 backdrop-blur-sm flex flex-col"[39m
+      [33mstyle[39m=[32m"animation: fadeInMap 0.2s;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-7 py-5 border-b border-gray-800"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-base font-bold text-gray-100 flex items-center gap-2.5"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstroke[39m=[32m"#10b981"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"6"[39m
+                [33mwidth[39m=[32m"6"[39m
+                [33mx[39m=[32m"9"[39m
+                [33my[39m=[32m"2"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"6"[39m
+                [33mwidth[39m=[32m"6"[39m
+                [33mx[39m=[32m"2"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"6"[39m
+                [33mwidth[39m=[32m"6"[39m
+                [33mx[39m=[32m"16"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"12"[39m
+                [33mx2[39m=[32m"12"[39m
+                [33my1[39m=[32m"8"[39m
+                [33my2[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"5"[39m
+                [33mx2[39m=[32m"12"[39m
+                [33my1[39m=[32m"14"[39m
+                [33my2[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"19"[39m
+                [33mx2[39m=[32m"12"[39m
+                [33my1[39m=[32m"14"[39m
+                [33my2[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mWordPress Lab[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-xs text-gray-600 font-mono mt-0.5"[39m
+          [36m>[39m
+            [0m192.168.1.0/24[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-200 transition-colors"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"18"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"18"[39m
+          [36m>[39m
+            [36m<line[39m
+              [33mx1[39m=[32m"18"[39m
+              [33mx2[39m=[32m"6"[39m
+              [33my1[39m=[32m"6"[39m
+              [33my2[39m=[32m"18"[39m
+            [36m/>[39m
+            [36m<line[39m
+              [33mx1[39m=[32m"6"[39m
+              [33mx2[39m=[32m"18"[39m
+              [33my1[39m=[32m"6"[39m
+              [33my2[39m=[32m"18"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 flex items-center justify-center p-8 overflow-auto"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap gap-6 justify-center items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex flex-col items-center rounded-2xl border-2 overflow-hidden transition-all w-52 cursor-pointer hover:scale-105"[39m
+            [33mstyle[39m=[32m"border-color: rgb(16, 185, 129); background: rgb(17, 24, 39); box-shadow: 0 0 28px #10b98140;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"absolute top-0 left-0 right-0 flex justify-center"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"px-3 py-0.5 text-xs font-bold uppercase whitespace-nowrap rounded-b-lg"[39m
+                [33mstyle[39m=[32m"background: rgb(16, 185, 129); color: rgb(0, 0, 0);"[39m
+              [36m>[39m
+                [0mSesión Activa[0m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col items-center gap-3 p-6 w-full pt-8"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"p-4 rounded-2xl"[39m
+                [33mstyle[39m=[32m"background: rgba(16, 185, 129, 0.082); color: rgb(16, 185, 129);"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"36"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-width[39m=[32m"1.5"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"36"[39m
+                [36m>[39m
+                  [36m<rect[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mrx[39m=[32m"2"[39m
+                    [33mwidth[39m=[32m"20"[39m
+                    [33mx[39m=[32m"2"[39m
+                    [33my[39m=[32m"3"[39m
+                  [36m/>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"8"[39m
+                    [33mx2[39m=[32m"16"[39m
+                    [33my1[39m=[32m"21"[39m
+                    [33my2[39m=[32m"21"[39m
+                  [36m/>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"12"[39m
+                    [33mx2[39m=[32m"12"[39m
+                    [33my1[39m=[32m"17"[39m
+                    [33my2[39m=[32m"21"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-center w-full"[39m
+              [36m>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-bold text-gray-200 truncate text-sm"[39m
+                [36m>[39m
+                  [0mkali[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs font-mono mt-1"[39m
+                  [33mstyle[39m=[32m"color: rgb(16, 185, 129);"[39m
+                [36m>[39m
+                  [0m192.168.1.5[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [3...
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/__tests__/NetworkMap.test.tsx:[2m260:19[22m[39m
+    [90m258| [39m    fireEvent[33m.[39m[34mclick[39m(targetCard)[33m;[39m
+    [90m259| [39m
+    [90m260| [39m    expect(screen.getByText('Credenciales Comprometidas')).toBeInTheDo…
+    [90m   | [39m                  [31m^[39m
+    [90m261| [39m    [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'admin'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m262| [39m    [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'password123'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/__tests__/NetworkMap.test.tsx[2m > [22mNetworkMap[2m > [22mdebe mostrar credenciales sin verificar
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Pendiente de Validación. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"absolute inset-0 z-50 bg-gray-950/95 backdrop-blur-sm flex flex-col"[39m
+      [33mstyle[39m=[32m"animation: fadeInMap 0.2s;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-7 py-5 border-b border-gray-800"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-base font-bold text-gray-100 flex items-center gap-2.5"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"16"[39m
+              [33mstroke[39m=[32m"#10b981"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"6"[39m
+                [33mwidth[39m=[32m"6"[39m
+                [33mx[39m=[32m"9"[39m
+                [33my[39m=[32m"2"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"6"[39m
+                [33mwidth[39m=[32m"6"[39m
+                [33mx[39m=[32m"2"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"6"[39m
+                [33mwidth[39m=[32m"6"[39m
+                [33mx[39m=[32m"16"[39m
+                [33my[39m=[32m"16"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"12"[39m
+                [33mx2[39m=[32m"12"[39m
+                [33my1[39m=[32m"8"[39m
+                [33my2[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"5"[39m
+                [33mx2[39m=[32m"12"[39m
+                [33my1[39m=[32m"14"[39m
+                [33my2[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"19"[39m
+                [33mx2[39m=[32m"12"[39m
+                [33my1[39m=[32m"14"[39m
+                [33my2[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mWordPress Lab[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-xs text-gray-600 font-mono mt-0.5"[39m
+          [36m>[39m
+            [0m192.168.1.0/24[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-200 transition-colors"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"18"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"18"[39m
+          [36m>[39m
+            [36m<line[39m
+              [33mx1[39m=[32m"18"[39m
+              [33mx2[39m=[32m"6"[39m
+              [33my1[39m=[32m"6"[39m
+              [33my2[39m=[32m"18"[39m
+            [36m/>[39m
+            [36m<line[39m
+              [33mx1[39m=[32m"6"[39m
+              [33mx2[39m=[32m"18"[39m
+              [33my1[39m=[32m"6"[39m
+              [33my2[39m=[32m"18"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 flex items-center justify-center p-8 overflow-auto"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap gap-6 justify-center items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex flex-col items-center rounded-2xl border-2 overflow-hidden transition-all w-52 cursor-pointer hover:scale-105"[39m
+            [33mstyle[39m=[32m"border-color: rgb(16, 185, 129); background: rgb(17, 24, 39); box-shadow: 0 0 28px #10b98140;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"absolute top-0 left-0 right-0 flex justify-center"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"px-3 py-0.5 text-xs font-bold uppercase whitespace-nowrap rounded-b-lg"[39m
+                [33mstyle[39m=[32m"background: rgb(16, 185, 129); color: rgb(0, 0, 0);"[39m
+              [36m>[39m
+                [0mSesión Activa[0m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col items-center gap-3 p-6 w-full pt-8"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"p-4 rounded-2xl"[39m
+                [33mstyle[39m=[32m"background: rgba(16, 185, 129, 0.082); color: rgb(16, 185, 129);"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"36"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-width[39m=[32m"1.5"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"36"[39m
+                [36m>[39m
+                  [36m<rect[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mrx[39m=[32m"2"[39m
+                    [33mwidth[39m=[32m"20"[39m
+                    [33mx[39m=[32m"2"[39m
+                    [33my[39m=[32m"3"[39m
+                  [36m/>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"8"[39m
+                    [33mx2[39m=[32m"16"[39m
+                    [33my1[39m=[32m"21"[39m
+                    [33my2[39m=[32m"21"[39m
+                  [36m/>[39m
+                  [36m<line[39m
+                    [33mx1[39m=[32m"12"[39m
+                    [33mx2[39m=[32m"12"[39m
+                    [33my1[39m=[32m"17"[39m
+                    [33my2[39m=[32m"21"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-center w-full"[39m
+              [36m>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"font-bold text-gray-200 truncate text-sm"[39m
+                [36m>[39m
+                  [0mkali[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs font-mono mt-1"[39m
+                  [33mstyle[39m=[32m"color: rgb(16, 185, 129);"[39m
+                [36m>[39m
+                  [0m192.168.1.5[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [3...
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/__tests__/NetworkMap.test.tsx:[2m291:19[22m[39m
+    [90m289| [39m    fireEvent[33m.[39m[34mclick[39m(targetCard)[33m;[39m
+    [90m290| [39m
+    [90m291| [39m    expect(screen.getByText('Pendiente de Validación')).toBeInTheDocum…
+    [90m   | [39m                  [31m^[39m
+    [90m292| [39m  })[33m;[39m
+    [90m293| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mPágina principal[2m > [22mdebe mostrar el contenido de contact.php
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /Envíanos un mensaje/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-full bg-white font-sans text-gray-800"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33mclass[39m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[39m
+        [36m>[39m
+          [0mDevPortal[0m
+        [36m</span>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m🏠 Inicio[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm text-blue-300 font-bold"[39m
+        [36m>[39m
+          [0m✉️ Contacto[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m📤 Upload[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m📁 Archivos[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-10 max-w-4xl mx-auto"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-2xl font-bold mb-6"[39m
+          [36m>[39m
+            [0mContacto Directo[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-700"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"font-bold mb-4"[39m
+              [36m>[39m
+                [0mEnvíanos un reporte[0m
+              [36m</h3>[39m
+              [36m<form[39m
+                [33mclass[39m=[32m"space-y-4"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<label[39m
+                    [33mclass[39m=[32m"block text-xs font-bold uppercase text-gray-500 mb-1"[39m
+                  [36m>[39m
+                    [0mNombre[0m
+                  [36m</label>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none"[39m
+                    [33mplaceholder[39m=[32m"Tu nombre"[39m
+                    [33mtype[39m=[32m"text"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<label[39m
+                    [33mclass[39m=[32m"block text-xs font-bold uppercase text-gray-500 mb-1"[39m
+                  [36m>[39m
+                    [0mEmail[0m
+                  [36m</label>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none"[39m
+                    [33mplaceholder[39m=[32m"tu@email.com"[39m
+                    [33mtype[39m=[32m"email"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [36m<label[39m
+                    [33mclass[39m=[32m"block text-xs font-bold uppercase text-gray-500 mb-1"[39m
+                  [36m>[39m
+                    [0mMensaje[0m
+                  [36m</label>[39m
+                  [36m<textarea[39m
+                    [33mclass[39m=[32m"w-full px-3 py-2 border border-gray-200 rounded text-sm h-24 focus:border-blue-500 outline-none"[39m
+                    [33mplaceholder[39m=[32m"Tu reporte..."[39m
+                  [36m/>[39m
+                [36m</div>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"px-5 py-2 bg-slate-800 text-white rounded text-sm font-semibold hover:bg-slate-700 transition-colors"[39m
+                  [33mtype[39m=[32m"submit"[39m
+                [36m>[39m
+                  [0mEnviar Reporte[0m
+                [36m</button>[39m
+              [36m</form>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bg-gray-50 p-6 rounded-xl border border-gray-100"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"font-bold mb-4"[39m
+              [36m>[39m
+                [0mSoporte Técnico[0m
+              [36m</h3>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"space-y-4 text-sm text-gray-600"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-start gap-3"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-500"[39m
+                  [36m>[39m
+                    [0m📍[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mSede Central: Av. Corrientes 1234, CABA[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-start gap-3"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-500"[39m
+                  [36m>[39m
+                    [0m📞[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mInterno: +54 11 1234-5678 (Ext 404)[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-start gap-3"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-500"[39m
+                  [36m>[39m
+                    [0m✉️[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mhelpdesk@devportal.local[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mt-6 pt-4 border-t border-gray-200 text-xs italic"[39m
+                [36m>[39m
+                  [0mHorario de atención: Lunes a Viernes de 09:00 a 18:00 hs.[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m46:21[22m[39m
+    [90m 44| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m 45| [39m      
+    [90m 46| [39m      expect(screen.getByText(/Envíanos un mensaje/i)).toBeInTheDocume…
+    [90m   | [39m                    [31m^[39m
+    [90m 47| [39m    })[33m;[39m
+    [90m 48| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mPágina de upload[2m > [22mdebe renderizar la página de upload
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /Panel de Carga de Archivos/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-full bg-white font-sans text-gray-800"[31m
+    [36m>[31m
+      [36m<nav[31m
+        [33mclass[31m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[31m
+        [36m>[31m
+          [0mDevPortal[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m🏠 Inicio[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m✉️ Contacto[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm text-blue-300 font-bold"[31m
+        [36m>[31m
+          [0m📤 Upload[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m📁 Archivos[0m
+        [36m</button>[31m
+      [36m</nav>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"p-8 max-w-2xl mx-auto"[31m
+      [36m>[31m
+        [36m<h1[31m
+          [33mclass[31m=[32m"text-2xl font-bold mb-6"[31m
+        [36m>[31m
+          [0m📤 Carga de Scripts de Mantenimiento[0m
+        [36m</h1>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded"[31m
+        [36m>[31m
+          [0mSube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.[0m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm"[31m
+        [36m>[31m
+          [36m<label[31m
+            [33mclass[31m=[32m"block text-sm font-semibold mb-2"[31m
+          [36m>[31m
+            [0mArchivo en Kali Linux (/root/):[0m
+          [36m</label>[31m
+          [36m<select[31m
+            [33mclass[31m=[32m"w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500"[31m
+          [36m>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m""[31m
+            [36m>[31m
+              [0m-- Seleccionar archivo --[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"/root/payload.php"[31m
+            [36m>[31m
+              [0mpayload.php[0m
+            [36m</option>[31m
+          [36m</select>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all"[31m
+            [33mdisabled[31m=[32m""[31m
+          [36m>[31m
+            [0mSubir Archivo[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m54:21[22m[39m
+    [90m 52| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m 53| [39m      
+    [90m 54| [39m      expect(screen.getByText(/Panel de Carga de Archivos/i)).toBeInTh…
+    [90m   | [39m                    [31m^[39m
+    [90m 55| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/Instrucciones/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 56| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mPágina de upload[2m > [22mdebe mostrar el selector de archivos
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /Seleccionar archivo desde Kali/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-full bg-white font-sans text-gray-800"[31m
+    [36m>[31m
+      [36m<nav[31m
+        [33mclass[31m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[31m
+        [36m>[31m
+          [0mDevPortal[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m🏠 Inicio[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m✉️ Contacto[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm text-blue-300 font-bold"[31m
+        [36m>[31m
+          [0m📤 Upload[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m📁 Archivos[0m
+        [36m</button>[31m
+      [36m</nav>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"p-8 max-w-2xl mx-auto"[31m
+      [36m>[31m
+        [36m<h1[31m
+          [33mclass[31m=[32m"text-2xl font-bold mb-6"[31m
+        [36m>[31m
+          [0m📤 Carga de Scripts de Mantenimiento[0m
+        [36m</h1>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded"[31m
+        [36m>[31m
+          [0mSube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.[0m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm"[31m
+        [36m>[31m
+          [36m<label[31m
+            [33mclass[31m=[32m"block text-sm font-semibold mb-2"[31m
+          [36m>[31m
+            [0mArchivo en Kali Linux (/root/):[0m
+          [36m</label>[31m
+          [36m<select[31m
+            [33mclass[31m=[32m"w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500"[31m
+          [36m>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m""[31m
+            [36m>[31m
+              [0m-- Seleccionar archivo --[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"/root/payload.php"[31m
+            [36m>[31m
+              [0mpayload.php[0m
+            [36m</option>[31m
+          [36m</select>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all"[31m
+            [33mdisabled[31m=[32m""[31m
+          [36m>[31m
+            [0mSubir Archivo[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m61:21[22m[39m
+    [90m 59| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m 60| [39m      
+    [90m 61| [39m      expect(screen.getByText(/Seleccionar archivo desde Kali/i)).toBe…
+    [90m   | [39m                    [31m^[39m
+    [90m 62| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByRole[39m([32m'combobox'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 63| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mPágina de upload[2m > [22mdebe mostrar archivos por defecto si no se proporcionan attackerFiles
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m75:63[22m[39m
+    [90m 73| [39m      [35mconst[39m optionTexts [33m=[39m options[33m.[39m[34mmap[39m(o [33m=>[39m o[33m.[39mtextContent)[33m;[39m
+    [90m 74| [39m      expect(optionTexts.some(t => t?.includes('payload.php'))).toBe(t…
+    [90m 75| [39m      expect(optionTexts.some(t => t?.includes('shell.php'))).toBe(tru…
+    [90m   | [39m                                                              [31m^[39m
+    [90m 76| [39m    })[33m;[39m
+    [90m 77| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mPágina de upload[2m > [22mdebe subir archivo correctamente
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /subido exitosamente/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-full bg-white font-sans text-gray-800"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33mclass[39m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[39m
+        [36m>[39m
+          [0mDevPortal[0m
+        [36m</span>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m🏠 Inicio[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m✉️ Contacto[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm text-blue-300 font-bold"[39m
+        [36m>[39m
+          [0m📤 Upload[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m📁 Archivos[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-8 max-w-2xl mx-auto"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-2xl font-bold mb-6"[39m
+        [36m>[39m
+          [0m📤 Carga de Scripts de Mantenimiento[0m
+        [36m</h1>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded"[39m
+        [36m>[39m
+          [0mSube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.[0m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"block text-sm font-semibold mb-2"[39m
+          [36m>[39m
+            [0mArchivo en Kali Linux (/root/):[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mclass[39m=[32m"w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m-- Seleccionar archivo --[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"/root/payload.php"[39m
+            [36m>[39m
+              [0mpayload.php[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all"[39m
+          [36m>[39m
+            [0mSubir Archivo[0m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-4 p-3 rounded text-xs font-mono border bg-green-50 text-green-700 border-green-200"[39m
+          [36m>[39m
+            [0m✅ Archivo payload.php subido a /uploads/[0m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-h-full bg-white font-sans text-gray-800"[39m
+      [36m>[39m
+        [36m<nav[39m
+          [33mclass[39m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[39m
+          [36m>[39m
+            [0mDevPortal[0m
+          [36m</span>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0m🏠 Inicio[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0mℹ️ Acerca de[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0m✉️ Contacto[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm text-blue-300 font-bold"[39m
+          [36m>[39m
+            [0m📤 Upload[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0m📁 Archivos[0m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-8 max-w-2xl mx-auto"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-2xl font-bold mb-6"[39m
+          [36m>[39m
+            [0m📤 Carga de Scripts de Mantenimiento[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded"[39m
+          [36m>[39m
+            [0mSube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-semibold mb-2"[39m
+            [36m>[39m
+              [0mArchivo en Kali Linux (/root/):[0m
+            [36m</label>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0m-- Seleccionar archivo --[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"/root/payload.php"[39m
+              [36m>[39m
+                [0mpayload.php[0m
+              [36m</option>[39m
+            [36m</select>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all"[39m
+            [36m>[39m
+              [0mSubir Archivo[0m
+            [36m</button>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mt-4 p-3 rounded text-xs font-mono border bg-green-50 text-green-700 border-green-200"[39m
+            [36m>[39m
+              [0m✅ Archivo payload.php subido a /uploads/[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m102:13[22m[39m
+    [90m100| [39m      [35mif[39m (submitButton) fireEvent[33m.[39m[34mclick[39m(submitButton)[33m;[39m
+    [90m101| [39m      
+    [90m102| [39m      [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m            [31m^[39m
+    [90m103| [39m        expect(screen.getByText(/subido exitosamente/i)).toBeInTheDocu…
+    [90m104| [39m      })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mPágina de upload[2m > [22mdebe mostrar archivos subidos como links
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /Archivos subidos/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-full bg-white font-sans text-gray-800"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33mclass[39m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[39m
+        [36m>[39m
+          [0mDevPortal[0m
+        [36m</span>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m🏠 Inicio[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m✉️ Contacto[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm text-blue-300 font-bold"[39m
+        [36m>[39m
+          [0m📤 Upload[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+        [36m>[39m
+          [0m📁 Archivos[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-8 max-w-2xl mx-auto"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-2xl font-bold mb-6"[39m
+        [36m>[39m
+          [0m📤 Carga de Scripts de Mantenimiento[0m
+        [36m</h1>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded"[39m
+        [36m>[39m
+          [0mSube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.[0m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"block text-sm font-semibold mb-2"[39m
+          [36m>[39m
+            [0mArchivo en Kali Linux (/root/):[0m
+          [36m</label>[39m
+          [36m<select[39m
+            [33mclass[39m=[32m"w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m-- Seleccionar archivo --[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"/root/payload.php"[39m
+            [36m>[39m
+              [0mpayload.php[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all"[39m
+          [36m>[39m
+            [0mSubir Archivo[0m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-4 p-3 rounded text-xs font-mono border bg-green-50 text-green-700 border-green-200"[39m
+          [36m>[39m
+            [0m✅ Archivo payload.php subido a /uploads/[0m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-h-full bg-white font-sans text-gray-800"[39m
+      [36m>[39m
+        [36m<nav[39m
+          [33mclass[39m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[39m
+          [36m>[39m
+            [0mDevPortal[0m
+          [36m</span>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0m🏠 Inicio[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0mℹ️ Acerca de[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0m✉️ Contacto[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm text-blue-300 font-bold"[39m
+          [36m>[39m
+            [0m📤 Upload[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"text-sm hover:text-blue-300"[39m
+          [36m>[39m
+            [0m📁 Archivos[0m
+          [36m</button>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-8 max-w-2xl mx-auto"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-2xl font-bold mb-6"[39m
+          [36m>[39m
+            [0m📤 Carga de Scripts de Mantenimiento[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded"[39m
+          [36m>[39m
+            [0mSube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-semibold mb-2"[39m
+            [36m>[39m
+              [0mArchivo en Kali Linux (/root/):[0m
+            [36m</label>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0m-- Seleccionar archivo --[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"/root/payload.php"[39m
+              [36m>[39m
+                [0mpayload.php[0m
+              [36m</option>[39m
+            [36m</select>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all"[39m
+            [36m>[39m
+              [0mSubir Archivo[0m
+            [36m</button>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mt-4 p-3 rounded text-xs font-mono border bg-green-50 text-green-700 border-green-200"[39m
+            [36m>[39m
+              [0m✅ Archivo payload.php subido a /uploads/[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m120:13[22m[39m
+    [90m118| [39m      [35mif[39m (submitButton) fireEvent[33m.[39m[34mclick[39m(submitButton)[33m;[39m
+    [90m119| [39m      
+    [90m120| [39m      [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m            [31m^[39m
+    [90m121| [39m        expect(screen.getByText(/Archivos subidos/i)).toBeInTheDocumen…
+    [90m122| [39m      })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar etc/passwd cuando se accede via LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /LFI DETECTADO/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0metc/passwd[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0mroot:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+admin:x:1000:1000:admin,,,:/home/admin:/bin/bash[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m130:21[22m[39m
+    [90m128| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m129| [39m      
+    [90m130| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/LFI DETECTADO/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m131| [39m      // Puede haber múltiples elementos con etc/passwd (en sugerencia…
+    [90m132| [39m      expect(screen.getAllByText(/etc\/passwd/i).length).toBeGreaterTh…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar etc/shadow cuando se accede via LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /LFI DETECTADO/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0metc/shadow[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0mroot:$6$rounds=656000$abcdefghijklmnop$1234567890abcdefghijklmnop/1234567890123456:18000:0:99999:7:::
+daemon:*:18000:0:99999:7:::
+www-data:*:18000:0:99999:7:::[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m139:21[22m[39m
+    [90m137| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m138| [39m      
+    [90m139| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/LFI DETECTADO/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m140| [39m      // Puede haber múltiples elementos con etc/shadow (en sugerencia…
+    [90m141| [39m      expect(screen.getAllByText(/etc\/shadow/i).length).toBeGreaterTh…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar etc/hosts cuando se accede via LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /LFI DETECTADO/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0metc/hosts[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0m127.0.0.1 localhost
+127.0.1.1 dev-portal-backup
+::1 localhost ip6-localhost ip6-loopback[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m147:21[22m[39m
+    [90m145| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m146| [39m      
+    [90m147| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/LFI DETECTADO/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m148| [39m      expect(screen.getByText(/127.0.0.1 localhost/i)).toBeInTheDocume…
+    [90m149| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar proc/self/environ cuando se accede via LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /LFI DETECTADO/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0mproc/self/environ[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0mAPACHE_RUN_DIR=/var/run/apache2
+APACHE_RUN_USER=www-data
+APACHE_RUN_GROUP=www-data
+APACHE_LOG_DIR=/var/log/apache2
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOME=/var/www
+SERVER_SOFTWARE=Apache/2.4.52 (Debian)
+SERVER_NAME=dev-portal-backup
+SERVER_ADDR=192.168.20.11
+SERVER_PORT=80
+REMOTE_ADDR=192.168.20.10
+DOCUMENT_ROOT=/var/www/html
+QUERY_STRING=page=../../../../etc/passwd[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m154:21[22m[39m
+    [90m152| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m153| [39m      
+    [90m154| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/LFI DETECTADO/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m155| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/APACHE_RUN_USER/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m156| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar config.php cuando se accede via LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /LFI DETECTADO/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0mvar/www/html/config.php[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0m&lt;?php
+define("DB_HOST", "localhost");
+define("DB_USER", "devportal");
+define("DB_PASS", "D3vP0rt@l2024!");
+define("DB_NAME", "devportal_db");
+define("ADMIN_USER", "admin");
+define("ADMIN_PASS", "admin123");
+?&gt;[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m161:21[22m[39m
+    [90m159| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m160| [39m      
+    [90m161| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/LFI DETECTADO/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m162| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/DB_PASS/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m163| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar apache2.conf cuando se accede via LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /LFI DETECTADO/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0metc/apache2/apache2.conf[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0m# Apache2 Configuration File
+ServerRoot "/etc/apache2"
+User ${APACHE_RUN_USER}
+Group ${APACHE_RUN_GROUP}
+ErrorLog ${APACHE_LOG_DIR}/error.log
+&lt;Directory /var/www/&gt;
+  Options Indexes FollowSymLinks
+  AllowOverride All
+  Require all granted
+&lt;/Directory&gt;[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m168:21[22m[39m
+    [90m166| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m167| [39m      
+    [90m168| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/LFI DETECTADO/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m169| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/ServerRoot/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m170| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar access.log cuando se accede via LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /LFI DETECTADO/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0mvar/log/apache2/access.log[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0m192.168.20.10 - - [20/Mar/2026:10:15:23 -0300] "GET / HTTP/1.1" 200 1234 "-" "Mozilla/5.0"
+192.168.20.10 - - [20/Mar/2026:10:15:25 -0300] "GET /?page=home.php HTTP/1.1" 200 1234
+192.168.20.10 - - [20/Mar/2026:10:15:30 -0300] "GET /upload.php HTTP/1.1" 200 2345
+192.168.20.10 - - [20/Mar/2026:10:15:45 -0300] "GET /?page=../../../../etc/passwd HTTP/1.1" 200 1567[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m175:21[22m[39m
+    [90m173| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m174| [39m      
+    [90m175| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/LFI DETECTADO/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m176| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/GET/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m177| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar error 404 para archivo inexistente
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /Error 404/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-full bg-white font-sans text-gray-800"[31m
+    [36m>[31m
+      [36m<nav[31m
+        [33mclass[31m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[31m
+        [36m>[31m
+          [0mDevPortal[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m🏠 Inicio[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m✉️ Contacto[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m📤 Upload[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m📁 Archivos[0m
+        [36m</button>[31m
+      [36m</nav>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"p-10 max-w-2xl mx-auto"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-red-50 border border-red-200 rounded-lg p-6"[31m
+        [36m>[31m
+          [36m<h2[31m
+            [33mclass[31m=[32m"text-xl font-bold text-red-800 mb-2 font-mono"[31m
+          [36m>[31m
+            [0m❌ 404 NOT FOUND[0m
+          [36m</h2>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-sm text-red-700 mb-4 font-mono"[31m
+          [36m>[31m
+            [0mFile: [0m
+            [0metc/nonexistent[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"bg-gray-900 text-green-400 font-mono text-xs p-4 rounded shadow-inner"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [0mPHP Warning: include([0m
+              [0metc/nonexistent[0m
+              [0m): failed to open stream[0m
+            [36m</div>[31m
+            [36m<div>[31m
+              [0min /var/www/html/index.php on line 5[0m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m182:21[22m[39m
+    [90m180| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m181| [39m      
+    [90m182| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/Error 404/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m183| [39m      expect(screen.getByText(/Archivo no encontrado/i)).toBeInTheDocu…
+    [90m184| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mLFI - Lectura de archivos[2m > [22mdebe mostrar sugerencias en página de error 404
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /Sugerencias/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-full bg-white font-sans text-gray-800"[31m
+    [36m>[31m
+      [36m<nav[31m
+        [33mclass[31m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[31m
+        [36m>[31m
+          [0mDevPortal[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m🏠 Inicio[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m✉️ Contacto[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m📤 Upload[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m📁 Archivos[0m
+        [36m</button>[31m
+      [36m</nav>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"p-10 max-w-2xl mx-auto"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-red-50 border border-red-200 rounded-lg p-6"[31m
+        [36m>[31m
+          [36m<h2[31m
+            [33mclass[31m=[32m"text-xl font-bold text-red-800 mb-2 font-mono"[31m
+          [36m>[31m
+            [0m❌ 404 NOT FOUND[0m
+          [36m</h2>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-sm text-red-700 mb-4 font-mono"[31m
+          [36m>[31m
+            [0mFile: [0m
+            [0metc/nonexistent[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"bg-gray-900 text-green-400 font-mono text-xs p-4 rounded shadow-inner"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [0mPHP Warning: include([0m
+              [0metc/nonexistent[0m
+              [0m): failed to open stream[0m
+            [36m</div>[31m
+            [36m<div>[31m
+              [0min /var/www/html/index.php on line 5[0m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m189:21[22m[39m
+    [90m187| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m188| [39m      
+    [90m189| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/Sugerencias/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m190| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/etc\/passwd/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m191| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mNavegación[2m > [22mdebe llamar onNavigate al hacer clic en Volver al portal desde LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /Volver al portal/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0metc/passwd[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0mroot:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+admin:x:1000:1000:admin,,,:/home/admin:/bin/bash[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m234:33[22m[39m
+    [90m232| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m233| [39m      
+    [90m234| [39m      [35mconst[39m backButton [33m=[39m screen[33m.[39m[34mgetByText[39m([36m/Volver al portal/i[39m)[33m;[39m
+    [90m   | [39m                                [31m^[39m
+    [90m235| [39m      fireEvent[33m.[39m[34mclick[39m(backButton)[33m;[39m
+    [90m236| [39m      
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mInfo del servidor[2m > [22mdebe mostrar info del servidor en página de upload
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /Apache\/2.4.52/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-full bg-white font-sans text-gray-800"[31m
+    [36m>[31m
+      [36m<nav[31m
+        [33mclass[31m=[32m"bg-slate-800 text-white px-6 py-3 flex items-center gap-6"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"font-bold text-lg border-r border-slate-600 pr-6"[31m
+        [36m>[31m
+          [0mDevPortal[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m🏠 Inicio[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0mℹ️ Acerca de[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m✉️ Contacto[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm text-blue-300 font-bold"[31m
+        [36m>[31m
+          [0m📤 Upload[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"text-sm hover:text-blue-300"[31m
+        [36m>[31m
+          [0m📁 Archivos[0m
+        [36m</button>[31m
+      [36m</nav>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"p-8 max-w-2xl mx-auto"[31m
+      [36m>[31m
+        [36m<h1[31m
+          [33mclass[31m=[32m"text-2xl font-bold mb-6"[31m
+        [36m>[31m
+          [0m📤 Carga de Scripts de Mantenimiento[0m
+        [36m</h1>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded"[31m
+        [36m>[31m
+          [0mSube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.[0m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm"[31m
+        [36m>[31m
+          [36m<label[31m
+            [33mclass[31m=[32m"block text-sm font-semibold mb-2"[31m
+          [36m>[31m
+            [0mArchivo en Kali Linux (/root/):[0m
+          [36m</label>[31m
+          [36m<select[31m
+            [33mclass[31m=[32m"w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500"[31m
+          [36m>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m""[31m
+            [36m>[31m
+              [0m-- Seleccionar archivo --[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"/root/payload.php"[31m
+            [36m>[31m
+              [0mpayload.php[0m
+            [36m</option>[31m
+          [36m</select>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all"[31m
+            [33mdisabled[31m=[32m""[31m
+          [36m>[31m
+            [0mSubir Archivo[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m245:21[22m[39m
+    [90m243| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m244| [39m      
+    [90m245| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/Apache\/2.4.52/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m246| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/PHP\/7.4.33/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m247| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/21]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[2m > [22mInclusionSite - LFI Lab[2m > [22mInfo del servidor[2m > [22mdebe mostrar Content-Type en vista de archivo LFI
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /Content-Type/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"min-h-screen bg-gray-950 text-emerald-400 font-mono p-6 overflow-auto"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4 text-xs border-b border-emerald-900/50 pb-2 flex justify-between items-center"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"bg-emerald-950 px-2 py-1 rounded"[31m
+        [36m>[31m
+          [0mLFI OUTPUT: /[0m
+          [0metc/passwd[0m
+        [36m</span>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"bg-emerald-900/30 px-3 py-1 rounded hover:bg-emerald-900/50 transition-colors"[31m
+        [36m>[31m
+          [0m[ CERRAR ][0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<pre[31m
+        [33mclass[31m=[32m"text-sm leading-relaxed whitespace-pre-wrap"[31m
+      [36m>[31m
+        [0mroot:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+admin:x:1000:1000:admin,,,:/home/admin:/bin/bash[0m
+      [36m</pre>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx:[2m252:21[22m[39m
+    [90m250| [39m      render(<InclusionSite {...defaultProps} currentUrl="http://192.1…
+    [90m251| [39m      
+    [90m252| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/Content-Type/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m253| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/text\/plain/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m254| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/21]⎯[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+Vitest caught 2 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+
+[31m⎯⎯⎯⎯⎯[39m[1m[41m Uncaught Exception [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: onFileUpload is not a function[39m
+[36m [2m❯[22m Timeout._onTimeout src/components/fakesites/lfi_lab/InclusionSIte.tsx:[2m130:7[22m[39m
+    [90m128| [39m      [34msetUploadMsg[39m([32m`✅ Archivo [39m[36m${[39mfileName[36m}[39m[32m subido a /uploads/`[39m)[33m;[39m
+    [90m129| [39m      [34msetIsLoading[39m([35mfalse[39m)[33m;[39m
+    [90m130| [39m      [34monFileUpload[39m(fileName)[33m;[39m
+    [90m   | [39m      [31m^[39m
+    [90m131| [39m      [34msetSelectedFile[39m([32m''[39m)[33m;[39m
+    [90m132| [39m    }[33m,[39m [34m800[39m)[33m;[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m585:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m521:7[22m[39m
+
+[31mThis error originated in "[1msrc/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mdebe subir archivo correctamente[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+
+[31m⎯⎯⎯⎯⎯[39m[1m[41m Uncaught Exception [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mTypeError[22m: onFileUpload is not a function[39m
+[36m [2m❯[22m Timeout._onTimeout src/components/fakesites/lfi_lab/InclusionSIte.tsx:[2m130:7[22m[39m
+    [90m128| [39m      [34msetUploadMsg[39m([32m`✅ Archivo [39m[36m${[39mfileName[36m}[39m[32m subido a /uploads/`[39m)[33m;[39m
+    [90m129| [39m      [34msetIsLoading[39m([35mfalse[39m)[33m;[39m
+    [90m130| [39m      [34monFileUpload[39m(fileName)[33m;[39m
+    [90m   | [39m      [31m^[39m
+    [90m131| [39m      [34msetSelectedFile[39m([32m''[39m)[33m;[39m
+    [90m132| [39m    }[33m,[39m [34m800[39m)[33m;[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m585:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m521:7[22m[39m
+
+[31mThis error originated in "[1msrc/components/fakesites/lfi_lab/__tests__/InclusionSite.test.tsx[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mdebe mostrar archivos subidos como links[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m21 failed[39m[22m[2m | [22m[1m[32m32 passed[39m[22m[90m (53)[39m
+[2m     Errors [22m [1m[31m2 errors[39m[22m
+[2m   Start at [22m 21:17:50
+[2m   Duration [22m 5.26s[2m (transform 1.09s, setup 2.21s, import 433ms, tests 5.79s, environment 3.05s)[22m
+

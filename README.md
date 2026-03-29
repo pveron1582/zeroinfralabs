@@ -33,6 +33,8 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 - **Meterpreter Realista**: Verificación de privilegios mediante `getuid` necesaria para marcar objetivos como comprometidos.
 - **Enumeración Avanzada**: Panel de detalles que muestra progreso visual (naranja para sospecha, verde para explotación).
 - **Sistema de Archivos Virtual**: Archivos editables que impactan la lógica del simulador en tiempo real.
+- **Ayuda Condicional Dinámica** - Las misiones se ocultan por defecto ("Modo sin ayuda"), desplegándose dinámicamente con animaciones en cascada y efecto tipo máquina de escribir al solicitar guía. Solo se revelan los pasos activos y completados.
+- **Indicador Visual de Avance** - El botón "Ver red" avisa con un parpadeo verde cuando descubres nueva información de reconocimiento (como puertos abiertos o directorios ocultos) con tus herramientas.
 - **Navegador web simulado** - Acceso a sitios vulnerables dentro del simulador
 - **Mapa de red y Panel de Enumeración** - Visualización detallada de máquinas, puertos y vulnerabilidades. El panel de **Enumeración** muestra información dinámica (directorios, credenciales) extraída en tiempo real de los archivos de la máquina (ej: `config.bak`).
 - **Credenciales Dinámicas** - El sistema de login de sitios web (WordPress) y el panel de enumeración son sensibles a cambios en los archivos virtuales. Si un usuario edita un archivo de configuración, las credenciales aceptadas por el simulador cambian automáticamente.

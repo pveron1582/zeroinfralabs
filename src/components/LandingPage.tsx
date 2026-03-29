@@ -161,13 +161,13 @@ function ScenarioCard({ scenario, index, onSelect }: { scenario: Scenario; index
   const diffColor = scenario.difficulty === 'Easy' ? '#10b981' : scenario.difficulty === 'Medium' ? '#f59e0b' : '#f87171';
 
   return (
-    <article onClick={() => onSelect(scenario.id)} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      className="flex flex-col cursor-pointer overflow-hidden select-none"
+    <article onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      className="flex flex-col overflow-hidden select-none"
       style={{ background: '#0d1117', border: `1px solid ${hovered ? accent + '70' : '#1e2d2d'}`, borderRadius: '10px',
         boxShadow: hovered ? `0 0 0 1px ${accent}20, 0 16px 48px ${accent}12, inset 0 1px 0 ${accent}15` : '0 2px 10px #00000060',
         transform: hovered ? 'translateY(-4px)' : 'none', transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         animationDelay: `${index * 90}ms`, animation: 'cardIn 0.4s ease-out both' }}
-      role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onSelect(scenario.id)}>
+      role="button" tabIndex={0}>
       <div className="relative overflow-hidden" style={{ height: '170px', background: '#090d12' }}>
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px)', zIndex: 2 }}/>
         <div className="absolute inset-2 transition-opacity duration-300" style={{ opacity: hovered ? 0.18 : 1, zIndex: 1 }}>{meta?.illustration}</div>
@@ -190,10 +190,14 @@ function ScenarioCard({ scenario, index, onSelect }: { scenario: Scenario; index
         <div className="flex flex-wrap gap-1.5">{meta?.tools.map(t => (<span key={t} className="text-xs font-mono px-1.5 py-0.5 rounded" style={{ background: '#111c1c', color: '#6b7280', border: '1px solid #243030' }}>{t}</span>))}</div>
         <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid #1e2d2d' }}>
           <span className="text-xs font-mono text-gray-600">{scenario.missions?.length ?? 5} misiones</span>
-          <div className="flex items-center gap-1.5 text-xs font-mono font-bold transition-colors duration-200" style={{ color: hovered ? accent : '#3d5050' }}>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onSelect(scenario.id); }}
+            className="flex items-center gap-1.5 text-xs font-mono font-bold transition-colors duration-200 cursor-pointer hover:opacity-80"
+            style={{ color: hovered ? accent : '#3d5050', background: 'none', border: 'none', padding: '4px 8px', borderRadius: '4px' }}
+          >
             INICIAR
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: hovered ? 'translateX(2px)' : 'none', transition: 'transform 0.2s' }}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </div>
+          </button>
         </div>
       </div>
     </article>
