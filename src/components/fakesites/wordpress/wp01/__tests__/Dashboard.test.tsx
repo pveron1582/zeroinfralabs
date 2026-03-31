@@ -14,29 +14,29 @@ describe('WPDashboard', () => {
   it('debe renderizar el dashboard de WordPress', () => {
     render(<WPDashboard {...defaultProps} />);
     
-    expect(screen.getByText(/Mi Blog/i)).toBeInTheDocument();
+    expect(screen.getByText(/My Blog/i)).toBeInTheDocument();
     expect(screen.getByText(/WordPress 6.0/i)).toBeInTheDocument();
   });
 
   it('debe mostrar mensaje de acceso concedido', () => {
     render(<WPDashboard {...defaultProps} />);
     
-    expect(screen.getByText(/Acceso concedido/i)).toBeInTheDocument();
-    expect(screen.getByText(/comprometido el panel/i)).toBeInTheDocument();
+    expect(screen.getByText(/Access granted/i)).toBeInTheDocument();
+    expect(screen.getByText(/compromised the WordPress/i)).toBeInTheDocument();
   });
 
   it('debe mostrar menú lateral con opciones', () => {
     render(<WPDashboard {...defaultProps} />);
     
     // Verificar que existen los elementos del menú (puede haber múltiples)
-    expect(screen.getAllByText(/Escritorio/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Entradas/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Páginas/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Comentarios/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Apariencia/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Dashboard/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Posts/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Pages/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Comments/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Appearance/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Plugins/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Usuarios/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Ajustes/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Users/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Settings/i).length).toBeGreaterThan(0);
   });
 
   it('debe mostrar estadísticas del dashboard', () => {
@@ -63,19 +63,19 @@ describe('WPDashboard', () => {
     expect(screen.getAllByText(/admin/i).length).toBeGreaterThan(0);
   });
 
-  it('debe llamar onNavigate al hacer clic en Ver sitio', () => {
+  it('debe llamar onNavigate al hacer clic en View site', () => {
     render(<WPDashboard {...defaultProps} />);
     
-    const verSitioButton = screen.getByText(/Ver sitio/i);
-    fireEvent.click(verSitioButton);
+    const viewSiteButton = screen.getByText(/View site/i);
+    fireEvent.click(viewSiteButton);
     
     expect(defaultProps.onNavigate).toHaveBeenCalledWith('http://192.168.1.11/');
   });
 
-  it('debe mostrar título Escritorio', () => {
+  it('debe mostrar título Dashboard', () => {
     render(<WPDashboard {...defaultProps} />);
     
-    // Puede haber múltiples elementos con "Escritorio"
-    expect(screen.getAllByText(/Escritorio/i).length).toBeGreaterThan(0);
+    // Puede haber múltiples elementos con "Dashboard"
+    expect(screen.getAllByText(/Dashboard/i).length).toBeGreaterThan(0);
   });
 });

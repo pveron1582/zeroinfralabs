@@ -2,7 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
-import { executeCommand, isMsfActive, getMsfPrompt, resetMsfState } from '../commands';
+import {
+  executeCommand, isMsfActive, getMsfPrompt, resetMsfState,
+  isShellSessionActive, getShellPrompt, getCurrentShellName, resetShellManager,
+  startShellSession
+} from '../commands';
 import { getAutocompleteSuggestions, findCommonPrefix } from '../utils/autocomplete';
 
 interface Props {
@@ -15,6 +19,7 @@ interface Props {
   onCredentialsFound: (machineId: string, user: string, pass: string, file: string, service?: string) => void;
   onVerifyCredentials?: (machineId: string, service?: string) => void;
   onFailedUser?: (machineId: string, user: string) => void;
+  onSudoPrivileges?: (machineId: string, user: string, commands: string[], canSudo: boolean) => void;
   termColor?: string;
 }
 
@@ -54,7 +59,7 @@ function StreamingOutput({ lines, color }: { lines: string[]; color: string }) {
 export function Terminal({
   scenarioId, machine, allMachines, currentMissionId,
   onMissionComplete, onChangeMachine, onCredentialsFound,
-  onVerifyCredentials, onFailedUser,
+  onVerifyCredentials, onFailedUser, onSudoPrivileges,
   termColor = '#10b981'
 }: Props) {
   const color = termColor;
@@ -68,12 +73,14 @@ export function Terminal({
   const goHome = useScenarioStore(state => state.goHome);
   const blockingCommand = useScenarioStore(state => state.blockingCommand);
   const setBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
+  const ftpSession = useScenarioStore(state => state.ftpSession);
+  const setFtpSession = useScenarioStore(state => state.setFtpSession);
+  const language = useScenarioStore(state => state.language);
 
   const makeWelcome = (machines: Machine[]): HistoryEntry => {
-    const atk = machines.find(m => m.id === 'attacker-01');
     return {
       command: null, streaming: false,
-      output: `ZeroInfra Labs Terminal v2.0.0\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSistema: ${atk?.machine_info.os || 'Kali Linux'}\nIP:      ${atk?.machine_info.ip || '—'}\n\nEscribe 'help' para ver los comandos disponibles.`,
+      output: '',
       timestamp: Date.now()
     };
   };
@@ -88,6 +95,12 @@ export function Terminal({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
+  
+  // Ref to track current FTP session state and avoid stale closures
+  const ftpSessionRef = useRef(ftpSession);
+  useEffect(() => {
+    ftpSessionRef.current = ftpSession;
+  }, [ftpSession]);
 
   // Identical logic to whoami.ts to accurately display the connected SSH user
   const rceCred = Array.isArray(machine.found_credentials) 
@@ -135,8 +148,27 @@ export function Terminal({
   const basePrompt = machine.id === 'attacker-01'
     ? `root@${machine.machine_info.hostname}:${displayPath}#`
     : `${sshUser}@${machine.machine_info.hostname}:${displayPath}${isRoot ? '#' : '$'}`;
-  // Show msf6 prompt when inside a Metasploit session
-  const prompt = isMsfActive() ? (getMsfPrompt() || 'msf6 >') : basePrompt;
+  // Helper function to get FTP prompt directly from store state
+  const getFtpPrompt = (): string => {
+    if (!ftpSession?.active) return '';
+    
+    switch (ftpSession.step) {
+      case 'username':
+        return `Name (${ftpSession.targetIp}:root): `;
+      case 'password':
+        return 'Password: ';
+      case 'connected':
+      default:
+        return 'ftp> ';
+    }
+  };
+
+  // Show msf6 prompt when inside a Metasploit session, ftp prompt when in FTP session
+  const prompt = isMsfActive()
+    ? (getMsfPrompt() || 'msf6 >')
+    : ftpSession?.active
+      ? (getFtpPrompt() || 'ftp> ')
+      : basePrompt;
   
   // Kali Linux style prompt colors (verde claro/celeste estilo Kali moderno)
   const promptColors = {
@@ -195,17 +227,21 @@ export function Terminal({
   };
 
   // Función para renderizar el símbolo del prompt en línea separada
-  // Acepta promptText opcional: si se pasa, lo usa para determinar el estilo (para historial)
+  // Acepta promptText opcional: si se pasa, extrae el símbolo del prompt almacenado
   // Si no se pasa promptText, usa el estado actual (para el prompt activo)
   const renderKaliPromptSymbol = (promptText?: string) => {
     const inMsf = promptText !== undefined ? isMsfPromptText(promptText) : isMsfActive();
     if (inMsf) {
       return <span style={{ color: promptColors.user }}>{'>'}</span>;
     }
+    // Extraer el símbolo del prompt almacenado o usar el actual
+    const symbol = promptText !== undefined 
+      ? (promptText.match(/([$#])$/)?.[1] || (isRoot ? '#' : '$'))
+      : (isRoot ? '#' : '$');
     return (
       <span>
         <span style={{ color: promptColors.line }}>└─</span>
-        <span style={{ color: promptColors.symbol }}>{isRoot ? '#' : '$'}</span>
+        <span style={{ color: promptColors.symbol }}>{symbol}</span>
       </span>
     );
   };
@@ -223,6 +259,10 @@ export function Terminal({
     setCmdHistory([]); setHistIdx(-1); setInput(''); setBusy(false);
     setBlockingCommand(null);
     setListeningPort(null);
+    // Resetear ShellManager al cambiar de escenario
+    resetShellManager();
+    // Resetear FTP session
+    setFtpSession(null);
     // Asegurar foco inicial con pequeño delay para que el DOM esté listo
     const timer = setTimeout(() => inputRef.current?.focus(), 150);
     return () => clearTimeout(timer);
@@ -276,13 +316,161 @@ export function Terminal({
 
   const runCommand = (cmd: string) => {
     const trimmed = cmd.trim();
-    if (!trimmed || busy) return;
+    // Permitir comandos vacíos solo en modo FTP (para password vacío)
+    if ((!trimmed && !ftpSession?.active) || busy) return;
     setCmdHistory(prev => [trimmed, ...prev]);
     setInput(''); setHistIdx(-1);
 
     // Capturar el prompt actual ANTES de ejecutar el comando
     const currentPrompt = prompt;
+
+    // ── MODO FTP INTERACTIVO ─────────────────────────────────────────
+    if (ftpSession?.active) {
+      // El ShellManager gestiona la sesión interactiva
+      const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
+
+      // Actualizar estado FTP en el store para compatibilidad con UI
+      if (result.ftpSession) {
+        setFtpSession(result.ftpSession.active ? {
+          active: result.ftpSession.active,
+          targetIp: result.ftpSession.targetIp,
+          targetId: result.ftpSession.targetId,
+          username: result.ftpSession.username,
+          loggedIn: result.ftpSession.loggedIn,
+          step: result.ftpSession.step || 'connected'
+        } : null);
+      }
+
+      setHistory(prev => [...prev, {
+        command: trimmed,
+        output: result.output,
+        streaming: false,
+        prompt: currentPrompt,
+        timestamp: Date.now()
+      }]);
+
+      if (result.completedMissionId) {
+        onMissionComplete(result.completedMissionId);
+        
+        // Agregar "john" como posible usuario SSH después de leer la nota (misión 5)
+        if (result.completedMissionId === 5) {
+          const target = allMachines.find(m => m.scan_results.ports.some(p => p.service === 'ssh'));
+          if (target) {
+            const { setPossibleUsers } = useScenarioStore.getState();
+            setPossibleUsers(target.id, ['john']);
+          }
+        }
+      }
+      if (result.downloadedFile) {
+        const attacker = allMachines.find(m => m.id === 'attacker-01');
+        if (attacker) {
+          // Agregar el archivo al filesystem del atacante
+          const { addFileToMachine } = useScenarioStore.getState();
+          // Ajustar el nombre del archivo según el idioma
+          let filePath = result.downloadedFile.path;
+          if (filePath.includes('nota.txt') || filePath.includes('note.txt')) {
+            // Extraer solo el nombre del archivo del path
+            const fileName = filePath.split('/').pop() || '';
+            filePath = `/root/${fileName}`;
+          }
+          addFileToMachine('attacker-01', {
+            path: filePath,
+            content: result.downloadedFile.content || '',
+            type: result.downloadedFile.type || 'text'
+          });
+          const fileName = filePath.split('/').pop();
+          setHistory(prev => [...prev, {
+            command: null,
+            output: language === 'es' ? `Archivo descargado: ${fileName}` : `File downloaded: ${fileName}`,
+            streaming: false,
+            prompt: ftpSession?.active ? getFtpPrompt() : (getShellPrompt() || 'ftp> '),
+            timestamp: Date.now()
+          }]);
+        }
+      }
+
+      return;
+    }
+    // ── FIN MODO FTP ─────────────────────────────────────────────────
+
     const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
+
+    // ── INICIAR MODO FTP SI EL COMANDO DEVUELVE SESIÓN CONECTADA ────
+    if (result.ftpSession?.connected && !ftpSession?.active) {
+      // Iniciar sesión en shellManager para manejar comandos interactivos
+      const targetIp = result.ftpSession.targetIp;
+      if (targetIp && !isShellSessionActive()) {
+        startShellSession('ftp', [targetIp], {
+          machine,
+          allMachines,
+          currentMissionId,
+          currentDir,
+          setCurrentDir,
+          language
+        });
+      }
+      
+      // Iniciar modo FTP en el store
+      setFtpSession({
+        active: true,
+        targetIp: result.ftpSession.targetIp,
+        targetId: result.ftpSession.targetId,
+        username: undefined,
+        loggedIn: false,
+        step: 'username'
+      });
+      setHistory(prev => [...prev, {
+        command: trimmed,
+        output: result.output,
+        streaming: false,
+        prompt: currentPrompt,
+        timestamp: Date.now()
+      }]);
+      
+      // Manejar archivo descargado si existe
+      if (result.downloadedFile) {
+        const { addFileToMachine } = useScenarioStore.getState();
+        addFileToMachine('attacker-01', {
+          path: result.downloadedFile.path,
+          content: result.downloadedFile.content || '',
+          type: 'text'
+        });
+        setHistory(prev => [...prev, {
+          command: null,
+          output: `Archivo descargado: ${result.downloadedFile?.path}`,
+          streaming: false,
+          prompt: currentPrompt,
+          timestamp: Date.now()
+        }]);
+      }
+      
+      if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+      return;
+    }
+    
+    // ── MANEJAR ARCHIVO DESCARGADO FUERA DE SHELL ────────────────
+    if (result.downloadedFile) {
+      const attacker = allMachines.find(m => m.id === 'attacker-01');
+      if (attacker) {
+        // Agregar el archivo al filesystem del atacante
+        const { addFileToMachine } = useScenarioStore.getState();
+        addFileToMachine('attacker-01', {
+          path: result.downloadedFile.path,
+          content: result.downloadedFile.content || '',
+          type: 'text'
+        });
+        
+        setHistory(prev => [...prev, {
+          command: null,
+          output: `Archivo descargado: ${result.downloadedFile?.path}`,
+          streaming: false,
+          prompt: currentPrompt,
+          timestamp: Date.now()
+        }]);
+      }
+    }
+    // ── FIN MODO FTP ─────────────────────────────────────────
+    
     if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
     if (result.output === 'EXIT_TO_LANDING') { goHome(); return; }
 
@@ -303,6 +491,9 @@ export function Terminal({
       if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
       if (result.newMachineId)       onChangeMachine(result.newMachineId);
       if (result.failedUser && onFailedUser) onFailedUser(result.failedUser.machineId, result.failedUser.user);
+      if (result.sudoPrivileges && onSudoPrivileges) {
+        onSudoPrivileges(result.sudoPrivileges.machineId, result.sudoPrivileges.user, result.sudoPrivileges.commands, result.sudoPrivileges.canSudo);
+      }
       if (result.foundVulnerability) reportVulnerability(result.foundVulnerability.machineId, result.foundVulnerability.vulnId, result.foundVulnerability.status);
       // Si SSH fue exitoso (newMachineId + foundCredentials), marcar credenciales como verificadas
       if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
@@ -553,11 +744,23 @@ export function Terminal({
           <div key={entry.timestamp + i} className="space-y-0.5" style={{ animation: 'fadeInEntry 0.12s ease-out' }}>
             {entry.command !== null && (
               <div className="flex flex-col gap-0.5">
-                <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt)}</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt)}</span>
-                  <span className="text-sm" style={{ color }}>{entry.command}</span>
-                </div>
+                {/* Para entradas de FTP - mostrar el prompt real del FTP session */}
+                {entry.prompt?.includes('ftp') || entry.prompt?.includes('Name') || entry.prompt?.includes('Password') ? (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
+                      {entry.prompt?.trim() === 'ftp>' ? 'ftp> ' : entry.prompt}
+                    </span>
+                    <span className="text-sm" style={{ color }}>{entry.command}</span>
+                  </div>
+                ) : (
+                  <>
+                    <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt)}</span>
+                      <span className="text-sm" style={{ color }}>{entry.command}</span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
             {entry.streaming && entry.lines
@@ -571,8 +774,29 @@ export function Terminal({
 
         {!busy && !blockingCommand && (
           <div className="relative">
-            {isMsfActive() ? (
-              // Para Metasploit: mostrar solo una línea con el prompt completo
+            {ftpSession?.active ? (
+              // Para FTP: mostrar el prompt real según el estado de login
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
+                  {prompt?.trim() === 'ftp>' ? 'ftp> ' : prompt}
+                </span>
+                <input 
+                  ref={inputRef} 
+                  type="text" 
+                  value={input} 
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="flex-1 bg-transparent border-none outline-none text-sm min-w-[100px]"
+                  style={{ color, caretColor: color, minWidth: '50px' }}
+                  autoFocus 
+                  spellCheck={false} 
+                  autoComplete="off" 
+                  autoCorrect="off" 
+                  autoCapitalize="off"
+                />
+              </div>
+            ) : isMsfActive() ? (
+              // Para Metasploit interactivo
               <div className="flex items-center gap-2">
                 <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt)}</span>
                 <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)}

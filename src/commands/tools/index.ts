@@ -7,4 +7,5 @@ export { cmd_gobuster } from './gobuster';
 export { cmd_hydra } from './hydra';
 export { cmd_ssh } from './ssh';
 export { cmd_nc } from './nc';
+export { cmd_ftp, resetFtpSessions } from './ftp';
 export { cmd_msfconsole, executeMsfCommand, type MsfState } from './msfconsole';

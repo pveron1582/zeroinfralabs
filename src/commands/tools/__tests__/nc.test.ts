@@ -100,10 +100,21 @@ describe('cmd_nc', () => {
     });
   });
 
-  it('debe rechazar puerto inválido', () => {
-    const result = cmd_nc.execute(['-nlvp', 'invalid'], ctxNoListener);
+  it('debe rechazar puerto inválido (no numérico)', () => {
+    // Este test NO cubre la línea 53 porque parseListenerMode busca -p y si no lo encuentra,
+    // busca el último argumento numérico. 'abc' no es numérico así que port=undefined y
+    // devuelve 'missing port specification' (línea 49).
+    // El test existente "debe rechazar puerto inválido" ya cubre el caso correcto.
+    const result = cmd_nc.execute(['-lvp', 'abc'], ctxNoListener);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('port');
+    expect(result.output.toLowerCase()).toContain('port');
+  });
+
+  it('debe rechazar puerto no numérico con -p (línea 53)', () => {
+    // Este test SÍ cubre la línea 53: cuando se usa -p y el valor no es numérico
+    const result = cmd_nc.execute(['-l', '-p', 'xyz'], ctxNoListener);
+    expect(result.isError).toBe(true);
+    expect(result.output).toContain('bad port');
   });
 
   it('debe rechazar puerto fuera de rango', () => {

@@ -48,9 +48,22 @@ export const cmd_cat = {
     }
 
     // Si es /root/root.txt o /root/payload.php, buscar la misión de inspeccionar/capturar
+    // O si es note.txt/nota.txt (la nota del FTP), buscar la misión de leer nota
     let completedMissionId: number | undefined;
     const isPayload = file.path === '/root/payload.php';
     const isFlag = file.path === '/root/root.txt';
+    const isNote = file.path.endsWith('note.txt') || file.path.endsWith('nota.txt');
+    
+    // Si es una nota y el contenido tiene "john", completar la misión de leer nota
+    if (isNote && content.toLowerCase().includes('john')) {
+      for (const m of allMachines) {
+        const step = m.learning_steps.find(s => {
+          const lTask = s.task.toLowerCase();
+          return lTask.includes('read') || lTask.includes('leer') || lTask.includes('note');
+        });
+        if (step) { completedMissionId = step.id; break; }
+      }
+    }
     
     if (isPayload || isFlag) {
       for (const m of allMachines) {

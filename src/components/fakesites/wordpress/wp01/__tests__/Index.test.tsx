@@ -17,17 +17,17 @@ describe('WPIndex', () => {
     expect(screen.getByText(/My WordPress Blog/i)).toBeInTheDocument();
   });
 
-  it('debe mostrar navegación con Inicio y Admin', () => {
+  it('debe mostrar navegación con Home y Admin', () => {
     render(<WPIndex {...defaultProps} />);
     
-    expect(screen.getByText(/Inicio/i)).toBeInTheDocument();
+    expect(screen.getByText(/Home/i)).toBeInTheDocument();
     expect(screen.getByText(/Admin/i)).toBeInTheDocument();
   });
 
   it('debe mostrar título de bienvenida', () => {
     render(<WPIndex {...defaultProps} />);
     
-    expect(screen.getByText(/Bienvenidos a Mi Blog/i)).toBeInTheDocument();
+    expect(screen.getByText(/Welcome to My Blog/i)).toBeInTheDocument();
   });
 
   it('debe mostrar información del servidor', () => {
@@ -43,15 +43,15 @@ describe('WPIndex', () => {
     
     // Verificar que los 3 artículos están presentes (Claude 4 aparece en título y contenido)
     expect(screen.getAllByText(/Claude 4/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/Ciberseguridad e IA/i)).toBeInTheDocument();
-    expect(screen.getByText(/vulnerabilidad crítica reportada en WordPress/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cybersecurity and AI/i)).toBeInTheDocument();
+    expect(screen.getByText(/critical vulnerability reported in WordPress/i)).toBeInTheDocument();
   });
 
-  it('debe mostrar sección Meta con enlace a Acceder', () => {
+  it('debe mostrar sección Meta con enlace a Log In', () => {
     render(<WPIndex {...defaultProps} />);
     
     expect(screen.getByText(/Meta/i)).toBeInTheDocument();
-    expect(screen.getByText(/Acceder/i)).toBeInTheDocument();
+    expect(screen.getByText(/Log In/i)).toBeInTheDocument();
   });
 
   it('debe llamar onNavigate al hacer clic en Admin', () => {
@@ -63,11 +63,11 @@ describe('WPIndex', () => {
     expect(defaultProps.onNavigate).toHaveBeenCalledWith('http://192.168.1.11/wp-admin');
   });
 
-  it('debe llamar onNavigate al hacer clic en Acceder', () => {
+  it('debe llamar onNavigate al hacer clic en Log In', () => {
     render(<WPIndex {...defaultProps} />);
     
-    const accederButton = screen.getByText(/Acceder/i);
-    fireEvent.click(accederButton);
+    const loginButton = screen.getByText(/Log In/i);
+    fireEvent.click(loginButton);
     
     expect(defaultProps.onNavigate).toHaveBeenCalledWith('http://192.168.1.11/wp-admin');
   });
@@ -76,15 +76,15 @@ describe('WPIndex', () => {
     render(<WPIndex {...defaultProps} />);
     
     // Puede haber múltiples fechas (una por artículo)
-    expect(screen.getAllByText(/Publicado el/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Published on/i).length).toBeGreaterThan(0);
   });
 
   it('debe mostrar contenido de los artículos', () => {
     render(<WPIndex {...defaultProps} />);
     
     // Verificar que hay contenido en los artículos
-    expect(screen.getByText(/Anthropic ha lanzado Claude 4/i)).toBeInTheDocument();
-    expect(screen.getByText(/integración de inteligencia artificial en ciberseguridad/i)).toBeInTheDocument();
-    expect(screen.getByText(/ejecución remota de código/i)).toBeInTheDocument();
+    expect(screen.getByText(/Anthropic has launched Claude 4/i)).toBeInTheDocument();
+    expect(screen.getByText(/integration of artificial intelligence in cybersecurity/i)).toBeInTheDocument();
+    expect(screen.getByText(/remote code execution/i)).toBeInTheDocument();
   });
 });

@@ -15,7 +15,7 @@ export function WPLogin({ ip, credentials, onNavigate, onLoginSuccess }: Props) 
   const [loading, setLoading] = useState(false);
 
   const handleLogin = () => {
-    if (!user || !pass) { setError('Completa todos los campos.'); return; }
+    if (!user || !pass) { setError('Please complete all fields.'); return; }
     setLoading(true); setError('');
     setTimeout(() => {
       setLoading(false);
@@ -23,7 +23,7 @@ export function WPLogin({ ip, credentials, onNavigate, onLoginSuccess }: Props) 
         onLoginSuccess(5);
         // onLoginSuccess (doLogin) already navigates to /wp-admin/dashboard — no extra navigate needed
       } else {
-        setError('ERROR: nombre de usuario o contraseña incorrectos.');
+        setError('ERROR: incorrect username or password.');
       }
     }, 700);
   };
@@ -42,25 +42,26 @@ export function WPLogin({ ip, credentials, onNavigate, onLoginSuccess }: Props) 
         </div>
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">Username</label>
             <input id="username" type="text" value={user} onChange={e => { setUser(e.target.value); handleInputChange(); }}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
               placeholder="" />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input id="password" type="password" value={pass} onChange={e => { setPass(e.target.value); handleInputChange(); }}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500" />
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              placeholder="" />
           </div>
           {error && <div className="bg-red-50 border border-red-200 rounded p-2 text-xs text-red-700">{error}</div>}
           <button onClick={handleLogin} disabled={loading}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded font-medium text-sm transition-colors">
-            {loading ? 'Verificando...' : 'Acceder'}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-semibold transition-colors disabled:opacity-50">
+            {loading ? 'Logging in...' : 'Log In'}
           </button>
           <div className="text-center text-xs text-gray-400">
-            <button onClick={() => onNavigate(`http://${ip}/`)} className="text-blue-500 hover:underline">← Volver al sitio</button>
+            <button onClick={() => onNavigate(`http://${ip}/`)} className="text-blue-500 hover:underline">← Back to site</button>
           </div>
         </div>
       </div>

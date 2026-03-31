@@ -13,7 +13,13 @@ export const SCENARIO_TEMPLATES_LFI = {
   lfiRce: () => ({
     id: 'scenario-04',
     name: 'LFI to RCE Lab',
-    description: 'Explota LFI para ejecutar una shell remota (RCE).',
+    // Metadata for LandingPage cards
+    tagline: 'Exploit LFI to read system files, upload a shell and get RCE.',
+    taglineEs: 'Explota LFI para leer archivos del sistema, sube una shell y obtén RCE.',
+    tools: ['arp-scan', 'nmap', 'curl', 'msfconsole'],
+    accentColor: '#a78bfa',
+    description: 'Exploit LFI to execute a reverse shell (RCE).',
+    descriptionEs: 'Explota LFI para ejecutar una shell remota (RCE).',
     difficulty: 'Medium' as const,
     category: 'Web' as const,
     networkRange: '192.168.20.0/24',
@@ -49,12 +55,12 @@ export const SCENARIO_TEMPLATES_LFI = {
       ],
     },
     learningSteps: [
-      { task: 'Reconocimiento', text: 'Descubrir host: arp-scan <network/cidr>', discoveryLevel: 1 },
-      { task: 'Escaneo', text: 'Escanear servicios: nmap -sV <target-ip>', discoveryLevel: 2 },
-      { task: 'LFI Discovery', text: 'Prueba leer archivos del server. Ingresa al sitio y ve a "Acerca de". Borra solo about.php e ingresa ../../../../etc/passwd', discoveryLevel: 3 },
-      { task: 'Preparar Payload', text: 'Inspecciona el archivo para la reverse shell: cat /root/payload.php', discoveryLevel: 3 },
-      { task: 'Setup Listener', text: 'Prepara la escucha en tu terminal: nc -nlvp 4444', discoveryLevel: 3 },
-      { task: 'Remote Code Execution', text: 'Sube el archivo en /upload.php y ejecútalo mediante el gestor de archivos en /files/payload.php o haciendo clic en el archivo en /files', discoveryLevel: 4 },
+      { task: 'Reconnaissance', taskEs: 'Reconocimiento', text: 'Discover host: arp-scan <network/cidr>', textEs: 'Descubrir host: arp-scan <network/cidr>', discoveryLevel: 1 },
+      { task: 'Scanning', taskEs: 'Escaneo', text: 'Scan services: nmap -sV <target-ip>', textEs: 'Escanear servicios: nmap -sV <target-ip>', discoveryLevel: 2 },
+      { task: 'LFI Discovery', taskEs: 'Descubrimiento LFI', text: 'Test reading server files. Go to the site and navigate to "About". Delete only about.php and enter ../../../../etc/passwd', textEs: 'Prueba leer archivos del server. Ingresa al sitio y ve a "Acerca de". Borra solo about.php e ingresa ../../../../etc/passwd', discoveryLevel: 3 },
+      { task: 'Prepare Payload', taskEs: 'Preparar Payload', text: 'Inspect the file for the reverse shell: cat /root/payload.php', textEs: 'Inspecciona el archivo para la reverse shell: cat /root/payload.php', discoveryLevel: 3 },
+      { task: 'Setup Listener', taskEs: 'Configurar Listener', text: 'Prepare the listener in your terminal: nc -nlvp 4444', textEs: 'Prepara la escucha en tu terminal: nc -nlvp 4444', discoveryLevel: 3 },
+      { task: 'Remote Code Execution', taskEs: 'Ejecución Remota de Código', text: 'Upload the file at /upload.php and execute it through the file manager at /files/payload.php or by clicking on the file at /files', textEs: 'Sube el archivo en /upload.php y ejecútalo mediante el gestor de archivos en /files/payload.php o haciendo clic en el archivo en /files', discoveryLevel: 4 },
     ],
   }),
 };

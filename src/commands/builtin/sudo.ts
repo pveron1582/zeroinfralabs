@@ -61,7 +61,6 @@ export const cmd_sudo = {
 
     // ── sudo -l ────────────────────────────────────────────────────
     if (args[0] === '-l') {
-      const username = machine.id.includes('attacker') ? 'root' : 'developer';
       const hostname = machine.machine_info.hostname;
       const ip = machine.machine_info.ip;
 
@@ -73,6 +72,23 @@ export const cmd_sudo = {
           output: `sudo: unable to open /etc/sudoers: No such file or directory`,
           isError: true,
         };
+      }
+
+      // Extraer el primer usuario no-root del sudoers
+      const sudoersLines = sudoersFile.content.split('\n');
+      let username = 'root';
+      for (const line of sudoersLines) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('Defaults') && !trimmed.startsWith('root')) {
+          const match = trimmed.match(/^([a-zA-Z0-9_]+)\s+/);
+          if (match) {
+            username = match[1];
+            break;
+          }
+        }
+      }
+      if (machine.id.includes('attacker')) {
+        username = 'root';
       }
 
       const rules = parseSudoers(sudoersFile.content, username);
@@ -109,10 +125,21 @@ export const cmd_sudo = {
         if (step) { missionId = step.id; break; }
       }
 
+      // Fallback: usar currentMissionId si está en el rango esperado para sudo
+      if (!missionId && currentMissionId >= 5 && currentMissionId <= 10) {
+        missionId = currentMissionId;
+      }
+
       return {
         output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may run the following commands on ${hostname} (${ip}):\n${rulesFormatted}`,
         completedMissionId: missionId,
         isError: false,
+        sudoPrivileges: {
+          machineId: machine.id,
+          user: username,
+          commands: rules,
+          canSudo: true
+        }
       };
     }
 

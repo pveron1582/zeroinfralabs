@@ -95,4 +95,34 @@ describe('cmd_ssh', () => {
     expect(result.completedMissionId).toBe(4);
     expect(result.newMachineId).toBe('target-01');
   });
+
+  it('debe dar acceso pero no completar misión si hay pasos previos pendientes (línea 46)', () => {
+    // Este test cubre la línea 46: output += '\n\n[!] Acceso concedido, pero aún hay pasos previos pendientes...'
+    // Crear una máquina donde SSH no es el paso actual (currentMissionId no coincide con ningún step)
+    const mockMachineNoMatch: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'target', ip: '10.10.10.10', mac: '00:00:00:00:00:00', os: 'Ubuntu 22.04', status: 'up', type: 'server' },
+      discovery_level: 4,
+      scan_results: {
+        ports: [{ port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH', credentials: { user: 'root', pass: 'toor' } }]
+      },
+      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+      learning_steps: [
+        { id: 1, task: 'Step 1', text: 'Recon', targetMachineId: 'target-01', discoveryLevel: 1 },
+        { id: 2, task: 'Step 2', text: 'Scan', targetMachineId: 'target-01', discoveryLevel: 2 },
+      ], // Solo tiene steps 1 y 2, NO el step 3 o 4
+      files: [],
+    };
+    const machines = [mockMachineNoMatch, createAttacker()];
+    // currentMissionId=99 no existe en learning_steps, así que canComplete será false
+    const result = cmd_ssh.execute(['root@10.10.10.10', 'toor'], {
+      allMachines: machines,
+      currentMissionId: 99
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.newMachineId).toBe('target-01');
+    expect(result.completedMissionId).toBeUndefined(); // No completa porque el step no existe
+    expect(result.output).toContain('pasos previos pendientes');
+  });
 });

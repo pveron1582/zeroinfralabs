@@ -20,30 +20,30 @@ describe('InclusionSite - LFI Lab', () => {
       
       // Verificar que existe al menos un elemento DevPortal (puede haber múltiples)
       expect(screen.getAllByText(/DevPortal/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/🏠 Inicio/i)).toBeInTheDocument();
-      expect(screen.getByText(/ℹ️ Acerca de/i)).toBeInTheDocument();
-      expect(screen.getByText(/✉️ Contacto/i)).toBeInTheDocument();
+      expect(screen.getByText(/🏠 Home/i)).toBeInTheDocument();
+      expect(screen.getByText(/ℹ️ About/i)).toBeInTheDocument();
+      expect(screen.getByText(/✉️ Contact/i)).toBeInTheDocument();
       expect(screen.getByText(/📤 Upload/i)).toBeInTheDocument();
     });
 
     it('debe mostrar el contenido de home.php', () => {
       render(<InclusionSite {...defaultProps} currentUrl="http://192.168.20.11/?page=home.php" />);
       
-      expect(screen.getByText(/Bienvenido a DevPortal/i)).toBeInTheDocument();
-      expect(screen.getByText(/Estado del Servidor/i)).toBeInTheDocument();
+      expect(screen.getByText(/Welcome to DevPortal/i)).toBeInTheDocument();
+      expect(screen.getByText(/Server Status/i)).toBeInTheDocument();
     });
 
     it('debe mostrar el contenido de about.php', () => {
       render(<InclusionSite {...defaultProps} currentUrl="http://192.168.20.11/?page=about.php" />);
       
-      expect(screen.getByText(/Acerca de DevPortal/i)).toBeInTheDocument();
-      expect(screen.getByText(/Equipo de Desarrollo/i)).toBeInTheDocument();
+      expect(screen.getByText(/About DevPortal/i)).toBeInTheDocument();
+      expect(screen.getByText(/Development Team/i)).toBeInTheDocument();
     });
 
     it('debe mostrar el contenido de contact.php', () => {
       render(<InclusionSite {...defaultProps} currentUrl="http://192.168.20.11/?page=contact.php" />);
       
-      expect(screen.getByText(/Envíanos un reporte/i)).toBeInTheDocument();
+      expect(screen.getByText(/Send us a report/i)).toBeInTheDocument();
     });
   });
 
@@ -51,13 +51,13 @@ describe('InclusionSite - LFI Lab', () => {
     it('debe renderizar la página de upload', () => {
       render(<InclusionSite {...defaultProps} currentUrl="http://192.168.20.11/upload.php" />);
       
-      expect(screen.getByText(/Carga de Scripts de Mantenimiento/i)).toBeInTheDocument();
+      expect(screen.getByText(/Maintenance Script Upload/i)).toBeInTheDocument();
     });
 
     it('debe mostrar el selector de archivos', () => {
       render(<InclusionSite {...defaultProps} currentUrl="http://192.168.20.11/upload.php" />);
       
-      expect(screen.getByText(/Archivo en Kali Linux/i)).toBeInTheDocument();
+      expect(screen.getByText(/File in Kali Linux/i)).toBeInTheDocument();
       expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
 
@@ -93,11 +93,11 @@ describe('InclusionSite - LFI Lab', () => {
       fireEvent.change(select, { target: { value: '/root/payload.php' } });
       
       const buttons = screen.getAllByRole('button');
-      const submitButton = buttons.find(b => b.textContent?.includes('Subir Archivo'));
+      const submitButton = buttons.find(b => b.textContent?.includes('Upload File'));
       if (submitButton) fireEvent.click(submitButton);
       
       await waitFor(() => {
-        expect(screen.getByText(/subido/i)).toBeInTheDocument();
+        expect(screen.getByText(/uploaded/i)).toBeInTheDocument();
       });
       
       expect(defaultProps.onFileUpload).toHaveBeenCalled();
@@ -106,7 +106,7 @@ describe('InclusionSite - LFI Lab', () => {
     it('debe mostrar archivos en la ruta de files', async () => {
       render(<InclusionSite {...defaultProps} currentUrl="http://192.168.20.11/files" victimFiles={[{path:'/var/www/html/uploads/payload.php', content:'hi', type:'text/plain'}]} />);
       
-      expect(screen.getByText(/Archivos en/i)).toBeInTheDocument();
+      expect(screen.getByText(/Files in/i)).toBeInTheDocument();
       expect(screen.getByText(/payload.php/i)).toBeInTheDocument();
     });
   });
@@ -174,28 +174,28 @@ describe('InclusionSite - LFI Lab', () => {
   });
 
   describe('Navegación', () => {
-    it('debe llamar onNavigate al hacer clic en Inicio', () => {
+    it('debe llamar onNavigate al hacer clic en Home', () => {
       render(<InclusionSite {...defaultProps} />);
       
-      const homeButton = screen.getByText(/🏠 Inicio/i);
+      const homeButton = screen.getByText(/🏠 Home/i);
       fireEvent.click(homeButton);
       
       expect(defaultProps.onNavigate).toHaveBeenCalledWith('http://192.168.20.11/?page=home.php');
     });
 
-    it('debe llamar onNavigate al hacer clic en Acerca de', () => {
+    it('debe llamar onNavigate al hacer clic en About', () => {
       render(<InclusionSite {...defaultProps} />);
       
-      const aboutButton = screen.getByText(/ℹ️ Acerca de/i);
+      const aboutButton = screen.getByText(/ℹ️ About/i);
       fireEvent.click(aboutButton);
       
       expect(defaultProps.onNavigate).toHaveBeenCalledWith('http://192.168.20.11/?page=about.php');
     });
 
-    it('debe llamar onNavigate al hacer clic en Contacto', () => {
+    it('debe llamar onNavigate al hacer clic en Contact', () => {
       render(<InclusionSite {...defaultProps} />);
       
-      const contactButton = screen.getByText(/✉️ Contacto/i);
+      const contactButton = screen.getByText(/✉️ Contact/i);
       fireEvent.click(contactButton);
       
       expect(defaultProps.onNavigate).toHaveBeenCalledWith('http://192.168.20.11/?page=contact.php');

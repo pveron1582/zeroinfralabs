@@ -8,6 +8,13 @@ import type { Scenario } from '../types';
 const scenario02Data = {
   id: 'scenario-02',
   name: 'SSH Brute Force Lab',
+  // Metadata for LandingPage cards
+  tagline: 'Launch a brute force attack with Hydra to compromise root SSH access.',
+  taglineEs: 'Lanza un ataque de fuerza bruta con Hydra para comprometer acceso SSH root.',
+  description: 'Network scanning and SSH brute force attack based on basic OSINT intelligence from a website.',
+  descriptionEs: 'Escaneo de red y ataque de fuerza bruta por SSH basado en inteligencia de fuentes abiertas (OSINT) básica en un sitio web.',
+  tools: ['arp-scan', 'nmap', 'hydra', 'ssh'],
+  accentColor: '#fbbf24',
   networkRange: '10.10.10.0/24',
   flags: {
     user: 'THM{SSH_USER_ACCESS_GRANTED}',
@@ -34,11 +41,11 @@ const scenario02Data = {
     ],
   },
   learningSteps: [
-    { id: 1, task: 'Reconocimiento de red', text: 'Descubrir hosts: arp-scan <network/cidr>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 1 },
-    { id: 2, task: 'Escaneo de puertos', text: 'Identificar servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 2 },
-    { id: 3, task: 'Reconocimiento Web', text: 'Acceder al sitio web para identificar empleados y posibles usuarios.', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
-    { id: 4, task: 'Fuerza bruta SSH', text: 'Obtener credenciales: hydra -l <username> -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
-    { id: 5, task: 'Acceso por SSH', text: 'Conectarse: ssh <username>@<target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4 },
+    { id: 1, task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover hosts: arp-scan <network/cidr>', textEs: 'Descubrir hosts: arp-scan <network/cidr>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 1 },
+    { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify services: nmap -sV <target-ip>', textEs: 'Identificar servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 2 },
+    { id: 3, task: 'Web Reconnaissance', taskEs: 'Reconocimiento Web', text: 'Access the website to identify employees and possible users.', textEs: 'Acceder al sitio web para identificar empleados y posibles usuarios.', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
+    { id: 4, task: 'SSH Brute Force', taskEs: 'Fuerza bruta SSH', text: 'Get credentials: hydra -l <username> -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', textEs: 'Obtener credenciales: hydra -l <username> -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
+    { id: 5, task: 'SSH Access', taskEs: 'Acceso por SSH', text: 'Connect: ssh <username>@<target-ip>', textEs: 'Conectarse: ssh <username>@<target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4 },
   ],
 };
 
@@ -77,3 +84,6 @@ export const scenario_02: Scenario = buildScenario({
   },
   learningSteps: scenario02Data.learningSteps,
 });
+
+// Export data for metadata access
+export { scenario02Data };

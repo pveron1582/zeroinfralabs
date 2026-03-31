@@ -100,7 +100,7 @@ describe('NetworkMap', () => {
     expect(screen.getAllByText('target')[0]).toBeInTheDocument();
   });
 
-  it('debe mostrar "Sesión Activa" para la máquina atacante', () => {
+  it('debe mostrar "Active Session" para la máquina atacante', () => {
     render(
       <NetworkMap
         scenario={mockScenario}
@@ -109,10 +109,10 @@ describe('NetworkMap', () => {
       />
     );
 
-    expect(screen.getByText('Sesión Activa')).toBeInTheDocument();
+    expect(screen.getByText('Active Session')).toBeInTheDocument();
   });
 
-  it('debe mostrar "Sesión Activa" para la máquina activa', () => {
+  it('debe mostrar "Active Session" para la máquina activa', () => {
     render(
       <NetworkMap
         scenario={mockScenario}
@@ -122,11 +122,11 @@ describe('NetworkMap', () => {
     );
 
     // Buscar el badge en la máquina target (la segunda máquina)
-    const targetMachine = screen.getAllByText('Sesión Activa')[0];
+    const targetMachine = screen.getAllByText('Active Session')[0];
     expect(targetMachine).toBeInTheDocument();
   });
 
-  it('debe mostrar solo una "Sesión Activa" cuando hay una máquina activa', () => {
+  it('debe mostrar solo una "Active Session" cuando hay una máquina activa', () => {
     render(
       <NetworkMap
         scenario={mockScenario}
@@ -135,8 +135,8 @@ describe('NetworkMap', () => {
       />
     );
 
-    // Debe haber solo un badge "Sesión Activa" visible (en la máquina activa)
-    const sessionBadges = screen.getAllByText('Sesión Activa');
+    // Debe haber solo un badge "Active Session" visible (en la máquina activa)
+    const sessionBadges = screen.getAllByText('Active Session');
     expect(sessionBadges).toHaveLength(1); // solo la máquina activa debe tener el badge visible
   });
 
@@ -149,8 +149,8 @@ describe('NetworkMap', () => {
       />
     );
 
-    expect(screen.getByText('192.168.1.5')).toBeInTheDocument();
-    expect(screen.getByText('192.168.1.10')).toBeInTheDocument();
+    expect(screen.getAllByText('192.168.1.5').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('192.168.1.10').length).toBeGreaterThanOrEqual(1);
   });
 
   it('debe mostrar ??? para máquinas no descubiertas', () => {
@@ -181,7 +181,7 @@ describe('NetworkMap', () => {
     );
 
     expect(screen.getByText('?.?.?.?')).toBeInTheDocument();
-    expect(screen.getByText('Objetivo Desconocido')).toBeInTheDocument();
+    expect(screen.getByText('Unknown Target')).toBeInTheDocument();
   });
 
   it('debe llamar onClose al hacer clic en el botón cerrar', () => {
@@ -223,11 +223,11 @@ describe('NetworkMap', () => {
       />
     );
 
-    expect(screen.getByText('Desconocido')).toBeInTheDocument();
-    expect(screen.getByText('Descubierto')).toBeInTheDocument();
-    expect(screen.getByText('Escaneado')).toBeInTheDocument();
-    expect(screen.getByText('Enumerado')).toBeInTheDocument();
-    expect(screen.getByText('Comprometido')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.getByText('Discovered')).toBeInTheDocument();
+    expect(screen.getByText('Scanned')).toBeInTheDocument();
+    expect(screen.getByText('Enumerated')).toBeInTheDocument();
+    expect(screen.getByText('Compromised')).toBeInTheDocument();
   });
 
   it('debe mostrar credenciales encontradas', () => {
@@ -255,7 +255,7 @@ describe('NetworkMap', () => {
 
     // No es necesario hacer clic porque la máquina con discovery_level > 0 se selecciona por defecto
 
-    expect(screen.getByText('Credenciales')).toBeInTheDocument();
+    expect(screen.getByText('Credentials')).toBeInTheDocument();
     expect(screen.getByText('admin')).toBeInTheDocument();
     expect(screen.getByText('password123')).toBeInTheDocument();
   });
@@ -284,7 +284,7 @@ describe('NetworkMap', () => {
     );
 
     // No es necesario hacer clic
-    expect(screen.getByText('PENDIENTE')).toBeInTheDocument();
+    expect(screen.getByText('PENDING')).toBeInTheDocument();
   });
 
   it('debe cambiar la sesión activa al cambiar de máquina', () => {
@@ -296,8 +296,8 @@ describe('NetworkMap', () => {
       />
     );
 
-    // Verificar que la máquina target tiene "Sesión Activa"
-    const targetBadges = screen.getAllByText('Sesión Activa');
+    // Verificar que la máquina target tiene "Active Session"
+    const targetBadges = screen.getAllByText('Active Session');
     expect(targetBadges).toHaveLength(1); // solo la máquina activa debe tener el badge visible
     
     // La primera ocurrencia es la target

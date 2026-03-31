@@ -35,12 +35,15 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 - **Sistema de Archivos Virtual**: Archivos editables que impactan la lógica del simulador en tiempo real.
 - **Ayuda Condicional Dinámica** - Las misiones se ocultan por defecto ("Modo sin ayuda"), desplegándose dinámicamente con animaciones en cascada y efecto tipo máquina de escribir al solicitar guía. Solo se revelan los pasos activos y completados.
 - **Indicador Visual de Avance** - El botón "Ver red" avisa con un parpadeo verde cuando descubres nueva información de reconocimiento (como puertos abiertos o directorios ocultos) con tus herramientas.
-- **Navegador web simulado** - Acceso a sitios vulnerables dentro del simulador
+- **Internacionalización (i18n)** - Soporte para inglés y español en toda la interfaz. Selector de idioma en el header con persistencia en el estado de Zustand.
+- **Tarjetas de Laboratorio Dinámicas** - Metadata modular para cada laboratorio (tagline, herramientas, color) que permite rotar y reordenar escenarios fácilmente.
+- **FTP Interactivo** - Sesiones FTP completas con login anónimo, descarga de archivos y navegación de directorios.
+- **Navegador web simulado** - Acceso a sitios vulnerables dentro del simulador (todo el contenido está en inglés).
 - **Mapa de red y Panel de Enumeración** - Visualización detallada de máquinas, puertos y vulnerabilidades. El panel de **Enumeración** muestra información dinámica (directorios, credenciales) extraída en tiempo real de los archivos de la máquina (ej: `config.bak`).
 - **Credenciales Dinámicas** - El sistema de login de sitios web (WordPress) y el panel de enumeración son sensibles a cambios en los archivos virtuales. Si un usuario edita un archivo de configuración, las credenciales aceptadas por el simulador cambian automáticamente.
 - **Seguimiento de Reconocimiento** - Muestra posibles usuarios SSH descubiertos y resalta fallos en rojo o éxitos en verde.
 - **Persistencia de estado** - El progreso se guarda automáticamente con Zustand persist
-- **Tests completos** - 436 tests unitarios e integración (todos pasando ✓)
+- **Tests completos** - 500+ tests unitarios e integración (todos pasando ✓)
 - **Comando Netcat (nc)** - Listener activo con flexibilidad de argumentos
 - **Terminal bloqueante** - Soporte para comandos que requieren escucha (nc -nlvp)
 - **Sistema de directorios Linux realista** - Estructura completa de directorios (/etc, /var, /home, /root, /usr, etc.)
@@ -82,16 +85,23 @@ Laboratorio avanzado de vulnerabilidades web donde se aprende a leer archivos de
 - Preparación e inspección de payloads PHP.
 - Uso de `nc` para recibir conexiones reversas (Reverse Shell).
 
-### Laboratorio 05: Privilege Escalation (Próximamente)
-Escenario centrado en la post-explotación y elevación de privilegios en sistemas Linux.
+### Laboratorio 05: FTP Enumeration & Privilege Escalation
+Escenario de post-explotación que incluye enumeración mediante FTP anónimo, fuerza bruta SSH con Hydra y escalada de privilegios explotando sudo vim.
+
+**Objetivos:**
+- Acceso FTP anónimo para recuperar información sensible
+- Fuerza bruta de credenciales SSH con diccionario rockyou.txt
+- Escalada de privilegios mediante explotación de sudo misconfiguration
+- Captura de flags de usuario y root
 
 ### 🛠️ Stack Tecnológico
 
 ```
 Frontend:     React 18 + TypeScript + Tailwind CSS
-State:        Zustand
+State:        Zustand (con persistencia)
 Build:        Vite
 Testing:      Vitest + React Testing Library
+I18n:         Sistema de traducción modular (EN/ES)
 Deployment:   Compatible con cualquier hosting estático
 ```
 

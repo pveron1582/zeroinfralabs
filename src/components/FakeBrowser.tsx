@@ -73,18 +73,18 @@ function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
         <div className="flex items-center gap-3 px-4 py-3 rounded-full border border-gray-300 hover:shadow-md transition-shadow bg-white">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
-            placeholder="Buscar en Google o escribir una URL"
+            placeholder="Search Google or type a URL"
             className="flex-1 outline-none text-sm text-gray-800 bg-transparent"
             onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }} />
         </div>
         <div className="mt-4 flex gap-3 justify-center">
           <button onClick={handleSearch}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">
-            Buscar con Google
+            Google Search
           </button>
           <button onClick={handleLucky}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">
-            Voy a tener suerte
+            I'm Feeling Lucky
           </button>
         </div>
         <div className="mt-3 flex flex-wrap gap-2 justify-center">
@@ -95,10 +95,10 @@ function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
         </div>
       </div>
       <div className="absolute bottom-0 left-0 right-0 bg-gray-100 border-t border-gray-200 px-6 py-3 flex justify-between text-xs text-gray-500">
-        <span>Argentina</span>
+        <span>United States</span>
         <div className="flex gap-4">
-          <span className="cursor-default hover:underline">Privacidad</span>
-          <span className="cursor-default hover:underline">Términos</span>
+          <span className="cursor-default hover:underline">Privacy</span>
+          <span className="cursor-default hover:underline">Terms</span>
         </div>
       </div>
     </div>
@@ -109,8 +109,8 @@ function GoogleSearch({ url, onNavigate }: { url: string; onNavigate: (url: stri
   const params = new URLSearchParams(url.split('?')[1] || '');
   const q = params.get('q') || '';
   const fakeResults = [
-    { title: `${q} - Wikipedia`, url: 'https://es.wikipedia.org/wiki/...', desc: 'Artículo de Wikipedia sobre el tema solicitado.' },
-    { title: `Tutorial: ${q} paso a paso`, url: 'https://www.hacktricks.xyz/...', desc: 'Guía completa con ejemplos prácticos.' },
+    { title: `${q} - Wikipedia`, url: 'https://en.wikipedia.org/wiki/...', desc: 'Wikipedia article about the requested topic.' },
+    { title: `Tutorial: ${q} step by step`, url: 'https://www.hacktricks.xyz/...', desc: 'Complete guide with practical examples.' },
   ];
   return (
     <div className="min-h-full bg-white">
@@ -150,33 +150,33 @@ function HttpSecurityError({ url, onNavigate }: { url: string; onNavigate: (url:
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
         </div>
-        <h1 className="text-2xl font-medium text-gray-800 mb-2">Tu conexión no es privada</h1>
+        <h1 className="text-2xl font-medium text-gray-800 mb-2">Your connection is not private</h1>
         <p className="text-gray-600 mb-2">
-          Los atacantes podrían estar intentando robar tu información de <strong>{url.replace(/^http:\/\//i, '')}</strong>
+          Attackers might be trying to steal your information from <strong>{url.replace(/^http:\/\//i, '')}</strong>
         </p>
         <p className="text-gray-500 text-sm mb-6">
-          (por ejemplo, contraseñas, mensajes o tarjetas de crédito).{' '}
-          <a href="#" className="text-blue-600 hover:underline">Más información</a>
+          (for example, passwords, messages, or credit cards).{' '}
+          <a href="#" className="text-blue-600 hover:underline">Learn more</a>
         </p>
         <div className="text-red-600 text-sm mb-6 font-mono bg-red-50 p-3 rounded">
           NET::ERR_CERT_AUTHORITY_INVALID
         </div>
         <div className="flex flex-col gap-3">
-          <button 
+          <button
             onClick={() => onNavigate(secureUrl)}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
           >
-            Usar HTTPS seguro
+            Use secure HTTPS
           </button>
-          <button 
+          <button
             onClick={() => onNavigate('https://www.google.com')}
             className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors"
           >
-            Volver a Google (seguro)
+            Back to Google (secure)
           </button>
         </div>
         <p className="mt-6 text-xs text-gray-400">
-          El protocolo HTTP ya no es seguro. Los sitios modernos usan HTTPS.
+          The HTTP protocol is no longer secure. Modern sites use HTTPS.
         </p>
       </div>
     </div>

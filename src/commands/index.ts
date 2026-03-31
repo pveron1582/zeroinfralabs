@@ -12,8 +12,10 @@ import {
 } from './builtin';
 import {
   cmd_arpScan, cmd_nmap, cmd_gobuster, cmd_hydra,
-  cmd_ssh, cmd_nc, cmd_msfconsole, executeMsfCommand, type MsfState
+  cmd_ssh, cmd_nc, cmd_msfconsole, executeMsfCommand, type MsfState,
+  cmd_ftp
 } from './tools';
+import { shellManager, type ShellContext as ManagerContext, type ShellResult } from '../shells';
 
 interface Command {
   name: string;
@@ -22,6 +24,19 @@ interface Command {
 
 // ── MSF session state (persisted across calls within same session) ─
 let _msfState: MsfState | null = null;
+
+// ── Shell Manager Integration ───────────────────────────────────
+// Helper para convertir CommandContext a ShellContext
+function toShellContext(ctx: CommandContext): ManagerContext {
+  return {
+    machine: ctx.machine,
+    allMachines: ctx.allMachines,
+    currentMissionId: ctx.currentMissionId,
+    currentDir: ctx.currentDir,
+    setCurrentDir: ctx.setCurrentDir || (() => {}),
+    language: ctx.language,
+  };
+}
 
 // ── Command registry ──────────────────────────────────────────────
 const COMMANDS: Command[] = [
@@ -46,6 +61,7 @@ const COMMANDS: Command[] = [
   cmd_hydra,
   cmd_ssh,
   cmd_nc,
+  cmd_ftp,
   // MSF console wrapper (handles stateful sessions)
   {
     name: 'msfconsole',
@@ -77,6 +93,112 @@ const COMMANDS: Command[] = [
   },
 ];
 
+// ── Shell Manager Integration ─────────────────────────────────────
+// El ShellManager gestiona sesiones interactivas (FTP, SSH interactivo, etc.)
+
+/** Verifica si hay una sesión de shell activa */
+export const isShellSessionActive = () => shellManager.isActive();
+
+/** Obtiene el nombre del shell activo */
+export const getCurrentShellName = () => shellManager.getCurrentShellName();
+
+/** Obtiene el prompt del shell activo */
+export const getShellPrompt = () => shellManager.getPrompt();
+
+/** Iniciar una sesión de shell (llamado desde comandos como ftp, ssh -i, etc.) */
+export const startShellSession = (shellName: string, args: string[], ctx: CommandContext): CommandResponse => {
+  const shellCtx = toShellContext(ctx);
+  const result = shellManager.startSession(shellName, args, shellCtx);
+
+  if (result.isError) {
+    return result;
+  }
+
+  // Obtener el prompt inicial del shell
+  const prompt = shellManager.getPrompt();
+  const current = shellManager.current();
+
+  // Para FTP, devolver el estado compatible con el store
+  if (shellName === 'ftp' && current) {
+    const state = current.state;
+    const targetIp = args[0] || state.targetIp || 'localhost';
+    
+    // Determinar el missionId basado en el estado de conexión
+    let completedMissionId: number | undefined;
+    if (state.step === 'username' || state.step === 'password') {
+      completedMissionId = 3;
+    }
+    
+    return {
+      output: `Connected to ${targetIp}.\n220 (vsFTPd 3.0.3)`,
+      completedMissionId,
+      ftpSession: {
+        active: true,
+        connected: state.connected,
+        targetIp: state.targetIp,
+        targetId: state.targetId,
+        username: state.username,
+        loggedIn: state.loggedIn,
+        step: state.step,
+      }
+    };
+  }
+
+  return { output: prompt || '' };
+};
+
+/** Ejecutar un comando en el shell activo */
+export const executeShellCommand = (line: string, ctx: CommandContext): CommandResponse => {
+  if (!shellManager.isActive()) {
+    return { output: 'No active shell session', isError: true };
+  }
+
+  const shellCtx = toShellContext(ctx);
+  const result = shellManager.execute(line, shellCtx);
+  const current = shellManager.current();
+
+  // Convertir el resultado del shell a CommandResponse compatible
+  const response: CommandResponse = {
+    output: result.output,
+    isError: result.isError,
+    completedMissionId: result.completedMissionId,
+    newMachineId: result.newMachineId,
+    blockingCommand: result.blockingCommand,
+    downloadedFile: result.downloadedFile,
+    foundCredentials: result.foundCredentials,
+    failedUser: result.failedUser,
+    foundVulnerability: result.foundVulnerability,
+  };
+
+  // Si es sesión FTP, mantener compatibilidad con el store
+  if (current?.shell.name === 'ftp') {
+    const state = current.state;
+    response.ftpSession = {
+      active: shellManager.isActive(),
+      connected: state.connected,
+      targetIp: state.targetIp,
+      targetId: state.targetId,
+      username: state.username,
+      loggedIn: state.loggedIn,
+      step: state.step,
+    };
+  }
+
+  return response;
+};
+
+/** Cerrar la sesión de shell actual */
+export const closeShellSession = (): CommandResponse => {
+  shellManager.closeCurrentSession();
+  return {
+    output: '221 Goodbye.',
+    ftpSession: { active: false, connected: false }
+  };
+};
+
+/** Reset del ShellManager al cambiar de escenario */
+export const resetShellManager = () => shellManager.reset();
+
 export const executeCommand = (
   line: string,
   machine: CommandContext['machine'],
@@ -84,7 +206,8 @@ export const executeCommand = (
   currentMissionId: number,
   onMsfStateChange?: (state: MsfState | null) => void,
   currentDir: string = '/',
-  setCurrentDir?: (dir: string) => void
+  setCurrentDir?: (dir: string) => void,
+  ftpSession?: CommandContext['ftpSession']
 ): CommandResponse => {
   const parts = line.trim().split(/\s+/);
   const cmdName = parts[0].toLowerCase();
@@ -92,7 +215,19 @@ export const executeCommand = (
 
   let result: CommandResponse;
 
-  const ctx: CommandContext = { machine, allMachines, currentMissionId, currentDir, setCurrentDir };
+  const ctx: CommandContext = { machine, allMachines, currentMissionId, currentDir, setCurrentDir, ftpSession };
+
+  // ── Si hay una sesión de shell activa (FTP, etc.), enviar el comando al shell
+  if (shellManager.isActive()) {
+    result = executeShellCommand(line, ctx);
+
+    // Si el shell se cerró, devolver el estado actualizado
+    if (!shellManager.isActive()) {
+      result.ftpSession = { active: false, connected: false };
+    }
+
+    return result;
+  }
 
   // ── If inside an active MSF session, forward ALL commands to MSF handler
   if (_msfState?.active) {
@@ -112,7 +247,7 @@ export const executeCommand = (
   if (onMsfStateChange) {
     onMsfStateChange(_msfState);
   }
-  
+
   return result;
 };
 
@@ -149,3 +284,8 @@ export const getMsfState = () => _msfState ? { ...(_msfState) } : null;
 
 // ── Re-export types for consumers ────────────────────────────────
 export type { MsfState } from './tools';
+
+// ── Resetea todas las sesiones de shell (útil al cambiar de escenario) ──
+export const resetShellSessions = () => {
+  shellManager.reset();
+};

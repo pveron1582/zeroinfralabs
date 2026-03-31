@@ -174,7 +174,7 @@ describe('scenarioStore', () => {
       file: '/etc/passwd',
       user: 'admin',
       pass: 'password123',
-      verified: false,
+      verified: true,
       service: 'ssh'
     }]);
   });
@@ -249,5 +249,40 @@ describe('scenarioStore', () => {
     useScenarioStore.getState().setBrowserNavHistory(history, 1);
     expect(useScenarioStore.getState().browserNavHistory).toEqual(history);
     expect(useScenarioStore.getState().browserNavIdx).toBe(1);
+  });
+
+  // Verifica que setBlockingCommand establezca el comando bloqueante (línea 409)
+  it('setBlockingCommand debe establecer el comando bloqueante', () => {
+    const blockingCmd = { message: 'Listening on port 4444', listeningPort: 4444 };
+    useScenarioStore.getState().setBlockingCommand(blockingCmd);
+    expect(useScenarioStore.getState().blockingCommand).toEqual(blockingCmd);
+    
+    useScenarioStore.getState().setBlockingCommand(null);
+    expect(useScenarioStore.getState().blockingCommand).toBeNull();
+  });
+
+  // Verifica que reportVulnerability reporte vulnerabilidades (líneas 424-444)
+  it('reportVulnerability debe agregar nueva vulnerabilidad', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().reportVulnerability(machineId, 'CVE-2021-44228', 'detected');
+    
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.vulnerabilities).toContainEqual({
+      id: 'CVE-2021-44228',
+      name: 'CVE-2021-44228',
+      status: 'detected'
+    });
+  });
+
+  it('reportVulnerability debe actualizar vulnerabilidad existente', () => {
+    const machineId = 'lab-scenario-01-wp';
+    // Primero agregar una vulnerabilidad
+    useScenarioStore.getState().reportVulnerability(machineId, 'CVE-2021-44228', 'detected');
+    // Luego actualizarla
+    useScenarioStore.getState().reportVulnerability(machineId, 'CVE-2021-44228', 'confirmed');
+    
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    const vuln = machine?.vulnerabilities?.find(v => v.id === 'CVE-2021-44228');
+    expect(vuln?.status).toBe('confirmed');
   });
 });

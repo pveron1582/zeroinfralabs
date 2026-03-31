@@ -72,7 +72,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     );
 
     // Verificamos que el logo de Google o el buscador estén presentes
-    expect(screen.getByPlaceholderText(/Buscar en Google/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Search Google/i)).toBeInTheDocument();
   });
 
   it('debe mostrar mensaje de bloqueo si el nivel de descubrimiento es insuficiente (Escenario 1)', () => {
@@ -367,7 +367,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
       />
     );
 
-    const searchInput = screen.getByPlaceholderText(/Buscar en Google/i);
+    const searchInput = screen.getByPlaceholderText(/Search Google/i);
     fireEvent.change(searchInput, { target: { value: 'nmap tutorial' } });
     fireEvent.keyDown(searchInput, { key: 'Enter' });
 

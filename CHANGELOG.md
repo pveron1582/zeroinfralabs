@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### Added
+- **LandingPage — Descripciones dinámicas multilingües**: Las tarjetas de laboratorios ahora muestran descripciones traducibles (inglés/español) leídas dinámicamente desde los módulos de cada laboratorio.
+  - **Archivos modificados**: `src/laboratorios/laboratorio01.ts` a `laboratorio05.ts`, `src/laboratorios/laboratorios.ts`, `src/components/LandingPage.tsx`
+  - **Nuevos campos en metadata**: `description` y `descriptionEs` en cada archivo de laboratorio
+  - **Beneficio**: El texto gris de descripción cambia según el idioma seleccionado y es completamente modular - si se reordenan o cambian los laboratorios, las descripciones siguen funcionando correctamente
 - **Escenario 02 mejorado**: Laboratorio de fuerza bruta SSH con fase de reconocimiento Web.
 - **ConsultancySite**: Nuevo sitio web simulado para el escenario 02 que permite descubrir nombres de empleados/usuarios.
 - **Mejora en Terminal (Ctrl+C)**: Se ha corregido la interrupción de comandos mediante `Ctrl+C`. Ahora es insensible a mayúsculas/minúsculas y funciona correctamente para procesos bloqueantes como `nc` o flujos de texto (streaming).

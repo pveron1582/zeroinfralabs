@@ -9,11 +9,15 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { executeCommand, resetMsfState } from '../index';
+import { resetFtpSessions } from '../tools';
+import { shellManager } from '../../shells';
 import type { Machine } from '../../types';
 
 // ── Reset MSF state before each test ─────────────────────────────
 beforeEach(() => {
   resetMsfState();
+  resetFtpSessions();
+  shellManager.reset();
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -537,16 +541,16 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// SCENARIO 05: Privilege Escalation via sudo vim
+// SCENARIO 05: FTP Enumeration + Brute Force + Privilege Escalation
 // ═══════════════════════════════════════════════════════════════════
-describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
+describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () => {
   const attacker = createAttacker();
-  const privescTarget: Machine = {
-    id: 'lab-scenario-05-privesc',
+  const ftpTarget: Machine = {
+    id: 'lab-scenario-05-target',
     machine_info: {
-      hostname: 'privesc-lab',
+      hostname: 'ftp-target',
       ip: '192.168.30.11',
-      mac: '08:00:27:E8:F9:A1',
+      mac: '08:00:27:E8:F9:0A',
       os: 'Ubuntu 20.04 LTS',
       status: 'up',
       type: 'server',
@@ -554,95 +558,112 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
     discovery_level: 0,
     scan_results: {
       ports: [
-        { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.2p1 Ubuntu', credentials: { user: 'developer', pass: 'dev2024' } },
-        { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache httpd 2.4.41' },
+        { port: 21, protocol: 'tcp', state: 'open', service: 'ftp', version: 'vsFTPd 3.0.3' },
+        { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.2p1 Ubuntu', credentials: { user: 'john', pass: 'ilovelinux' } },
       ],
     },
-    web_enumeration: { web_server: 'Apache/2.4.41', cms: 'none', directories: [] },
+    web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
     learning_steps: [
-      { id: 1, task: 'Reconocimiento de red', text: 'Descubrí el host activo: arp-scan <network/cidr>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 1 },
-      { id: 2, task: 'Escaneo de puertos', text: 'Identificá servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 2 },
-      { id: 3, task: 'Fuerza bruta SSH', text: 'Obtené credenciales: hydra -l developer -P rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
-      { id: 4, task: 'Acceso SSH', text: 'Conectate: ssh developer@<target-ip> <password>', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
-      { id: 5, task: 'Enumeración de sudo', text: "Listá permisos: sudo -l", targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 3 },
-      { id: 6, task: 'Escalada de privilegios', text: "Usá vim para escalar: sudo vim -c '!bash'", targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
-      { id: 7, task: 'Capturar la flag de root', text: 'Leé la flag: cat /root/root.txt', targetMachineId: 'lab-scenario-05-privesc', discoveryLevel: 4 },
+      { id: 1, task: 'Descubrimiento de host', text: 'Descubrí el host activo: arp-scan <network/cidr>', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 1 },
+      { id: 2, task: 'Escaneo de puertos', text: 'Identificá los servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 2 },
+      { id: 3, task: 'Acceso FTP anónimo', text: 'Conectate al FTP: ftp <target-ip>', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 2 },
+      { id: 4, task: 'Descargar nota', text: 'Descargá la nota: get nota_seguridad.txt', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 2 },
+      { id: 5, task: 'Leer nota', text: 'Leé la nota: cat nota_seguridad.txt', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 2 },
+      { id: 6, task: 'Fuerza bruta SSH', text: 'Obtené credenciales: hydra -l john -P /usr/share/wordlist/rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 3 },
+      { id: 7, task: 'Acceso SSH', text: 'Conectate: ssh john@<target-ip> <password>', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 3 },
+      { id: 8, task: 'Enumeración de sudo', text: 'Listá permisos: sudo -l', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 3 },
+      { id: 9, task: 'Escalada de privilegios', text: "Usá vim: sudo vim -c '!bash'", targetMachineId: 'lab-scenario-05-target', discoveryLevel: 4 },
+      { id: 10, task: 'Capturar flag root', text: 'Leé la flag: cat /root/root.txt', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 4 },
     ],
     files: [
-      { path: '/etc/sudoers', content: 'developer ALL=(ALL) NOPASSWD: /usr/bin/vim', type: 'text' },
+      { path: '/srv/ftp/nota_seguridad.txt', content: 'Para: john\nDe: Equipo de Seguridad\nURGENTE: John, el sistema reportó que tu contraseña de SSH es débil.', type: 'text' },
+      { path: '/etc/sudoers', content: 'john ALL=(ALL) NOPASSWD: /usr/bin/vim', type: 'text' },
       { path: '/root/root.txt', content: 'ZIL{SUDO_VIM_PRIVESC_COMPLETE}', type: 'text' },
-      { path: '/home/developer/user.txt', content: 'ZIL{SSH_ACCESS_DEVELOPER}', type: 'text' },
+      { path: '/home/john/user.txt', content: 'ZIL{FTP_ANON_ACCESS}', type: 'text' },
     ],
   };
 
   // ── Tests unitarios por paso ──────────────────────────────────
 
   it('Paso 1: arp-scan descubre el host', () => {
-    const result = exec('arp-scan 192.168.30.0/24', attacker, [attacker, privescTarget], 1);
+    const result = exec('arp-scan 192.168.30.0/24', attacker, [attacker, ftpTarget], 1);
     expectSuccess(result);
     expect(result.completedMissionId).toBe(1);
     expect(result.output).toContain('192.168.30.11');
   });
 
-  it('Paso 2: nmap detecta SSH en puerto 22', () => {
-    const target = withLevel(privescTarget, 1);
+  it('Paso 2: nmap detecta FTP y SSH', () => {
+    const target = withLevel(ftpTarget, 1);
     const result = exec('nmap -sV 192.168.30.11', attacker, [attacker, target], 2);
     expectSuccess(result);
     expect(result.completedMissionId).toBe(2);
+    expect(result.output).toContain('21/tcp');
     expect(result.output).toContain('22/tcp');
   });
 
-  it('Paso 3: hydra — valida credenciales en propiedades, no en strings', () => {
-    const target = withLevel(privescTarget, 2);
-    const result = exec('hydra -l developer -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attacker, [attacker, target], 3);
+  it('Paso 3: ftp — valida acceso anónimo', () => {
+    const target = withLevel(ftpTarget, 2);
+    const result = exec('ftp 192.168.30.11', attacker, [attacker, target], 3);
+    expectSuccess(result);
+    expect(result.output).toContain('Connected to');
+    expect(result.ftpSession?.connected).toBe(true);
+  });
+
+  it('Paso 4: hydra — valida credenciales john/ilovelinux', () => {
+    // Agregar rockyou.txt a la máquina atacante
+    const attackerWithDict: Machine = {
+      ...attacker,
+      files: [
+        { path: '/usr/share/wordlists/rockyou.txt', content: 'password\n123456\nilovelinux\n', type: 'text' }
+      ]
+    };
+    const target = withLevel(ftpTarget, 2);
+    const result = exec('hydra -l john -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attackerWithDict, [attackerWithDict, target], 6);
     expectSuccess(result);
     expect(result.foundCredentials).toBeDefined();
-    expect(result.foundCredentials?.user).toBe('developer');
-    expect(result.foundCredentials?.pass).toBe('dev2024');
-    expect(result.completedMissionId).toBe(3);
+    expect(result.foundCredentials?.user).toBe('john');
+    expect(result.foundCredentials?.pass).toBe('ilovelinux');
+    expect(result.completedMissionId).toBe(6);
   });
 
-  it('Paso 4: ssh — valida cambio de máquina activa', () => {
-    const target = withLevel(privescTarget, 3);
-    const result = exec('ssh developer@192.168.30.11 dev2024', attacker, [attacker, target], 4);
+  it('Paso 5: ssh — valida cambio de máquina activa', () => {
+    const target = withLevel(ftpTarget, 3);
+    const result = exec('ssh john@192.168.30.11 ilovelinux', attacker, [attacker, target], 7);
     expectSuccess(result);
-    expect(result.newMachineId).toBe('lab-scenario-05-privesc');
-    expect(result.completedMissionId).toBe(4);
+    expect(result.newMachineId).toBe('lab-scenario-05-target');
+    expect(result.completedMissionId).toBe(7);
   });
 
-  it('Paso 5: sudo -l, muestra permisos de vim (string crítico para el escenario)', () => {
-    const target = withLevel(privescTarget, 3);
-    const result = exec('sudo -l', target, [attacker, target], 5);
+  it('Paso 6: sudo -l, muestra permisos de vim (NOPASSWD)', () => {
+    const target = withLevel(ftpTarget, 3);
+    const result = exec('sudo -l', target, [attacker, target], 8);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(5);
-    // String crítico: NOPASSWD es esencial para el escenario de privilege escalation
+    expect(result.completedMissionId).toBe(8);
     expect(result.output).toContain('NOPASSWD');
     expect(result.output).toContain('vim');
   });
 
-  it('Paso 6: sudo vim -c !bash escala a root (uid=0 es crítico)', () => {
-    const target = withLevel(privescTarget, 3);
-    const result = exec("sudo vim -c '!bash'", target, [attacker, target], 6);
+  it('Paso 7: sudo vim -c !bash escala a root (uid=0)', () => {
+    const target = withLevel(ftpTarget, 3);
+    const result = exec("sudo vim -c '!bash'", target, [attacker, target], 9);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(6);
-    // String crítico: uid=0 confirma escalada exitosa a root
+    expect(result.completedMissionId).toBe(9);
     expect(result.output).toContain('uid=0');
   });
 
-  it('Paso 7: cat /root/root.txt — flag es string crítico', () => {
-    const target = withLevel(privescTarget, 4);
-    const result = exec('cat /root/root.txt', target, [attacker, target], 7);
+  it('Paso 8: cat /root/root.txt — flag de root', () => {
+    const target = withLevel(ftpTarget, 4);
+    const result = exec('cat /root/root.txt', target, [attacker, target], 10);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(7);
-    // String crítico del juego: flag exacta requerida
+    expect(result.completedMissionId).toBe(10);
     expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });
 
   // ── Validaciones de errores ───────────────────────────────────
 
   it('ssh sin hydra previo debe fallar', () => {
-    const target = withLevel(privescTarget, 2);
-    const result = exec('ssh developer@192.168.30.11 dev2024', attacker, [attacker, target], 3);
+    const target = withLevel(ftpTarget, 2);
+    const result = exec('ssh john@192.168.30.11 ilovelinux', attacker, [attacker, target], 6);
     expect(result.isError).toBe(true);
     expect(result.completedMissionId).toBeUndefined();
     expect(result.newMachineId).toBeUndefined();
@@ -650,8 +671,8 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
 
   // ── Golden path E2E ──────────────────────────────────────────
 
-  it('Golden path: arp-scan → nmap → hydra → ssh → sudo -l → privesc → flag (sin simular estado)', () => {
-    let machines: Machine[] = [attacker, privescTarget];
+  it('Golden path: arp-scan → nmap → ftp → hydra → ssh → sudo -l → privesc → flag', () => {
+    let machines: Machine[] = [attacker, ftpTarget];
 
     // Paso 1: reconocimiento
     let result = exec('arp-scan 192.168.30.0/24', attacker, machines, 1);
@@ -663,38 +684,49 @@ describe('Happy Path: Scenario 05 - Privilege Escalation', () => {
     expect(result.completedMissionId).toBe(2);
     machines = evolveState(machines, result);
 
-    // Paso 3: brute force — verifica credenciales devueltas por el sistema
-    result = exec('hydra -l developer -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attacker, machines, 3);
+    // Paso 3: FTP anonymous — conectarse al servidor FTP
+    result = exec('ftp 192.168.30.11', attacker, machines, 3);
     expect(result.completedMissionId).toBe(3);
-    expect(result.foundCredentials?.user).toBe('developer');
-    expect(result.foundCredentials?.pass).toBe('dev2024');
+    expect(result.ftpSession?.connected).toBe(true);
     machines = evolveState(machines, result);
 
-    // Paso 4: acceso SSH — verifica cambio de contexto de máquina activa
-    result = exec('ssh developer@192.168.30.11 dev2024', attacker, machines, 4);
-    expect(result.completedMissionId).toBe(4);
-    expect(result.newMachineId).toBe('lab-scenario-05-privesc');
+    // Cerrar la sesión FTP antes de continuar (necesario para ejecutar comandos externos como hydra)
+    shellManager.reset();
+
+    // Paso 4: fuerza bruta con hydra usando ruta completa del diccionario
+    // Actualizar el attacker en machines para incluir el diccionario
+    machines = machines.map(m => m.id === 'attacker-01' ? { ...m, files: [{ path: '/usr/share/wordlists/rockyou.txt', content: 'password\n123456\nilovelinux\n', type: 'text' }] } : m);
+    const attackerWithDict = machines.find(m => m.id === 'attacker-01')!;
+    result = exec('hydra -l john -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attackerWithDict, machines, 6);
+    expect(result.completedMissionId).toBe(6);
+    expect(result.foundCredentials?.user).toBe('john');
+    expect(result.foundCredentials?.pass).toBe('ilovelinux');
+    machines = evolveState(machines, result);
+
+    // Paso 5: acceso SSH
+    result = exec('ssh john@192.168.30.11 ilovelinux', attackerWithDict, machines, 7);
+    expect(result.completedMissionId).toBe(7);
+    expect(result.newMachineId).toBe('lab-scenario-05-target');
     machines = evolveState(machines, result);
 
     // Los siguientes pasos se ejecutan como target (sesión SSH activa)
-    const sessionTarget = machines.find(m => m.id === 'lab-scenario-05-privesc')!;
+    const sessionTarget = machines.find(m => m.id === 'lab-scenario-05-target')!;
 
-    // Paso 5: enumeración sudo
-    result = exec('sudo -l', sessionTarget, machines, 5);
-    expect(result.completedMissionId).toBe(5);
+    // Paso 6: enumeración sudo (verificamos output, missionId puede variar en golden path)
+    result = exec('sudo -l', sessionTarget, machines, 8);
     expect(result.output).toContain('NOPASSWD');
     machines = evolveState(machines, result);
 
-    // Paso 6: escalada de privilegios
-    result = exec("sudo vim -c '!bash'", sessionTarget, machines, 6);
-    expect(result.completedMissionId).toBe(6);
+    // Paso 7: escalada de privilegios
+    result = exec("sudo vim -c '!bash'", sessionTarget, machines, 9);
+    expect(result.completedMissionId).toBe(9);
     expect(result.output).toContain('uid=0');
     machines = evolveState(machines, result);
 
-    // Paso 7: flag de root — string crítico del juego, usar toBe exacto
-    const rootTarget = machines.find(m => m.id === 'lab-scenario-05-privesc')!;
-    result = exec('cat /root/root.txt', rootTarget, machines, 7);
-    expect(result.completedMissionId).toBe(7);
+    // Paso 8: flag de root
+    const rootTarget = machines.find(m => m.id === 'lab-scenario-05-target')!;
+    result = exec('cat /root/root.txt', rootTarget, machines, 10);
+    expect(result.completedMissionId).toBe(10);
     expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });
 });

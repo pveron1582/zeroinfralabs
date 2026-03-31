@@ -22,27 +22,27 @@ describe('WordPress Lab (wp01) - Componentes Vulnerables', () => {
     it('debe mostrar error con credenciales incorrectas', async () => {
       render(<WPLogin ip="1.1.1.1" credentials={mockCreds} onNavigate={vi.fn()} onLoginSuccess={vi.fn()} />);
       
-      fireEvent.change(screen.getByLabelText(/Usuario/i), { target: { value: 'hacker' } });
-      fireEvent.change(screen.getByLabelText(/Contraseña/i), { target: { value: '12345' } });
+      fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'hacker' } });
+      fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: '12345' } });
       
-      fireEvent.click(screen.getByRole('button', { name: /Acceder/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Log In/i }));
       
       // act() asegura que los efectos secundarios del timer se procesen
       await act(async () => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(screen.getByText((content) => content.includes('incorrectos'))).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('incorrect'))).toBeInTheDocument();
     });
 
     it('debe llamar a onLoginSuccess con las credenciales correctas', async () => {
       const onLoginSuccess = vi.fn();
       render(<WPLogin ip="1.1.1.1" credentials={mockCreds} onNavigate={vi.fn()} onLoginSuccess={onLoginSuccess} />);
       
-      fireEvent.change(screen.getByLabelText(/Usuario/i), { target: { value: 'admin' } });
-      fireEvent.change(screen.getByLabelText(/Contraseña/i), { target: { value: 'P@ssw0rd123!' } });
+      fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'admin' } });
+      fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'P@ssw0rd123!' } });
       
-      fireEvent.click(screen.getByRole('button', { name: /Acceder/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Log In/i }));
       
       await act(async () => {
         vi.advanceTimersByTime(1000);

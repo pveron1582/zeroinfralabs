@@ -22,8 +22,8 @@ export function WPConfigBak({ ip, onNavigate, machine }: { ip: string; onNavigat
       <div className="mx-6 mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
         <span className="text-amber-500 text-base leading-tight">⚠️</span>
         <div>
-          <p className="text-sm font-bold text-amber-800">Archivo de configuración expuesto públicamente</p>
-          <p className="text-xs text-amber-700 mt-0.5">Este archivo contiene credenciales en texto plano. Hallazgo crítico de seguridad.</p>
+          <p className="text-sm font-bold text-amber-800">Configuration file publicly exposed</p>
+          <p className="text-xs text-amber-700 mt-0.5">This file contains credentials in plain text. Critical security finding.</p>
         </div>
       </div>
 

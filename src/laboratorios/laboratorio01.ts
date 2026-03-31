@@ -9,6 +9,13 @@ import type { Scenario } from '../types';
 const scenario01Data = {
   id: 'scenario-01',
   name: 'WordPress Vulnerable Lab',
+  // Metadata for LandingPage cards
+  tagline: 'Enumerate hidden paths, extract credentials and take control of a vulnerable WordPress.',
+  taglineEs: 'Enumera rutas ocultas, extrae credenciales y toma control de un WordPress vulnerable.',
+  description: 'Web enumeration, directory discovery and WordPress compromise.',
+  descriptionEs: 'Enumeración web, descubrimiento de directorios y compromiso de WordPress.',
+  tools: ['arp-scan', 'nmap', 'gobuster', 'ssh'],
+  accentColor: '#22d3ee',
   networkRange: '192.168.1.0/24',
   wpVersion: '6.0',
   flags: {
@@ -46,12 +53,12 @@ const scenario01Data = {
     ],
   },
   learningSteps: [
-    { task: 'Reconocimiento de red', text: 'Descubrir hosts activos: arp-scan <network/cidr>', discoveryLevel: 1 },
-    { task: 'Escaneo de puertos', text: 'Escanear puertos: nmap -sV <target-ip>', discoveryLevel: 2 },
-    { task: 'Enumeración Web', text: 'Acceder al sitio web desde el botón de Firefox arriba.', discoveryLevel: 2 },
-    { task: 'Descubrimiento de directorios', text: 'Enumerar rutas: gobuster dir -u http://<target-ip> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', discoveryLevel: 3 },
-    { task: 'Compromiso WP-Admin', text: 'Buscar credenciales en /uploads y acceder a /wp-admin.', discoveryLevel: 4 },
-    { task: 'Conexión SSH', text: 'Conectarse por SSH como root para completar el laboratorio: ssh root@<target-ip> R00t@SSH2024!', discoveryLevel: 4 },
+    { task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover active hosts: arp-scan <network/cidr>', textEs: 'Descubrir hosts activos: arp-scan <network/cidr>', discoveryLevel: 1 },
+    { task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Scan ports: nmap -sV <target-ip>', textEs: 'Escanear puertos: nmap -sV <target-ip>', discoveryLevel: 2 },
+    { task: 'Web Enumeration', taskEs: 'Enumeración Web', text: 'Access the website from the Firefox button above.', textEs: 'Acceder al sitio web desde el botón de Firefox arriba.', discoveryLevel: 2 },
+    { task: 'Directory Discovery', taskEs: 'Descubrimiento de directorios', text: 'Enumerate routes: gobuster dir -u http://<target-ip> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', textEs: 'Enumerar rutas: gobuster dir -u http://<target-ip> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', discoveryLevel: 3 },
+    { task: 'WP-Admin Compromise', taskEs: 'Compromiso WP-Admin', text: 'Find credentials in /uploads and access /wp-admin.', textEs: 'Buscar credenciales en /uploads y acceder a /wp-admin.', discoveryLevel: 4 },
+    { task: 'SSH Connection', taskEs: 'Conexión SSH', text: 'Connect via SSH as root to complete the lab: ssh root@<target-ip> R00t@SSH2024!', textEs: 'Conectarse por SSH como root para completar el laboratorio: ssh root@<target-ip> R00t@SSH2024!', discoveryLevel: 4 },
   ],
 };
 
@@ -109,3 +116,6 @@ WP_ROOT = /var/www/html
   },
   learningSteps: scenario01Data.learningSteps,
 });
+
+// Export data for metadata access
+export { scenario01Data };

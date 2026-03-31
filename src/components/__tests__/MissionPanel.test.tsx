@@ -10,24 +10,24 @@ import type { Mission, Machine } from '../../types';
 const mockMissions: Mission[] = [
   {
     id: 1,
-    title: 'Descubrir red',
-    description: 'Ejecuta arp-scan para descubrir hosts',
+    title: 'Discover network',
+    description: 'Run arp-scan to discover hosts',
     status: 'completed',
     targetMachineId: 'target-01',
     discoveryLevel: 1,
   },
   {
     id: 2,
-    title: 'Escanear puertos',
-    description: 'Escanea los puertos de la máquina',
+    title: 'Scan ports',
+    description: 'Scan the machine ports',
     status: 'active',
     targetMachineId: 'target-01',
     discoveryLevel: 2,
   },
   {
     id: 3,
-    title: 'Acceso SSH',
-    description: 'Conecta por SSH',
+    title: 'SSH Access',
+    description: 'Connect via SSH',
     status: 'pending',
     targetMachineId: 'target-01',
     discoveryLevel: 4,
@@ -73,8 +73,8 @@ describe('MissionPanel', () => {
       />
     );
 
-    expect(screen.getByText('Misiones')).toBeInTheDocument();
-    expect(screen.getByText('Modo sin ayuda.')).toBeInTheDocument();
+    expect(screen.getByText('Missions')).toBeInTheDocument();
+    expect(screen.getByText('Help mode disabled.')).toBeInTheDocument();
   });
 
   it('debe habilitar las misiones (solo activas y completadas) animadas al hacer clic en ayuda', () => {
@@ -88,7 +88,7 @@ describe('MissionPanel', () => {
       />
     );
 
-    const helpBtn = screen.getByTitle('Habilitar ayuda');
+    const helpBtn = screen.getByTitle('Enable help');
     fireEvent.click(helpBtn);
 
     // Avanzar temporizadores para animaciones iniciales
@@ -96,10 +96,10 @@ describe('MissionPanel', () => {
       vi.advanceTimersByTime(2000);
     });
 
-    expect(screen.getByText('Descubrir red')).toBeInTheDocument();
-    expect(screen.getByText('Escanear puertos')).toBeInTheDocument();
-    // Acceso SSH está pending, no se renderiza
-    expect(screen.queryByText('Acceso SSH')).not.toBeInTheDocument();
+    expect(screen.getByText('Discover network')).toBeInTheDocument();
+    expect(screen.getByText('Scan ports')).toBeInTheDocument();
+    // SSH Access is pending, not rendered
+    expect(screen.queryByText('SSH Access')).not.toBeInTheDocument();
   });
 
   it('debe mostrar el progreso correcto', () => {
@@ -115,7 +115,7 @@ describe('MissionPanel', () => {
 
     // 1 de 3 completadas = 33%
     expect(screen.getByText('33%')).toBeInTheDocument();
-    expect(screen.getByText('1/3 completadas')).toBeInTheDocument();
+    expect(screen.getByText('1/3 completed')).toBeInTheDocument();
   });
 
   it('debe llamar onOpenNetworkMap al hacer clic en el botón Ver red', () => {
@@ -131,7 +131,7 @@ describe('MissionPanel', () => {
       />
     );
 
-    const networkButton = screen.getByText('Ver red');
+    const networkButton = screen.getByText('View Network');
     fireEvent.click(networkButton);
 
     expect(onOpenNetworkMap).toHaveBeenCalled();
@@ -150,7 +150,7 @@ describe('MissionPanel', () => {
       />
     );
 
-    expect(screen.getByText('● COMPROMETIDA')).toBeInTheDocument();
+    expect(screen.getByText('● COMPROMISED')).toBeInTheDocument();
   });
 
   it('debe mostrar los números de misión formateados cuando se habilita ayuda', () => {
@@ -164,7 +164,7 @@ describe('MissionPanel', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Habilitar ayuda'));
+    fireEvent.click(screen.getByTitle('Enable help'));
 
     act(() => {
       vi.advanceTimersByTime(2000);
@@ -172,7 +172,7 @@ describe('MissionPanel', () => {
 
     expect(screen.getByText('01')).toBeInTheDocument();
     expect(screen.getByText('02')).toBeInTheDocument();
-    // 03 es pending, no se muestra
+    // 03 is pending, not shown
     expect(screen.queryByText('03')).not.toBeInTheDocument();
   });
 });

@@ -26,6 +26,11 @@ export interface LearningStep {
   id: number;
   task: string;
   text: string;
+  // Translations for internationalization - stored modularly per lab
+  taskEn?: string;
+  textEn?: string;
+  taskEs?: string;
+  textEs?: string;
   targetMachineId: string;
   discoveryLevel: number;
 }
@@ -61,12 +66,19 @@ export interface Machine {
   }[];
   possible_ssh_users?: string[];
   failed_ssh_users?: string[];
+  sudo_privileges?: {
+    user: string;
+    commands: string[];
+    canSudo: boolean;
+  };
 }
 
 export interface Mission {
   id: number;
   title: string;
+  titleEs?: string;
   description: string;
+  descriptionEs?: string;
   status: 'active' | 'pending' | 'completed';
   targetMachineId: string;
   discoveryLevel: number;
@@ -97,12 +109,29 @@ export interface CommandResponse {
   completedMissionId?: number;
   newMachineId?: string;
   blockingCommand?: BlockingCommand;
+  ftpSession?: {
+    active: boolean;
+    connected?: boolean;
+    targetIp?: string;
+    targetId?: string;
+    username?: string;
+    loggedIn?: boolean;
+    currentDir?: string;
+    step?: 'connecting' | 'username' | 'password' | 'connected';
+  };
+  downloadedFile?: FileEntry;
   foundCredentials?: {
     machineId: string;
     user: string;
     pass: string;
     file: string;
     service?: string; // 'ssh', 'wp-admin', 'ftp', etc.
+  };
+  sudoPrivileges?: {
+    machineId: string;
+    user: string;
+    commands: string[];
+    canSudo: boolean;
   };
   failedUser?: {
     machineId: string;
@@ -123,4 +152,14 @@ export interface CommandContext {
   setCurrentDir?: (dir: string) => void;
   listeningPort?: number | null;
   isSshSession?: boolean;
+  language?: 'en' | 'es';
+  ftpSession?: {
+    active: boolean;
+    targetIp?: string;
+    targetId?: string;
+    username?: string;
+    loggedIn?: boolean;
+    currentDir?: string;
+    step: 'connecting' | 'username' | 'password' | 'connected';
+  };
 }

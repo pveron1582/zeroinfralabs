@@ -20,12 +20,12 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
     { name: 'Lucía Fernández', role: 'Project Manager', email: 'lfernandez@devconsultancy.com', avatar: 'L' },
   ];
 
-  // Extraer nombres de usuario de los mails (pedro, gonzalo, arturo, lucia)
+  // Extract usernames from emails (pedro, gonzalo, arturo, lucia)
   const usernames = ['pedro', 'gonzalo', 'arturo', 'lucia'];
   const informedRef = React.useRef(false);
 
   useEffect(() => {
-    // Informar al store sobre los posibles usuarios encontrados (solo una vez)
+    // Inform store about possible users found (only once)
     if (onViewTeam && !informedRef.current) {
       onViewTeam(usernames);
       informedRef.current = true;
@@ -41,13 +41,13 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
           <span className="text-xl font-bold tracking-tight text-slate-800">DevConsultancy</span>
         </div>
         <div className="hidden md:flex gap-8 text-sm font-medium text-slate-600 uppercase tracking-wider">
-          <a href="#" className="hover:text-indigo-600 transition-colors">Inicio</a>
-          <a href="#servicios" className="hover:text-indigo-600 transition-colors">Servicios</a>
-          <a href="#equipo" className="hover:text-indigo-600 transition-colors">Equipo</a>
-          <a href="#" className="hover:text-indigo-600 transition-colors">Contacto</a>
+          <a href="#" className="hover:text-indigo-600 transition-colors">Home</a>
+          <a href="#servicios" className="hover:text-indigo-600 transition-colors">Services</a>
+          <a href="#equipo" className="hover:text-indigo-600 transition-colors">Team</a>
+          <a href="#" className="hover:text-indigo-600 transition-colors">Contact</a>
         </div>
         <button className="bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100">
-          Contratar
+          Hire Us
         </button>
       </nav>
 
@@ -58,11 +58,11 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-400 rounded-full blur-3xl" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">Soluciones Web <span className="text-indigo-400">Premium</span> para tu Empresa</h1>
-          <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto leading-relaxed">Transformamos ideas en experiencias digitales potentes, seguras y escalables. Más de 10 años impulsando negocios locales.</p>
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">Premium <span className="text-indigo-400">Web Solutions</span> for Your Business</h1>
+          <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto leading-relaxed">We transform ideas into powerful, secure, and scalable digital experiences. Over 10 years empowering local businesses.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="#servicios" className="bg-indigo-500 hover:bg-indigo-400 px-8 py-4 rounded-xl font-bold transition-all transform hover:-translate-y-1">Nuestros Servicios</a>
-            <a href="#equipo" className="bg-white/10 hover:bg-white/20 px-8 py-4 rounded-xl font-bold backdrop-blur-sm transition-all border border-white/20">Conocer al Equipo</a>
+            <a href="#servicios" className="bg-indigo-500 hover:bg-indigo-400 px-8 py-4 rounded-xl font-bold transition-all transform hover:-translate-y-1">Our Services</a>
+            <a href="#equipo" className="bg-white/10 hover:bg-white/20 px-8 py-4 rounded-xl font-bold backdrop-blur-sm transition-all border border-white/20">Meet the Team</a>
           </div>
         </div>
       </header>
@@ -70,7 +70,7 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
       {/* Services Section */}
       <section id="servicios" className="px-8 py-24 max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4 text-slate-800">Servicios Digitales</h2>
+          <h2 className="text-3xl font-bold mb-4 text-slate-800">Digital Services</h2>
           <div className="w-20 h-1.5 bg-indigo-500 mx-auto rounded-full" />
         </div>
         
@@ -79,24 +79,24 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
             <div className="w-14 h-14 bg-indigo-50 rounded-xl flex items-center justify-center mb-6 text-indigo-600">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             </div>
-            <h3 className="text-xl font-bold mb-3 text-slate-800">Desarrollo Web</h3>
-            <p className="text-slate-600 leading-relaxed">Sitios corporativos, landing pages y e-commerce construidos con las últimas tecnologías para máximo rendimiento.</p>
+            <h3 className="text-xl font-bold mb-3 text-slate-800">Web Development</h3>
+            <p className="text-slate-600 leading-relaxed">Corporate websites, landing pages, and e-commerce built with the latest technologies for maximum performance.</p>
           </div>
 
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-indigo-500/5 transition-all transform hover:-translate-y-2">
             <div className="w-14 h-14 bg-indigo-50 rounded-xl flex items-center justify-center mb-6 text-indigo-600">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></svg>
             </div>
-            <h3 className="text-xl font-bold mb-3 text-slate-800">Hosting & Nube</h3>
-            <p className="text-slate-600 leading-relaxed">Infraestructura robusta y administración de servidores para que tu aplicación nunca deje de funcionar.</p>
+            <h3 className="text-xl font-bold mb-3 text-slate-800">Hosting & Cloud</h3>
+            <p className="text-slate-600 leading-relaxed">Robust infrastructure and server administration so your application never stops working.</p>
           </div>
 
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-indigo-500/5 transition-all transform hover:-translate-y-2">
             <div className="w-14 h-14 bg-indigo-50 rounded-xl flex items-center justify-center mb-6 text-indigo-600">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
             </div>
-            <h3 className="text-xl font-bold mb-3 text-slate-800">Apps para Empresas</h3>
-            <p className="text-slate-600 leading-relaxed">Creamos herramientas a medida tanto para móviles como para web que optimizan tus procesos internos.</p>
+            <h3 className="text-xl font-bold mb-3 text-slate-800">Enterprise Apps</h3>
+            <p className="text-slate-600 leading-relaxed">We create custom tools for both mobile and web that optimize your internal processes.</p>
           </div>
         </div>
       </section>
@@ -106,8 +106,8 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-3 text-slate-800">Nuestro Equipo</h2>
-              <p className="text-slate-500 max-w-md">Profesionales apasionados por la excelencia técnica y el diseño centrado en el usuario.</p>
+              <h2 className="text-3xl font-bold mb-3 text-slate-800">Our Team</h2>
+              <p className="text-slate-500 max-w-md">Professionals passionate about technical excellence and user-centered design.</p>
             </div>
             <div className="hidden md:block">
               <div className="w-24 h-1.5 bg-indigo-500 rounded-full" />
@@ -141,11 +141,11 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
             <span className="text-lg font-bold text-white">DevConsultancy</span>
           </div>
           <div className="text-sm flex gap-6">
-            <a href="#" className="hover:text-white transition-colors">Aviso Legal</a>
-            <a href="#" className="hover:text-white transition-colors">Privacidad</a>
-            <a href="#" className="hover:text-white transition-colors">Cookies</a>
+            <a href="#" className="hover:text-white transition-colors">Legal Notice</a>
+            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-white transition-colors">Contact</a>
           </div>
-          <p className="text-xs">&copy; 2024 DevConsultancy S.A. Todos los derechos reservados.</p>
+          <p className="text-xs">© 2024 DevConsultancy. All rights reserved.</p>
         </div>
       </footer>
     </div>

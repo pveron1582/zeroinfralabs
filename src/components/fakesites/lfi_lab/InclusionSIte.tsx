@@ -35,65 +35,65 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
     'home.php': (
       <div>
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 px-8 -mx-10 -mt-10 mb-8">
-          <h1 className="text-3xl font-bold mb-2">Bienvenido a DevPortal</h1>
-          <p className="text-blue-200">Portal de desarrollo y administración de servidores</p>
+          <h1 className="text-3xl font-bold mb-2">Welcome to DevPortal</h1>
+          <p className="text-blue-200">Development and server administration portal</p>
           <div className="mt-4 text-xs text-blue-300 font-mono">Apache/2.4.52 (Debian) | PHP 7.4.33</div>
         </div>
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="font-bold text-gray-800 mb-2">📊 Estado del Servidor</h3>
+            <h3 className="font-bold text-gray-800 mb-2">📊 Server Status</h3>
              <div className="space-y-2 text-sm text-gray-600">
-              <div className="flex justify-between"><span>Uptime:</span><span className="font-mono">45 días</span></div>
+              <div className="flex justify-between"><span>Uptime:</span><span className="font-mono">45 days</span></div>
               <div className="flex justify-between"><span>CPU:</span><span className="font-mono">23%</span></div>
               <div className="flex justify-between"><span>RAM:</span><span className="font-mono">1.2GB/4GB</span></div>
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="font-bold text-gray-800 mb-2">📁 Mantenimiento</h3>
-            <p className="text-sm text-gray-600 mb-4">Usa el panel de carga para subir utilidades de diagnóstico.</p>
-            <button onClick={() => onNavigate(`http://${ip}/upload.php`)} className="px-3 py-1 bg-blue-600 text-white rounded text-xs transition-colors hover:bg-blue-700">Ir a Upload</button>
+            <h3 className="font-bold text-gray-800 mb-2">📁 Maintenance</h3>
+            <p className="text-sm text-gray-600 mb-4">Use the upload panel to upload diagnostic utilities.</p>
+            <button onClick={() => onNavigate(`http://${ip}/upload.php`)} className="px-3 py-1 bg-blue-600 text-white rounded text-xs transition-colors hover:bg-blue-700">Go to Upload</button>
           </div>
         </div>
       </div>
     ),
     'about.php': (
       <div>
-        <h1 className="text-2xl font-bold mb-6">Acerca de DevPortal</h1>
+        <h1 className="text-2xl font-bold mb-6">About DevPortal</h1>
         <div className="prose text-gray-700 max-w-none">
-          <p className="mb-4">DevPortal es una plataforma de desarrollo web creada por el equipo de TI para la gestión de respaldos internos.</p>
-          <h3 className="font-bold mt-6 mb-2">Equipo de Desarrollo</h3>
+          <p className="mb-4">DevPortal is a web development platform created by the IT team for internal backup management.</p>
+          <h3 className="font-bold mt-6 mb-2">Development Team</h3>
           <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>Carlos García - Desarrollador Backend (admin)</li>
-            <li>María López - Diseñadora Frontend</li>
-            <li>Pedro Martínez - Administrador de Sistemas</li>
+            <li>Carlos García - Backend Developer (admin)</li>
+            <li>María López - Frontend Designer</li>
+            <li>Pedro Martínez - Systems Administrator</li>
           </ul>
-          <h3 className="font-bold mt-6 mb-2">Contacto Administrativo</h3>
+          <h3 className="font-bold mt-6 mb-2">Administrative Contact</h3>
           <p className="text-sm">Email: admin@devportal.local</p>
-          <div className="mt-6 p-4 bg-gray-100 rounded font-mono text-xs text-gray-500">Versión: 2.0.4 | PHP 7.4.33 (Internal Build)</div>
+          <div className="mt-6 p-4 bg-gray-100 rounded font-mono text-xs text-gray-500">Version: 2.0.4 | PHP 7.4.33 (Internal Build)</div>
         </div>
       </div>
     ),
     'contact.php': (
       <div>
-        <h1 className="text-2xl font-bold mb-6">Contacto Directo</h1>
+        <h1 className="text-2xl font-bold mb-6">Direct Contact</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-700">
           <div>
-            <h3 className="font-bold mb-4">Envíanos un reporte</h3>
+            <h3 className="font-bold mb-4">Send us a report</h3>
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Nombre</label><input type="text" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="Tu nombre" /></div>
-              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Email</label><input type="email" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="tu@email.com" /></div>
-              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Mensaje</label><textarea className="w-full px-3 py-2 border border-gray-200 rounded text-sm h-24 focus:border-blue-500 outline-none" placeholder="Tu reporte..." /></div>
-              <button type="submit" className="px-5 py-2 bg-slate-800 text-white rounded text-sm font-semibold hover:bg-slate-700 transition-colors">Enviar Reporte</button>
+              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label><input type="text" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="Your name" /></div>
+              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Email</label><input type="email" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="you@email.com" /></div>
+              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Message</label><textarea className="w-full px-3 py-2 border border-gray-200 rounded text-sm h-24 focus:border-blue-500 outline-none" placeholder="Your report..." /></div>
+              <button type="submit" className="px-5 py-2 bg-slate-800 text-white rounded text-sm font-semibold hover:bg-slate-700 transition-colors">Send Report</button>
             </form>
           </div>
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-            <h3 className="font-bold mb-4">Soporte Técnico</h3>
+            <h3 className="font-bold mb-4">Technical Support</h3>
             <div className="space-y-4 text-sm text-gray-600">
-              <div className="flex items-start gap-3"><span className="text-blue-500">📍</span><span>Sede Central: Av. Corrientes 1234, CABA</span></div>
-              <div className="flex items-start gap-3"><span className="text-blue-500">📞</span><span>Interno: +54 11 1234-5678 (Ext 404)</span></div>
+              <div className="flex items-start gap-3"><span className="text-blue-500">📍</span><span>Headquarters: 123 Main St, Tech City</span></div>
+              <div className="flex items-start gap-3"><span className="text-blue-500">📞</span><span>Internal: +1 555-123-4567 (Ext 404)</span></div>
               <div className="flex items-start gap-3"><span className="text-blue-500">✉️</span><span>helpdesk@devportal.local</span></div>
               <div className="mt-6 pt-4 border-t border-gray-200 text-xs italic">
-                Horario de atención: Lunes a Viernes de 09:00 a 18:00 hs.
+                Business hours: Monday to Friday 09:00 to 18:00.
               </div>
             </div>
           </div>
@@ -120,12 +120,12 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
   }, [currentUrl]);
 
   const handleFakeUpload = () => {
-    if (!selectedFile) { setUploadMsg('❌ Selecciona un archivo'); return; }
+    if (!selectedFile) { setUploadMsg('❌ Select a file'); return; }
     setIsLoading(true);
-    setUploadMsg('⏳ Subiendo...');
+    setUploadMsg('⏳ Uploading...');
     setTimeout(() => {
       const fileName = selectedFile.split('/').pop() || selectedFile;
-      setUploadMsg(`✅ Archivo ${fileName} subido a /uploads/`);
+      setUploadMsg(`✅ File ${fileName} uploaded to /uploads/`);
       setIsLoading(false);
       onFileUpload(fileName);
       setSelectedFile('');
@@ -150,9 +150,9 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
   const Nav = ({ active }: { active?: string }) => (
     <nav className="bg-slate-800 text-white px-6 py-3 flex items-center gap-6">
       <span className="font-bold text-lg border-r border-slate-600 pr-6">DevPortal</span>
-      <button onClick={() => onNavigate(`http://${ip}/?page=home.php`)} className={`text-sm ${active === 'home' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>🏠 Inicio</button>
-      <button onClick={() => onNavigate(`http://${ip || ''}/?page=about.php`)} className={`text-sm ${active === 'about' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>ℹ️ Acerca de</button>
-      <button onClick={() => onNavigate(`http://${ip || ''}/?page=contact.php`)} className={`text-sm ${active === 'contact' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>✉️ Contacto</button>
+      <button onClick={() => onNavigate(`http://${ip}/?page=home.php`)} className={`text-sm ${active === 'home' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>🏠 Home</button>
+      <button onClick={() => onNavigate(`http://${ip || ''}/?page=about.php`)} className={`text-sm ${active === 'about' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>ℹ️ About</button>
+      <button onClick={() => onNavigate(`http://${ip || ''}/?page=contact.php`)} className={`text-sm ${active === 'contact' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>✉️ Contact</button>
       <button onClick={() => onNavigate(`http://${ip}/upload.php`)} className={`text-sm ${active === 'upload' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>📤 Upload</button>
       <button onClick={() => onNavigate(`http://${ip}/files`)} className={`text-sm ${active === 'files' ? 'text-blue-300 font-bold' : 'hover:text-blue-300'}`}>📁 Files</button>
     </nav>
@@ -163,20 +163,20 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
       <div className="min-h-full bg-white font-sans text-gray-800">
         <Nav active="upload" />
         <div className="p-8 max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">📤 Carga de Scripts de Mantenimiento</h1>
+          <h1 className="text-2xl font-bold mb-6">📤 Maintenance Script Upload</h1>
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-800 rounded">
-            Sube herramientas desde tu máquina Kali para realizar diagnósticos locales en el servidor.
+            Upload tools from your Kali machine to perform local diagnostics on the server.
           </div>
           <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm">
-            <label className="block text-sm font-semibold mb-2">Archivo en Kali Linux (/root/):</label>
+            <label className="block text-sm font-semibold mb-2">File in Kali Linux (/root/):</label>
             <select value={selectedFile} onChange={(e) => setSelectedFile(e.target.value)} 
               className="w-full p-2.5 mb-4 border border-gray-300 rounded bg-white text-sm outline-none focus:border-blue-500">
-              <option value="">-- Seleccionar archivo --</option>
+              <option value="">-- Select file --</option>
               {availableFiles.map(f => <option key={f.path} value={f.path}>{f.name}</option>)}
             </select>
             <button onClick={handleFakeUpload} disabled={isLoading || !selectedFile}
               className="w-full py-2.5 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 disabled:bg-gray-400 transition-all">
-              {isLoading ? 'Subiendo...' : 'Subir Archivo'}
+              {isLoading ? 'Uploading...' : 'Upload File'}
             </button>
             {uploadMsg && (
               <div className={`mt-4 p-3 rounded text-xs font-mono border ${uploadMsg.includes('✅') ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
@@ -197,20 +197,20 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
         <div className="p-10 max-w-4xl mx-auto">
           <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-             Archivos en /var/www/html/uploads/
+             Files in /var/www/html/uploads/
           </h1>
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="p-4 font-bold text-gray-600">Nombre</th>
-                  <th className="p-4 font-bold text-gray-600">Tamaño</th>
-                  <th className="p-4 font-bold text-gray-600">Fecha</th>
+                  <th className="p-4 font-bold text-gray-600">Name</th>
+                  <th className="p-4 font-bold text-gray-600">Size</th>
+                  <th className="p-4 font-bold text-gray-600">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {uploadedOnServer.length === 0 ? (
-                  <tr><td colSpan={3} className="p-10 text-center text-gray-400 italic">No hay archivos en este directorio</td></tr>
+                  <tr><td colSpan={3} className="p-10 text-center text-gray-400 italic">No files in this directory</td></tr>
                 ) : (
                   uploadedOnServer.map((f, i) => {
                     const name = f.path.split('/').pop() || '';
@@ -235,8 +235,7 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
             </table>
           </div>
           <p className="mt-8 p-4 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800">
-            <strong>Tip:</strong> Haz clic en el nombre de un archivo para ejecutarlo mediante el motor PHP. 
-            Si es un script de reverse shell y tienes un listener en Kali, se establecerá la conexión.
+            <strong>Tip:</strong> Click on a file name to execute it via the PHP engine. If it's a reverse shell script and you have a listener on Kali, the connection will be established.
           </p>
         </div>
       </div>

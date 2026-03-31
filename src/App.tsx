@@ -35,6 +35,7 @@ export default function App() {
   const showMachineLoader = useScenarioStore(state => state.showMachineLoader);
   const loadingMachine = useScenarioStore(state => state.loadingMachine);
   const msfState = useScenarioStore(state => state.msfState);
+  const ftpSession = useScenarioStore(state => state.ftpSession);
 
   // ── Actions del Store ───────────────────────────────────────────
   const setActiveApp = useScenarioStore(state => state.setActiveApp);
@@ -290,6 +291,7 @@ export default function App() {
             scenario={{ ...currentScenario, machines }}
             activeMachineId={activeMachineId}
             msfState={getMsfState()}
+            ftpSession={ftpSession}
             onClose={() => toggleNetworkMap(false)}
           />
         )}

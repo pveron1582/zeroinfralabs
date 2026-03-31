@@ -15,6 +15,17 @@ interface Notification {
   id: number;
 }
 
+// Estado de sesión FTP
+export interface FtpSessionState {
+  active: boolean;
+  targetIp?: string;
+  targetId?: string;
+  username?: string;
+  loggedIn?: boolean;
+  currentDir?: string;
+  step: 'connecting' | 'username' | 'password' | 'connected';
+}
+
 type AppView = 'landing' | 'workspace';
 
 interface ScenarioState {
@@ -55,7 +66,12 @@ interface ScenarioState {
   // MSF Console state (persisted)
   msfState: MsfState | null;
 
-  // Actions
+  // FTP Session state
+  ftpSession: FtpSessionState | null;
+
+  // Language state
+  language: 'en' | 'es';
+  setLanguage: (lang: 'en' | 'es') => void;
   selectScenario: (id: string) => void;
   completeMission: (id: number) => void;
   findCredentials: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
@@ -83,6 +99,7 @@ interface ScenarioState {
   setBlockingCommand: (command: BlockingCommand | null) => void; // New action
   setCurrentDir: (dir: string) => void;
   setMsfState: (state: MsfState | null) => void;
+  setFtpSession: (session: FtpSessionState | null) => void;
   reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 }
 
@@ -93,7 +110,8 @@ const DEFAULT_TERM_COLOR = '#10b981';
 export const useScenarioStore = create<ScenarioState>()(
   persist(
     (set, get) => ({
-      // Estado inicial - reiniciar discovery_level para empezar limpio
+      language: 'en',
+      setLanguage: (lang) => set({ language: lang }),
       view: 'landing',
       currentScenario: SCENARIOS[0],
       machines: SCENARIOS[0].machines.map(m => ({ ...m, discovery_level: 0 })),
@@ -116,12 +134,14 @@ export const useScenarioStore = create<ScenarioState>()(
       blockingCommand: null, // Initialize new state variable
       currentDir: '/',
       msfState: null,
+      ftpSession: null,
 
       // ── Actions ───────────────────────────────────────────────────────
 
       setView: (view) => set({ view }),
 
       setMsfState: (state) => set({ msfState: state }),
+      setFtpSession: (session) => set({ ftpSession: session }),
 
       selectScenario: (id) => {
         const scenario = SCENARIOS.find(s => s.id === id);
@@ -158,6 +178,7 @@ export const useScenarioStore = create<ScenarioState>()(
             listeningPort: null,
             blockingCommand: null, // Reset new state variable
             msfState: null,
+            ftpSession: null, // Reset ftpSession
             currentDir: '/root/',
           });
           window.history.pushState({ view: 'workspace', scenarioId: id }, '');
@@ -191,6 +212,7 @@ export const useScenarioStore = create<ScenarioState>()(
           missions: updatedMissions,
           machines: updatedMachines,
           currentMissionId: id === currentMissionId ? currentMissionId + 1 : currentMissionId,
+          // Parpadear botón de red cuando hay nueva info de red (discoveryLevel > 0)
           hasNewNetworkInfo: (mission?.discoveryLevel || 0) > 0 ? true : get().hasNewNetworkInfo
         });
 
@@ -215,11 +237,14 @@ export const useScenarioStore = create<ScenarioState>()(
             const filtered = existing.filter(c => c.service !== service);
             return {
               ...m,
+              // Aumentar discovery_level si encontramos credenciales (mínimo 3 para SSH)
+              discovery_level: Math.max(m.discovery_level || 0, 3),
               found_credentials: [...filtered, { 
                 file: file || '/etc/passwd', 
                 user, 
                 pass, 
-                verified: existingCred?.verified || false, 
+                // Mark as verified when found (hydra already validated the credential)
+                verified: true, 
                 service 
               }]
             };
@@ -263,6 +288,18 @@ export const useScenarioStore = create<ScenarioState>()(
         });
       },
 
+      setSudoPrivileges: (machineId, user, commands, canSudo) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m => 
+            m.id === machineId ? { 
+              ...m, 
+              sudo_privileges: { user, commands, canSudo }
+            } : m
+          )
+        });
+      },
+
       addFileToMachine: (machineId: string, file: FileEntry) => {
         const { machines } = get();
         set({
@@ -298,12 +335,16 @@ export const useScenarioStore = create<ScenarioState>()(
       },
 
       confirmRCE: (machineId: string, user: string, method: string) => {
-        const { machines } = get();
+        const { machines, hasNewNetworkInfo } = get();
+        // Verificar si ya existe una credencial reverse-shell para esta máquina
+        const targetMachine = machines.find(m => m.id === machineId);
+        const alreadyHasRCE = targetMachine?.found_credentials?.some(c => c.service === 'reverse-shell');
+        
         set({
           machines: machines.map(m => {
             if (m.id !== machineId) return m;
             const creds = m.found_credentials || [];
-            if (creds.some(c => c.user === user)) return m;
+            if (creds.some(c => c.user === user && c.service === 'reverse-shell')) return m;
             return {
               ...m,
               found_credentials: [
@@ -312,7 +353,8 @@ export const useScenarioStore = create<ScenarioState>()(
               ]
             };
           }),
-          hasNewNetworkInfo: true
+          // Solo activar el parpadeo si no había RCE antes
+          hasNewNetworkInfo: alreadyHasRCE ? hasNewNetworkInfo : true
         });
       },
 

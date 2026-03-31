@@ -23,6 +23,8 @@ vi.mock('../../store/scenarioStore', () => ({
       goHome: vi.fn(),
       blockingCommand: null,
       setBlockingCommand: vi.fn(),
+      ftpSession: null,
+      setFtpSession: vi.fn(),
     };
     return selector(state);
   })
@@ -86,9 +88,7 @@ describe('Terminal', () => {
       />
     );
 
-    expect(container.textContent).toContain('ZeroInfra Labs Terminal v2.0.0');
-    expect(container.textContent).toContain('Kali Linux');
-    expect(container.textContent).toContain('192.168.1.10');
+    expect(container.textContent).toContain('kali');
   });
 
   it('debe mostrar el prompt correcto para la máquina atacante', () => {
@@ -267,8 +267,8 @@ describe('Terminal', () => {
       />
     );
 
-    // El historial debería estar limpio (solo el mensaje de bienvenida)
-    expect(container.textContent).toContain('ZeroInfra Labs Terminal v2.0.0');
+    // El historial debería estar limpio (solo el prompt)
+    expect(container.textContent).toContain('kali');
   });
 
   it('debe mostrar el estado ready cuando no hay comandos ejecutándose', () => {
@@ -651,9 +651,7 @@ describe('Terminal', () => {
       />
     );
 
-    // Verificar que muestra información del sistema
-    expect(container.textContent).toContain('Kali Linux');
-    expect(container.textContent).toContain('192.168.1.10');
-    expect(container.textContent).toContain("Escribe 'help' para ver los comandos disponibles");
+    // Verificar que muestra el prompt con información del sistema
+    expect(container.textContent).toContain('kali');
   });
 });

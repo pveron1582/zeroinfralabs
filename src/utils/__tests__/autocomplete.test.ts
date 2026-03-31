@@ -9,6 +9,7 @@ import {
   autocompleteFile,
   getAutocompleteSuggestions,
   findCommonPrefix,
+  autocompleteMsf,
 } from '../autocomplete';
 import type { Machine } from '../../types';
 
@@ -214,5 +215,36 @@ describe('findCommonPrefix', () => {
   it('debe encontrar prefijo común con strings idénticos', () => {
     const result = findCommonPrefix(['test', 'test', 'test']);
     expect(result).toBe('test');
+  });
+});
+
+// Tests para autocompletado de Metasploit
+describe('autocompleteMsf', () => {
+  it('debe autocompletar comandos MSF como primera palabra', () => {
+    const result = autocompleteMsf('se', 'se', true);
+    expect(result).toContain('set');
+    expect(result).toContain('search');
+  });
+
+  it('debe autocompletar opciones de use (módulos)', () => {
+    const result = autocompleteMsf('auxiliary/', 'use auxiliary/', false);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0]).toContain('auxiliary/');
+  });
+
+  it('debe autocompletar opciones de set', () => {
+    const result = autocompleteMsf('RH', 'set RH', false);
+    expect(result).toContain('RHOSTS');
+    // RPORT no empieza con 'RH', así que solo esperamos RHOSTS
+  });
+
+  it('debe autocompletar opciones de show', () => {
+    const result = autocompleteMsf('opt', 'show opt', false);
+    expect(result).toContain('options');
+  });
+
+  it('debe retornar array vacío para comandos desconocidos', () => {
+    const result = autocompleteMsf('foo', 'foo', false);
+    expect(result).toEqual([]);
   });
 });

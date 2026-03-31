@@ -31,6 +31,7 @@ const AVAILABLE_COMMANDS = [
   'hydra',
   'ssh',
   'nc',
+  'ftp',
   'msfconsole',
 ];
 

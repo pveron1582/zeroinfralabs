@@ -2,10 +2,15 @@
 // Tests para el componente LandingPage
 
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LandingPage } from '../LandingPage';
 import type { Scenario } from '../../types';
+
+// Reset storage before each test to ensure consistent language state
+beforeEach(() => {
+  localStorage.clear();
+});
 
 const mockScenarios: Scenario[] = [
   {
@@ -62,7 +67,7 @@ describe('LandingPage', () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText('3 labs disponibles')).toBeInTheDocument();
+      expect(screen.getByText(/3 missions/)).toBeInTheDocument();
     });
   });
 
@@ -70,8 +75,8 @@ describe('LandingPage', () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Elegí un/)).toBeInTheDocument();
-      expect(screen.getByText(/laboratorio/)).toBeInTheDocument();
+      expect(screen.getByText(/Choose a/)).toBeInTheDocument();
+      expect(screen.getByText(/lab/)).toBeInTheDocument();
     });
   });
 
@@ -89,9 +94,9 @@ describe('LandingPage', () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Fácil')).toBeInTheDocument();
-      expect(screen.getByText('Medio')).toBeInTheDocument();
-      expect(screen.getByText('Difícil')).toBeInTheDocument();
+      expect(screen.getByText('Easy')).toBeInTheDocument();
+      expect(screen.getByText('Medium')).toBeInTheDocument();
+      expect(screen.getByText('Hard')).toBeInTheDocument();
     });
   });
 
@@ -118,18 +123,18 @@ describe('LandingPage', () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText('2 misiones')).toBeInTheDocument();
-      expect(screen.getByText('1 misiones')).toBeInTheDocument();
+      expect(screen.getByText('2 missions')).toBeInTheDocument();
+      expect(screen.getByText('1 missions')).toBeInTheDocument();
     });
   });
 
-  it('debe llamar onSelect al hacer clic en una tarjeta', async () => {
+  it('debe llamar onSelect al hacer clic en START', async () => {
     const onSelect = vi.fn();
     render(<LandingPage scenarios={mockScenarios} onSelect={onSelect} />);
 
     await waitFor(() => {
-      const card = screen.getByText('WordPress Lab');
-      fireEvent.click(card);
+      const startButtons = screen.getAllByText('START');
+      fireEvent.click(startButtons[0]); // Click en el primer botón START (WordPress Lab)
     });
 
     expect(onSelect).toHaveBeenCalledWith('scenario-01');
@@ -157,12 +162,12 @@ describe('LandingPage', () => {
     });
   });
 
-  it('debe mostrar el botón INICIAR en cada tarjeta', async () => {
+  it('debe mostrar el botón START en cada tarjeta', async () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      const iniciarButtons = screen.getAllByText('INICIAR');
-      expect(iniciarButtons.length).toBe(3);
+      const startButtons = screen.getAllByText('START');
+      expect(startButtons.length).toBe(3);
     });
   });
 
@@ -170,7 +175,7 @@ describe('LandingPage', () => {
     render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/ZI Labs · Entorno de práctica controlado/)).toBeInTheDocument();
+      expect(screen.getByText(/ZI Labs · Controlled practice environment/)).toBeInTheDocument();
     });
   });
 

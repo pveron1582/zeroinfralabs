@@ -50,7 +50,7 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
   };
   const machines = assignDHCP(config.networkRange, [attacker, target]);
   const missions: Mission[] = config.learningSteps.map((step, idx) => ({
-    id: idx + 1, title: step.task, description: step.text,
+    id: idx + 1, title: step.task, titleEs: step.taskEs, description: step.text, descriptionEs: step.textEs,
     status: idx === 0 ? 'active' : 'pending', targetMachineId: config.targetMachine.id, discoveryLevel: step.discoveryLevel,
   }));
   return {

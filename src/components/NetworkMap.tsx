@@ -1,25 +1,30 @@
 // ── components/NetworkMap.tsx ─────────────────────────────────────
 import React, { useState } from 'react';
 import { useScenarioStore } from '../store/scenarioStore';
+import { useT } from '../i18n/translations';
 import { EnumerationPanel } from './EnumerationPanel';
 import type { Machine, Scenario } from '../types';
 import type { MsfState } from '../commands';
+import type { FtpSessionState } from '../store/scenarioStore';
 
 const LEVEL_COLORS = ['#374151', '#3b82f6', '#eab308', '#a855f7', '#ef4444'];
-const LEVEL_LABELS = ['Desconocido', 'Descubierto', 'Escaneado', 'Enumerado', 'Comprometido'];
 
 interface Props {
   scenario: Scenario & { machines: Machine[] };
   activeMachineId: string;
   msfState?: MsfState | null;
+  ftpSession?: FtpSessionState | null;
   onClose: () => void;
 }
 
-export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Props) {
+export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, onClose }: Props) {
   const [selected, setSelected] = useState<Machine | null>(() => {
     // Default select first non-attacker target machine for the side panel
     return scenario.machines.find(m => !m.id.includes('attacker') && (m.discovery_level ?? 0) > 0) || null;
   });
+  const t = useT();
+  
+  const LEVEL_LABELS = ['Unknown', 'Discovered', 'Scanned', 'Enumerated', 'Compromised'];
 
   return (
     <div className="absolute inset-0 z-50 bg-gray-950/95 backdrop-blur-sm flex flex-col" style={{ animation: 'fadeInMap 0.2s' }}>
@@ -59,15 +64,21 @@ export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Pro
                 const isExploited  = isTarget && (msfState?.uidChecked ?? false);
                 const exploited    = isExploited || isCompromised;
 
-                // Green border only follows the active machine (where the user IS)
-                // Attacker always green when no session, target gets it when session open
-                const isCurrentLocation = machine.id === activeMachineId;
+                // FTP session state for this machine
+                const isFtpTarget = ftpSession?.active && ftpSession.targetId === machine.id;
+                const isFtpSession = isFtpTarget && !isAttacker;
+
+                // Green border for active machine
+                // During FTP: only victim shows green (not Kali), during normal: activeMachineId shows green
+                const isCurrentLocation = isFtpSession 
+                  ? true  // Victim machine with FTP session
+                  : machine.id === activeMachineId && !ftpSession?.active; // Normal active machine, but not during FTP
                 const borderColor = isCurrentLocation ? '#10b981'
                                   : '#374151';
                 const glowColor   = isCurrentLocation ? '#10b981' : null;
 
                 const topBadge = isCurrentLocation
-                  ? { label: 'Sesión Activa', bg: '#10b981', fg: '#000' }
+                  ? { label: ftpSession?.active && isFtpTarget ? 'FTP Active Session' : 'Active Session', bg: '#10b981', fg: '#000' }
                   : null;
 
                 // Badge nivel 3 usa el nombre del step 3 de la máquina (dinámico por escenario)
@@ -111,12 +122,12 @@ export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Pro
                       </div>
 
                       <div className="text-center w-full">
-                        <p className="font-bold text-gray-200 truncate text-sm">{hidden ? 'Objetivo Desconocido' : machine.machine_info.hostname}</p>
+                        <p className="font-bold text-gray-200 truncate text-sm">{hidden ? 'Unknown Target' : machine.machine_info.hostname}</p>
                         <p className="text-xs font-mono mt-1" style={{ color: isActive ? '#10b981' : '#6b7280' }}>{hidden ? '?.?.?.?' : machine.machine_info.ip}</p>
                         <p className="text-xs text-gray-600 mt-0.5">
                           {machine.id.includes('attacker') 
                             ? 'Kali Linux 2023.4' 
-                            : (machine.discovery_level ?? 0) >= 2 ? machine.machine_info.os : 'Sistema: Desconocido'
+                            : (machine.discovery_level ?? 0) >= 2 ? machine.machine_info.os : 'System: Unknown'
                           }
                         </p>
                       </div>
@@ -139,7 +150,7 @@ export function NetworkMap({ scenario, activeMachineId, msfState, onClose }: Pro
                       <div className="w-full flex items-center justify-center gap-2 py-2"
                         style={{ background: '#10b98120', borderTop: '1px solid #10b98140' }}>
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#10b981' }}>Comprometida</span>
+                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#10b981' }}>Compromised</span>
                       </div>
                     )}
                   </div>
