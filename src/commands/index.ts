@@ -124,10 +124,8 @@ export const startShellSession = (shellName: string, args: string[], ctx: Comman
     const targetIp = args[0] || state.targetIp || 'localhost';
     
     // Determinar el missionId basado en el estado de conexión
+    // NO completar misión aquí — se completa solo tras login exitoso (password step)
     let completedMissionId: number | undefined;
-    if (state.step === 'username' || state.step === 'password') {
-      completedMissionId = 3;
-    }
     
     return {
       output: `Connected to ${targetIp}.\n220 (vsFTPd 3.0.3)`,

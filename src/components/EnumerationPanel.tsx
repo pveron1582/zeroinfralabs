@@ -79,13 +79,24 @@ export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onC
                 Ports and Services
               </p>
               <div className="grid gap-2">
-                {machine.scan_results.ports.map(p => (
-                  <div key={p.port} className="flex items-center px-6 py-4 bg-gray-800/30 rounded-xl text-sm font-mono border border-gray-800/50 hover:border-emerald-500/30 transition-all group">
-                    <span className="text-emerald-400 font-black w-20 text-left">{p.port}/{p.protocol}</span>
-                    <span className="text-gray-200 font-bold uppercase w-24 text-center">{p.service}</span>
-                    <span className="text-gray-500 truncate group-hover:text-gray-300 flex-1 text-right">{p.version}</span>
-                  </div>
-                ))}
+                {machine.scan_results.ports.map(p => {
+                  let versionText = p.version;
+                  if (p.port === 445 && versionText) {
+                    const spMatch = versionText.match(/Windows\s+7.*?(?:SP(\d+)|Service\s+Pack\s+(\d+))/i);
+                    if (spMatch) versionText = `Windows 7 SP${spMatch[1] || spMatch[2]}`;
+                  }
+                  if (p.port === 139 && versionText) {
+                    const nbMatch = versionText.match(/netbios[-_]ssn/i);
+                    if (nbMatch) versionText = 'netbios-ssn';
+                  }
+                  return (
+                    <div key={p.port} className="flex items-center gap-3 px-4 py-3 bg-gray-800/30 rounded-xl text-sm font-mono border border-gray-800/50 hover:border-emerald-500/30 transition-all group">
+                      <span className="text-emerald-400 font-black">{p.port}/{p.protocol}</span>
+                      <span className="text-gray-200 font-bold uppercase">{p.service}</span>
+                      <span className="text-gray-500 truncate group-hover:text-gray-300 flex-1">{versionText}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -99,13 +110,13 @@ export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onC
               </p>
               <div className="grid gap-2">
                 {machine.possible_ssh_users.map(user => {
-                  // Check if user has verified credentials
                   const userCred = displayCredentials.find(c => c.user === user && c.service === 'ssh');
+                  const hasCreds = !!userCred;
                   const failedUser = machine.failed_ssh_users?.includes(user);
-                  let statusColor = 'bg-blue-500/20 text-blue-400 border-blue-500/30'; // Default blue
+                  let statusColor = 'bg-blue-500/20 text-blue-400 border-blue-500/30';
                   let statusText = 'UNTESTED';
                   
-                  if (userCred?.verified) {
+                  if (hasCreds) {
                     statusColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
                     statusText = 'VALID';
                   } else if (failedUser) {
@@ -124,8 +135,8 @@ export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onC
             </div>
           )}
 
-          {/* Directorios Web (Navegación Interactiva) - Solo después de gobuster (discoveryLevel >= 4) */}
-          {discoveryLevel >= 4 && (machine.web_enumeration?.directories?.length ?? 0) > 0 && (
+          {/* Directorios Web (Navegación Interactiva) - Solo después de gobuster (discoveryLevel >= 3) */}
+          {discoveryLevel >= 3 && (machine.web_enumeration?.directories?.length ?? 0) > 0 && (
             <div className="animate-in slide-in-from-bottom-2 duration-300 delay-200">
               <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-black mb-4 flex items-center gap-2">
                 <span className="w-1 h-3 bg-blue-500 rounded-full" />
@@ -146,7 +157,97 @@ export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onC
             </div>
           )}
 
-          {/* Método de Acceso / Explotación (NUEVA SECCIÓN) */}
+          {/* Vulnerabilidades (Lógica fija para evitar EternalBlue fantasma) */}
+          {machine.vulnerabilities && machine.vulnerabilities.length > 0 && (
+            <div className="animate-in slide-in-from-bottom-2 duration-300 delay-300">
+              <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-black mb-4 flex items-center gap-2">
+                <span className={`w-1 h-3 rounded-full ${machine.vulnerabilities.some(v => v.status === 'confirmed') ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                Critical Vulnerabilities
+              </p>
+              <div className="space-y-2">
+                {machine.vulnerabilities.map(v => {
+                  const isConfirmed = v.status === 'confirmed';
+                  return (
+                    <div key={v.id} className={`flex items-center gap-3 p-3 rounded-xl ${isConfirmed ? 'bg-emerald-950/10 border border-emerald-900/20' : 'bg-amber-950/10 border border-amber-900/20'}`}>
+                      <span className={`text-xs font-black px-2.5 py-1 rounded shadow-lg ${isConfirmed ? 'bg-emerald-600 text-white shadow-emerald-900/40' : 'bg-amber-600 text-white shadow-amber-900/40'}`}>{v.id}</span>
+                      <span className={`text-sm font-bold ${isConfirmed ? 'text-emerald-300' : 'text-amber-300'}`}>{v.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Credenciales */}
+          {displayCredentials.filter(c => c.service !== 'reverse-shell').length > 0 && (
+            <div className="animate-in slide-in-from-bottom-2 duration-300 delay-400">
+              <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-black mb-4 flex items-center gap-2">
+                <span className={`w-1 h-3 rounded-full ${displayCredentials.some(c => c.service !== 'reverse-shell' && c.verified) ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                Credentials
+              </p>
+              <div className="space-y-3">
+                {displayCredentials.filter(c => c.service !== 'reverse-shell').map((cred, idx) => {
+                  const isVerified = cred.verified;
+                  const borderColor = isVerified ? 'border-emerald-500/30' : 'border-amber-500/30';
+                  const borderBottomColor = isVerified ? 'border-emerald-500/20' : 'border-amber-500/20';
+                  const serviceColor = isVerified ? 'text-emerald-400' : 'text-amber-400';
+                  const statusColor = isVerified ? 'text-emerald-400' : 'text-amber-400';
+                  const statusText = isVerified ? 'VERIFIED' : 'PENDING';
+                  const userColor = isVerified ? 'text-emerald-400' : 'text-amber-400';
+                  const passColor = isVerified ? 'text-emerald-400' : 'text-amber-400';
+
+                  return (
+                    <div key={idx} className={`bg-gray-800/20 border rounded-xl overflow-hidden shadow-inner font-mono ${borderColor}`}>
+                      <div className={`bg-black/30 px-4 py-2.5 border-b flex justify-between items-center ${borderBottomColor}`}>
+                        <span className={`text-xs font-black uppercase tracking-widest ${serviceColor}`}>{cred.service}</span>
+                        <span className={`text-xs font-bold ${statusColor}`}>{statusText}</span>
+                      </div>
+                      <div className="p-4 text-sm space-y-2">
+                        <div className="flex justify-between"><span className="text-gray-500">USER:</span><span className={`font-bold ${userColor}`}>{cred.user}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-500">PASS:</span><span className={`font-bold ${passColor}`}>{cred.pass}</span></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Privilege Escalation Vulnerability */}
+          {machine.sudo_privileges && machine.sudo_privileges.commands.some(c => c.toLowerCase().includes('vim')) && (
+            <div className="animate-in slide-in-from-bottom-2 duration-300 delay-500">
+              <p className="text-xs uppercase tracking-[0.2em] font-black mb-4 flex items-center gap-2">
+                <span className={`w-1 h-3 rounded-full ${machine.privesc_completed ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <span className={machine.privesc_completed ? 'text-emerald-500' : 'text-amber-500'}>
+                  {machine.privesc_completed ? 'Privilege Escalation' : 'Possible Vulnerability'}
+                </span>
+              </p>
+              <div className={`border-2 rounded-2xl p-5 ${machine.privesc_completed ? 'bg-emerald-950/20 border-emerald-900/30' : 'bg-amber-950/20 border-amber-900/30'}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`p-2 rounded-lg ${machine.privesc_completed ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500'}`}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  </div>
+                  <div>
+                    <p className={`text-sm font-black uppercase tracking-wider ${machine.privesc_completed ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {machine.privesc_completed ? 'Exploited: Sudo Vim' : 'Sudo Vim → Root Shell'}
+                    </p>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                      {machine.privesc_completed
+                        ? 'Escalada completada: sudo vim -c \'!bash\''
+                        : 'NOPASSWD sudo access to vim allows root escalation'}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-black/40 rounded-xl p-3 border border-gray-800/50">
+                  <span className="text-xs font-mono text-gray-300">
+                    sudo vim -c <span className="text-amber-400">'!bash'</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Método de Acceso / Explotación (AL FINAL) */}
           {rceSession && (
             <div className="animate-in zoom-in duration-500">
                <p className="text-xs uppercase tracking-[0.2em] text-emerald-500 font-black mb-4 flex items-center gap-2">
@@ -173,76 +274,6 @@ export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onC
                     <span className="text-emerald-400 font-black font-mono">nc -nlvp 4444</span>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Sudo Privileges */}
-          {machine.sudo_privileges && machine.sudo_privileges.canSudo && (
-            <div className="animate-in slide-in-from-bottom-2 duration-300 delay-150">
-              <p className="text-xs uppercase tracking-[0.2em] text-blue-500 font-black mb-4 flex items-center gap-2">
-                <span className="w-1 h-3 bg-blue-500 rounded-full" />
-                Sudo Privileges
-              </p>
-              <div className="bg-blue-950/20 border-2 border-blue-900/30 rounded-2xl p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-blue-500/20 rounded-lg text-blue-500">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-black text-blue-400 uppercase tracking-wider">User: {machine.sudo_privileges.user}</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {machine.sudo_privileges.commands.map((cmd, idx) => (
-                    <div key={idx} className="flex items-center justify-between px-6 py-4 bg-black/40 border-l-4 border-emerald-500 rounded-r-lg">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                      <span className="text-sm text-blue-300 font-mono">{cmd}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Vulnerabilidades (Lógica fija para evitar EternalBlue fantasma) */}
-          {machine.vulnerabilities && machine.vulnerabilities.length > 0 && (
-            <div className="animate-in slide-in-from-bottom-2 duration-300 delay-300">
-              <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-black mb-4 flex items-center gap-2">
-                <span className="w-1 h-3 bg-emerald-500 rounded-full" />
-                Critical Vulnerabilities
-              </p>
-              <div className="space-y-2">
-                {machine.vulnerabilities.map(v => (
-                  <div key={v.id} className="flex items-center gap-3 p-3 bg-emerald-950/10 border border-emerald-900/20 rounded-xl">
-                    <span className="bg-emerald-600 text-white text-xs font-black px-2.5 py-1 rounded shadow-lg shadow-emerald-900/40">{v.id}</span>
-                    <span className="text-sm text-emerald-300 font-bold">{v.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Credenciales Comprometidas */}
-          {displayCredentials.filter(c => c.service !== 'reverse-shell').length > 0 && (
-            <div className="animate-in slide-in-from-bottom-2 duration-300 delay-400">
-              <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-black mb-4 flex items-center gap-2">
-                <span className="w-1 h-3 bg-amber-500 rounded-full" />
-                Credentials
-              </p>
-              <div className="space-y-3">
-                {displayCredentials.filter(c => c.service !== 'reverse-shell').map((cred, idx) => (
-                  <div key={idx} className={`bg-gray-800/20 border rounded-xl overflow-hidden shadow-inner font-mono ${cred.verified ? 'border-emerald-500/30' : 'border-gray-800'}`}>
-                    <div className={`bg-black/30 px-4 py-2.5 border-b flex justify-between items-center ${cred.verified ? 'border-emerald-500/20' : 'border-gray-800'}`}>
-                      <span className={`text-xs font-black uppercase tracking-widest ${cred.verified ? 'text-emerald-500' : 'text-amber-500'}`}>{cred.service}</span>
-                      <span className={`text-xs font-bold ${cred.verified ? 'text-emerald-400' : 'text-gray-600'}`}>{cred.verified ? 'VERIFIED' : 'PENDING'}</span>
-                    </div>
-                    <div className="p-4 text-sm space-y-2">
-                      <div className="flex justify-between"><span className="text-gray-500">USER:</span><span className="text-gray-200 font-bold">{cred.user}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">PASS:</span><span className={`font-bold ${cred.verified ? 'text-emerald-400' : 'text-amber-400'}`}>{cred.pass}</span></div>
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           )}

@@ -102,22 +102,17 @@ export function MissionPanel({ missions, allMachines, networkRange, onOpenBrowse
   return (
     <div className="flex flex-col w-72 flex-shrink-0 bg-gray-900 border-l border-gray-800">
       {/* Header */}
-      <div className="px-5 py-3.5 border-b border-gray-800 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-300">{t('missionsTitle')}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setShowHelp(!showHelp)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${showHelp ? 'border-amber-500/50 text-amber-400 bg-amber-900/20' : 'border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-600'}`} title={showHelp ? t('hideHelp') : t('enableHelp')}>
+      <div className="px-5 py-3.5 border-b border-gray-800 flex items-center justify-center gap-3">
+          <button onClick={() => setShowHelp(!showHelp)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium border transition-all ${showHelp ? 'border-amber-500/50 text-amber-400 bg-amber-900/20' : 'border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-600'}`} title={showHelp ? t('hideHelp') : t('enableHelp')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>{showHelp ? (language === 'es' ? 'Ocultar ayuda' : 'Hide help') : (language === 'es' ? 'Ver ayuda' : 'Show help')}</span>
           </button>
           
-          <button onClick={onOpenNetworkMap} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${hasNewNetworkInfo ? 'animate-pulse border-emerald-400 text-emerald-400 bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600'}`} title="Network Map">
+          <button onClick={onOpenNetworkMap} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium border transition-all ${hasNewNetworkInfo ? 'animate-pulse border-emerald-400 text-emerald-400 bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600'}`} title="Network Map">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="2" width="6" height="6"/><rect x="2" y="16" width="6" height="6"/><rect x="16" y="16" width="6" height="6"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="5" y1="14" x2="12" y2="14"/><line x1="19" y1="14" x2="12" y2="14"/></svg>
             <span>{t('viewNetwork')}</span>
           </button>
         </div>
-      </div>
 
       {/* Progress bar */}
       <div className="px-5 py-3 border-b border-gray-800">
@@ -155,8 +150,8 @@ export function MissionPanel({ missions, allMachines, networkRange, onOpenBrowse
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center opacity-50">
            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mb-4 text-gray-500"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-           <p className="text-xs text-gray-400 font-mono">Help mode disabled.</p>
-           <p className="text-[10px] text-gray-600 mt-2">Click the question mark icon to reveal objectives.</p>
+           <p className="text-xs text-gray-400 font-mono">{language === 'es' ? 'Modo de ayuda desactivado.' : 'Help mode disabled.'}</p>
+           <p className="text-[10px] text-gray-600 mt-2">{language === 'es' ? 'Hacé clic en el ícono de pregunta para revelar los objetivos.' : 'Click the question mark icon to reveal objectives.'}</p>
         </div>
       )}
 

@@ -174,7 +174,7 @@ describe('scenarioStore', () => {
       file: '/etc/passwd',
       user: 'admin',
       pass: 'password123',
-      verified: true,
+      verified: false,
       service: 'ssh'
     }]);
   });

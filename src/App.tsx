@@ -51,6 +51,8 @@ export default function App() {
   const setView = useScenarioStore(state => state.setView);
   const setPossibleUsers = useScenarioStore(state => state.setPossibleUsers);
   const addFailedUser = useScenarioStore(state => state.addFailedUser);
+  const setSudoPrivileges = useScenarioStore(state => state.setSudoPrivileges);
+  const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
 
   const currentMissionId = useScenarioStore(state => state.currentMissionId);
 
@@ -253,6 +255,7 @@ export default function App() {
                   onVerifyCredentials={verifyCredentials}
                   onChangeMachine={changeMachine}
                   onFailedUser={addFailedUser}
+                  onSudoPrivileges={setSudoPrivileges}
                   termColor={termColor}
                 />
               )}
@@ -272,6 +275,7 @@ export default function App() {
                 wpDiscoveryLevel={wpDiscoveryLevel}
                 mission3Already={mission3Already}
                 onSetPossibleUsers={setPossibleUsers}
+                onReportVulnerability={reportVulnerability}
               />
             </div>
             )}

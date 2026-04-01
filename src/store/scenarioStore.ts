@@ -78,6 +78,8 @@ interface ScenarioState {
   verifyCredentials: (machineId: string, service?: string) => void;
   setPossibleUsers: (machineId: string, users: string[]) => void;
   addFailedUser: (machineId: string, user: string) => void;
+  setSudoPrivileges: (machineId: string, user: string, commands: string[], canSudo: boolean) => void;
+  setPrivescCompleted: (machineId: string) => void;
   addFileToMachine: (machineId: string, file: FileEntry) => void;
   addExploredDirectory: (machineId: string, path: string) => void;
   confirmRCE: (machineId: string, user: string, method: string) => void;
@@ -201,19 +203,25 @@ export const useScenarioStore = create<ScenarioState>()(
 
         // Actualizar discovery level de máquinas
         const updatedMachines = mission?.targetMachineId
-          ? machines.map(m =>
-              m.id === mission.targetMachineId
-                ? { ...m, discovery_level: Math.max(m.discovery_level || 0, mission.discoveryLevel || 0) }
-                : m
-            )
+          ? machines.map(m => {
+              if (m.id !== mission.targetMachineId) return m;
+              const prevLevel = m.discovery_level || 0;
+              const newLevel = Math.max(prevLevel, mission.discoveryLevel || 0);
+              return { ...m, discovery_level: newLevel };
+            })
           : machines;
+
+        // Parpadear botón de red solo si el discoveryLevel realmente subió
+        const prevMachine = mission?.targetMachineId ? machines.find(m => m.id === mission.targetMachineId) : null;
+        const prevLevel = prevMachine?.discovery_level || 0;
+        const newLevel = Math.max(prevLevel, mission?.discoveryLevel || 0);
+        const levelIncreased = newLevel > prevLevel;
 
         set({
           missions: updatedMissions,
           machines: updatedMachines,
           currentMissionId: id === currentMissionId ? currentMissionId + 1 : currentMissionId,
-          // Parpadear botón de red cuando hay nueva info de red (discoveryLevel > 0)
-          hasNewNetworkInfo: (mission?.discoveryLevel || 0) > 0 ? true : get().hasNewNetworkInfo
+          hasNewNetworkInfo: levelIncreased ? true : get().hasNewNetworkInfo
         });
 
         // Mostrar notificación
@@ -243,8 +251,7 @@ export const useScenarioStore = create<ScenarioState>()(
                 file: file || '/etc/passwd', 
                 user, 
                 pass, 
-                // Mark as verified when found (hydra already validated the credential)
-                verified: true, 
+                verified: false, 
                 service 
               }]
             };
@@ -305,13 +312,21 @@ export const useScenarioStore = create<ScenarioState>()(
         set({
           machines: machines.map(m => {
             if (m.id !== machineId) return m;
-            // Evitar duplicados (con el mismo path)
             const filtered = (m.files || []).filter(f => f.path !== file.path);
             return {
               ...m,
               files: [...filtered, file]
             };
           })
+        });
+      },
+
+      setPrivescCompleted: (machineId: string) => {
+        const { machines } = get();
+        set({
+          machines: machines.map(m =>
+            m.id === machineId ? { ...m, privesc_completed: true } : m
+          )
         });
       },
 

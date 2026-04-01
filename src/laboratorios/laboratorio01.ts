@@ -19,8 +19,8 @@ const scenario01Data = {
   networkRange: '192.168.1.0/24',
   wpVersion: '6.0',
   flags: {
-    user: 'THM{USER_WP_GRANTED}',
-    root: 'THM{ROOT_WP_ACHIEVED}',
+    user: 'ZIL{USER_WP_GRANTED}',
+    root: 'ZIL{ROOT_WP_ACHIEVED}',
   },
   credentials: {
     wpAdmin: {
@@ -57,7 +57,7 @@ const scenario01Data = {
     { task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Scan ports: nmap -sV <target-ip>', textEs: 'Escanear puertos: nmap -sV <target-ip>', discoveryLevel: 2 },
     { task: 'Web Enumeration', taskEs: 'Enumeración Web', text: 'Access the website from the Firefox button above.', textEs: 'Acceder al sitio web desde el botón de Firefox arriba.', discoveryLevel: 2 },
     { task: 'Directory Discovery', taskEs: 'Descubrimiento de directorios', text: 'Enumerate routes: gobuster dir -u http://<target-ip> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', textEs: 'Enumerar rutas: gobuster dir -u http://<target-ip> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', discoveryLevel: 3 },
-    { task: 'WP-Admin Compromise', taskEs: 'Compromiso WP-Admin', text: 'Find credentials in /uploads and access /wp-admin.', textEs: 'Buscar credenciales en /uploads y acceder a /wp-admin.', discoveryLevel: 4 },
+    { task: 'WP-Admin Compromise', taskEs: 'Compromiso WP-Admin', text: 'Find credentials in /uploads and access /wp-admin.', textEs: 'Buscar credenciales en /uploads y acceder a /wp-admin.', discoveryLevel: 3 },
     { task: 'SSH Connection', taskEs: 'Conexión SSH', text: 'Connect via SSH as root to complete the lab: ssh root@<target-ip> R00t@SSH2024!', textEs: 'Conectarse por SSH como root para completar el laboratorio: ssh root@<target-ip> R00t@SSH2024!', discoveryLevel: 4 },
   ],
 };

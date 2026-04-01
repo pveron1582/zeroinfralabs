@@ -9,6 +9,10 @@ export const cmd_whoami = {
     // Determinar el usuario actual basado en la máquina
     const isAttacker = machine.id.includes('attacker');
     
+    if (machine.privesc_completed) {
+      return { output: 'root' };
+    }
+
     // Para máquinas objetivo, usar el usuario de las credenciales SSH encontradas
     // Las credenciales se llenan después de un SSH exitoso via foundCredentials en ssh.ts
     let currentUser = 'user'; // Valor por defecto genérico

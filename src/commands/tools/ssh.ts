@@ -35,13 +35,7 @@ export const cmd_ssh = {
       let output = `Warning: Permanently added '${ip}' (ECDSA) to list of known hosts.\n`;
       output += `Welcome to ${target.machine_info.os} (GNU/Linux 5.15.0 x86_64)\n\nLast login: ${new Date().toLocaleString()} from ${atkIp}`;
 
-      // Completar siempre la misión activa (currentMissionId) cuando SSH es exitoso.
-      // Reemplaza el Math.max anterior que asumía que SSH = último paso del escenario,
-      // lo cual rompía Scenario 05 donde SSH es el paso 3 de 6.
-      // El store ya garantiza que currentMissionId es el paso correcto — no necesitamos
-      // validarlo de nuevo acá con keywords que son frágiles ante nombres de steps distintos.
       const canComplete = target.learning_steps.some(s => s.id === currentMissionId);
-      // No mutar directamente el estado aquí; el discovery_level se actualiza en completeMission
       if (!canComplete) {
         output += `\n\n[!] Acceso concedido, pero aún hay pasos previos pendientes en el laboratorio.`;
       }
@@ -50,7 +44,7 @@ export const cmd_ssh = {
         output,
         completedMissionId: canComplete ? currentMissionId : undefined,
         newMachineId: target.id,
-        // Marcar credenciales como verificadas después de SSH exitoso
+        sshLoginUser: user,
         foundCredentials: {
           machineId: target.id,
           user: user,

@@ -73,7 +73,6 @@ describe('MissionPanel', () => {
       />
     );
 
-    expect(screen.getByText('Missions')).toBeInTheDocument();
     expect(screen.getByText('Help mode disabled.')).toBeInTheDocument();
   });
 

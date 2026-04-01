@@ -172,14 +172,14 @@ function ScenarioCard({ scenario, index, onSelect }: { scenario: Scenario; index
         <div className="absolute top-3 right-3 font-mono text-xs font-bold px-2 py-0.5 rounded" style={{ background: '#00000090', color: diffColor, border: `1px solid ${diffColor}28`, zIndex: 4 }}>{diffLabel}</div>
         <div className="absolute bottom-0 left-0 right-0 h-px transition-opacity duration-200" style={{ background: `linear-gradient(90deg, transparent 0%, ${accent} 50%, transparent 100%)`, opacity: hovered ? 0.8 : 0, zIndex: 4 }}/>
       </div>
-      <div className="p-4 flex flex-col gap-2.5">
+      <div className="p-4 flex flex-col gap-2.5" style={{ minHeight: '220px' }}>
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono px-1.5 py-0.5 rounded" style={{ background: `${accent}12`, color: accent, border: `1px solid ${accent}20` }}>{scenario.category}</span>
           <span className="text-xs font-mono text-gray-600">{scenario.network_range}</span>
         </div>
         <div>
           <h3 className="text-sm font-bold font-mono leading-snug transition-colors duration-200" style={{ color: hovered ? accent : '#d1d5db' }}>{scenario.name}</h3>
-          <p className="text-xs font-mono text-gray-500 mt-0.5 leading-relaxed" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{descriptionText || scenario.description}</p>
+          <p className="text-xs font-mono text-gray-500 mt-0.5 leading-relaxed" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.7em' }}>{descriptionText || scenario.description}</p>
         </div>
         <div className="flex flex-wrap gap-1.5">{tools.map(tool => (<span key={tool} className="text-xs font-mono px-1.5 py-0.5 rounded" style={{ background: '#111c1c', color: '#6b7280', border: '1px solid #243030' }}>{tool}</span>))}</div>
         <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid #1e2d2d' }}>

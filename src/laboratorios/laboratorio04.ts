@@ -51,13 +51,13 @@ export const SCENARIO_TEMPLATES_LFI = {
       },
       files: [
         ...createLinuxFileSystem({ username: 'www-data' }),
-        createFile('/var/www/html/flag.txt', 'THM{LFI_REVERSE_SHELL_PWNED}'),
+        createFile('/var/www/html/flag.txt', 'ZIL{LFI_REVERSE_SHELL_PWNED}'),
       ],
     },
     learningSteps: [
       { task: 'Reconnaissance', taskEs: 'Reconocimiento', text: 'Discover host: arp-scan <network/cidr>', textEs: 'Descubrir host: arp-scan <network/cidr>', discoveryLevel: 1 },
       { task: 'Scanning', taskEs: 'Escaneo', text: 'Scan services: nmap -sV <target-ip>', textEs: 'Escanear servicios: nmap -sV <target-ip>', discoveryLevel: 2 },
-      { task: 'LFI Discovery', taskEs: 'Descubrimiento LFI', text: 'Test reading server files. Go to the site and navigate to "About". Delete only about.php and enter ../../../../etc/passwd', textEs: 'Prueba leer archivos del server. Ingresa al sitio y ve a "Acerca de". Borra solo about.php e ingresa ../../../../etc/passwd', discoveryLevel: 3 },
+      { task: 'LFI Discovery', taskEs: 'Descubrimiento LFI', text: 'Test reading server files. Go to the site and navigate to "About". Delete only about.php and enter ../../../../etc/passwd', textEs: 'Prueba leer archivos del server. Ingresa al sitio y ve a "About". Borra solo about.php e ingresa ../../../../etc/passwd', discoveryLevel: 3 },
       { task: 'Prepare Payload', taskEs: 'Preparar Payload', text: 'Inspect the file for the reverse shell: cat /root/payload.php', textEs: 'Inspecciona el archivo para la reverse shell: cat /root/payload.php', discoveryLevel: 3 },
       { task: 'Setup Listener', taskEs: 'Configurar Listener', text: 'Prepare the listener in your terminal: nc -nlvp 4444', textEs: 'Prepara la escucha en tu terminal: nc -nlvp 4444', discoveryLevel: 3 },
       { task: 'Remote Code Execution', taskEs: 'Ejecución Remota de Código', text: 'Upload the file at /upload.php and execute it through the file manager at /files/payload.php or by clicking on the file at /files', textEs: 'Sube el archivo en /upload.php y ejecútalo mediante el gestor de archivos en /files/payload.php o haciendo clic en el archivo en /files', discoveryLevel: 4 },

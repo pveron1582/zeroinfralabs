@@ -14,10 +14,10 @@ export function MachineLoader({ machineName, machineIp, machineOs, onComplete }:
 
   React.useEffect(() => {
     const phases = [
-      { name: 'scanning', duration: 1200, label: 'Escaneando red...' },
-      { name: 'initializing', duration: 1500, label: 'Inicializando servicios...' },
-      { name: 'loading', duration: 1800, label: 'Cargando sistema...' },
-      { name: 'complete', duration: 500, label: 'Listo' }
+      { name: 'scanning', duration: 1200, label: 'Scanning network...' },
+      { name: 'initializing', duration: 1500, label: 'Initializing services...' },
+      { name: 'loading', duration: 1800, label: 'Loading system...' },
+      { name: 'complete', duration: 500, label: 'Ready' }
     ];
 
     let currentPhase = 0;
@@ -50,10 +50,10 @@ export function MachineLoader({ machineName, machineIp, machineOs, onComplete }:
 
   const getPhaseLabel = () => {
     switch (phase) {
-      case 'scanning': return 'Escaneando red...';
-      case 'initializing': return 'Inicializando servicios...';
-      case 'loading': return 'Cargando sistema...';
-      case 'complete': return 'Listo';
+      case 'scanning': return 'Scanning network...';
+      case 'initializing': return 'Initializing services...';
+      case 'loading': return 'Loading system...';
+      case 'complete': return 'Ready';
       default: return '';
     }
   };
@@ -119,7 +119,7 @@ export function MachineLoader({ machineName, machineIp, machineOs, onComplete }:
       {/* Mensaje final */}
       {phase === 'complete' && (
         <div className="mt-6 text-center text-emerald-400 font-mono text-sm animate-pulse">
-          Sistema cargado. Listo para el ataque.
+          System loaded. Ready for attack.
         </div>
       )}
     </div>

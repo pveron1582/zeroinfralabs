@@ -13,17 +13,36 @@ function parseSudoers(sudoersContent: string, username: string): string[] {
 
   for (const line of lines) {
     const trimmed = line.trim();
-    // Ignorar comentarios y líneas vacías
     if (trimmed.startsWith('#') || trimmed === '') continue;
-    // Ignorar Defaults y root
     if (trimmed.startsWith('Defaults') || trimmed.startsWith('root')) continue;
-    // Buscar líneas que contengan el username
     if (trimmed.startsWith(username)) {
       rules.push(trimmed);
     }
   }
 
   return rules;
+}
+
+// Detecta si hay una vulnerabilidad de privesc en las reglas de sudo
+function detectPrivescVuln(rules: string[]): { tool: string; description: string; descriptionEs: string } | null {
+  for (const rule of rules) {
+    const lower = rule.toLowerCase();
+    if (lower.includes('vim') && lower.includes('nopasswd')) {
+      return {
+        tool: 'vim',
+        description: `NOPASSWD sudo access to vim allows privilege escalation to root via !bash`,
+        descriptionEs: `Acceso sudo NOPASSWD a vim permite escalada de privilegios a root vía !bash`,
+      };
+    }
+    if (lower.includes('vi ') && lower.includes('nopasswd')) {
+      return {
+        tool: 'vi',
+        description: `NOPASSWD sudo access to vi allows privilege escalation to root via !bash`,
+        descriptionEs: `Acceso sudo NOPASSWD a vi permite escalada de privilegios a root vía !bash`,
+      };
+    }
+  }
+  return null;
 }
 
 // Detecta si el comando es una escalada via vim
@@ -163,7 +182,8 @@ uid=0(root) gid=0(root) groups=0(root)
 root@${machine.machine_info.hostname}:/home/developer# whoami
 root`,
         completedMissionId: missionId,
-        newMachineId: undefined, // La sesión ya está en la víctima, solo cambia el usuario
+        newMachineId: machine.id,
+        privescCompleted: machine.id,
         isError: false,
       };
     }

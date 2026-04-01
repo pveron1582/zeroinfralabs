@@ -1,52 +1,19 @@
-// ── components/FakeBrowser.tsx ────────────────────────────────────
+// ── components/FakeBrowser.tsx ──────────────────────────────────────
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
-import { WPIndex }     from './fakesites/wordpress/wp01/Index';
-import { WPLogin }     from './fakesites/wordpress/wp01/Login';
-import { WPDashboard } from './fakesites/wordpress/wp01/Dashboard';
-import { WPUploads }   from './fakesites/wordpress/wp01/Uploads';
-import { WPConfigBak } from './fakesites/wordpress/wp01/ConfigBak';
-
-// Utilidad para extraer credenciales dinámicas de un archivo de configuración
-const parseWPConfig = (content: string) => {
-  const lines = content.split('\n');
-  let user = 'admin';
-  let pass = 'P@ssw0rd123!';
-  
-  lines.forEach(line => {
-    const cleanLine = line.trim();
-    if (cleanLine.startsWith('#') || !cleanLine.includes('=')) return;
-
-    const parts = cleanLine.split('=');
-    const key = parts[0].trim().toUpperCase();
-    const value = parts[1].trim().replace(/['"]/g, '');
-
-    if (key.includes('USER') || key.includes('DB_USER')) user = value;
-    if (key.includes('PASS') || key.includes('DB_PASS')) pass = value;
-  });
-  return { user, pass };
-};
+import { WordPressSite } from './fakesites/WordPressSite';
 import { InclusionSite } from './fakesites/lfi_lab/InclusionSIte';
 import { ConsultancySite } from './fakesites/ConsultancySite';
-
-// ── Componentes de Soporte (Google, 404, etc) ──────────────────────
 
 function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
   const [query, setQuery] = useState('');
   const suggestions = ['nmap tutorial', 'wordpress exploit', 'gobuster wordlist', 'ssh brute force'];
-  
   const randomSearches = [
-    'how to hack wifi',
-    'sql injection tutorial',
-    'metasploit guide',
-    'kali linux tools',
-    'reverse shell payload',
-    'xss attack example',
-    'password cracking methods',
-    'network scanning techniques',
-    'privilege escalation linux',
-    'buffer overflow exploit'
+    'how to hack wifi', 'sql injection tutorial', 'metasploit guide',
+    'kali linux tools', 'reverse shell payload', 'xss attack example',
+    'password cracking methods', 'network scanning techniques',
+    'privilege escalation linux', 'buffer overflow exploit'
   ];
 
   const handleSearch = () => {
@@ -56,10 +23,6 @@ function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
       const randomQuery = randomSearches[Math.floor(Math.random() * randomSearches.length)];
       onNavigate(`https://www.google.com/search?q=${encodeURIComponent(randomQuery)}`);
     }
-  };
-
-  const handleLucky = () => {
-    onNavigate('chrome://dino');
   };
 
   return (
@@ -82,7 +45,7 @@ function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">
             Google Search
           </button>
-          <button onClick={handleLucky}
+          <button onClick={() => onNavigate('chrome://dino')}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">
             I'm Feeling Lucky
           </button>
@@ -139,7 +102,6 @@ function GoogleSearch({ url, onNavigate }: { url: string; onNavigate: (url: stri
 
 function HttpSecurityError({ url, onNavigate }: { url: string; onNavigate: (url: string) => void }) {
   const secureUrl = url.replace(/^http:\/\//i, 'https://');
-  
   return (
     <div className="min-h-full bg-white flex flex-col items-center justify-center px-4">
       <div className="text-center max-w-lg">
@@ -162,22 +124,16 @@ function HttpSecurityError({ url, onNavigate }: { url: string; onNavigate: (url:
           NET::ERR_CERT_AUTHORITY_INVALID
         </div>
         <div className="flex flex-col gap-3">
-          <button
-            onClick={() => onNavigate(secureUrl)}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
-          >
+          <button onClick={() => onNavigate(secureUrl)}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors">
             Use secure HTTPS
           </button>
-          <button
-            onClick={() => onNavigate('https://www.google.com')}
-            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors"
-          >
+          <button onClick={() => onNavigate('https://www.google.com')}
+            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors">
             Back to Google (secure)
           </button>
         </div>
-        <p className="mt-6 text-xs text-gray-400">
-          The HTTP protocol is no longer secure. Modern sites use HTTPS.
-        </p>
+        <p className="mt-6 text-xs text-gray-400">The HTTP protocol is no longer secure. Modern sites use HTTPS.</p>
       </div>
     </div>
   );
@@ -227,42 +183,41 @@ interface FakeBrowserProps {
   wpDiscoveryLevel: number;
   mission3Already: boolean;
   onSetPossibleUsers: (machineId: string, users: string[]) => void;
+  onReportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 }
 
 export function FakeBrowser({
   allMachines, onClose, onMissionComplete,
   onCredentialsFound, onVerifyCredentials,
   scenarioHasWeb, wpDiscoveryLevel, mission3Already,
-  onSetPossibleUsers
+  onSetPossibleUsers, onReportVulnerability
 }: FakeBrowserProps) {
-  
+
   const HOME_URL = 'https://www.google.com';
 
-  // Store para persistencia
   const browserCurrentUrl = useScenarioStore(state => state.browserCurrentUrl);
   const browserIsLoggedIn = useScenarioStore(state => state.browserIsLoggedIn);
   const browserNavHistory = useScenarioStore(state => state.browserNavHistory);
   const browserNavIdx = useScenarioStore(state => state.browserNavIdx);
-  
   const setBrowserUrl = useScenarioStore(state => state.setBrowserUrl);
   const setBrowserLoggedIn = useScenarioStore(state => state.setBrowserLoggedIn);
   const setBrowserNavHistory = useScenarioStore(state => state.setBrowserNavHistory);
   const addFileToMachine = useScenarioStore(state => state.addFileToMachine);
-  const addExploredDirectory = useScenarioStore(state => state.addExploredDirectory);
   const confirmRCE = useScenarioStore(state => state.confirmRCE);
+  const listeningPort = useScenarioStore(state => state.listeningPort);
+  const setBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
 
   const [urlInput, setUrlInput] = useState(browserCurrentUrl);
   const [reloading, setReloading] = useState(false);
   const rceCompletedRef = useRef(false);
 
-  // Máquinas de escenarios específicos (memoizadas para evitar re-renders innecesarios)
   const wpMachine = useMemo(() => allMachines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress')), [allMachines]);
   const lfiMachine = useMemo(() => allMachines.find(m => m.id.includes('lfi')), [allMachines]);
   const sshMachine = useMemo(() => allMachines.find(m => m.id === 'lab-scenario-02-ssh'), [allMachines]);
 
-  const reload = () => { 
-    setReloading(true); 
-    setTimeout(() => setReloading(false), 400); 
+  const reload = () => {
+    setReloading(true);
+    setTimeout(() => setReloading(false), 400);
   };
 
   const handleViewTeam = useCallback((users: string[]) => {
@@ -272,48 +227,30 @@ export function FakeBrowser({
 
   const navigate = (rawUrl: string) => {
     const trimmed = rawUrl.trim();
-    
-    // Para Google, siempre usar HTTPS - rechazar HTTP explícitamente
     const isGoogleDomain = /google\.com/i.test(trimmed);
-    
-    // Manejar URLs especiales como chrome://
     let withScheme: string;
     if (/^(https?:\/\/|chrome:\/\/)/i.test(trimmed)) {
       withScheme = trimmed;
     } else {
-      // Sin esquema: usar https para Google, http para el resto
       withScheme = isGoogleDomain ? `https://${trimmed}` : `http://${trimmed}`;
     }
-    
-    // Forzar HTTPS para Google si viene como HTTP
-    if (isGoogleDomain && withScheme.startsWith('http://')) {
-      // Permitir la navegación HTTP para mostrar el error de seguridad
-      // No redirigir automáticamente para que el usuario vea el mensaje
-    }
-    
     const clean = withScheme.replace(/\/$/, '') || withScheme;
-
     const newHistory = [...browserNavHistory.slice(0, browserNavIdx + 1), clean];
     const newIdx = newHistory.length - 1;
-
     setBrowserUrl(clean);
     setBrowserNavHistory(newHistory, newIdx);
     setUrlInput(clean);
 
-    // Lógica global de misión inicial de descubrimiento web
     if (scenarioHasWeb && !mission3Already && wpMachine && wpDiscoveryLevel >= 2 && clean.includes(wpMachine.machine_info.ip)) {
       onMissionComplete(3);
     }
-    
-    // Lógica LFI: detectar misión 3 (etc/passwd) y registrar directorios
     if (lfiMachine && clean.includes(lfiMachine.machine_info.ip)) {
       const fullPath = clean.replace(`http://${lfiMachine.machine_info.ip}`, '');
       if (fullPath.includes('etc/passwd')) {
         onMissionComplete(3);
+        onReportVulnerability(lfiMachine.id, 'LFI', 'detected');
       }
     }
-
-    // Lógica Escenario 02: Descubrimiento Web
     if (sshMachine && clean.includes(sshMachine.machine_info.ip)) {
       onMissionComplete(3);
     }
@@ -327,7 +264,7 @@ export function FakeBrowser({
       setUrlInput(browserNavHistory[i]);
     }
   };
-  
+
   const goForward = () => {
     if (browserNavIdx < browserNavHistory.length - 1) {
       const i = browserNavIdx + 1;
@@ -337,50 +274,24 @@ export function FakeBrowser({
     }
   };
 
-  const doLogin = (id: number) => {
-    setBrowserLoggedIn(true);
-    onMissionComplete(id);
-    onVerifyCredentials(wpMachine!.id, 'wp-admin');
-    navigate(`http://${wpMachine!.machine_info.ip}/wp-admin/dashboard`);
-  };
-
-  // Store para obtener listeningPort
-  const listeningPort = useScenarioStore(state => state.listeningPort);
-
-  const setBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
-
-  // Efecto para completar misiones de LFI 6 (RCE) cuando se incluye un archivo
-  // Usa ref guard para evitar múltiples llamadas y congelamiento del popup
   useEffect(() => {
     if (!lfiMachine) return;
-    if (rceCompletedRef.current) return; // Guard: solo una vez
+    if (rceCompletedRef.current) return;
     if (!browserCurrentUrl.includes(lfiMachine.machine_info.ip)) return;
-    
     const fullPath = browserCurrentUrl.replace(`http://${lfiMachine.machine_info.ip}`, '');
-    
-    // Misión 6: RCE (Incluir archivo subido en uploads/files con extensión .php)
     if ((fullPath.includes('?page=uploads/') || fullPath.includes('?page=files/')) && fullPath.endsWith('.php')) {
-      // Validar que el puerto del listener esté configurado
-      if (!listeningPort) {
-        // No completar misión si no hay listener activo
-        return;
-      }
-      rceCompletedRef.current = true; // Marcar como completado para evitar repetición
-      
-      // Notificar a la terminal que se recibió la conexión
+      if (!listeningPort) return;
+      rceCompletedRef.current = true;
       setBlockingCommand({
         message: '[*] Connection received from ' + lfiMachine.machine_info.ip + ' : shell opened!',
         listeningPort: 4444,
         connected: true
       });
-
       onMissionComplete(6);
       onVerifyCredentials(lfiMachine.id, 'lfi-rce');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, setBlockingCommand]);
+  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, setBlockingCommand, listeningPort]);
 
-  // Reset rceCompletedRef cuando cambia el escenario para evitar bloqueo al volver al LFI
   useEffect(() => {
     rceCompletedRef.current = false;
   }, [allMachines]);
@@ -390,14 +301,13 @@ export function FakeBrowser({
       onMissionComplete(5);
       if (lfiMachine) {
         confirmRCE(lfiMachine.id, 'www-data', '/var/www/html/uploads/payload.php');
+        onReportVulnerability(lfiMachine.id, 'LFI', 'confirmed');
       }
       return;
     }
     if (lfiMachine) {
-      // Encontrar el contenido del archivo original en Kali (attacker-01)
       const attackerMachine = allMachines.find(m => m.machine_info?.type === 'workstation' && m.machine_info?.os?.includes('Kali'));
       const originalFile = attackerMachine?.files?.find(f => f.path.endsWith('/' + fileName) || f.path === fileName);
-      
       if (originalFile) {
         addFileToMachine(lfiMachine.id, {
           path: `/var/www/html/uploads/${fileName}`,
@@ -406,28 +316,21 @@ export function FakeBrowser({
         });
       }
     }
-  }, [lfiMachine, allMachines, addFileToMachine, onMissionComplete]);
+  }, [lfiMachine, allMachines, addFileToMachine, onMissionComplete, confirmRCE, onReportVulnerability]);
 
   const renderPage = () => {
     const currentUrl = browserCurrentUrl;
-    
-    // Detectar HTTP inseguro para Google - mostrar error de seguridad
+
     if (currentUrl.startsWith('http://') && currentUrl.includes('google.com')) {
       return <HttpSecurityError url={currentUrl} onNavigate={navigate} />;
     }
-    
-    // Normalizar URL para comparación (manejar https, www, etc.)
-    const normalizeForComparison = (url: string): string => {
-      return url
-        .replace(/^https?:\/\//i, '')
-        .replace(/^www\./i, '')
-        .replace(/\/$/, '');
-    };
-    
+
+    const normalizeForComparison = (url: string): string =>
+      url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
+
     const normalizedCurrent = normalizeForComparison(currentUrl);
     const normalizedHome = normalizeForComparison(HOME_URL);
-    
-    // Coincidir google.com con o sin www (solo HTTPS aceptado aquí)
+
     if (normalizedCurrent === normalizedHome || normalizedCurrent === 'google.com' || currentUrl === 'about:blank') {
       return <GoogleHome onNavigate={navigate} />;
     }
@@ -436,57 +339,40 @@ export function FakeBrowser({
     }
     if (currentUrl === 'chrome://dino') return <DinoGame />;
 
-    // ── LÓGICA WORDPRESS (Escenario 01) ──
     if (wpMachine && currentUrl.includes(wpMachine.machine_info.ip)) {
-      const ip = wpMachine.machine_info.ip;
-      const path = currentUrl.replace(`http://${ip}`, '').split('?')[0] || '/';
-      const sshCreds = wpMachine.scan_results.ports.find(p => p.service === 'ssh')?.credentials || null;
-      // Credenciales WP-Admin para login (no SSH)
-      const wpCreds = { user: 'admin', pass: 'P@ssw0rd123!' };
-      const level = wpMachine.discovery_level ?? 0;
-
-      if (path === '/' || path === '') return <WPIndex ip={ip} onNavigate={navigate} />;
-
-      // WordPress: /wp-admin, /dashboard
-      if (path === '/wp-admin' || path === '/wp-admin/dashboard' || path === '/dashboard' || path === '/wp-login.php') {
-        if (level < 2) return <div className="flex flex-col items-center justify-center h-full p-10 text-center">⏳ Realizá un escaneo nmap -sV {ip} primero.</div>;
-        if (browserIsLoggedIn) return <WPDashboard ip={ip} onNavigate={navigate} onLogout={() => { setBrowserLoggedIn(false); navigate(`http://${ip}/wp-admin`); }} onCredentialsFound={(u, p, f, s) => onCredentialsFound(wpMachine.id, u, p, f || '/wp-admin/wp-config.php', s || 'ssh')} />;
-        
-        // Si intenta acceder a dashboard sin estar logueado, redirigir a login
-        if (path.includes('dashboard')) {
-          setTimeout(() => navigate(`http://${ip}/wp-admin`), 0);
-          return null;
-        }
-
-        const configFile = wpMachine?.files.find(f => f.path === '/uploads/config.bak');
-        const dynamicCreds = configFile ? parseWPConfig(configFile.content) : null;
-        return <WPLogin ip={ip} credentials={dynamicCreds} onNavigate={navigate} onLoginSuccess={doLogin} />;
-      }
-
-      // WordPress: /uploads/config.bak
-      if (path === '/uploads' || path === '/uploads/config.bak') {
-        if (level < 3) return <div className="flex flex-col items-center justify-center h-full p-10 text-center">🔒 Directorio no enumerado. Usá gobuster.</div>;
-        if (path === '/uploads') return <WPUploads ip={ip} onNavigate={navigate} onCredentialsFound={(u, p, f, s) => onCredentialsFound(wpMachine.id, u, p, f || '/uploads/config.bak', s || 'wp-admin')} />;
-        return <WPConfigBak ip={ip} onNavigate={navigate} machine={wpMachine} />;
-      }
+      return (
+        <WordPressSite
+          machine={wpMachine}
+          currentUrl={currentUrl}
+          browserIsLoggedIn={browserIsLoggedIn}
+          onNavigate={navigate}
+          onLoginSuccess={(id) => {
+            setBrowserLoggedIn(true);
+            onMissionComplete(id);
+          }}
+          onLogout={() => {
+            setBrowserLoggedIn(false);
+            navigate(`http://${wpMachine.machine_info.ip}/wp-admin`);
+          }}
+          onCredentialsFound={onCredentialsFound}
+          onVerifyCredentials={onVerifyCredentials}
+          onMissionComplete={onMissionComplete}
+        />
+      );
     }
 
-    // ── LÓGICA LFI (Escenario 04) ──
     if (lfiMachine && lfiMachine.machine_info?.ip && currentUrl.includes(lfiMachine.machine_info.ip)) {
       const ip = lfiMachine.machine_info.ip;
-      
-      // Obtener la máquina atacante para sus archivos (filtrado para /root/ en el componente)
       const attackerMachine = allMachines.find(m => m.machine_info?.type === 'workstation' && m.machine_info?.os?.includes('Kali'));
       const attackerFiles = attackerMachine?.files?.map(f => ({
         path: f.path,
         name: f.path.split('/').pop() || f.path,
       })) || [];
-
       return (
-        <InclusionSite 
-          ip={ip} 
-          currentUrl={currentUrl} 
-          onNavigate={navigate} 
+        <InclusionSite
+          ip={ip}
+          currentUrl={currentUrl}
+          onNavigate={navigate}
           onFileUpload={handleLFIUploadSuccess}
           attackerFiles={attackerFiles}
           listeningPort={listeningPort ?? undefined}
@@ -495,13 +381,8 @@ export function FakeBrowser({
       );
     }
 
-    // ── LÓGICA CONSULTANCY (Escenario 02) ──
     if (sshMachine && currentUrl.includes(sshMachine.machine_info.ip)) {
-      return (
-        <ConsultancySite 
-          onViewTeam={handleViewTeam} 
-        />
-      );
+      return <ConsultancySite onViewTeam={handleViewTeam} />;
     }
 
     return <PageNotFound url={currentUrl} />;
@@ -509,7 +390,6 @@ export function FakeBrowser({
 
   return (
     <div className="flex flex-col h-full w-full bg-gray-950">
-      {/* Browser Chrome Header */}
       <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 border-b border-gray-700 flex-shrink-0">
         <div className="flex gap-1.5">
           <button onClick={onClose} className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors" />
@@ -537,8 +417,6 @@ export function FakeBrowser({
           <span>CyberBrowser</span>
         </div>
       </div>
-      
-      {/* Content Area */}
       <div className="flex-1 overflow-auto bg-white">
         {renderPage()}
       </div>

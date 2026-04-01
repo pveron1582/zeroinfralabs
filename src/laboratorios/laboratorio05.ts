@@ -46,7 +46,7 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
   };
   const machines = assignDHCP(config.networkRange, [attacker, target]);
   const missions: Mission[] = config.learningSteps.map((step, idx) => ({
-    id: idx + 1, title: step.task, description: step.text,
+    id: idx + 1, title: step.task, titleEs: step.taskEs, description: step.text, descriptionEs: step.textEs,
     status: idx === 0 ? 'active' : 'pending', targetMachineId: config.targetMachine.id, discoveryLevel: step.discoveryLevel,
   }));
   return {
@@ -189,7 +189,7 @@ const scenario05Data = {
     id: 'lab-scenario-05-target',
     hostname: 'privesc-server',
     mac: '08:00:27:E8:F9:0A',
-    os: 'Desconocido',
+    os: 'Debian 11 (Bullseye)',
     type: 'server',
     ports: [
       { port: 21, protocol: 'tcp', state: 'open', service: 'ftp', version: 'vsFTPd 3.0.3' },
@@ -257,7 +257,7 @@ whoami`, type: 'text' },
     { id: 1, task: 'Host Discovery', taskEs: 'Descubrimiento de host', text: 'Discover the active host on the network: arp-scan <network/cidr>', textEs: 'Descubrí el host activo en la red: arp-scan <network/cidr>', discoveryLevel: 1, targetMachineId: 'lab-scenario-05-target' },
     { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify available services: nmap -sV <target-ip>', textEs: 'Identificá los servicios disponibles: nmap -sV <target-ip>', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target' },
     { id: 3, task: 'Anonymous FTP Access', taskEs: 'Acceso FTP anónimo', text: 'Connect to the FTP server with anonymous access: ftp <target-ip> (user: anonymous)', textEs: 'Conectate al servidor FTP con acceso anónimo: ftp <target-ip> (usuario: anonymous)', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target' },
-    { id: 4, task: 'Download Note', taskEs: 'Descargar nota', text: 'List available files (ls) and download the note: get nota.txt', textEs: 'Listá los archivos disponibles (ls) y descargá la nota: get nota.txt', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target' },
+    { id: 4, task: 'Download Note', taskEs: 'Descargar nota', text: 'List available files (ls) and download the note: get nota.txt', textEs: 'Listá los archivos disponibles (ls) y descargá la nota: get nota.txt', discoveryLevel: 0, targetMachineId: 'lab-scenario-05-target' },
     { id: 5, task: 'Read Note', taskEs: 'Leer nota', text: 'Exit FTP (exit) and read the downloaded note: cat nota.txt', textEs: 'Salí del FTP (exit) y leé la nota descargada: cat nota.txt', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target' },
     { id: 6, task: 'SSH Brute Force', taskEs: 'Fuerza bruta SSH', text: 'Get john\'s credentials: hydra -l john -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', textEs: 'Obtené las credenciales de john: hydra -l john -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target' },
     { id: 7, task: 'SSH Access', taskEs: 'Acceso SSH', text: 'Connect with the found credentials: ssh john@<target-ip> <password>', textEs: 'Conectate con las credenciales encontradas: ssh john@<target-ip> <password>', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target' },

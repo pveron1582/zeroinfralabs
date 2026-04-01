@@ -58,8 +58,10 @@ export const cmd_cat = {
     if (isNote && content.toLowerCase().includes('john')) {
       for (const m of allMachines) {
         const step = m.learning_steps.find(s => {
-          const lTask = s.task.toLowerCase();
-          return lTask.includes('read') || lTask.includes('leer') || lTask.includes('note');
+          const lTask = (s.task || '').toLowerCase();
+          const lText = (s.text || '').toLowerCase();
+          return (lTask.includes('read') || lTask.includes('leer') || lTask.includes('read note') || lTask.includes('leer nota'))
+            && (lText.includes('cat') || lText.includes('nota') || lText.includes('note'));
         });
         if (step) { completedMissionId = step.id; break; }
       }

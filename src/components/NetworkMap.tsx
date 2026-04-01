@@ -23,8 +23,13 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
     return scenario.machines.find(m => !m.id.includes('attacker') && (m.discovery_level ?? 0) > 0) || null;
   });
   const t = useT();
+  const language = useScenarioStore(state => state.language);
   
-  const LEVEL_LABELS = ['Unknown', 'Discovered', 'Scanned', 'Enumerated', 'Compromised'];
+  const LEVEL_LABELS = language === 'es'
+    ? ['Desconocido', 'Descubierto', 'Escaneado', 'Enumerado', 'Comprometido']
+    : ['Unknown', 'Discovered', 'Scanned', 'Enumerated', 'Compromised'];
+  const unknownLabel = language === 'es' ? 'Desconocido' : 'Unknown';
+  const unknownTargetLabel = language === 'es' ? 'Objetivo Desconocido' : 'Unknown Target';
 
   return (
     <div className="absolute inset-0 z-50 bg-gray-950/95 backdrop-blur-sm flex flex-col" style={{ animation: 'fadeInMap 0.2s' }}>
@@ -51,11 +56,8 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
                 const level        = machine.discovery_level ?? 0;
                 const isActive     = machine.id === activeMachineId;
                 const isAttacker   = machine.id.includes('attacker');
-                // Comprometida solo si hay credenciales SSH verificadas (no solo WP-Admin)
-                const hasVerifiedSsh = machine.found_credentials?.some(
-                  c => c.service === 'ssh' && c.verified
-                ) ?? false;
-                const isCompromised = hasVerifiedSsh && !isAttacker;
+                // Comprometida solo después de escalada de privilegios (discovery_level >= 4)
+                const isCompromised = (machine.discovery_level ?? 0) >= 4 && !isAttacker;
                 const hidden       = level === 0 && !isAttacker;
 
                 // MSF vulnerability state for this machine
@@ -83,10 +85,13 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
 
                 // Badge nivel 3 usa el nombre del step 3 de la máquina (dinámico por escenario)
                 const step3Label = machine.learning_steps?.find(s => s.id === 3)?.task?.split(' ')[0] || 'Enum';
+                // Verificar si tiene vulnerabilidades detectadas
+                const hasVulnDetected = machine.vulnerabilities?.some(v => v.status === 'detected' || v.status === 'confirmed');
+                const vulnLabel = hasVulnDetected ? 'LFI' : step3Label;
                 const allBadges = [
                   { lvl: 1, label: 'ARP-Scan',  color: '#3b82f6', svgPath: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></> },
                   { lvl: 2, label: 'Nmap',      color: '#eab308', svgPath: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></> },
-                  { lvl: 3, label: step3Label,  color: '#a855f7', svgPath: <><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></> },
+                  { lvl: 3, label: vulnLabel,   color: hasVulnDetected ? '#10b981' : '#a855f7', svgPath: <><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></> },
                   { lvl: 4, label: 'Acceso',    color: '#10b981', svgPath: <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></> },
                 ];
                 const visibleBadges = allBadges.filter(b => level >= b.lvl);
@@ -122,12 +127,12 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
                       </div>
 
                       <div className="text-center w-full">
-                        <p className="font-bold text-gray-200 truncate text-sm">{hidden ? 'Unknown Target' : machine.machine_info.hostname}</p>
+                        <p className="font-bold text-gray-200 truncate text-sm">{hidden ? unknownTargetLabel : machine.machine_info.hostname}</p>
                         <p className="text-xs font-mono mt-1" style={{ color: isActive ? '#10b981' : '#6b7280' }}>{hidden ? '?.?.?.?' : machine.machine_info.ip}</p>
                         <p className="text-xs text-gray-600 mt-0.5">
                           {machine.id.includes('attacker') 
                             ? 'Kali Linux 2023.4' 
-                            : (machine.discovery_level ?? 0) >= 2 ? machine.machine_info.os : 'System: Unknown'
+                            : (machine.discovery_level ?? 0) >= 2 ? machine.machine_info.os : `System: ${unknownLabel}`
                           }
                         </p>
                       </div>

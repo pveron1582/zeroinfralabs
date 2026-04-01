@@ -167,13 +167,13 @@ describe('FtpSession', () => {
       expect(result.output).toContain('get');
     });
 
-    it('debe rechazar exit y pedir quit o bye', () => {
+    it('debe cerrar sesión con exit', () => {
       const ctx = createMockContext();
       const { result, newState } = ftpSession.executeCommand('exit', connectedState, ctx);
 
-      expect(result.output).toContain("Use 'quit' or 'bye'");
-      expect(result.closeSession).toBe(false);
-      expect(newState.connected).toBe(true);
+      expect(result.output).toContain('Goodbye');
+      expect(result.closeSession).toBe(true);
+      expect(newState.connected).toBe(false);
     });
 
     it('debe salir con quit', () => {

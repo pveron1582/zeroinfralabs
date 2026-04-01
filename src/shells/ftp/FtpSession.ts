@@ -257,8 +257,8 @@ export const ftpSession: ShellSession<FtpState> = {
 
         case 'exit':
           return {
-            result: { output: `Use 'quit' or 'bye' to exit FTP.`, closeSession: false },
-            newState: state,
+            result: { output: `221 Goodbye.`, closeSession: true },
+            newState: { ...state, connected: false, loggedIn: false },
           };
 
         default:

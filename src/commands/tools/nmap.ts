@@ -52,7 +52,8 @@ export const cmd_nmap = {
 
     return {
       output,
-      completedMissionId: canComplete ? (missionId || 2) : undefined
+      completedMissionId: canComplete ? (missionId || 2) : undefined,
+      discoveredPorts: target.id  // Trigger network map pulse
     };
   }
 };

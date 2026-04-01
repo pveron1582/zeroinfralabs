@@ -71,6 +71,13 @@ export interface Machine {
     commands: string[];
     canSudo: boolean;
   };
+  privesc_completed?: boolean;
+  privesc_vulnerability?: {
+    user: string;
+    tool: string;
+    description: string;
+    descriptionEs: string;
+  };
 }
 
 export interface Mission {
@@ -142,6 +149,10 @@ export interface CommandResponse {
     vulnId: string;
     status: 'detected' | 'confirmed';
   };
+  privescCompleted?: string; // machineId that was privesc'd
+  sshLoginUser?: string; // username used for SSH login
+  streamingLineDelays?: number[]; // ms delay before each line (for realistic streaming)
+  discoveredPorts?: string; // machineId whose ports were discovered - triggers network map pulse
 }
 
 export interface CommandContext {

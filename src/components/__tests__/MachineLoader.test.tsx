@@ -41,7 +41,7 @@ describe('MachineLoader', () => {
     );
 
     expect(screen.getByText('0%')).toBeInTheDocument();
-    expect(screen.getByText('Escaneando red...')).toBeInTheDocument();
+    expect(screen.getByText('Scanning network...')).toBeInTheDocument();
   });
 
   it('debe avanzar el progreso con el tiempo', async () => {
@@ -74,13 +74,13 @@ describe('MachineLoader', () => {
     );
 
     // Fase inicial
-    expect(screen.getByText('Escaneando red...')).toBeInTheDocument();
+    expect(screen.getByText('Scanning network...')).toBeInTheDocument();
 
     // Avanzar tiempo para llegar a la siguiente fase
     vi.advanceTimersByTime(1500);
 
     await waitFor(() => {
-      expect(screen.getByText('Inicializando servicios...')).toBeInTheDocument();
+      expect(screen.getByText('Initializing services...')).toBeInTheDocument();
     });
   });
 
@@ -118,8 +118,8 @@ describe('MachineLoader', () => {
     vi.advanceTimersByTime(5000);
 
     await waitFor(() => {
-      expect(screen.getByText('Listo')).toBeInTheDocument();
-      expect(screen.getByText('Sistema cargado. Listo para el ataque.')).toBeInTheDocument();
+      expect(screen.getByText('Ready')).toBeInTheDocument();
+      expect(screen.getByText('System loaded. Ready for attack.')).toBeInTheDocument();
     });
   });
 
