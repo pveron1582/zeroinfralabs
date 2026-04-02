@@ -44,6 +44,8 @@ export interface ShellResult {
   };
   // Indica que el shell actual debe cerrarse
   closeSession?: boolean;
+  // Indica que se cerró una sesión SSH (para resetear directorio)
+  sshSessionClosed?: boolean;
 }
 
 // ── Interfaz que debe implementar cada shell ──────────────────────

@@ -164,7 +164,6 @@ ftp:*:19400:0:99999:7:::`, type: 'text' },
     { path: '/home/admin/.bashrc', content: '# ~/.bashrc: executed by bash(1) for non-login shells.\n\n# If not running interactively, don\'t do anything\ncase $- in\n    *i*) ;;\n      *) return;;\nesac\n\n# don\'t put duplicate lines or lines starting with space in the history.\nHISTCONTROL=ignoreboth\n\n# append to the history file, don\'t overwrite it\nshopt -s histappend\n\n# for setting history length see HISTSIZE and HISTFILESIZE\nHISTSIZE=1000\nHISTFILESIZE=2000\n\n# check the window size after each command and update LINES and COLUMNS\nshopt -s checkwinsize\n\n# Alias definitions\nalias ll=\'ls -l\'\nalias la=\'ls -la\'\nalias l=\'ls -CF\'\nalias ..=\'cd ..\'\nalias ...=\'cd ../..\'\n\n# User specific environment\nexport PATH="$HOME/bin:$HOME/.local/bin:$PATH"\nexport EDITOR=nano', type: 'text' },
     { path: '/home/admin/.profile', content: '# ~/.profile: executed by the command interpreter for login shells.\n# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login exists.\n\n# if running bash\nif [ -n "$BASH_VERSION" ]; then\n    # include .bashrc if it exists\n    if [ -f "$HOME/.bashrc" ]; then\n\t. "$HOME/.bashrc"\n    fi\nfi\n\n# set PATH so it includes user\'s private bin if it exists\nif [ -d "$HOME/bin" ] ; then\n    PATH="$HOME/bin:$PATH"\nfi\n\nif [ -d "$HOME/.local/bin" ] ; then\n    PATH="$HOME/.local/bin:$PATH"\nfi', type: 'text' },
     { path: '/home/admin/.bash_history', content: 'ls -la\npwd\ncat /etc/passwd\nsudo su\nwhoami\nifconfig\nnmap 192.168.1.0/24\ncd /var/www/html\nls -la\ncat config.php\nmysql -u root -p\nexit', type: 'text' },
-    { path: '/home/admin/user.txt', content: 'THM{USER_ACCESS_GRANTED}', type: 'text' },
 
     // ═══════════════════════════════════════════════════════════════
     // /root/ - Directorio del superusuario
@@ -385,9 +384,10 @@ shadow1
 maggie
 123456a
 password123
+ilovelinux
 ashley
 bailey
-passw0rd
+Quier0unaument0
 123abc
 flower
 555555
@@ -454,7 +454,7 @@ user
 demo
 temp
 backup
-Quier0unaument0`, type: 'text' },
+`, type: 'text' },
 
     // ═══════════════════════════════════════════════════════════════
     // /tmp/ - Archivos temporales

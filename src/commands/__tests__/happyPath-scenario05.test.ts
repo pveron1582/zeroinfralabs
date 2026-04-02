@@ -38,12 +38,12 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
       { id: 7, task: 'Acceso SSH', text: 'Conectate: ssh john@<target-ip> <password>', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 3 },
       { id: 8, task: 'Enumeración de sudo', text: 'Listá permisos: sudo -l', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 3 },
       { id: 9, task: 'Escalada de privilegios', text: "Usá vim: sudo vim -c '!bash'", targetMachineId: 'lab-scenario-05-target', discoveryLevel: 4 },
-      { id: 10, task: 'Capturar flag root', text: 'Leé la flag: cat /root/root.txt', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 4 },
+      { id: 10, task: 'Capturar flag root', text: 'Leé la flag: cat /root/flag2.txt', targetMachineId: 'lab-scenario-05-target', discoveryLevel: 4 },
     ],
     files: [
       { path: '/srv/ftp/nota_seguridad.txt', content: 'Para: john\nDe: Equipo de Seguridad\nURGENTE: John, el sistema reportó que tu contraseña de SSH es débil.', type: 'text' },
       { path: '/etc/sudoers', content: 'john ALL=(ALL) NOPASSWD: /usr/bin/vim', type: 'text' },
-      { path: '/root/root.txt', content: 'ZIL{SUDO_VIM_PRIVESC_COMPLETE}', type: 'text' },
+      { path: '/root/flag2.txt', content: 'ZIL{SUDO_VIM_PRIVESC_COMPLETE}', type: 'text' },
       { path: '/home/john/user.txt', content: 'ZIL{FTP_ANON_ACCESS}', type: 'text' },
     ],
   };
@@ -113,9 +113,9 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     expect(result.output).toContain('uid=0');
   });
 
-  it('Paso 8: cat /root/root.txt — flag de root', () => {
+  it('Paso 8: cat /root/flag2.txt — flag de root', () => {
     const target = withLevel(ftpTarget, 4);
-    const result = exec('cat /root/root.txt', target, [attacker, target], 10);
+    const result = exec('cat /root/flag2.txt', target, [attacker, target], 10);
     expectSuccess(result);
     expect(result.completedMissionId).toBe(10);
     expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
@@ -172,7 +172,7 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     machines = evolveState(machines, result);
 
     const rootTarget = machines.find(m => m.id === 'lab-scenario-05-target')!;
-    result = exec('cat /root/root.txt', rootTarget, machines, 10);
+    result = exec('cat /root/flag2.txt', rootTarget, machines, 10);
     expect(result.completedMissionId).toBe(10);
     expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });

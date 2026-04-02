@@ -153,6 +153,7 @@ export const cmd_sudo = {
         output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may run the following commands on ${hostname} (${ip}):\n${rulesFormatted}`,
         completedMissionId: missionId,
         isError: false,
+        showNetworkHint: true,
         sudoPrivileges: {
           machineId: machine.id,
           user: username,
@@ -184,6 +185,7 @@ root`,
         completedMissionId: missionId,
         newMachineId: machine.id,
         privescCompleted: machine.id,
+        showNetworkHint: true,
         isError: false,
       };
     }

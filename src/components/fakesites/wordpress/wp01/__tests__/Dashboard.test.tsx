@@ -52,7 +52,7 @@ describe('WPDashboard', () => {
   it('debe mostrar flag de usuario comprometido', () => {
     render(<WPDashboard {...defaultProps} />);
     
-    expect(screen.getByText(/THM/)).toBeInTheDocument();
+    expect(screen.getByText(/ZIL/)).toBeInTheDocument();
     expect(screen.getByText(/WP_ADMIN_COMPROMISED/i)).toBeInTheDocument();
   });
 

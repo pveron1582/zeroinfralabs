@@ -14,7 +14,8 @@ export const cmd_exit = {
     const attackerMachine = allMachines.find(m => m.id === 'attacker-01');
     return { 
       output: 'logout\nConnection to target closed.',
-      newMachineId: attackerMachine?.id || 'attacker-01'
+      newMachineId: attackerMachine?.id || 'attacker-01',
+      sshSessionClosed: true,
     };
   }
 };

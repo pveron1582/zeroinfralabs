@@ -166,6 +166,7 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
     foundCredentials: result.foundCredentials,
     failedUser: result.failedUser,
     foundVulnerability: result.foundVulnerability,
+    sshSessionClosed: result.sshSessionClosed,
   };
 
   // Si es sesión FTP, mantener compatibilidad con el store

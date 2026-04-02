@@ -72,6 +72,13 @@ interface ScenarioState {
   // Language state
   language: 'en' | 'es';
   setLanguage: (lang: 'en' | 'es') => void;
+
+  // Survey state
+  showSurvey: boolean;
+  pendingSurveyScenario: Scenario | null;
+  triggerSurvey: (scenario: Scenario) => void;
+  closeSurvey: () => void;
+
   selectScenario: (id: string) => void;
   completeMission: (id: number) => void;
   findCredentials: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
@@ -114,6 +121,10 @@ export const useScenarioStore = create<ScenarioState>()(
     (set, get) => ({
       language: 'en',
       setLanguage: (lang) => set({ language: lang }),
+      showSurvey: false,
+      pendingSurveyScenario: null,
+      triggerSurvey: (scenario) => set({ showSurvey: true, pendingSurveyScenario: scenario }),
+      closeSurvey: () => set({ showSurvey: false, pendingSurveyScenario: null }),
       view: 'landing',
       currentScenario: SCENARIOS[0],
       machines: SCENARIOS[0].machines.map(m => ({ ...m, discovery_level: 0 })),
@@ -412,6 +423,8 @@ export const useScenarioStore = create<ScenarioState>()(
           browserNavIdx: 0,
           listeningPort: null,
           msfState: null,
+          showSurvey: false,
+          pendingSurveyScenario: null,
         });
         if (window.history.state?.view === 'workspace') {
           window.history.back();
@@ -467,7 +480,10 @@ export const useScenarioStore = create<ScenarioState>()(
       partialize: (state) => ({
         // View state
         view: state.view,
-        
+
+        // Language
+        language: state.language,
+
         // Scenario persistence
         currentScenario: state.currentScenario,
         machines: state.machines,

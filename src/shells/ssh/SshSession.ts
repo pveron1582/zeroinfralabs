@@ -123,7 +123,7 @@ export const sshSession: ShellSession<SshState> = {
       case 'quit':
       case 'logout': {
         return {
-          result: { output: 'logout\nConnection to closed.', closeSession: true },
+          result: { output: 'logout\nConnection to closed.', closeSession: true, sshSessionClosed: true },
           newState: { ...state, connected: false, authenticated: false },
         };
       }

@@ -222,16 +222,18 @@ export function LandingPage({ scenarios, onSelect }: Props) {
         <div className="flex items-center gap-4">
           {/* Language selector */}
           <div className="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 border border-gray-700">
-            <button 
+            <button
               onClick={() => setLanguage('en')}
-              className={`px-2 py-1 text-xs font-mono rounded transition-all ${language === 'en' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-2 py-1 text-xs font-mono rounded transition-all flex items-center gap-1 ${language === 'en' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
+              <span className="text-sm leading-none">🇺🇸</span>
               EN
             </button>
-            <button 
+            <button
               onClick={() => setLanguage('es')}
-              className={`px-2 py-1 text-xs font-mono rounded transition-all ${language === 'es' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-2 py-1 text-xs font-mono rounded transition-all flex items-center gap-1 ${language === 'es' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
+              <span className="text-sm leading-none">🇪🇸</span>
               ES
             </button>
           </div>
@@ -247,10 +249,27 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           <span className="text-xs font-mono text-gray-500 tracking-widest uppercase">{t('pentestingLabSimulator')}</span>
           <div className="h-px w-16" style={{ background: 'linear-gradient(90deg, #2d3f3f, transparent)' }}/>
         </div>
-        <h1 className="text-4xl font-bold tracking-tight mb-4" style={{ lineHeight: 1.1 }}>
-          <span style={{ color: '#e5e7eb' }}>{t('chooseLab')} </span>
-          <span style={{ background: 'linear-gradient(100deg, #10b981 0%, #22d3ee 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lab</span>
+        <h1 className="text-4xl font-bold tracking-tight mb-6" style={{ lineHeight: 1.1 }}>
+          <span style={{ background: 'linear-gradient(100deg, #10b981 0%, #22d3ee 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('heroValueProp')}</span>
         </h1>
+        {/* Value badges */}
+        <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: '#10b98112', color: '#10b981', border: '1px solid #10b98128' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            {t('badgeNoDownloads')}
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: '#22d3ee12', color: '#22d3ee', border: '1px solid #22d3ee28' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {t('badgeNoRegistration')}
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: '#a78bfa12', color: '#a78bfa', border: '1px solid #a78bfa28' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            {t('badgeSafeEnv')}
+          </div>
+        </div>
+        <h2 className="text-lg font-semibold mb-2" style={{ color: '#d1d5db' }}>
+          {t('chooseLab')} <span style={{ background: 'linear-gradient(100deg, #10b981 0%, #22d3ee 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lab</span>
+        </h2>
         <p className="text-sm text-gray-500 max-w-xs mx-auto leading-relaxed">{t('hoverHint')}</p>
       </section>
       <main className="relative z-10 flex-1 px-6 pb-14">
@@ -258,7 +277,10 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           {scenarios.map((s, i) => (<ScenarioCard key={s.id} scenario={s} index={i} onSelect={onSelect} />))}
         </div>
       </main>
-      <footer className="relative z-10 py-4 text-center text-xs text-gray-600" style={{ borderTop: '1px solid #1c2a2a' }}>ZI Labs · Controlled practice environment · All scenarios are fictional</footer>
+      <footer className="relative z-10 py-4 text-center text-xs text-gray-600" style={{ borderTop: '1px solid #1c2a2a' }}>
+        <div className="mb-1 text-gray-500">{t('privacyNotice')}</div>
+        ZI Labs · Controlled practice environment · All scenarios are fictional
+      </footer>
       <style>{`@keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }`}</style>
     </div>
   );

@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+### 📊 Analytics & Post-Lab Survey
+
+#### Sistema de Tracking de Actividad
+**Archivos nuevos:**
+- `src/utils/analytics.ts` — Módulo de tracking que envía eventos a un webhook (Google Apps Script)
+- `src/components/SurveyModal.tsx` — Encuesta post-lab con rating 1-10, dificultad, recomendación y comentarios
+
+**Eventos rastreados:**
+- `lab_started` — Cuando el usuario inicia un laboratorio
+- `mission_complete` — Cada misión completada (con ID y título)
+- `lab_completed` — Laboratorio completado al 100%
+- `lab_abandoned` — Usuario vuelve al menú con progreso parcial
+- `lab_changed` — Usuario cambia de laboratorio sin progreso
+- `survey_submitted` — Encuesta enviada con rating, dificultad, recomendación y comentarios
+
+**Configuración:**
+- Crear `.env.local` con `VITE_ANALYTICS_WEBHOOK=<url>` (Google Apps Script)
+- Sin la variable, el tracking se desactiva silenciosamente (seguro para desarrollo)
+
+**¿Cuándo aparece la encuesta?**
+- Al ejecutar `end` cuando todas las misiones están completadas
+- Al presionar el botón "Menú" cuando el lab está al 100%
+- Es opcional — se puede saltar con "Skip"
+
 ### 🏗️ Refactorización de Arquitectura
 
 #### Terminal.tsx — Modularización (899 → ~430 líneas)

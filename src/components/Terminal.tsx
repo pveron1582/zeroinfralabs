@@ -402,7 +402,17 @@ export function Terminal({
     }
 
     if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
-    if (result.output === 'EXIT_TO_LANDING') { goHome(); return; }
+    if (result.output === 'EXIT_TO_LANDING') {
+      const { missions } = useScenarioStore.getState();
+      const allComplete = missions.length > 0 && missions.every(m => m.status === 'completed');
+      if (allComplete) {
+        const { currentScenario, triggerSurvey } = useScenarioStore.getState();
+        triggerSurvey(currentScenario);
+      } else {
+        goHome();
+      }
+      return;
+    }
 
     const cmdName = trimmed.split(/\s+/)[0].toLowerCase();
     const cfg = CMD_DELAYS[cmdName] || CMD_DELAYS['default'];
@@ -440,6 +450,12 @@ export function Terminal({
       if (result.discoveredPorts) {
         useScenarioStore.getState().setHasNewNetworkInfo(true);
       }
+      if (result.showNetworkHint) {
+        useScenarioStore.getState().setHasNewNetworkInfo(true);
+      }
+      if (result.sshSessionClosed) {
+        setCurrentDir('/root/');
+      }
       return;
     }
 
@@ -474,6 +490,9 @@ export function Terminal({
         e.timestamp === entryTs ? { ...e, streaming: false, output: result.output } : e
       ));
       if (result.discoveredPorts) {
+        useScenarioStore.getState().setHasNewNetworkInfo(true);
+      }
+      if (result.showNetworkHint) {
         useScenarioStore.getState().setHasNewNetworkInfo(true);
       }
       setTimeout(() => inputRef.current?.focus(), 60);

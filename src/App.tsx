@@ -1,7 +1,7 @@
 // ── App.tsx ───────────────────────────────────────────────────────
 // Componente raíz que usa Zustand para el estado global
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useScenarioStore } from './store/scenarioStore';
 import { SCENARIOS } from './laboratorios/laboratorios';
 import { resetMsfState, restoreMsfState, getMsfState } from './commands';
@@ -11,6 +11,8 @@ import { FakeBrowser }  from './components/FakeBrowser';
 import { MissionPanel } from './components/MissionPanel';
 import { NetworkMap }   from './components/NetworkMap';
 import { MachineLoader } from './components/MachineLoader';
+import { SurveyModal }  from './components/SurveyModal';
+import { trackEvent, recordLabStart }   from './utils/analytics';
 
 // ── Constantes de UI ───────────────────────────────────────────────
 const TERM_COLORS = [
@@ -36,6 +38,8 @@ export default function App() {
   const loadingMachine = useScenarioStore(state => state.loadingMachine);
   const msfState = useScenarioStore(state => state.msfState);
   const ftpSession = useScenarioStore(state => state.ftpSession);
+  const showSurvey = useScenarioStore(state => state.showSurvey);
+  const pendingSurveyScenario = useScenarioStore(state => state.pendingSurveyScenario);
 
   // ── Actions del Store ───────────────────────────────────────────
   const setActiveApp = useScenarioStore(state => state.setActiveApp);
@@ -53,10 +57,23 @@ export default function App() {
   const addFailedUser = useScenarioStore(state => state.addFailedUser);
   const setSudoPrivileges = useScenarioStore(state => state.setSudoPrivileges);
   const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
+  const closeSurvey = useScenarioStore(state => state.closeSurvey);
 
   const currentMissionId = useScenarioStore(state => state.currentMissionId);
 
   const activeMachine = machines.find(m => m.id === activeMachineId) || machines[0];
+
+  // ── Handle goHome with survey check ─────────────────────────────
+  const handleGoHome = () => {
+    const completedCount = missions.filter(m => m.status === 'completed').length;
+    const totalMissions = missions.length;
+    const allComplete = totalMissions > 0 && completedCount === totalMissions;
+    if (allComplete) {
+      useScenarioStore.getState().triggerSurvey(currentScenario);
+    } else {
+      goHome();
+    }
+  };
 
   // ── Inicializar desde historial ────────────────────────────────
   useEffect(() => {
@@ -72,13 +89,11 @@ export default function App() {
   useEffect(() => {
     const onPop = (e: PopStateEvent) => {
       if (e.state?.view === 'workspace' && e.state.scenarioId) {
-        // Usuario presionó Adelante para volver al workspace
         const scenario = SCENARIOS.find(s => s.id === e.state.scenarioId);
         if (scenario) {
           setView('workspace');
         }
       } else {
-        // Usuario presionó Atrás para ir al landing
         goHome();
       }
     };
@@ -95,6 +110,71 @@ export default function App() {
   useEffect(() => {
     restoreMsfState(msfState);
   }, [msfState]);
+
+  // ── Track lab started ───────────────────────────────────────────
+  useEffect(() => {
+    if (view === 'workspace') {
+      recordLabStart();
+      trackEvent({
+        eventType: 'lab_started',
+        scenarioId: currentScenario.id,
+        scenarioName: currentScenario.name,
+        details: { missionCount: currentScenario.missions.length },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentScenario.id]);
+
+  // ── Track mission completions ────────────────────────────────────
+  useEffect(() => {
+    const completedCount = missions.filter(m => m.status === 'completed').length;
+    if (completedCount > 0 && view === 'workspace') {
+      const lastCompleted = missions.filter(m => m.status === 'completed').pop();
+      if (lastCompleted) {
+        trackEvent({
+          eventType: 'mission_complete',
+          scenarioId: currentScenario.id,
+          scenarioName: currentScenario.name,
+          details: { missionId: lastCompleted.id, missionTitle: lastCompleted.title },
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [missions.map(m => m.status).join(',')]);
+
+  // ── Track lab abandonment / completion when going home ───────────
+  const prevViewRef = useRef(view);
+  useEffect(() => {
+    if (prevViewRef.current === 'workspace' && view === 'landing') {
+      const completedCount = missions.filter(m => m.status === 'completed').length;
+      const totalMissions = missions.length;
+      const allComplete = totalMissions > 0 && completedCount === totalMissions;
+
+      if (allComplete) {
+        trackEvent({
+          eventType: 'lab_completed',
+          scenarioId: currentScenario.id,
+          scenarioName: currentScenario.name,
+          details: { totalMissions },
+        });
+      } else if (completedCount > 0) {
+        trackEvent({
+          eventType: 'lab_abandoned',
+          scenarioId: currentScenario.id,
+          scenarioName: currentScenario.name,
+          details: { completedCount, totalMissions },
+        });
+      } else {
+        trackEvent({
+          eventType: 'lab_changed',
+          scenarioId: currentScenario.id,
+          scenarioName: currentScenario.name,
+          details: { completedCount, totalMissions },
+        });
+      }
+    }
+    prevViewRef.current = view;
+  }, [view]);
 
   // ── Derived props para FakeBrowser ─────────────────────────────
   const wpMachine = machines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress'));
@@ -134,7 +214,7 @@ export default function App() {
       {/* ── Top bar ── */}
       <div className="w-full max-w-6xl mb-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={goHome}
+          <button onClick={handleGoHome}
             className="flex items-center gap-2 px-2 py-1 rounded-lg transition-colors hover:bg-gray-800 group"
             title="Volver al menú">
             <div className="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center group-hover:bg-emerald-400 transition-colors">
@@ -162,7 +242,7 @@ export default function App() {
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             <span>Online</span>
           </div>
-          <button onClick={goHome}
+          <button onClick={handleGoHome}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600"
             style={{ borderColor: '#374151', color: '#6b7280' }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -313,6 +393,17 @@ export default function App() {
           </div>
           {notification.text}
         </div>
+      )}
+
+      {/* ── Survey Modal ── */}
+      {showSurvey && pendingSurveyScenario && (
+        <SurveyModal
+          scenario={pendingSurveyScenario}
+          onSubmit={() => {
+            closeSurvey();
+            goHome();
+          }}
+        />
       )}
 
       <style>{`

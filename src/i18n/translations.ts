@@ -34,6 +34,30 @@ interface Translations {
   levelScanned: string;
   levelEnumerated: string;
   levelCompromised: string;
+  // Survey
+  surveyTitle: string;
+  surveySubtitle: string;
+  surveyOverall: string;
+  surveyDifficulty: string;
+  surveyRecommend: string;
+  surveyComments: string;
+  surveyCommentsPlaceholder: string;
+  surveySubmit: string;
+  surveySkip: string;
+  surveyThanks: string;
+  surveyEasy: string;
+  surveyMedium: string;
+  surveyHard: string;
+  surveyVeryHard: string;
+  surveyYes: string;
+  surveyNo: string;
+  // Privacy notice
+  privacyNotice: string;
+  // Hero / Value proposition
+  heroValueProp: string;
+  badgeNoDownloads: string;
+  badgeNoRegistration: string;
+  badgeSafeEnv: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -60,6 +84,27 @@ const translations: Record<Language, Translations> = {
     levelScanned: 'Scanned',
     levelEnumerated: 'Enumerated',
     levelCompromised: 'Compromised',
+    surveyTitle: 'Rate this Lab',
+    surveySubtitle: 'Your feedback helps us improve',
+    surveyOverall: 'Overall rating',
+    surveyDifficulty: 'How difficult was it?',
+    surveyRecommend: 'Would you recommend it?',
+    surveyComments: 'Comments or suggestions',
+    surveyCommentsPlaceholder: 'Write anything you want to share (optional)...',
+    surveySubmit: 'Submit',
+    surveySkip: 'Skip',
+    surveyThanks: 'Thanks for your feedback!',
+    surveyEasy: 'Easy',
+    surveyMedium: 'Medium',
+    surveyHard: 'Hard',
+    surveyVeryHard: 'Very Hard',
+    surveyYes: 'Yes',
+    surveyNo: 'No',
+    privacyNotice: 'Anonymous usage data (language, lab progress, surveys) is collected to improve the learning experience. No personal information is stored.',
+    heroValueProp: 'Practice hacking techniques from your browser',
+    badgeNoDownloads: 'No downloads',
+    badgeNoRegistration: 'No registration',
+    badgeSafeEnv: 'Safe & virtual',
   },
   es: {
     title: 'ZeroInfra Labs',
@@ -84,6 +129,27 @@ const translations: Record<Language, Translations> = {
     levelScanned: 'Escaneado',
     levelEnumerated: 'Enumerado',
     levelCompromised: 'Comprometido',
+    surveyTitle: 'Calificá este Lab',
+    surveySubtitle: 'Tu feedback nos ayuda a mejorar',
+    surveyOverall: 'Puntuación general',
+    surveyDifficulty: '¿Qué tan difícil fue?',
+    surveyRecommend: '¿Lo recomendarías?',
+    surveyComments: 'Comentarios o sugerencias',
+    surveyCommentsPlaceholder: 'Escribí lo que quieras compartir (opcional)...',
+    surveySubmit: 'Enviar',
+    surveySkip: 'Omitir',
+    surveyThanks: '¡Gracias por tu feedback!',
+    surveyEasy: 'Fácil',
+    surveyMedium: 'Medio',
+    surveyHard: 'Difícil',
+    surveyVeryHard: 'Muy difícil',
+    surveyYes: 'Sí',
+    surveyNo: 'No',
+    privacyNotice: 'Se recopilan datos anónimos de uso (idioma, progreso en labs, encuestas) para mejorar la experiencia de aprendizaje. No se almacena información personal.',
+    heroValueProp: 'Practicá técnicas de hacking desde tu navegador',
+    badgeNoDownloads: 'Sin descargas',
+    badgeNoRegistration: 'Sin registro',
+    badgeSafeEnv: 'Entorno seguro',
   }
 };
 

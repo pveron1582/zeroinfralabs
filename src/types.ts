@@ -153,6 +153,8 @@ export interface CommandResponse {
   sshLoginUser?: string; // username used for SSH login
   streamingLineDelays?: number[]; // ms delay before each line (for realistic streaming)
   discoveredPorts?: string; // machineId whose ports were discovered - triggers network map pulse
+  showNetworkHint?: boolean; // hint to pulse the network map button (e.g. after reading nota.txt)
+  sshSessionClosed?: boolean; // SSH session was closed (reset dir to /root/)
 }
 
 export interface CommandContext {

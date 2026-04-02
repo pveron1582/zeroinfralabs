@@ -101,15 +101,15 @@ describe('FtpSession', () => {
       expect(newState.username).toBe('anonymous');
     });
 
-    it('debe pedir password para usuarios no anonymous', () => {
+    it('debe rechazar usuarios no anonymous', () => {
       const ctx = createMockContext();
       const initialState: FtpState = { connected: true, targetIp: '10.0.0.10', targetId: 'target-01', loggedIn: false, step: 'username' };
 
       const { result, newState } = ftpSession.executeCommand('otheruser', initialState, ctx);
 
-      expect(result.output).toContain('331');
-      expect(newState.step).toBe('password');
-      expect(newState.username).toBe('otheruser');
+      expect(result.output).toContain('Permission denied');
+      expect(result.isError).toBe(true);
+      expect(newState.connected).toBe(false);
     });
 
     it('debe completar login con cualquier password', () => {

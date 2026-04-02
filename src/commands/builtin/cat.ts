@@ -51,7 +51,7 @@ export const cmd_cat = {
     // O si es note.txt/nota.txt (la nota del FTP), buscar la misión de leer nota
     let completedMissionId: number | undefined;
     const isPayload = file.path === '/root/payload.php';
-    const isFlag = file.path === '/root/root.txt';
+    const isFlag = file.path === '/root/root.txt' || file.path === '/root/flag2.txt';
     const isNote = file.path.endsWith('note.txt') || file.path.endsWith('nota.txt');
     
     // Si es una nota y el contenido tiene "john", completar la misión de leer nota
@@ -67,6 +67,9 @@ export const cmd_cat = {
       }
     }
     
+    // Si es nota.txt o note.txt, dar pista de que hay info útil (pulse del mapa de red)
+    const showNetworkHint = isNote;
+    
     if (isPayload || isFlag) {
       for (const m of allMachines) {
         const step = m.learning_steps.find(s => {
@@ -76,7 +79,7 @@ export const cmd_cat = {
             return (lTask.includes('payload') || lText.includes('payload.php')) && lText.includes('cat');
           }
           if (isFlag) {
-            return lTask.includes('flag') || lTask.includes('capturar') || lText.includes('/root/root.txt');
+            return lTask.includes('flag') || lTask.includes('capturar') || lText.includes('/root/root.txt') || lText.includes('/root/flag2.txt');
           }
           return false;
         });
@@ -84,6 +87,6 @@ export const cmd_cat = {
       }
     }
 
-    return { output: content, completedMissionId };
+    return { output: content, completedMissionId, showNetworkHint };
   }
 };

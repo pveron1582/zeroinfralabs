@@ -36,6 +36,8 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 - **Ayuda Condicional Dinámica** - Las misiones se ocultan por defecto ("Modo sin ayuda"), desplegándose dinámicamente con animaciones en cascada y efecto tipo máquina de escribir al solicitar guía. Solo se revelan los pasos activos y completados.
 - **Indicador Visual de Avance** - El botón "Ver red" avisa con un parpadeo verde cuando descubres nueva información de reconocimiento (como puertos abiertos o directorios ocultos) con tus herramientas.
 - **Internacionalización (i18n)** - Soporte para inglés y español en toda la interfaz. Selector de idioma en el header con persistencia en el estado de Zustand.
+- **Encuestas Post-Lab** - Al completar un laboratorio al 100%, aparece una encuesta con rating 1-10, dificultad, recomendación y comentarios opcionales. Los datos se envían a Google Sheets vía webhook.
+- **Analytics de Actividad** - Tracking automático de inicio de labs, progreso, abandono y completado para análisis de uso.
 - **Tarjetas de Laboratorio Dinámicas** - Metadata modular para cada laboratorio (tagline, herramientas, color) que permite rotar y reordenar escenarios fácilmente.
 - **FTP Interactivo** - Sesiones FTP completas con login anónimo, descarga de archivos y navegación de directorios.
 - **Navegador web simulado** - Acceso a sitios vulnerables dentro del simulador (todo el contenido está en inglés).
@@ -102,8 +104,43 @@ State:        Zustand (con persistencia)
 Build:        Vite
 Testing:      Vitest + React Testing Library
 I18n:         Sistema de traducción modular (EN/ES)
+Analytics:    Google Apps Script + Google Sheets (webhook)
 Deployment:   Compatible con cualquier hosting estático
 ```
+
+### 📊 Analytics y Encuestas Post-Lab
+
+Al completar un laboratorio al 100%, aparece una encuesta emergente con:
+- **Rating general** (1-10) con puntos clickeables
+- **Dificultad percibida** (Fácil / Medio / Difícil / Muy difícil)
+- **Recomendación** (Sí / No)
+- **Comentarios libres** (textarea opcional)
+
+La encuesta se dispara tanto con el comando `end` como con el botón "Menú".
+
+#### Configuración del Webhook (Google Apps Script)
+
+1. Crear una Google Sheet con columnas: `Timestamp | EventType | ScenarioId | ScenarioName | Details`
+2. Ir a **Extensions → Apps Script** y pegar el código del `doPost` handler
+3. **Deploy → New deployment → Web app** — Execute as: **Me**, Who has access: **Anyone**
+4. Copiar la URL y crear `.env.local`:
+
+```env
+VITE_ANALYTICS_WEBHOOK=https://script.google.com/macros/s/TU_ID/exec
+```
+
+> Sin la variable de entorno, el tracking se desactiva silenciosamente.
+
+#### Eventos Rastreados
+
+| Evento | Cuándo se dispara |
+|--------|-------------------|
+| `lab_started` | Al iniciar un laboratorio |
+| `mission_complete` | Cada misión completada |
+| `lab_completed` | Al salir con 100% de progreso |
+| `lab_abandoned` | Al salir con progreso parcial |
+| `lab_changed` | Al cambiar de lab sin progreso |
+| `survey_submitted` | Al enviar la encuesta post-lab |
 
 ---
 
@@ -422,7 +459,7 @@ npm run preview          # Preview del build
 - ✓ Sistema de terminal interactivo
 - ✓ 5 escenarios educativos completos
 - ✓ Integración con Metasploit Framework
-- ✓ 579 tests unitarios (todos pasando ✓)
+- ✓ 609 tests unitarios (todos pasando ✓)
 - ✓ State management con Zustand
 - ✓ Navegador web simulado
 - ✓ Mapa de red interactivo
@@ -438,14 +475,17 @@ npm run preview          # Preview del build
 - ✓ Autocompletado de paths con navegación consecutiva
 - ✓ Arquitectura modularizada (Terminal, FakeBrowser, hooks)
 - ✓ Tests E2E modularizados por escenario
+- ✓ Internacionalización (i18n) — inglés/español
+- ✓ Encuestas post-lab con analytics
+- ✓ Tracking de actividad del usuario
 
 ### 📋 En Progreso / Planeado
 - [ ] Tests para comandos faltantes (gobuster, arp-scan)
 - [ ] Tests end-to-end (E2E)
 - [ ] Más escenarios educativos
-- [ ] Internacionalización (i18n) - inglés/español
 - [ ] Modo tutorial con hints contextual
 - [ ] Sistema de badges/logros
+- [ ] Dashboard de analytics con visualización de encuestas
 
 ---
 

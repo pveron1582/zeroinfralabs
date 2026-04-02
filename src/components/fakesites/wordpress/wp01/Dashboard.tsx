@@ -69,7 +69,7 @@ export function WPDashboard({ ip, onNavigate, onLogout, onCredentialsFound }: Pr
 
           {/* User flag */}
           <div className="bg-gray-900 rounded p-3 font-mono text-xs">
-            <div className="text-white">THM&#123;WP_ADMIN_COMPROMISED_GG&#125;</div>
+            <div className="text-white">ZIL&#123;WP_ADMIN_COMPROMISED_GG&#125;</div>
           </div>
         </div>
       </div>

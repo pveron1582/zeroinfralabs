@@ -76,7 +76,7 @@ describe('LandingPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Choose a/)).toBeInTheDocument();
-      expect(screen.getByText(/lab/)).toBeInTheDocument();
+      expect(screen.getByText('lab')).toBeInTheDocument();
     });
   });
 

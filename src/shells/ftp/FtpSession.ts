@@ -116,7 +116,17 @@ export const ftpSession: ShellSession<FtpState> = {
 
     // ── 2. Username ───────────────────────────────────────────────
     if (state.step === 'username') {
-      // Guardar el username y pasar al paso de password (igual para anonymous u otro)
+      const username = trimmedInput.toLowerCase();
+      if (username !== 'anonymous') {
+        return {
+          result: {
+            output: `530 Permission denied.\nftp: Login failed.`,
+            isError: true,
+            closeSession: true,
+          },
+          newState: { ...state, connected: false, loggedIn: false },
+        };
+      }
       return {
         result: {
           output: `331 Please specify the password.`,
