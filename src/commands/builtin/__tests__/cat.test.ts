@@ -19,7 +19,7 @@ describe('cmd_cat', () => {
     const result = cmd_cat.execute([], { machine } as any);
 
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('uso: cat');
+    expect(result.output).toContain('usage: cat');
   });
 
   it('debe mostrar contenido de archivo existente', () => {

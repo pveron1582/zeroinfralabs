@@ -5,7 +5,7 @@ import { useT } from '../i18n/translations';
 import { EnumerationPanel } from './EnumerationPanel';
 import type { Machine, Scenario } from '../types';
 import type { MsfState } from '../commands';
-import type { FtpSessionState } from '../store/scenarioStore';
+import type { FtpSessionState } from '../store/types';
 
 const LEVEL_COLORS = ['#374151', '#3b82f6', '#eab308', '#a855f7', '#ef4444'];
 
@@ -131,8 +131,8 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
                         <p className="text-xs font-mono mt-1" style={{ color: isActive ? '#10b981' : '#6b7280' }}>{hidden ? '?.?.?.?' : machine.machine_info.ip}</p>
                         <p className="text-xs text-gray-600 mt-0.5">
                           {machine.id.includes('attacker') 
-                            ? 'Kali Linux 2023.4' 
-                            : (machine.discovery_level ?? 0) >= 2 ? machine.machine_info.os : `System: ${unknownLabel}`
+                            ? machine.machine_info.os 
+                            : (machine.discovery_level ?? 0) >= 1 ? machine.machine_info.os : `System: ${unknownLabel}`
                           }
                         </p>
                       </div>

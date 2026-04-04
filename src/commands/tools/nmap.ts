@@ -6,7 +6,7 @@ import type { CommandContext, CommandResponse } from '../../types';
 export const cmd_nmap = {
   name: 'nmap',
   execute: (args: string[], { allMachines, currentMissionId }: CommandContext): CommandResponse => {
-    if (!args.length) return { output: 'Uso: nmap -sV <IP>\nEjemplo: nmap -sV <IP>', isError: true };
+    if (!args.length) return { output: 'Usage: nmap -sV <IP>\nExample: nmap -sV <IP>', isError: true };
 
     const ip = args.find(a => /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(a));
     if (!ip) return { output: 'Error: especifica una IP válida.', isError: true };

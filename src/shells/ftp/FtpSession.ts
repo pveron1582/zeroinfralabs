@@ -181,21 +181,7 @@ export const ftpSession: ShellSession<FtpState> = {
             return { result: { output: '' }, newState: state };
           }
 
-          // Obtener el idioma del store directamente
-          const storeLang = useScenarioStore.getState().language;
-          const lang = storeLang || ctx.language || 'es';
-          
-          // Filtrar archivos según el idioma - solo mostrar nota.txt o note.txt
-          const filteredFiles = ftpFiles.filter(f => {
-            const filename = f.path.replace('/srv/ftp/', '');
-            // Si es español, mostrar nota.txt; si es inglés, mostrar note.txt
-            if (lang === 'es') return filename === 'nota.txt';
-            return filename === 'note.txt';
-          });
-
-          const filesToShow = filteredFiles.length > 0 ? filteredFiles : ftpFiles;
-
-          const fileList = filesToShow.map(f => {
+          const fileList = ftpFiles.map(f => {
             const filename = f.path.replace('/srv/ftp/', '');
             return `-rw-r--r-- 1 ftp ftp ${f.content.length} Jan 01 00:00 ${filename}`;
           }).join('\n');

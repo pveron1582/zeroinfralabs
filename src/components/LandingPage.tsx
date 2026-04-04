@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { Scenario } from '../types';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
 import { SCENARIOS_META } from '../laboratorios/laboratorios';
+import { FeedbackModal } from './FeedbackModal';
 
 // Dynamic metadata from lab files with SVG illustrations
 interface ScenarioMeta { 
@@ -202,6 +203,7 @@ interface Props { scenarios: Scenario[]; onSelect: (id: string) => void; }
 
 export function LandingPage({ scenarios, onSelect }: Props) {
   const [ready, setReady] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const language = useLanguage();
   const setLanguage = useSetLanguage();
   const t = useT();
@@ -224,19 +226,32 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           <div className="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 border border-gray-700">
             <button
               onClick={() => setLanguage('en')}
-              className={`px-2 py-1 text-xs font-mono rounded transition-all flex items-center gap-1 ${language === 'en' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-2 text-sm font-mono rounded transition-all flex items-center gap-1.5 ${language === 'en' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'} `}
             >
-              <span className="text-sm leading-none">🇺🇸</span>
+              <span className="text-base leading-none">🇺🇸</span>
               EN
             </button>
             <button
               onClick={() => setLanguage('es')}
-              className={`px-2 py-1 text-xs font-mono rounded transition-all flex items-center gap-1 ${language === 'es' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-2 text-sm font-mono rounded transition-all flex items-center gap-1.5 ${language === 'es' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'} `}
             >
-              <span className="text-sm leading-none">🇪🇸</span>
+              <span className="text-base leading-none">🇪🇸</span>
               ES
             </button>
           </div>
+          
+          {/* Feedback button */}
+          <button
+            onClick={() => setShowFeedback(true)}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-mono rounded-lg border border-gray-700 text-gray-400 hover:text-violet-400 hover:border-violet-500/50 transition-all"
+            title={language === 'es' ? 'Enviar comentarios' : 'Send feedback'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Feedback</span>
+          </button>
+          
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" style={{ boxShadow: '0 0 6px #10b981' }}/>
             {scenarios.length} {t('missions')}
@@ -253,17 +268,17 @@ export function LandingPage({ scenarios, onSelect }: Props) {
           <span style={{ background: 'linear-gradient(100deg, #10b981 0%, #22d3ee 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('heroValueProp')}</span>
         </h1>
         {/* Value badges */}
-        <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: '#10b98112', color: '#10b981', border: '1px solid #10b98128' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium" style={{ background: '#10b98112', color: '#10b981', border: '1px solid #10b98128' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="4" x2="20" y2="20" strokeWidth="2.5"/></svg>
             {t('badgeNoDownloads')}
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: '#22d3ee12', color: '#22d3ee', border: '1px solid #22d3ee28' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium" style={{ background: '#22d3ee12', color: '#22d3ee', border: '1px solid #22d3ee28' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="4" y1="4" x2="20" y2="20" strokeWidth="2.5"/></svg>
             {t('badgeNoRegistration')}
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium" style={{ background: '#a78bfa12', color: '#a78bfa', border: '1px solid #a78bfa28' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium" style={{ background: '#a78bfa12', color: '#a78bfa', border: '1px solid #a78bfa28' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             {t('badgeSafeEnv')}
           </div>
         </div>
@@ -281,6 +296,9 @@ export function LandingPage({ scenarios, onSelect }: Props) {
         <div className="mb-1 text-gray-500">{t('privacyNotice')}</div>
         ZI Labs · Controlled practice environment · All scenarios are fictional
       </footer>
+      
+      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
+      
       <style>{`@keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }`}</style>
     </div>
   );

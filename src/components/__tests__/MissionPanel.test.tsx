@@ -1,5 +1,5 @@
 // ── components/__tests__/MissionPanel.test.tsx ─────────────────────
-// Tests para el componente MissionPanel
+// Tests para el componente MissionPanel con carrusel (siempre visible, auto-advance)
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -15,6 +15,7 @@ const mockMissions: Mission[] = [
     status: 'completed',
     targetMachineId: 'target-01',
     discoveryLevel: 1,
+    hintLevel: 0,
   },
   {
     id: 2,
@@ -23,6 +24,7 @@ const mockMissions: Mission[] = [
     status: 'active',
     targetMachineId: 'target-01',
     discoveryLevel: 2,
+    hintLevel: 0,
   },
   {
     id: 3,
@@ -31,6 +33,7 @@ const mockMissions: Mission[] = [
     status: 'pending',
     targetMachineId: 'target-01',
     discoveryLevel: 4,
+    hintLevel: 0,
   },
 ];
 
@@ -62,7 +65,7 @@ describe('MissionPanel', () => {
     vi.useRealTimers();
   });
 
-  it('debe renderizar el título del panel y empezar en modo sin ayuda', () => {
+  it('debe mostrar el carrusel directamente al renderizar con auto-advance al siguiente step', () => {
     render(
       <MissionPanel
         missions={mockMissions}
@@ -73,32 +76,13 @@ describe('MissionPanel', () => {
       />
     );
 
-    expect(screen.getByText('Help mode disabled.')).toBeInTheDocument();
-  });
-
-  it('debe habilitar las misiones (solo activas y completadas) animadas al hacer clic en ayuda', () => {
-    render(
-      <MissionPanel
-        missions={mockMissions}
-        allMachines={mockMachines}
-        networkRange="192.168.1.0/24"
-        onOpenBrowser={vi.fn()}
-        onOpenNetworkMap={vi.fn()}
-      />
-    );
-
-    const helpBtn = screen.getByTitle('Enable help');
-    fireEvent.click(helpBtn);
-
-    // Avanzar temporizadores para animaciones iniciales
+    // El auto-advance ocurre después de renderizar
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(600); // 500ms delay + animation
     });
 
-    expect(screen.getByText('Discover network')).toBeInTheDocument();
-    expect(screen.getByText('Scan ports')).toBeInTheDocument();
-    // SSH Access is pending, not rendered
-    expect(screen.queryByText('SSH Access')).not.toBeInTheDocument();
+    // Debería avanzar automáticamente al step activo (step 2)
+    expect(screen.getByText('Step 2 of 3')).toBeInTheDocument();
   });
 
   it('debe mostrar el progreso correcto', () => {
@@ -150,28 +134,5 @@ describe('MissionPanel', () => {
     );
 
     expect(screen.getByText('● COMPROMISED')).toBeInTheDocument();
-  });
-
-  it('debe mostrar los números de misión formateados cuando se habilita ayuda', () => {
-    render(
-      <MissionPanel
-        missions={mockMissions}
-        allMachines={mockMachines}
-        networkRange="192.168.1.0/24"
-        onOpenBrowser={vi.fn()}
-        onOpenNetworkMap={vi.fn()}
-      />
-    );
-
-    fireEvent.click(screen.getByTitle('Enable help'));
-
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-
-    expect(screen.getByText('01')).toBeInTheDocument();
-    expect(screen.getByText('02')).toBeInTheDocument();
-    // 03 is pending, not shown
-    expect(screen.queryByText('03')).not.toBeInTheDocument();
   });
 });

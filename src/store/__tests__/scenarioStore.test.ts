@@ -51,8 +51,8 @@ describe('scenarioStore', () => {
     // Estado inmediato: Cargando
     expect(useScenarioStore.getState().showMachineLoader).toBe(true);
 
-    // Saltamos el tiempo de carga (4500ms)
-    vi.advanceTimersByTime(4500);
+    // Saltamos el tiempo de carga (6500ms)
+    vi.advanceTimersByTime(6500);
 
     // Estado final
     const state = useScenarioStore.getState();

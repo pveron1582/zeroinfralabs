@@ -1,177 +1,108 @@
 // ── store/scenarioStore.ts ─────────────────────────────────────────
-// Estado global de la aplicación usando Zustand
-// Gestiona: escenario actual, máquinas, misiones, notificaciones, UI state, msfconsole
+// Zustand global state store — orchestrates slices and persistence
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { assignDHCP } from '../utils/network';
-import type { Machine, Scenario, MachineInfo, Port, LearningStep, Mission, FileEntry, BlockingCommand } from '../types';
+import { createEnumerationSnapshot, hasEnumerationChanged } from '../utils/networkAlert';
+import type { Machine, FileEntry, BlockingCommand } from '../types';
 import { SCENARIOS } from '../laboratorios/laboratorios';
 import type { MsfState } from '../commands/tools/msfconsole';
+import type { ScenarioState, Notification, FtpSessionState, AppView } from './types';
+import type { EnumerationSnapshot } from '../utils/networkAlert';
 
-// ── Tipos del Store ────────────────────────────────────────────────
-interface Notification {
-  text: string;
-  id: number;
-}
-
-// Estado de sesión FTP
-export interface FtpSessionState {
-  active: boolean;
-  targetIp?: string;
-  targetId?: string;
-  username?: string;
-  loggedIn?: boolean;
-  currentDir?: string;
-  step: 'connecting' | 'username' | 'password' | 'connected';
-}
-
-type AppView = 'landing' | 'workspace';
-
-interface ScenarioState {
-  // View state
-  view: AppView;
-  setView: (view: AppView) => void;
-
-  // Scenario data
-  currentScenario: Scenario;
-  machines: Machine[];
-  missions: Mission[];
-  currentMissionId: number;
-  activeMachineId: string;
-
-  // UI State
-  activeApp: 'terminal' | 'browser';
-  browserKey: number;
-  showNetworkMap: boolean;
-  hasNewNetworkInfo: boolean; // New state variable
-  notification: Notification | null;
-  termColor: string;
-  showMachineLoader: boolean;
-  loadingMachine: Machine | null;
-
-  // Browser state persistence
-  browserCurrentUrl: string;
-  browserIsLoggedIn: boolean;
-  browserNavHistory: string[];
-  browserNavIdx: number;
-
-  // NC Listener state (para validación de payload)
-  listeningPort: number | null;
-  blockingCommand: BlockingCommand | null; // New state variable
-
-  // Current directory for terminal navigation
-  currentDir: string;
-
-  // MSF Console state (persisted)
-  msfState: MsfState | null;
-
-  // FTP Session state
-  ftpSession: FtpSessionState | null;
-
-  // Language state
-  language: 'en' | 'es';
-  setLanguage: (lang: 'en' | 'es') => void;
-
-  // Survey state
-  showSurvey: boolean;
-  pendingSurveyScenario: Scenario | null;
-  triggerSurvey: (scenario: Scenario) => void;
-  closeSurvey: () => void;
-
-  selectScenario: (id: string) => void;
-  completeMission: (id: number) => void;
-  findCredentials: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
-  verifyCredentials: (machineId: string, service?: string) => void;
-  setPossibleUsers: (machineId: string, users: string[]) => void;
-  addFailedUser: (machineId: string, user: string) => void;
-  setSudoPrivileges: (machineId: string, user: string, commands: string[], canSudo: boolean) => void;
-  setPrivescCompleted: (machineId: string) => void;
-  addFileToMachine: (machineId: string, file: FileEntry) => void;
-  addExploredDirectory: (machineId: string, path: string) => void;
-  confirmRCE: (machineId: string, user: string, method: string) => void;
-  changeMachine: (machineId: string) => void;
-  setActiveApp: (app: 'terminal' | 'browser') => void;
-  refreshBrowser: () => void;
-  toggleNetworkMap: (show?: boolean) => void;
-  setHasNewNetworkInfo: (val: boolean) => void; // New action
-  setTermColor: (color: string) => void;
-  showNotification: (text: string) => void;
-  clearNotification: () => void;
-  goHome: () => void;
-  getActiveMachine: () => Machine;
-  getScenarioMachines: () => Machine[];
-  setBrowserUrl: (url: string) => void;
-  setBrowserLoggedIn: (loggedIn: boolean) => void;
-  setBrowserNavHistory: (history: string[], idx: number) => void;
-  setListeningPort: (port: number | null) => void;
-  setBlockingCommand: (command: BlockingCommand | null) => void; // New action
-  setCurrentDir: (dir: string) => void;
-  setMsfState: (state: MsfState | null) => void;
-  setFtpSession: (session: FtpSessionState | null) => void;
-  reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
-}
-
-// ── Constantes ─────────────────────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────
 const DEFAULT_TERM_COLOR = '#10b981';
 
-// ── Store ──────────────────────────────────────────────────────────
+// ── Initial state ────────────────────────────────────────────────────
+const initialState = {
+  language: 'en' as const,
+  showSurvey: false,
+  pendingSurveyScenario: null as ScenarioState['pendingSurveyScenario'],
+  view: 'landing' as AppView,
+  currentScenario: SCENARIOS[0],
+  machines: SCENARIOS[0].machines.map(m => ({ ...m, discovery_level: 0 })),
+  missions: SCENARIOS[0].missions,
+  currentMissionId: 1,
+  activeMachineId: SCENARIOS[0].initialMachineId,
+  activeApp: 'terminal' as const,
+  browserKey: 0,
+  showNetworkMap: false,
+  hasNewNetworkInfo: false,
+  notification: null as Notification | null,
+  termColor: DEFAULT_TERM_COLOR,
+  showMachineLoader: false,
+  loadingMachine: null as Machine | null,
+  browserCurrentUrl: 'https://www.google.com',
+  browserIsLoggedIn: false,
+  browserNavHistory: ['https://www.google.com'],
+  browserNavIdx: 0,
+  listeningPort: null as number | null,
+  blockingCommand: null as BlockingCommand | null,
+  currentDir: '/',
+  msfState: null as MsfState | null,
+  ftpSession: null as FtpSessionState | null,
+  _prevMachinesSnapshot: [] as EnumerationSnapshot[],
+  showCompletionOverlay: false,
+};
+
+// ── Network change detection ─────────────────────────────────────────
+const _detectNetworkChanges = () => {
+  const state = useScenarioStore.getState();
+  const prevSnapshot = state._prevMachinesSnapshot || [];
+  const newSnapshot = createEnumerationSnapshot(state.machines);
+
+  if (hasEnumerationChanged(prevSnapshot, newSnapshot)) {
+    useScenarioStore.setState({ hasNewNetworkInfo: true, _prevMachinesSnapshot: newSnapshot });
+  } else {
+    useScenarioStore.setState({ _prevMachinesSnapshot: newSnapshot });
+  }
+};
+
+// ── Store ────────────────────────────────────────────────────────────
 export const useScenarioStore = create<ScenarioState>()(
   persist(
     (set, get) => ({
-      language: 'en',
+      ...initialState,
+
+      // ── View & Language ───────────────────────────────────────────────
       setLanguage: (lang) => set({ language: lang }),
-      showSurvey: false,
-      pendingSurveyScenario: null,
-      triggerSurvey: (scenario) => set({ showSurvey: true, pendingSurveyScenario: scenario }),
-      closeSurvey: () => set({ showSurvey: false, pendingSurveyScenario: null }),
-      view: 'landing',
-      currentScenario: SCENARIOS[0],
-      machines: SCENARIOS[0].machines.map(m => ({ ...m, discovery_level: 0 })),
-      missions: SCENARIOS[0].missions,
-      currentMissionId: 1,
-      activeMachineId: SCENARIOS[0].initialMachineId,
-      activeApp: 'terminal',
-      browserKey: 0,
-      showNetworkMap: false,
-      hasNewNetworkInfo: false,
-      notification: null,
-      termColor: DEFAULT_TERM_COLOR,
-      showMachineLoader: false,
-      loadingMachine: null,
-      browserCurrentUrl: 'https://www.google.com',
-      browserIsLoggedIn: false,
-      browserNavHistory: ['https://www.google.com'],
-      browserNavIdx: 0,
-      listeningPort: null,
-      blockingCommand: null, // Initialize new state variable
-      currentDir: '/',
-      msfState: null,
-      ftpSession: null,
-
-      // ── Actions ───────────────────────────────────────────────────────
-
       setView: (view) => set({ view }),
 
+      // ── Survey ────────────────────────────────────────────────────────
+      triggerSurvey: (scenario) => set({ showSurvey: true, pendingSurveyScenario: scenario }),
+      closeSurvey: () => set({ showSurvey: false, pendingSurveyScenario: null }),
+
+      // ── Completion Overlay ────────────────────────────────────────────
+      setShowCompletionOverlay: (show) => set({ showCompletionOverlay: show }),
+
+      // ── Session ───────────────────────────────────────────────────────
       setMsfState: (state) => set({ msfState: state }),
       setFtpSession: (session) => set({ ftpSession: session }),
 
+      // ── Scenario selection ────────────────────────────────────────────
       selectScenario: (id) => {
         const scenario = SCENARIOS.find(s => s.id === id);
         if (!scenario) return;
 
-        // Mostrar animación de carga
         set({
           loadingMachine: scenario.machines[0],
           showMachineLoader: true,
         });
 
-        // Después de la animación, cargar el escenario
         setTimeout(() => {
+          const { language } = get();
+          const newMachines = scenario.machines.map(m => {
+            const filteredFiles = (m.files || []).filter(f => {
+              if (f.path === '/srv/ftp/nota.txt') return language === 'es';
+              if (f.path === '/srv/ftp/note.txt') return language === 'en';
+              return true;
+            });
+            return { ...m, discovery_level: 0, files: filteredFiles };
+          });
           set({
             currentScenario: scenario,
-            // Reiniciar machines con discovery_level: 0 para empezar limpio
-            machines: scenario.machines.map(m => ({ ...m, discovery_level: 0 })),
+            machines: newMachines,
             missions: scenario.missions.map((m, i) => ({
               ...m,
               status: i === 0 ? 'active' : 'pending'
@@ -189,30 +120,30 @@ export const useScenarioStore = create<ScenarioState>()(
             browserNavHistory: ['https://www.google.com'],
             browserNavIdx: 0,
             listeningPort: null,
-            blockingCommand: null, // Reset new state variable
+            blockingCommand: null,
             msfState: null,
-            ftpSession: null, // Reset ftpSession
+            ftpSession: null,
             currentDir: '/root/',
+            _prevMachinesSnapshot: createEnumerationSnapshot(newMachines),
+            showCompletionOverlay: false,
           });
           window.history.pushState({ view: 'workspace', scenarioId: id }, '');
-        }, 4500);
+        }, 6500);
       },
 
+      // ── Missions ──────────────────────────────────────────────────────
       completeMission: (id) => {
         const { missions, machines, currentMissionId } = get();
         
-        // Prevent re-triggering completion logic if already completed
         const mission = missions.find(m => m.id === id);
         if (mission?.status === 'completed') return;
 
-        // Actualizar misiones
         const updatedMissions = missions.map(m => {
           if (m.id === id) return { ...m, status: 'completed' as const };
           if (m.id === id + 1 && m.status === 'pending') return { ...m, status: 'active' as const };
           return m;
         });
 
-        // Actualizar discovery level de máquinas
         const updatedMachines = mission?.targetMachineId
           ? machines.map(m => {
               if (m.id !== mission.targetMachineId) return m;
@@ -222,20 +153,20 @@ export const useScenarioStore = create<ScenarioState>()(
             })
           : machines;
 
-        // Parpadear botón de red solo si el discoveryLevel realmente subió
-        const prevMachine = mission?.targetMachineId ? machines.find(m => m.id === mission.targetMachineId) : null;
-        const prevLevel = prevMachine?.discovery_level || 0;
-        const newLevel = Math.max(prevLevel, mission?.discoveryLevel || 0);
-        const levelIncreased = newLevel > prevLevel;
-
         set({
           missions: updatedMissions,
           machines: updatedMachines,
           currentMissionId: id === currentMissionId ? currentMissionId + 1 : currentMissionId,
-          hasNewNetworkInfo: levelIncreased ? true : get().hasNewNetworkInfo
         });
 
-        // Mostrar notificación
+        _detectNetworkChanges();
+
+        // Check if all missions are completed
+        const allComplete = updatedMissions.every(m => m.status === 'completed');
+        if (allComplete) {
+          set({ showCompletionOverlay: true });
+        }
+
         const title = missions.find(m => m.id === id)?.title;
         if (title) {
           set({
@@ -245,18 +176,33 @@ export const useScenarioStore = create<ScenarioState>()(
         }
       },
 
+      revealNextHint: (missionId) => {
+        const { missions } = get();
+        const mission = missions.find(m => m.id === missionId);
+        if (!mission || !mission.hints) return;
+        
+        const maxHints = 2;
+        if (mission.hintLevel >= maxHints) return;
+        
+        const updatedMissions = missions.map(m => {
+          if (m.id !== missionId) return m;
+          return { ...m, hintLevel: m.hintLevel + 1 };
+        });
+        
+        set({ missions: updatedMissions });
+      },
+
+      // ── Machine data ──────────────────────────────────────────────────
       findCredentials: (machineId, user, pass, file, service = 'unknown') => {
         const { machines } = get();
         set({
           machines: machines.map(m => {
             if (m.id !== machineId) return m;
             const existing = m.found_credentials || [];
-            // Verificar si ya existe una credencial para este servicio
             const existingCred = existing.find(c => c.service === service);
             const filtered = existing.filter(c => c.service !== service);
             return {
               ...m,
-              // Aumentar discovery_level si encontramos credenciales (mínimo 3 para SSH)
               discovery_level: Math.max(m.discovery_level || 0, 3),
               found_credentials: [...filtered, { 
                 file: file || '/etc/passwd', 
@@ -267,8 +213,8 @@ export const useScenarioStore = create<ScenarioState>()(
               }]
             };
           }),
-          hasNewNetworkInfo: true
         });
+        _detectNetworkChanges();
       },
 
       verifyCredentials: (machineId, service) => {
@@ -284,6 +230,7 @@ export const useScenarioStore = create<ScenarioState>()(
             };
           })
         });
+        _detectNetworkChanges();
       },
 
       setPossibleUsers: (machineId, users) => {
@@ -293,6 +240,7 @@ export const useScenarioStore = create<ScenarioState>()(
             m.id === machineId ? { ...m, possible_ssh_users: users } : m
           )
         });
+        _detectNetworkChanges();
       },
 
       addFailedUser: (machineId, user) => {
@@ -304,6 +252,7 @@ export const useScenarioStore = create<ScenarioState>()(
             return { ...m, failed_ssh_users: [...failed, user] };
           })
         });
+        _detectNetworkChanges();
       },
 
       setSudoPrivileges: (machineId, user, commands, canSudo) => {
@@ -316,6 +265,7 @@ export const useScenarioStore = create<ScenarioState>()(
             } : m
           )
         });
+        _detectNetworkChanges();
       },
 
       addFileToMachine: (machineId: string, file: FileEntry) => {
@@ -330,15 +280,17 @@ export const useScenarioStore = create<ScenarioState>()(
             };
           })
         });
+        _detectNetworkChanges();
       },
 
       setPrivescCompleted: (machineId: string) => {
         const { machines } = get();
         set({
           machines: machines.map(m =>
-            m.id === machineId ? { ...m, privesc_completed: true } : m
+            m.id === machineId ? { ...m, privesc_completed: true, discovery_level: Math.max(m.discovery_level || 0, 4) } : m
           )
         });
+        _detectNetworkChanges();
       },
 
       addExploredDirectory: (machineId: string, path: string) => {
@@ -356,15 +308,16 @@ export const useScenarioStore = create<ScenarioState>()(
               }
             };
           }),
-          hasNewNetworkInfo: true
         });
+        _detectNetworkChanges();
       },
 
       confirmRCE: (machineId: string, user: string, method: string) => {
-        const { machines, hasNewNetworkInfo } = get();
-        // Verificar si ya existe una credencial reverse-shell para esta máquina
+        const { machines } = get();
         const targetMachine = machines.find(m => m.id === machineId);
         const alreadyHasRCE = targetMachine?.found_credentials?.some(c => c.service === 'reverse-shell');
+        
+        if (alreadyHasRCE) return;
         
         set({
           machines: machines.map(m => {
@@ -379,77 +332,8 @@ export const useScenarioStore = create<ScenarioState>()(
               ]
             };
           }),
-          // Solo activar el parpadeo si no había RCE antes
-          hasNewNetworkInfo: alreadyHasRCE ? hasNewNetworkInfo : true
         });
-      },
-
-      changeMachine: (machineId) => {
-        set({ activeMachineId: machineId });
-      },
-
-      setActiveApp: (app) => set({ activeApp: app }),
-
-      refreshBrowser: () => set(state => ({ browserKey: state.browserKey + 1 })),
-
-      toggleNetworkMap: (show) => {
-        const nextState = show !== undefined ? show : !get().showNetworkMap;
-        set({
-          showNetworkMap: nextState,
-          ...(nextState ? { hasNewNetworkInfo: false } : {})
-        });
-      },
-
-      setHasNewNetworkInfo: (val) => set({ hasNewNetworkInfo: val }),
-
-      setTermColor: (color) => set({ termColor: color }),
-
-      showNotification: (text) => {
-        set({ notification: { text, id: Date.now() } });
-        setTimeout(() => set({ notification: null }), 3500);
-      },
-
-      clearNotification: () => set({ notification: null }),
-
-      goHome: () => {
-        set({ 
-          view: 'landing', 
-          showNetworkMap: false, 
-          hasNewNetworkInfo: false,
-          notification: null,
-          browserCurrentUrl: 'https://www.google.com',
-          browserIsLoggedIn: false,
-          browserNavHistory: ['https://www.google.com'],
-          browserNavIdx: 0,
-          listeningPort: null,
-          msfState: null,
-          showSurvey: false,
-          pendingSurveyScenario: null,
-        });
-        if (window.history.state?.view === 'workspace') {
-          window.history.back();
-        }
-      },
-
-      setBrowserUrl: (url) => set({ browserCurrentUrl: url }),
-
-      setBrowserLoggedIn: (loggedIn) => set({ browserIsLoggedIn: loggedIn }),
-
-      setBrowserNavHistory: (history, idx) => set({ browserNavHistory: history, browserNavIdx: idx }),
-      setListeningPort: (port) => set({ listeningPort: port }),
-      setBlockingCommand: (command) => set({ blockingCommand: command }),
-      setCurrentDir: (dir) => set({ currentDir: dir }),
-
-      getActiveMachine: () => {
-        const { machines, activeMachineId } = get();
-        return machines.find(m => m.id === activeMachineId) || machines[0];
-      },
-
-      getScenarioMachines: () => {
-        const { machines, currentScenario } = get();
-        return machines.filter(m =>
-          currentScenario.machines.some(sm => sm.id === m.id)
-        );
+        _detectNetworkChanges();
       },
 
       reportVulnerability: (machineId, vulnId, status) => {
@@ -471,47 +355,92 @@ export const useScenarioStore = create<ScenarioState>()(
               vulnerabilities: [...vulnerabilities, { id: vulnId, name: vulnId, status }] 
             };
           }),
-          hasNewNetworkInfo: true
         });
+        _detectNetworkChanges();
+      },
+
+      // ── Navigation & UI ───────────────────────────────────────────────
+      changeMachine: (machineId) => set({ activeMachineId: machineId }),
+      setActiveApp: (app) => set({ activeApp: app }),
+      refreshBrowser: () => set(state => ({ browserKey: state.browserKey + 1 })),
+      toggleNetworkMap: (show) => {
+        const nextState = show !== undefined ? show : !get().showNetworkMap;
+        set({
+          showNetworkMap: nextState,
+          ...(nextState ? { hasNewNetworkInfo: false } : {})
+        });
+      },
+      setTermColor: (color) => set({ termColor: color }),
+      showNotification: (text) => {
+        set({ notification: { text, id: Date.now() } });
+        setTimeout(() => set({ notification: null }), 3500);
+      },
+      clearNotification: () => set({ notification: null }),
+
+      goHome: () => {
+        set({ 
+          view: 'landing', 
+          showNetworkMap: false, 
+          hasNewNetworkInfo: false,
+          notification: null,
+          browserCurrentUrl: 'https://www.google.com',
+          browserIsLoggedIn: false,
+          browserNavHistory: ['https://www.google.com'],
+          browserNavIdx: 0,
+          listeningPort: null,
+          msfState: null,
+          showSurvey: false,
+          pendingSurveyScenario: null,
+          showCompletionOverlay: false,
+          _prevMachinesSnapshot: [],
+        });
+        if (window.history.state?.view === 'workspace') {
+          window.history.back();
+        }
+      },
+
+      // ── Browser ───────────────────────────────────────────────────────
+      setBrowserUrl: (url) => set({ browserCurrentUrl: url }),
+      setBrowserLoggedIn: (loggedIn) => set({ browserIsLoggedIn: loggedIn }),
+      setBrowserNavHistory: (history, idx) => set({ browserNavHistory: history, browserNavIdx: idx }),
+
+      // ── Session controls ──────────────────────────────────────────────
+      setListeningPort: (port) => set({ listeningPort: port }),
+      setBlockingCommand: (command) => set({ blockingCommand: command }),
+      setCurrentDir: (dir) => set({ currentDir: dir }),
+
+      // ── Getters ───────────────────────────────────────────────────────
+      getActiveMachine: () => {
+        const { machines, activeMachineId } = get();
+        return machines.find(m => m.id === activeMachineId) || machines[0];
+      },
+
+      getScenarioMachines: () => {
+        const { machines, currentScenario } = get();
+        return machines.filter(m =>
+          currentScenario.machines.some(sm => sm.id === m.id)
+        );
       },
     }),
     {
       name: 'cyberops-store',
       partialize: (state) => ({
-        // View state
         view: state.view,
-
-        // Language
         language: state.language,
-
-        // Scenario persistence
         currentScenario: state.currentScenario,
         machines: state.machines,
         missions: state.missions,
         currentMissionId: state.currentMissionId,
         activeMachineId: state.activeMachineId,
         activeApp: state.activeApp,
-        
-        // UI preferences
         termColor: state.termColor,
         showNetworkMap: state.showNetworkMap,
-        
-        // Browser state persistence
         browserCurrentUrl: state.browserCurrentUrl,
         browserIsLoggedIn: state.browserIsLoggedIn,
         browserNavHistory: state.browserNavHistory,
         browserNavIdx: state.browserNavIdx,
-        
-        // MSF state persistence - only persist if active
         msfState: state.msfState?.active ? state.msfState : null,
       }),
     }
   )
 );
-
-// ── Selectores memoizados (para uso con useShallow) ───────────────
-export const selectScenario = (state: ScenarioState) => state.currentScenario;
-export const selectMachines = (state: ScenarioState) => state.machines;
-export const selectMissions = (state: ScenarioState) => state.missions;
-export const selectActiveMachine = (state: ScenarioState) => state.getActiveMachine();
-export const selectIsWebScenario = (state: ScenarioState) => state.currentScenario.category === 'Web';

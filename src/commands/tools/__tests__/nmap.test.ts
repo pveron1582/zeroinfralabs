@@ -25,7 +25,7 @@ describe('cmd_nmap', () => {
   it('debe requerir una IP', () => {
     const result = cmd_nmap.execute([], { allMachines: [], currentMissionId: 1 } as any);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('Uso:');
+    expect(result.output).toContain('Usage:');
   });
 
   it('debe requerir reconocimiento previo (discovery_level >= 1)', () => {

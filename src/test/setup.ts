@@ -46,13 +46,14 @@ beforeEach(() => {
   // Clear localStorage before each test
   localStorage.clear();
   // Reset store to default values using setState
-  useScenarioStore.setState({
+  useScenarioStore.setState((state) => ({
+    ...state,
     view: 'landing',
     browserCurrentUrl: 'https://www.google.com',
     browserIsLoggedIn: false,
     browserNavHistory: ['https://www.google.com'],
     browserNavIdx: 0,
-  }, true); // Replace the entire state
+  }), true);
 });
 
 afterEach(() => {

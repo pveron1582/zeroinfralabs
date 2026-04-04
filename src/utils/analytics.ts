@@ -7,7 +7,8 @@ export type EventType =
   | 'lab_changed'
   | 'lab_abandoned'
   | 'lab_completed'
-  | 'survey_submitted';
+  | 'survey_submitted'
+  | 'feedback_submitted';
 
 export interface TrackEventData {
   eventType: EventType;

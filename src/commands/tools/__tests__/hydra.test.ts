@@ -33,7 +33,7 @@ describe('cmd_hydra', () => {
   it('debe requerir parámetros -l y -P', () => {
     const result = cmd_hydra.execute([], { allMachines: [], currentMissionId: 1 } as any);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('Uso:');
+    expect(result.output).toContain('Usage:');
   });
 
   it('debe requerir rockyou.txt como wordlist', () => {

@@ -22,6 +22,11 @@ export interface FileEntry {
   type: string;
 }
 
+export interface StepHint {
+  hint1: { en: string; es: string };
+  hint2: { en: string; es: string };
+}
+
 export interface LearningStep {
   id: number;
   task: string;
@@ -33,6 +38,8 @@ export interface LearningStep {
   textEs?: string;
   targetMachineId: string;
   discoveryLevel: number;
+  // Progressive hints (optional - labs can define them for harder challenges)
+  hints?: StepHint;
 }
 
 export interface MachineInfo {
@@ -89,6 +96,9 @@ export interface Mission {
   status: 'active' | 'pending' | 'completed';
   targetMachineId: string;
   discoveryLevel: number;
+  // Progressive hints support
+  hints?: StepHint;
+  hintLevel: number; // 0 = no hints revealed, 1 = hint1 revealed, 2 = all hints revealed
 }
 
 export interface Scenario {
@@ -153,7 +163,6 @@ export interface CommandResponse {
   sshLoginUser?: string; // username used for SSH login
   streamingLineDelays?: number[]; // ms delay before each line (for realistic streaming)
   discoveredPorts?: string; // machineId whose ports were discovered - triggers network map pulse
-  showNetworkHint?: boolean; // hint to pulse the network map button (e.g. after reading nota.txt)
   sshSessionClosed?: boolean; // SSH session was closed (reset dir to /root/)
 }
 

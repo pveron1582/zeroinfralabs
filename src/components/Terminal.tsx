@@ -4,12 +4,15 @@ import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
 import {
   executeCommand, isMsfActive, getMsfPrompt, resetMsfState,
-  isShellSessionActive, getShellPrompt, getCurrentShellName, resetShellManager,
+  isShellSessionActive, getShellPrompt, resetShellManager,
   startShellSession
 } from '../commands';
 import { getAutocompleteSuggestions } from '../utils/autocomplete';
 import { AutocompletePanel } from './AutocompletePanel';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { StreamingOutput } from './StreamingOutput';
+import { renderKaliPrompt, renderKaliPromptSymbol, isMsfPromptText } from './TerminalPrompt';
+import { useTerminalIdentity, getShortPath } from '../hooks/useTerminalIdentity';
 
 interface Props {
   scenarioId: string;
@@ -45,20 +48,16 @@ const CMD_DELAYS: Record<string, { lineDelay: number; minTotal: number }> = {
   'default':  { lineDelay: 0,  minTotal: 0    },
 };
 
-function StreamingOutput({ lines, color, delays }: { lines: string[]; color: string; delays?: number[] }) {
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    if (shown >= lines.length) return;
-    const delay = delays && delays[shown] !== undefined ? delays[shown] : 38 + Math.random() * 30;
-    const t = setTimeout(() => setShown(s => s + 1), delay);
-    return () => clearTimeout(t);
-  }, [shown, lines.length, delays]);
-  return (
-    <pre className="whitespace-pre-wrap text-xs leading-relaxed" style={{ color }}>
-      {lines.slice(0, shown).join('\n')}
-    </pre>
-  );
-}
+const promptColors = {
+  user: '#7fffd4',
+  at: '#7fffd4',
+  host: '#7fffd4',
+  colon: '#ffffff',
+  path: '#ffffff',
+  symbol: '#7fffd4',
+  bracket: '#0000ff',
+  line: '#0000ff',
+};
 
 export function Terminal({
   scenarioId, machine, allMachines, currentMissionId,
@@ -81,60 +80,9 @@ export function Terminal({
   const setFtpSession = useScenarioStore(state => state.setFtpSession);
   const language = useScenarioStore(state => state.language);
 
-  const makeWelcome = (machines: Machine[]): HistoryEntry => ({
-    command: null, streaming: false,
-    output: '',
-    timestamp: Date.now()
-  });
-
-  const [history, setHistory]       = useState<HistoryEntry[]>([makeWelcome(allMachines)]);
-  const [input, setInput]           = useState('');
-  const [cmdHistory, setCmdHistory] = useState<string[]>([]);
-  const [histIdx, setHistIdx]       = useState(-1);
-  const [busy, setBusy]             = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef  = useRef<HTMLInputElement>(null);
-
-  const ftpSessionRef = useRef(ftpSession);
-  useEffect(() => {
-    ftpSessionRef.current = ftpSession;
-  }, [ftpSession]);
-
-  const rceCred = Array.isArray(machine.found_credentials)
-    ? machine.found_credentials.find(c => c.service === 'reverse-shell')
-    : null;
-
-  const getSshUser = () => {
-    if (machine.id.includes('attacker')) return 'root';
-    if (rceCred) return rceCred.user;
-    if (machine.privesc_completed) return 'root';
-
-    if (machine.found_credentials) {
-      const sshCred = machine.found_credentials.find(c => c.service === 'ssh' && c.verified);
-      if (sshCred) return sshCred.user;
-      const verified = machine.found_credentials.find(c => c.verified);
-      if (verified) return verified.user;
-    }
-
-    const sshPort = machine.scan_results?.ports?.find(p => p.service === 'ssh');
-    if (sshPort?.credentials?.user) return sshPort.credentials.user;
-    return 'user';
-  };
-
-  const sshUser = getSshUser();
-  const isRoot = sshUser === 'root' || machine.id === 'attacker-01';
-
-  const getShortPath = (dir: string): string => {
-    if (!dir || dir === '/') return '/';
-    if (dir.startsWith('/home/') || dir === '/home') {
-      const homeRelative = dir.slice(6);
-      if (!homeRelative || homeRelative === '') return '~';
-      return '~/' + homeRelative.replace(/\/$/, '');
-    }
-    return dir.replace(/\/$/, '') || '/';
-  };
-
+  const { sshUser, isRoot } = useTerminalIdentity(machine);
   const displayPath = getShortPath(currentDir || '/');
+
   const basePrompt = machine.id === 'attacker-01'
     ? `root@${machine.machine_info.hostname}:${displayPath}#`
     : `${sshUser}@${machine.machine_info.hostname}:${displayPath}${isRoot ? '#' : '$'}`;
@@ -155,16 +103,24 @@ export function Terminal({
       ? (getFtpPrompt() || 'ftp> ')
       : basePrompt;
 
-  const promptColors = {
-    user: '#7fffd4',
-    at: '#7fffd4',
-    host: '#7fffd4',
-    colon: '#ffffff',
-    path: '#ffffff',
-    symbol: '#7fffd4',
-    bracket: '#0000ff',
-    line: '#0000ff',
-  };
+  const makeWelcome = (machines: Machine[]): HistoryEntry => ({
+    command: null, streaming: false,
+    output: '',
+    timestamp: Date.now()
+  });
+
+  const [history, setHistory]       = useState<HistoryEntry[]>([makeWelcome(allMachines)]);
+  const [input, setInput]           = useState('');
+  const [cmdHistory, setCmdHistory] = useState<string[]>([]);
+  const [histIdx, setHistIdx]       = useState(-1);
+  const [busy, setBusy]             = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef  = useRef<HTMLInputElement>(null);
+
+  const ftpSessionRef = useRef(ftpSession);
+  useEffect(() => {
+    ftpSessionRef.current = ftpSession;
+  }, [ftpSession]);
 
   useEffect(() => {
     if (!busy || (busy && blockingCommand)) {
@@ -172,52 +128,6 @@ export function Terminal({
       return () => clearTimeout(timer);
     }
   }, [busy, blockingCommand]);
-
-  const isMsfPromptText = (promptText: string): boolean =>
-    promptText.includes('msf6') ||
-    promptText.includes('meterpreter') ||
-    promptText.includes('C:\\Windows\\system32>');
-
-  const renderKaliPrompt = (promptText: string) => {
-    if (isMsfPromptText(promptText)) {
-      return <span style={{ color: promptColors.user }}>{promptText}</span>;
-    }
-
-    const match = promptText.match(/^([^@]+)@([^:]+):([^$#]+)([$#])$/);
-    if (!match) {
-      return <span style={{ color: promptColors.user }}>{promptText}</span>;
-    }
-
-    const [, user, host, path] = match;
-    return (
-      <span>
-        <span style={{ color: promptColors.line }}>┌──(</span>
-        <span style={{ color: promptColors.user }}>{user}</span>
-        <span style={{ color: promptColors.at }}>㉿</span>
-        <span style={{ color: promptColors.host }}>{host}</span>
-        <span style={{ color: promptColors.line }}>)</span>
-        <span style={{ color: promptColors.line }}>-[</span>
-        <span style={{ color: promptColors.path }}>{path}</span>
-        <span style={{ color: promptColors.line }}>]</span>
-      </span>
-    );
-  };
-
-  const renderKaliPromptSymbol = (promptText?: string) => {
-    const inMsf = promptText !== undefined ? isMsfPromptText(promptText) : isMsfActive();
-    if (inMsf) {
-      return <span style={{ color: promptColors.user }}>{'>'}</span>;
-    }
-    const symbol = promptText !== undefined
-      ? (promptText.match(/([$#])$/)?.[1] || (isRoot ? '#' : '$'))
-      : (isRoot ? '#' : '$');
-    return (
-      <span>
-        <span style={{ color: promptColors.line }}>└─</span>
-        <span style={{ color: promptColors.symbol }}>{symbol}</span>
-      </span>
-    );
-  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -271,6 +181,64 @@ export function Terminal({
       }
     }
   }, [blockingCommand?.connected, busy, allMachines, listeningPort, prompt, setBlockingCommand, setListeningPort, onChangeMachine, setCurrentDir]);
+
+  const processCommandResult = (result: any, trimmed: string, currentPrompt: string, isStreaming: boolean) => {
+    if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+    if (result.completedMissionId === 5) {
+      const target = allMachines.find(m => m.scan_results.ports.some(p => p.service === 'ssh'));
+      if (target && !target.id.includes('lfi')) {
+        const { setPossibleUsers } = useScenarioStore.getState();
+        setPossibleUsers(target.id, ['john']);
+      }
+    }
+    if (result.blockingCommand) {
+      setBlockingCommand(result.blockingCommand);
+      if (result.blockingCommand.listeningPort) {
+        setListeningPort(result.blockingCommand.listeningPort);
+      }
+      if (!isStreaming) setBusy(true);
+    }
+    if (result.foundCredentials) onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
+    if (result.newMachineId) onChangeMachine(result.newMachineId);
+    if (result.sshLoginUser) setCurrentDir(`/home/${result.sshLoginUser}`);
+    if (result.privescCompleted) useScenarioStore.getState().setPrivescCompleted(result.privescCompleted);
+    if (result.failedUser && onFailedUser) onFailedUser(result.failedUser.machineId, result.failedUser.user);
+    if (result.sudoPrivileges && onSudoPrivileges) {
+      onSudoPrivileges(result.sudoPrivileges.machineId, result.sudoPrivileges.user, result.sudoPrivileges.commands, result.sudoPrivileges.canSudo);
+    }
+    if (result.foundVulnerability) reportVulnerability(result.foundVulnerability.machineId, result.foundVulnerability.vulnId, result.foundVulnerability.status);
+    if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
+      onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
+    }
+    if (result.sshSessionClosed) {
+      setCurrentDir('/root/');
+    }
+  };
+
+  const handleDownloadedFile = (result: any, currentPrompt: string, sourceFtpSession?: typeof ftpSession) => {
+    if (!result.downloadedFile) return;
+    const attacker = allMachines.find(m => m.id === 'attacker-01');
+    if (!attacker) return;
+    const { addFileToMachine } = useScenarioStore.getState();
+    let filePath = result.downloadedFile.path;
+    if (filePath.includes('nota.txt') || filePath.includes('note.txt')) {
+      const fileName = filePath.split('/').pop() || '';
+      filePath = `/root/${fileName}`;
+    }
+    addFileToMachine('attacker-01', {
+      path: filePath,
+      content: result.downloadedFile.content || '',
+      type: result.downloadedFile.type || 'text'
+    });
+    const fileName = filePath.split('/').pop();
+    setHistory(prev => [...prev, {
+      command: null,
+      output: language === 'es' ? `Archivo descargado: ${fileName}` : `File downloaded: ${fileName}`,
+      streaming: false,
+      prompt: sourceFtpSession?.active ? getFtpPrompt() : (getShellPrompt() || 'ftp> '),
+      timestamp: Date.now()
+    }]);
+  };
 
   const runCommand = (cmd: string) => {
     const trimmed = cmd.trim();
@@ -328,7 +296,6 @@ export function Terminal({
       return;
     }
 
-    // Block /root access for non-root users
     if (!isRoot && (trimmed === 'cd /root' || trimmed.includes('/root/'))) {
       setHistory(prev => [...prev, { command: trimmed, output: 'Permission denied: you do not have access to /root.\nTry escalating privileges first.', streaming: false, prompt: currentPrompt, timestamp: Date.now() }]);
       return;
@@ -383,22 +350,7 @@ export function Terminal({
     }
 
     if (result.downloadedFile) {
-      const attacker = allMachines.find(m => m.id === 'attacker-01');
-      if (attacker) {
-        const { addFileToMachine } = useScenarioStore.getState();
-        addFileToMachine('attacker-01', {
-          path: result.downloadedFile.path,
-          content: result.downloadedFile.content || '',
-          type: 'text'
-        });
-        setHistory(prev => [...prev, {
-          command: null,
-          output: `Archivo descargado: ${result.downloadedFile?.path}`,
-          streaming: false,
-          prompt: currentPrompt,
-          timestamp: Date.now()
-        }]);
-      }
+      handleDownloadedFile(result, currentPrompt, ftpSession);
     }
 
     if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
@@ -420,42 +372,7 @@ export function Terminal({
 
     if (!useStreaming) {
       setHistory(prev => [...prev, { command: trimmed, output: result.output, streaming: false, prompt: currentPrompt, timestamp: Date.now() }]);
-      if (result.completedMissionId) onMissionComplete(result.completedMissionId);
-      if (result.completedMissionId === 5) {
-        const target = allMachines.find(m => m.scan_results.ports.some(p => p.service === 'ssh'));
-        if (target && !target.id.includes('lfi')) {
-          const { setPossibleUsers } = useScenarioStore.getState();
-          setPossibleUsers(target.id, ['john']);
-        }
-      }
-      if (result.blockingCommand) {
-        setBlockingCommand(result.blockingCommand);
-        if (result.blockingCommand.listeningPort) {
-          setListeningPort(result.blockingCommand.listeningPort);
-        }
-        setBusy(true);
-      }
-      if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
-      if (result.newMachineId)       onChangeMachine(result.newMachineId);
-      if (result.sshLoginUser)       setCurrentDir(`/home/${result.sshLoginUser}`);
-      if (result.privescCompleted)   useScenarioStore.getState().setPrivescCompleted(result.privescCompleted);
-      if (result.failedUser && onFailedUser) onFailedUser(result.failedUser.machineId, result.failedUser.user);
-      if (result.sudoPrivileges && onSudoPrivileges) {
-        onSudoPrivileges(result.sudoPrivileges.machineId, result.sudoPrivileges.user, result.sudoPrivileges.commands, result.sudoPrivileges.canSudo);
-      }
-      if (result.foundVulnerability) reportVulnerability(result.foundVulnerability.machineId, result.foundVulnerability.vulnId, result.foundVulnerability.status);
-      if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
-        onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
-      }
-      if (result.discoveredPorts) {
-        useScenarioStore.getState().setHasNewNetworkInfo(true);
-      }
-      if (result.showNetworkHint) {
-        useScenarioStore.getState().setHasNewNetworkInfo(true);
-      }
-      if (result.sshSessionClosed) {
-        setCurrentDir('/root/');
-      }
+      processCommandResult(result, trimmed, currentPrompt, false);
       return;
     }
 
@@ -470,31 +387,10 @@ export function Terminal({
 
     setTimeout(() => {
       setBusy(false);
-      if (result.completedMissionId) onMissionComplete(result.completedMissionId);
-      if (result.blockingCommand) {
-        setBlockingCommand(result.blockingCommand);
-        if (result.blockingCommand.listeningPort) {
-          setListeningPort(result.blockingCommand.listeningPort);
-        }
-        setBusy(true);
-      }
-      if (result.foundCredentials)   onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
-      if (result.newMachineId)       onChangeMachine(result.newMachineId);
-      if (result.sshLoginUser)       setCurrentDir(`/home/${result.sshLoginUser}`);
-      if (result.privescCompleted)   useScenarioStore.getState().setPrivescCompleted(result.privescCompleted);
-      if (result.failedUser && onFailedUser) onFailedUser(result.failedUser.machineId, result.failedUser.user);
-      if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
-        onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
-      }
+      processCommandResult(result, trimmed, currentPrompt, true);
       setHistory(prev => prev.map(e =>
         e.timestamp === entryTs ? { ...e, streaming: false, output: result.output } : e
       ));
-      if (result.discoveredPorts) {
-        useScenarioStore.getState().setHasNewNetworkInfo(true);
-      }
-      if (result.showNetworkHint) {
-        useScenarioStore.getState().setHasNewNetworkInfo(true);
-      }
       setTimeout(() => inputRef.current?.focus(), 60);
     }, totalDelay);
   };
@@ -517,7 +413,7 @@ export function Terminal({
         </div>
         <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-gray-800 border border-gray-700">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-          <span className="text-xs font-mono" style={{ color: '#6b7280' }}>{renderKaliPrompt(prompt)}</span>
+          <span className="text-xs font-mono" style={{ color: '#6b7280' }}>{renderKaliPrompt(prompt, promptColors)}</span>
         </div>
         <div className="ml-auto flex items-center gap-1">
           {busy
@@ -546,9 +442,9 @@ export function Terminal({
                   </div>
                 ) : (
                   <>
-                    <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt)}</span>
+                    <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt, promptColors)}</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt)}</span>
+                      <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt, isRoot, promptColors)}</span>
                       <span className="text-sm" style={{ color }}>{entry.command}</span>
                     </div>
                   </>
@@ -588,7 +484,7 @@ export function Terminal({
               </div>
             ) : isMsfActive() ? (
               <div className="flex items-center gap-2">
-                <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt)}</span>
+                <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
                 <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   className="flex-1 bg-transparent border-none outline-none text-sm"
@@ -597,9 +493,9 @@ export function Terminal({
               </div>
             ) : (
               <div className="flex flex-col gap-0.5">
-                <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt)}</span>
+                <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol()}</span>
+                  <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(undefined, isRoot, promptColors)}</span>
                   <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className="flex-1 bg-transparent border-none outline-none text-sm"
@@ -641,9 +537,9 @@ export function Terminal({
         {busy && !blockingCommand && (
           <>
             <div className="flex flex-col gap-0.5 opacity-40">
-              <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt)}</span>
+              <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol()}</span>
+                <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(undefined, isRoot, promptColors)}</span>
                 <span className="text-sm animate-pulse">_</span>
               </div>
             </div>

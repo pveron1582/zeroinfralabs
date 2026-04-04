@@ -1,87 +1,86 @@
 // ── components/__tests__/MachineLoader.test.tsx ───────────────────
-// Tests para el componente MachineLoader
+// Tests para el componente MachineLoader (versión con countdown + carga realista)
 
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MachineLoader } from '../MachineLoader';
 
 describe('MachineLoader', () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('debe renderizar la información de la máquina', () => {
+  it('debe renderizar la información de la máquina durante el countdown', () => {
     render(
       <MachineLoader
         machineName="Kali Linux"
         machineIp="192.168.1.10"
         machineOs="Linux"
         onComplete={vi.fn()}
+        language="es"
       />
     );
 
+    expect(screen.getByText('DESPLEGANDO LABORATORIO')).toBeInTheDocument();
     expect(screen.getByText('Kali Linux')).toBeInTheDocument();
-    expect(screen.getByText('IP: 192.168.1.10')).toBeInTheDocument();
-    expect(screen.getByText('OS: Linux')).toBeInTheDocument();
+    expect(screen.getByText('192.168.1.10')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
   });
 
-  it('debe mostrar el progreso inicial en 0%', () => {
+  it('debe mostrar el countdown 3..2..1..GO', async () => {
     render(
       <MachineLoader
         machineName="Test Machine"
         machineIp="10.0.0.1"
         machineOs="Windows"
         onComplete={vi.fn()}
+        language="es"
       />
     );
 
-    expect(screen.getByText('0%')).toBeInTheDocument();
-    expect(screen.getByText('Scanning network...')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('2')).toBeInTheDocument();
+    }, { timeout: 600 });
+
+    await waitFor(() => {
+      expect(screen.getByText('1')).toBeInTheDocument();
+    }, { timeout: 600 });
+
+    // After countdown transitions to loading phase
+    await waitFor(() => {
+      expect(screen.getByText('Resolviendo infraestructura...')).toBeInTheDocument();
+    }, { timeout: 1000 });
   });
 
-  it('debe avanzar el progreso con el tiempo', async () => {
+  it('debe avanzar el progreso con log lines durante la carga', async () => {
     render(
       <MachineLoader
         machineName="Test Machine"
         machineIp="10.0.0.1"
         machineOs="Linux"
         onComplete={vi.fn()}
+        language="es"
       />
     );
 
-    // Avanzar el tiempo para ver progreso
-    vi.advanceTimersByTime(1000);
-
     await waitFor(() => {
-      const progressText = screen.getByText(/\d+%/);
-      expect(progressText).toBeInTheDocument();
-    });
+      expect(screen.getByText('→ Resolviendo DNS del laboratorio...')).toBeInTheDocument();
+    }, { timeout: 2000 });
   });
 
-  it('debe cambiar de fase durante la carga', async () => {
+  it('debe mostrar logs con interpolación de variables', async () => {
     render(
       <MachineLoader
-        machineName="Test Machine"
-        machineIp="10.0.0.1"
-        machineOs="Linux"
+        machineName="Target-01"
+        machineIp="192.168.1.50"
+        machineOs="Windows 10"
         onComplete={vi.fn()}
+        language="es"
       />
     );
 
-    // Fase inicial
-    expect(screen.getByText('Scanning network...')).toBeInTheDocument();
-
-    // Avanzar tiempo para llegar a la siguiente fase
-    vi.advanceTimersByTime(1500);
-
     await waitFor(() => {
-      expect(screen.getByText('Initializing services...')).toBeInTheDocument();
-    });
+      expect(screen.getByText('→ Provisionando Target-01...')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   it('debe llamar onComplete al finalizar la carga', async () => {
@@ -93,15 +92,14 @@ describe('MachineLoader', () => {
         machineIp="10.0.0.1"
         machineOs="Linux"
         onComplete={onComplete}
+        duration={2000}
+        language="es"
       />
     );
 
-    // Avanzar tiempo hasta completar todas las fases
-    vi.advanceTimersByTime(6000);
-
     await waitFor(() => {
       expect(onComplete).toHaveBeenCalled();
-    }, { timeout: 1000 });
+    }, { timeout: 3000 });
   });
 
   it('debe mostrar el mensaje final cuando está completo', async () => {
@@ -111,45 +109,46 @@ describe('MachineLoader', () => {
         machineIp="10.0.0.1"
         machineOs="Linux"
         onComplete={vi.fn()}
+        duration={2000}
+        language="es"
       />
     );
-
-    // Avanzar tiempo hasta completar
-    vi.advanceTimersByTime(5000);
 
     await waitFor(() => {
-      expect(screen.getByText('Ready')).toBeInTheDocument();
-      expect(screen.getByText('System loaded. Ready for attack.')).toBeInTheDocument();
-    });
+      expect(screen.getByText('LABORATORIO ACTIVO')).toBeInTheDocument();
+      expect(screen.getByText('Acceso concedido. Ready for attack.')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
-  it('debe mostrar el indicador de progreso visual', () => {
+  it('debe mostrar el indicador de progreso visual durante la carga', async () => {
     const { container } = render(
       <MachineLoader
         machineName="Test Machine"
         machineIp="10.0.0.1"
         machineOs="Linux"
         onComplete={vi.fn()}
+        language="es"
       />
     );
 
-    // Verificar que existe la barra de progreso
-    const progressBar = container.querySelector('[class*="rounded-full"][class*="h-2"]');
-    expect(progressBar).toBeInTheDocument();
+    await waitFor(() => {
+      const progressBar = container.querySelector('[class*="rounded-full"][class*="h-2"]');
+      expect(progressBar).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
-  it('debe mostrar los indicadores de carga animados', () => {
-    const { container } = render(
+  it('debe mostrar textos en inglés cuando language="en"', async () => {
+    render(
       <MachineLoader
         machineName="Test Machine"
         machineIp="10.0.0.1"
         machineOs="Linux"
         onComplete={vi.fn()}
+        language="en"
       />
     );
 
-    // Verificar que existen los elementos animados
-    const animatedElements = container.querySelectorAll('.animate-pulse');
-    expect(animatedElements.length).toBeGreaterThan(0);
+    expect(screen.getByText('DEPLOYING LAB')).toBeInTheDocument();
+    expect(screen.getByText('INITIALIZING')).toBeInTheDocument();
   });
 });

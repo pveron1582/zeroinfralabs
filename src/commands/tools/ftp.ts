@@ -20,8 +20,8 @@ export const cmd_ftp = {
     // Sin argumentos - mostrar uso
     if (!args[0]) {
       return {
-        output: `uso: ftp <hostname-or-ip>
-       (dentro de FTP): get <file>, exit, quit, ls, dir`,
+        output: `usage: ftp <hostname-or-ip>
+       (inside FTP): get <file>, exit, quit, ls, dir`,
         isError: true
       };
     }

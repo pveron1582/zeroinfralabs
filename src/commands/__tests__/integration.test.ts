@@ -58,7 +58,7 @@ describe('Integración de Comandos y Lógica de Pentesting', () => {
 
   describe('Acceso y Post-Explotación', () => {
     it('debe cambiar la máquina activa al loguearse por SSH exitosamente', () => {
-      // Usamos el escenario 2 (SSH Brute Force) para este test específico
+      // Usamos el escenario 2 (Web OSINT & SSH Compromise) para este test específico
       const sshScenario = SCENARIOS[1];
       const sshTarget = sshScenario.machines.find(m => !m.id.includes('attacker'))!;
       const sshPort = sshTarget.scan_results.ports.find(p => p.service === 'ssh')!;

@@ -9,13 +9,13 @@ export const cmd_hydra = {
     const lIdx = args.indexOf('-l');
     const pIdx = args.indexOf('-P');
     if (lIdx === -1 || pIdx === -1)
-      return { output: 'Uso: hydra -l <user> -P <wordlist> <IP> <service>\nEjemplo: hydra -l root -P rockyou.txt 10.10.10.11 ssh', isError: true };
+      return { output: 'Usage: hydra -l <user> -P <wordlist> <IP> <service>\nExample: hydra -l root -P rockyou.txt 10.10.10.11 ssh', isError: true };
 
     const user = args[lIdx + 1];
     const wl = args[pIdx + 1];
 
     if (!wl || !wl.includes('rockyou.txt')) {
-      return { output: `Error: wordlist "${wl}" no válida para este laboratorio.\nUsa: -P /usr/share/wordlists/rockyou.txt`, isError: true };
+      return { output: `Error: wordlist "${wl}" not valid for this lab.\nUse: -P /usr/share/wordlists/rockyou.txt`, isError: true };
     }
 
     let ip = '', svc = '';
@@ -27,7 +27,7 @@ export const cmd_hydra = {
       if (nf.length >= 2) { ip = nf[nf.length - 2]; svc = nf[nf.length - 1]; }
     }
 
-    if (!ip || !svc) return { output: 'Uso: hydra -l <user> -P <wordlist> <IP> <service>', isError: true };
+    if (!ip || !svc) return { output: 'Usage: hydra -l <user> -P <wordlist> <IP> <service>', isError: true };
 
     const target = allMachines.find(m => m.machine_info.ip === ip);
     if (!target) return { output: `Error: ${ip} no responde.`, isError: true };
@@ -57,7 +57,8 @@ export const cmd_hydra = {
         const step = m.learning_steps.find(s =>
           s.task.toLowerCase().includes('hydra') ||
           s.task.toLowerCase().includes('fuerza') ||
-          s.task.toLowerCase().includes('brute')
+          s.task.toLowerCase().includes('brute') ||
+          s.task.toLowerCase().includes('credential')
         );
         if (step) { missionId = step.id; break; }
       }

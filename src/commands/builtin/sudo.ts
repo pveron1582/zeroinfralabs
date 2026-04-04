@@ -153,7 +153,6 @@ export const cmd_sudo = {
         output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may run the following commands on ${hostname} (${ip}):\n${rulesFormatted}`,
         completedMissionId: missionId,
         isError: false,
-        showNetworkHint: true,
         sudoPrivileges: {
           machineId: machine.id,
           user: username,
@@ -168,11 +167,19 @@ export const cmd_sudo = {
       // Buscar el step de escalada de privilegios dinámicamente
       let missionId: number | undefined;
       for (const m of allMachines) {
-        const step = m.learning_steps.find(s =>
-          s.task.toLowerCase().includes('escalada') ||
-          s.task.toLowerCase().includes('privilegios') ||
-          s.text.toLowerCase().includes('vim')
-        );
+        const step = m.learning_steps.find(s => {
+          const lTask = (s.task || '').toLowerCase();
+          const lText = (s.text || '').toLowerCase();
+          const lHint2 = (s.hints?.hint2?.en || '').toLowerCase();
+          return lTask.includes('escalada') ||
+            lTask.includes('privilege escalation') ||
+            lTask.includes('privilegios') ||
+            lText.includes('escalada') ||
+            lText.includes('escalate') ||
+            lText.includes('privilege escalation') ||
+            lText.includes('vim') ||
+            lHint2.includes('vim');
+        });
         if (step) { missionId = step.id; break; }
       }
 
@@ -185,7 +192,7 @@ root`,
         completedMissionId: missionId,
         newMachineId: machine.id,
         privescCompleted: machine.id,
-        showNetworkHint: true,
+        discoveryLevel: 4,
         isError: false,
       };
     }

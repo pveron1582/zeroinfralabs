@@ -36,7 +36,7 @@ describe('cmd_ssh', () => {
   it('debe requerir user@ip', () => {
     const result = cmd_ssh.execute([], { allMachines: [], currentMissionId: 1 } as any);
     expect(result.isError).toBe(true);
-    expect(result.output).toContain('uso:');
+    expect(result.output).toContain('usage:');
   });
 
   it('debe requerir fuerza bruta previa (discovery_level >= 3)', () => {

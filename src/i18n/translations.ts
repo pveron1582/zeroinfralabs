@@ -26,6 +26,8 @@ interface Translations {
   compromised: string;
   hideHelp: string;
   enableHelp: string;
+  showHint1: string;
+  showHint2: string;
   // Common
   completed: string;
   // Network Map level labels
@@ -78,6 +80,8 @@ const translations: Record<Language, Translations> = {
     compromised: '● COMPROMISED',
     hideHelp: 'Hide help',
     enableHelp: 'Enable help',
+    showHint1: 'Show hint 1',
+    showHint2: 'Show hint 2',
     completed: 'completed',
     levelUnknown: 'Unknown',
     levelDiscovered: 'Discovered',
@@ -123,6 +127,8 @@ const translations: Record<Language, Translations> = {
     compromised: '● COMPROMETIDA',
     hideHelp: 'Ocultar ayuda',
     enableHelp: 'Habilitar ayuda',
+    showHint1: 'Ver pista 1',
+    showHint2: 'Ver pista 2',
     completed: 'completadas',
     levelUnknown: 'Desconocido',
     levelDiscovered: 'Descubierto',

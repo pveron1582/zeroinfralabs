@@ -12,6 +12,7 @@ import { MissionPanel } from './components/MissionPanel';
 import { NetworkMap }   from './components/NetworkMap';
 import { MachineLoader } from './components/MachineLoader';
 import { SurveyModal }  from './components/SurveyModal';
+import { LabCompletionOverlay } from './components/LabCompletionOverlay';
 import { trackEvent, recordLabStart }   from './utils/analytics';
 
 // ── Constantes de UI ───────────────────────────────────────────────
@@ -40,6 +41,9 @@ export default function App() {
   const ftpSession = useScenarioStore(state => state.ftpSession);
   const showSurvey = useScenarioStore(state => state.showSurvey);
   const pendingSurveyScenario = useScenarioStore(state => state.pendingSurveyScenario);
+  const showCompletionOverlay = useScenarioStore(state => state.showCompletionOverlay);
+  const setShowCompletionOverlay = useScenarioStore(state => state.setShowCompletionOverlay);
+  const language = useScenarioStore(state => state.language);
 
   // ── Actions del Store ───────────────────────────────────────────
   const setActiveApp = useScenarioStore(state => state.setActiveApp);
@@ -199,6 +203,7 @@ export default function App() {
               machineIp={loadingMachine.machine_info.ip}
               machineOs={loadingMachine.machine_info.os}
               onComplete={() => {}}
+              language={language}
             />
           </div>
         )}
@@ -323,6 +328,7 @@ export default function App() {
                   machineIp={loadingMachine.machine_info.ip}
                   machineOs={loadingMachine.machine_info.os}
                   onComplete={() => {}}
+                  language={language}
                 />
               ) : (
                 <Terminal
@@ -393,6 +399,17 @@ export default function App() {
           </div>
           {notification.text}
         </div>
+      )}
+
+      {/* ── Lab Completion Overlay ── */}
+      {showCompletionOverlay && (
+        <LabCompletionOverlay
+          scenario={currentScenario}
+          totalMissions={missions.length}
+          completedCount={missions.filter(m => m.status === 'completed').length}
+          onClose={() => setShowCompletionOverlay(false)}
+          language={language}
+        />
       )}
 
       {/* ── Survey Modal ── */}

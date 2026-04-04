@@ -29,8 +29,8 @@ const mockScenarios: Scenario[] = [
   },
   {
     id: 'scenario-02',
-    name: 'SSH Brute Force',
-    description: 'Ataque de fuerza bruta SSH',
+    name: 'Web OSINT & SSH Compromise',
+    description: 'Web reconnaissance and SSH compromise using Hydra',
     difficulty: 'Medium',
     category: 'Network',
     network_range: '10.0.0.0/24',
@@ -85,7 +85,7 @@ describe('LandingPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('WordPress Lab')).toBeInTheDocument();
-      expect(screen.getByText('SSH Brute Force')).toBeInTheDocument();
+      expect(screen.getByText('Web OSINT & SSH Compromise')).toBeInTheDocument();
       expect(screen.getByText('EternalBlue')).toBeInTheDocument();
     });
   });

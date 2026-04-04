@@ -2,6 +2,226 @@
 
 ## [Unreleased]
 
+### 🏗️ Modularización de Componentes Grandes
+
+#### Lab Completion Overlay (`src/components/LabCompletionOverlay.tsx`)
+**Archivo nuevo:**
+- `src/components/LabCompletionOverlay.tsx` — Animación de celebración al completar un laboratorio
+  - 40 partículas de confetti CSS puro cayendo con colores variados
+  - Trofeo animado con efecto pulse + glow dorado
+  - Texto "LAB COMPLETE!" con gradiente verde→cyan
+  - Nombre del laboratorio y stats (`X/Y missions completed`)
+  - Botón "Continue" para cerrar
+  - Auto-dismiss a los 6 segundos
+  - Click anywhere para cerrar antes
+  - Transición suave de entrada (scale + fade)
+
+**Store actualizado:**
+- `types.ts` — Agregados `showCompletionOverlay: boolean` y `setShowCompletionOverlay`
+- `scenarioStore.ts` — En `completeMission`: detecta si todas las misiones están `completed` → muestra overlay
+- `scenarioStore.ts` — En `goHome` y `selectScenario`: resetea overlay a `false`
+- `App.tsx` — Renderiza `<LabCompletionOverlay />` encima de todo (z-[100])
+
+#### Nuevo Step 7 en Lab 01 — Capture Root Flag
+- Agregado paso "Capture Root Flag" con hints: "Search in /root" y "cat /root/flag.txt"
+- `cat.ts` ahora detecta `/root/flag.txt` como flag completion
+
+#### Carrusel de Misiones — Fix de Auto-Advance
+- Reemplazada lógica de tracking por `activeMission?.id` con `completedMissionIdsRef` (Set de IDs)
+- El auto-advance solo se dispara cuando una misión **realmente se completa** (nueva entrada en el Set)
+- Navegación manual (flechas, hints) ya no provoca auto-advance de vuelta
+- El usuario puede navegar libremente entre steps completados sin ser empujado hacia adelante
+
+#### Comandos de Ayuda — Todos en Inglés
+- `arp-scan.ts`: `Uso/Ejemplo` → `Usage/Example`
+- `nmap.ts`: `Uso/Ejemplo` → `Usage/Example`
+- `ssh.ts`: `uso:` → `usage:`
+- `hydra.ts`: `Uso/Ejemplo/Usa/no válida` → `Usage/Example/Use/not valid`
+- `gobuster.ts`: `Uso/Usa/no válida` → `Usage/Use/not valid`
+- `ftp.ts`: `uso/dentro de FTP` → `usage/inside FTP`
+- `msfExploits.ts`: `Usa:` → `Use:`
+- `cat.ts`: `uso: cat <archivo>` → `usage: cat <file>`
+- `help.ts`: Todo el contenido traducido al inglés (títulos, opciones, ejemplos, descripciones)
+- Tests actualizados para match con los nuevos mensajes
+
+#### Renombrado de Laboratorio 02
+**Antes:** "SSH Brute Force Lab" → **Ahora:** "Web OSINT & SSH Compromise"
+**Motivo:** El lab no es solo fuerza bruta SSH — el usuario primero hace reconocimiento web para descubrir usernames y luego usa Hydra. El nombre anterior era engañoso.
+**Archivos modificados:**
+- `laboratorio02.ts` — nombre, tagline, description, flag root, step 4 task
+- `LandingPage.test.tsx` — nombre del escenario mock
+- `happyPath-scenario02.test.ts` — describe y step 4 task
+- `integration.test.ts` — comentario
+- `README.md` — sección del lab 02 y lista de escenarios
+- `CHANGELOG.md` — esta entrada
+
+### 🏗️ Modularización de Componentes Grandes
+
+#### Módulo de Máquinas Atacantes (`src/laboratorios/attackers/`)
+**Archivos nuevos:**
+- `src/laboratorios/attackers/kali.ts` — Definición centralizada de Kali Linux 2026.1
+  - `createKaliMachine(options)` — Factory con IP auto-asignada, MAC pool, filesystem completo
+  - `createKaliFilesystem(username, extraFiles)` — Filesystem Kali con diccionarios pre-instalados:
+    - `/usr/share/wordlists/rockyou.txt` (~100 passwords)
+    - `/usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt` (~60 directorios web)
+    - `/usr/share/wordlists/SecLists/Passwords/common-passwords.txt` (~40 passwords comunes)
+    - `/root/.bashrc` con aliases de pentesting
+    - `/root/notes.txt` con notas de ataque
+    - Marcadores de herramientas en `/usr/bin/`
+  - `resetKaliCounter()` — Resetea el pool de MACs entre escenarios
+- `src/laboratorios/attackers/index.ts` — Registry centralizado (listo para Parrot, Arch, etc.)
+
+**Archivos modificados:**
+- `src/laboratorios/templates.ts` — `createAttackerMachine()` ahora delega a `createKaliMachine()`
+- `src/laboratorios/laboratorio05.ts` — Eliminado `createAttackerMachine()` duplicado + `ROCKYOU_CONTENT`
+- `src/laboratorios/attackers/kali.ts` — El diccionario rockyou.txt ya viene incluido en el filesystem de Kali
+
+**Beneficio:** Un solo lugar para actualizar Kali (OS version, username, diccionarios, herramientas). Agregar un nuevo atacante (Parrot OS, Arch Linux) es crear un archivo nuevo y registrarlo en `index.ts`.
+
+#### Terminal.tsx — Refactorización (648 → ~440 líneas)
+**Archivos nuevos:**
+- `src/components/StreamingOutput.tsx` — Componente de output animado línea por línea con delays configurables
+- `src/components/TerminalPrompt.tsx` — Renderers de prompts (Kali style `┌──(㉿)-[]`, MSF, FTP) con colores y lógica de detección
+- `src/hooks/useTerminalIdentity.ts` — Hook para determinar sshUser, isRoot, rceCred + helper `getShortPath`
+- `src/components/__tests__/fixtures.ts` — Fixtures compartidos (`createMockMachine`, `mockPorts`, `mockVulnerabilities`, etc.)
+
+**Cambios:**
+- `processCommandResult` y `handleDownloadedFile` extraídos como handlers separados de `runCommand`
+- Prompt rendering delegado a `TerminalPrompt.tsx`
+- Identidad del terminal (usuario, root status) centralizada en hook reutilizable
+- Streaming output como componente independiente
+
+#### scenarioStore.ts — Modularización (558 → ~380 líneas)
+**Archivos nuevos:**
+- `src/store/types.ts` — Tipos del store (`ScenarioState`, `Notification`, `FtpSessionState`, `AppView`)
+- `src/store/selectors.ts` — Selectores memoizados (`selectScenario`, `selectMachines`, `selectMissions`, etc.)
+- `src/store/index.ts` — Re-exports centralizados
+
+**Cambios:**
+- Tipos extraídos del store principal para mejor separación de responsabilidades
+- Selectores memoizados para uso con `useShallow`
+- Import actualizado en `NetworkMap.tsx` para usar `types.ts`
+
+#### EnumerationPanel.test.tsx — Refactorización (518 → ~413 líneas)
+**Cambios:**
+- Fixtures extraídos a `__tests__/fixtures.ts`
+- Tests agrupados en `describe` por sección (Ports, Credentials, SSH, Vulnerabilities, etc.)
+- `as const` en vulnerabilidades para type safety
+
+### 🎬 MachineLoader — Pantalla de Carga Inmersiva
+
+#### Rediseño completo
+**Archivo:** `src/components/MachineLoader.tsx`
+
+**Countdown inicial (1.5s):**
+- Texto "DESPLEGANDO LABORATORIO" con branding "ZeroInfra Labs"
+- Countdown 3..2..1 con animación pop y efecto de escala
+- Info de la máquina (target, IP) durante el countdown
+
+**Carga progresiva (~5s):**
+- 7 fases con nombres tipo terminal:
+  - Resolviendo infraestructura...
+  - Provisionando máquinas virtuales...
+  - Configurando red aislada...
+  - Inicializando servicios...
+  - Desplegando vectores de ataque...
+  - Verificando conectividad...
+  - Finalizando...
+- Log terminal que aparece línea por línea con numeración `[01]`, `[02]`, etc.
+- Colores por tipo: info (gris), ok (verde), warn (naranja)
+- Barra de progreso continua con gradiente y glow
+- Decoración de barras animadas en la parte inferior
+
+**Pantalla final:**
+- Checkmark animado con "LABORATORIO ACTIVO"
+- Resumen de últimos logs
+- "Acceso concedido. Ready for attack."
+
+**Duración total:** ~6.5s (sincronizado con el store)
+**Prop `duration`:** configurable para tests rápidos (2000ms)
+
+### 🐧 Kali Linux — Actualización a 2026.1
+- `src/laboratorios/laboratorio05.ts` — `Kali Linux 2023.4` → `Kali Linux 2026.1`
+- `src/laboratorios/templates.ts` — `Kali Linux 2023.4` → `Kali Linux 2026.1`
+- `src/commands/__tests__/happyPathHelpers.ts` — `Kali Linux 2023.4` → `Kali Linux 2026.1`
+
+### 🧪 Tests
+- 618 tests pasando (+11 nuevos)
+- 55 archivos de test
+
+---
+
+### 🎯 Sistema de Pistas Progresivas
+
+#### Nueva funcionalidad
+Sistema de ayuda gradual que permite a los usuarios recibir pistas incrementales sin revelar toda la solución.
+
+**Componentes nuevos/modificados:**
+- `src/types.ts` — Nuevos tipos `StepHint`, `hints` en `LearningStep`, `hints` y `hintLevel` en `Mission`
+- `src/store/scenarioStore.ts` — Nueva acción `revealNextHint(missionId)` para revelar pistas progresivamente
+- `src/components/MissionPanel.tsx` — Nuevo componente `HintSection` y `StepCarousel` con navegación < > entre pasos
+- `src/i18n/translations.ts` — Nuevas traducciones `showHint1`, `showHint2`
+- `src/commands/builtin/cat.ts` — Actualizada lógica de detección de completamiento para buscar en hints
+
+**Características:**
+- Cada step puede tener 0, 1 o 2 hints (opcionales)
+- Hints se revelan progresivamente: "Ver pista 1" → "Ver pista 2" → (ninguno)
+- Carrusel con flechas < > para navegar entre steps completados y activos
+- Indicador de posición "Step X of Y"
+- Puntos de navegación clickeables
+- Traducciones automáticas EN/ES
+- Hints disponibles solo para el step activo
+
+**Modelo de datos:**
+```typescript
+{ 
+  id: 1, 
+  task: 'Host Discovery', 
+  taskEs: 'Descubrimiento de host',
+  text: 'Discover the active host on the network',
+  textEs: 'Descubrí el host activo en la red',
+  hints: { 
+    hint1: { en: 'Use arp-scan', es: 'Usá arp-scan' }, 
+    hint2: { en: 'arp-scan 10.10.20.0/24', es: 'arp-scan 10.10.20.0/24' } 
+  } 
+}
+```
+
+**Rediseño completo de labs:**
+- `laboratorio01.ts` — 6 steps con hints (WordPress)
+- `laboratorio02.ts` — 5 steps con hints (SSH Brute Force)
+- `laboratorio03.ts` — 5 steps con hints (EternalBlue)
+- `laboratorio04.ts` — 6 steps con hints (LFI to RCE)
+- `laboratorio05.ts` — 10 steps con hints (FTP + PrivEsc)
+```
+
+### 💬 Sistema de Feedback General
+
+#### Nueva funcionalidad
+Sistema para que cualquier usuario pueda enviar comentarios, sugerencias o reportar problemas sobre la plataforma.
+
+**Componentes nuevos:**
+- `src/components/FeedbackModal.tsx` — Modal con formulario de feedback y captcha visual
+- `public/captcha/` — 25 imágenes para el captcha (descargadas de Unsplash)
+
+**Características:**
+- Botón "Feedback" en el header del landing page
+- Formulario con: Nombre (obligatorio), Email (opcional), Comentario (obligatorio)
+- Captcha visual con 5 preguntas de reconocimiento de imágenes
+- 25 imágenes en 5 categorías (animales, vehículos, muebles, objetos, naturaleza)
+- Validación de captcha antes de enviar
+- Nuevo evento `feedback_submitted` en analytics
+
+**Flujo del captcha:**
+1. Usuario abre modal de feedback
+2. Se muestra 1 imagen aleatoria + 5 opciones (de las 25 disponibles)
+3. Usuario selecciona una opción
+4. Si es correcta → habilita botón de envío
+5. Si es incorrecta → nueva pregunta aleatoria (las preguntas rotan para cada intento)
+
+**Datos guardados en Google Sheets (hoja "Feedback"):**
+- Timestamp, Nombre, Email (opcional), Comentario, sessionId, language
+
 ### 📊 Analytics & Post-Lab Survey
 
 #### Sistema de Tracking de Actividad
@@ -17,6 +237,12 @@
 - `lab_changed` — Usuario cambia de laboratorio sin progreso
 - `survey_submitted` — Encuesta enviada con rating, dificultad, recomendación y comentarios
 
+**Datos incluidos en cada evento:**
+- `sessionId` — ID anónimo por sesión (sessionStorage, se borra al cerrar la pestaña)
+- `language` — Idioma activo del usuario (en/es)
+- `sessionDuration` — Segundos desde que abrió la página
+- `labDuration` — Segundos dentro del laboratorio actual
+
 **Configuración:**
 - Crear `.env.local` con `VITE_ANALYTICS_WEBHOOK=<url>` (Google Apps Script)
 - Sin la variable, el tracking se desactiva silenciosamente (seguro para desarrollo)
@@ -25,6 +251,18 @@
 - Al ejecutar `end` cuando todas las misiones están completadas
 - Al presionar el botón "Menú" cuando el lab está al 100%
 - Es opcional — se puede saltar con "Skip"
+
+**Análisis de datos en Google Sheets:**
+- 13 columnas por evento (Timestamp, EventType, ScenarioId, ScenarioName, Details JSON, sessionId, language, sessionDuration, labDuration, overall, difficulty, recommend, comments)
+- Sheets auxiliares recomendadas: "PorUsuario" (agrupado por sessionId), "Respuestas" (solo encuestas), "DetalleUsuario" (dropdown para ver actividad individual)
+- Tablas dinámicas para métricas: dificultad percibida por lab, rating promedio, % de recomendación
+
+#### LandingPage — Rediseño del Hero Section
+- **Frase principal**: "Practice hacking techniques from your browser" / "Practicá técnicas de hacking desde tu navegador" con gradiente
+- **3 badges de valor**: Sin descargas (verde), Sin registro (cyan), Entorno seguro (violeta) con iconos SVG
+- **Banderas de idioma**: 🇺🇸 EN / 🇪🇸 ES en el selector de idioma
+- **"Choose a lab"** movido debajo de los badges como texto secundario
+- **Aviso de privacidad** en el footer (texto discreto sobre datos anónimos)
 
 ### 🏗️ Refactorización de Arquitectura
 

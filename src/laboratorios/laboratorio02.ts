@@ -1,28 +1,28 @@
-// Scenario 2 — SSH Brute Force Lab
+// Scenario 2 — Web OSINT & SSH Compromise Lab
 // Datos específicos para este escenario
 
 import { buildScenario, createFile, createLinuxFileSystem } from './templates';
 import type { Scenario } from '../types';
 
-// Datos específicos del escenario SSH Brute Force
+// Datos específicos del escenario Web OSINT & SSH Compromise
 const scenario02Data = {
   id: 'scenario-02',
-  name: 'SSH Brute Force Lab',
+  name: 'Web OSINT & SSH Compromise',
   // Metadata for LandingPage cards
-  tagline: 'Launch a brute force attack with Hydra to compromise root SSH access.',
-  taglineEs: 'Lanza un ataque de fuerza bruta con Hydra para comprometer acceso SSH root.',
-  description: 'Network scanning and SSH brute force attack based on basic OSINT intelligence from a website.',
-  descriptionEs: 'Escaneo de red y ataque de fuerza bruta por SSH basado en inteligencia de fuentes abiertas (OSINT) básica en un sitio web.',
+  tagline: 'Gather OSINT from a website, enumerate usernames and compromise SSH access.',
+  taglineEs: 'Recolecta OSINT de un sitio web, enumera usuarios y compromete el acceso SSH.',
+  description: 'Web reconnaissance, username enumeration and SSH compromise using Hydra.',
+  descriptionEs: 'Reconocimiento web, enumeración de nombres de usuario y compromiso de SSH usando Hydra.',
   tools: ['arp-scan', 'nmap', 'hydra', 'ssh'],
   accentColor: '#fbbf24',
   networkRange: '10.10.10.0/24',
   flags: {
-    user: 'THM{SSH_USER_ACCESS_GRANTED}',
-    root: 'THM{SSH_BRUTE_FORCE_SUCCESS}',
+    user: 'ZIL{SSH_USER_ACCESS_GRANTED}',
+    root: 'ZIL{WEB_OSINT_SSH_SUCCESS}',
   },
   credentials: {
     user: 'gonzalo',
-    pass: 'Quier0unaument0',
+    pass: 'casablanca',
   },
   targetMachine: {
     id: 'lab-scenario-02-ssh',
@@ -41,11 +41,12 @@ const scenario02Data = {
     ],
   },
   learningSteps: [
-    { id: 1, task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover hosts: arp-scan <network/cidr>', textEs: 'Descubrir hosts: arp-scan <network/cidr>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 1 },
-    { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify services: nmap -sV <target-ip>', textEs: 'Identificar servicios: nmap -sV <target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 2 },
-    { id: 3, task: 'Web Reconnaissance', taskEs: 'Reconocimiento Web', text: 'Access the website to identify employees and possible users.', textEs: 'Acceder al sitio web para identificar empleados y posibles usuarios.', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
-    { id: 4, task: 'SSH Brute Force', taskEs: 'Fuerza bruta SSH', text: 'Get credentials: hydra -l <username> -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', textEs: 'Obtener credenciales: hydra -l <username> -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
-    { id: 5, task: 'SSH Access', taskEs: 'Acceso por SSH', text: 'Connect: ssh <username>@<target-ip>', textEs: 'Conectarse: ssh <username>@<target-ip>', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4 },
+    { id: 1, task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover the hosts on the network', textEs: 'Descubrí los hosts en la red', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 1, hints: { hint1: { en: 'Use arp-scan', es: 'Usá arp-scan' }, hint2: { en: 'arp-scan 10.10.10.0/24', es: 'arp-scan 10.10.10.0/24' } } },
+    { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 2, hints: { hint1: { en: 'Use nmap', es: 'Usá nmap' }, hint2: { en: 'nmap -sV <target-ip>', es: 'nmap -sV <ip-objetivo>' } } },
+    { id: 3, task: 'Web Reconnaissance', taskEs: 'Reconocimiento Web', text: 'Access the website to identify employees and possible usernames', textEs: 'Accedé al sitio web para identificar empleados y posibles nombres de usuario', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3, hints: { hint1: { en: 'Use the Firefox browser', es: 'Usá el navegador Firefox' }, hint2: { en: 'Click the Firefox button', es: 'Hacé clic en el botón Firefox' } } },
+    { id: 4, task: 'Credential Attack', taskEs: 'Ataque de credenciales', text: 'Perform a credential attack using the discovered username', textEs: 'Realizá un ataque de credenciales usando el nombre de usuario descubierto', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3, hints: { hint1: { en: 'Use hydra for credential attack', es: 'Usá hydra para el ataque de credenciales' }, hint2: { en: 'hydra -l <username> -P /usr/share/wordlists/rockyou.txt <target-ip> ssh', es: 'hydra -l <usuario> -P /usr/share/wordlists/rockyou.txt <ip> ssh' } } },
+    { id: 5, task: 'SSH Access', taskEs: 'Acceso por SSH', text: 'Connect via SSH using the found credentials', textEs: 'Conectate por SSH usando las credenciales encontradas', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4, hints: { hint1: { en: 'Use the ssh command', es: 'Usá el comando ssh' }, hint2: { en: 'ssh <username>@<target-ip> <password>', es: 'ssh <usuario>@<ip> <contraseña>' } } },
+    { id: 6, task: 'Capture User Flag', taskEs: 'Capturar flag de usuario', text: 'Find and read the user flag to complete the lab', textEs: 'Encontrá y leé la flag de usuario para completar el laboratorio', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4, hints: { hint1: { en: "Check the user's home", es: 'Revisá el home del usuario' }, hint2: { en: 'cat /home/gonzalo/flag.txt', es: 'cat /home/gonzalo/flag.txt' } } },
   ],
 };
 
@@ -53,7 +54,7 @@ const scenario02Data = {
 export const scenario_02: Scenario = buildScenario({
   id: scenario02Data.id,
   name: scenario02Data.name,
-  description: 'Escaneo de red y ataque de fuerza bruta por SSH basado en inteligencia de fuentes abiertas (OSINT) básica en un sitio web.',
+  description: 'Reconocimiento web, enumeración de nombres de usuario y compromiso de SSH usando Hydra.',
   difficulty: 'Easy',
   category: 'Web', // Cambiado a Web para habilitar el navegador
   networkRange: scenario02Data.networkRange,
@@ -79,7 +80,7 @@ export const scenario_02: Scenario = buildScenario({
     },
     files: [
       ...createLinuxFileSystem({ username: 'gonzalo' }),
-      createFile('/home/gonzalo/user.txt', scenario02Data.flags.user),
+      createFile('/home/gonzalo/flag.txt', scenario02Data.flags.user),
     ],
   },
   learningSteps: scenario02Data.learningSteps,

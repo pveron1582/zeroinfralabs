@@ -1,82 +1,82 @@
 // ── commands/builtin/help.ts ──────────────────────────────────────
-// Muestra la ayuda de comandos disponibles
+// Shows available command help
 
 import type { CommandResponse } from '../../types';
 
 const COMMAND_HELP: Record<string, string> = {
-  mkdir: `mkdir - Crear directorios
+  mkdir: `mkdir - Create directories
 
-Uso:
-  mkdir [-p] directorio...
+Usage:
+  mkdir [-p] directory...
 
-Opciones:
-  -p  Crear directorios padres si no existen
+Options:
+  -p  Create parent directories if they don't exist
 
-Ejemplos:
-  mkdir nueva_carpeta              # Crear en directorio actual
-  mkdir -p /var/www/html/nueva     # Crear ruta completa
-  mkdir /tmp/test                  # Crear en ruta absoluta
+Examples:
+  mkdir new_folder                   # Create in current directory
+  mkdir -p /var/www/html/new         # Create full path
+  mkdir /tmp/test                    # Create at absolute path
 
-Descripción:
-  Crea uno o más directorios. Con -p crea toda la ruta de directorios.
-  Sin -p, los directorios padres deben existir.`,
+Description:
+  Creates one or more directories. With -p, creates the entire directory tree.
+  Without -p, parent directories must already exist.`,
 
-  rmdir: `rmdir - Eliminar directorios vacíos
+  rmdir: `rmdir - Remove empty directories
 
-Uso:
-  rmdir [-p] directorio...
+Usage:
+  rmdir [-p] directory...
 
-Opciones:
-  -p  Eliminar directorios padres si quedan vacíos
+Options:
+  -p  Remove parent directories if left empty
 
-Ejemplos:
-  rmdir carpeta_vacia             # Eliminar directorio vacío
-  rmdir -p /var/www/html/nueva    # Eliminar ruta completa
+Examples:
+  rmdir empty_folder                 # Remove empty directory
+  rmdir -p /var/www/html/new         # Remove full path
 
-Descripción:
-  Elimina directorios que están vacíos. Con -p elimina también los padres
-  si quedan vacíos. Solo root puede eliminar en directorios del sistema.`,
+Description:
+  Removes directories that are empty. With -p, also removes parents
+  if they become empty. Only root can remove in system directories.`,
 
-  ls: `ls - Listar archivos y directorios
+  ls: `ls - List files and directories
 
-Uso:
-  ls [opciones] [directorio]
+Usage:
+  ls [options] [directory]
 
-Opciones:
-  -l  Formato largo (permisos, tamaño, fecha)
-  -a  Mostrar archivos ocultos (que empiezan con .)
-  -la Combinación de -l y -a
+Options:
+  -l  Long format (permissions, size, date)
+  -a  Show hidden files (starting with .)
+  -la Combination of -l and -a
 
-Ejemplos:
-  ls                              # Listar directorio actual
-  ls -l /etc                      # Formato largo de /etc
-  ls -la ~                        # Ocultos + formato largo en home`,
+Examples:
+  ls                                 # List current directory
+  ls -l /etc                         # Long format of /etc
+  ls -la ~                           # Hidden + long format in home`,
 
-  cd: `cd - Cambiar directorio
+  cd: `cd - Change directory
 
-Uso:
-  cd [directorio]
+Usage:
+  cd [directory]
 
-Ejemplos:
-  cd /etc                         # Ir a /etc
-  cd ..                           # Directorio padre
-  cd ~                            # Home del usuario
-  cd                              # Home del usuario
+Examples:
+  cd /etc                            # Go to /etc
+  cd ..                              # Parent directory
+  cd ~                               # User's home
+  cd                                 # User's home
 
-Descripción:
-  Cambia el directorio de trabajo actual.`,
+Description:
+  Changes the current working directory.`,
 
-  cat: `cat - Mostrar contenido de archivos
+  cat: `cat - Display file contents
 
-Uso:
-  cat archivo...
+Usage:
+  cat file...
 
-Ejemplos:
-  cat /etc/passwd                 # Mostrar archivo de usuarios
-  cat log.txt                     # Mostrar archivo de log
+Examples:
+  cat /etc/passwd                    # Show user file
+  cat log.txt                        # Show log file
 
-Descripción:
-  Muestra el contenido de uno o más archivos en la terminal.`
+Description:
+  Displays the contents of one or more files in the terminal.`
 };
 
 export const cmd_help = {
@@ -84,28 +84,28 @@ export const cmd_help = {
   execute: (args: string[]): CommandResponse => {
     if (args.length === 0) {
       return {
-        output: `Comandos disponibles:
-  help           - Mostrar esta ayuda
-  clear          - Limpiar la terminal
-  whoami         - Info del usuario actual
-  ifconfig       - Configuración de red
-  arp-scan [red] - Descubrir hosts activos
-  nmap [ip]      - Escanear puertos y servicios
-  gobuster dir   - Enumerar directorios web
-  hydra [args]   - Fuerza bruta de credenciales
-  hashcat [args] - Crackeo de contraseñas
-  ssh user@ip    - Conectar por SSH
-  msfconsole     - Iniciar Metasploit Framework
-  ls [dir]       - Listar archivos
-  cd [dir]       - Cambiar directorio
-  cat [archivo]  - Mostrar contenido de archivo
-  mkdir [-p] dir - Crear directorios
-  rmdir [-p] dir - Eliminar directorios vacíos
+        output: `Available commands:
+  help           - Show this help
+  clear          - Clear the terminal
+  whoami         - Current user info
+  ifconfig       - Network configuration
+  arp-scan [net] - Discover active hosts
+  nmap [ip]      - Scan ports and services
+  gobuster dir   - Enumerate web directories
+  hydra [args]   - Credential brute force
+  hashcat [args] - Password cracking
+  ssh user@ip    - Connect via SSH
+  msfconsole     - Start Metasploit Framework
+  ls [dir]       - List files
+  cd [dir]       - Change directory
+  cat [file]     - Display file contents
+  mkdir [-p] dir - Create directories
+  rmdir [-p] dir - Remove empty directories
   nc [args]      - Netcat utility
-  exit           - Cerrar sesión SSH
-  end            - Salir del laboratorio
+  exit           - Close SSH session
+  end            - Exit the lab
 
-Uso: help <comando> para más información sobre un comando específico.`,
+Usage: help <command> for more information about a specific command.`,
         isError: false
       };
     }
@@ -118,7 +118,7 @@ Uso: help <comando> para más información sobre un comando específico.`,
     }
 
     return {
-      output: `No hay ayuda disponible para el comando: ${command}\nEscribe 'help' sin argumentos para ver la lista de comandos disponibles.`,
+      output: `No help available for command: ${command}\nType 'help' without arguments to see the list of available commands.`,
       isError: true
     };
   }

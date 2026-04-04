@@ -21,7 +21,7 @@ export const createAttacker = (): Machine => ({
     hostname: 'kali-attacker',
     ip: '192.168.1.10',
     mac: '08:00:27:AA:BB:CC',
-    os: 'Kali Linux 2023.4',
+    os: 'Kali Linux 2026.1',
     status: 'up',
     type: 'workstation',
   },

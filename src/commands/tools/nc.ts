@@ -108,7 +108,7 @@ Examples:
         completedMissionId: listenerMissionId,
         blockingCommand: {
           message: `⏳ Escuchando en puerto ${port}... Presiona Ctrl+C para cancelar`,
-          listeningPort: parseInt(port), // Guardar puerto para validación de payload
+          listeningPort: parseInt(port),
         },
       };
     }

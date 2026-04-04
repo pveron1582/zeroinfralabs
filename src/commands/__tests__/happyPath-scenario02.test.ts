@@ -1,5 +1,5 @@
 // ── commands/__tests__/happyPath-scenario02.test.ts ───────────────
-// Happy path tests for Scenario 02: SSH Brute Force Lab
+// Happy path tests for Scenario 02: Web OSINT & SSH Compromise
 
 import { describe, it, expect } from 'vitest';
 import { createAttacker, exec, evolveState, expectSuccess, withLevel, setupBeforeEach } from './happyPathHelpers';
@@ -7,7 +7,7 @@ import type { Machine } from '../../types';
 
 setupBeforeEach();
 
-describe('Happy Path: Scenario 02 - SSH Brute Force', () => {
+describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
   const attacker = createAttacker();
   const sshTarget: Machine = {
     id: 'lab-scenario-02-ssh',
@@ -31,7 +31,7 @@ describe('Happy Path: Scenario 02 - SSH Brute Force', () => {
       { id: 1, task: 'Reconocimiento de red', text: 'arp-scan', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 1 },
       { id: 2, task: 'Escaneo de puertos', text: 'nmap -sV', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 2 },
       { id: 3, task: 'Reconocimiento Web', text: 'Acceder al sitio web', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
-      { id: 4, task: 'Fuerza bruta SSH', text: 'hydra', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
+      { id: 4, task: 'Credential Attack', text: 'hydra', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 3 },
       { id: 5, task: 'Acceso por SSH', text: 'ssh gonzalo@ip', targetMachineId: 'lab-scenario-02-ssh', discoveryLevel: 4 },
     ],
     files: [{ path: '/home/gonzalo/user.txt', content: 'THM{SSH_USER_ACCESS_GRANTED}', type: 'text' }],

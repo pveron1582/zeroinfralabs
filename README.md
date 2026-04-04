@@ -27,16 +27,18 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 - **Sistema de archivos completo** - Comandos `ls` y `cd` con flags correctos (-l, -a, -la)
 - **Autocompletado inteligente** - Navegación con Tab que mantiene paths y barras diagonales
 - **Prompt dinámico** - Muestra directorio actual y conserva historial
-- **Múltiples escenarios** - WordPress Lab, SSH Brute Force, EternalBlue, LFI-RCE + Próximo
+- **Múltiples escenarios** - WordPress Lab, Web OSINT & SSH Compromise, EternalBlue, LFI-RCE + Próximo
 - **Misiones progresivas** - Objetivos claros con niveles de descubrimiento
 - **Escenarios Dinámicos**: 5 laboratorios progresivos (WP, SSH Brute, EternalBlue, etc.).
 - **Meterpreter Realista**: Verificación de privilegios mediante `getuid` necesaria para marcar objetivos como comprometidos.
 - **Enumeración Avanzada**: Panel de detalles que muestra progreso visual (naranja para sospecha, verde para explotación).
 - **Sistema de Archivos Virtual**: Archivos editables que impactan la lógica del simulador en tiempo real.
 - **Ayuda Condicional Dinámica** - Las misiones se ocultan por defecto ("Modo sin ayuda"), desplegándose dinámicamente con animaciones en cascada y efecto tipo máquina de escribir al solicitar guía. Solo se revelan los pasos activos y completados.
+- **Sistema de Pistas Progresivas** - Cada misión incluye pistas opcionales que se revelan gradualmente. El usuario puede hacer clic en "Ver pista 1" para obtener una pista inicial (herramienta a usar), y luego "Ver pista 2" para el comando específico. El carrusel permite navegar entre pasos completados y activos. Los hints son configurables por laboratorio y totalmente opcionales.
 - **Indicador Visual de Avance** - El botón "Ver red" avisa con un parpadeo verde cuando descubres nueva información de reconocimiento (como puertos abiertos o directorios ocultos) con tus herramientas.
 - **Internacionalización (i18n)** - Soporte para inglés y español en toda la interfaz. Selector de idioma en el header con persistencia en el estado de Zustand.
 - **Encuestas Post-Lab** - Al completar un laboratorio al 100%, aparece una encuesta con rating 1-10, dificultad, recomendación y comentarios opcionales. Los datos se envían a Google Sheets vía webhook.
+- **Sistema de Feedback General** - Botón de "Feedback" en el header del landing page que permite a cualquier usuario enviar comentarios, sugerencias o reportar problemas. Incluye captcha visual con 5 preguntas de reconocimiento de imágenes para prevenir spam automatizado. Los datos se guardan en Google Sheets (hoja separada) incluyendo nombre (obligatorio), email (opcional) y comentario (obligatorio).
 - **Analytics de Actividad** - Tracking automático de inicio de labs, progreso, abandono y completado para análisis de uso.
 - **Tarjetas de Laboratorio Dinámicas** - Metadata modular para cada laboratorio (tagline, herramientas, color) que permite rotar y reordenar escenarios fácilmente.
 - **FTP Interactivo** - Sesiones FTP completas con login anónimo, descarga de archivos y navegación de directorios.
@@ -44,7 +46,7 @@ El proyecto está diseñado como un **simulador educativo** con misiones progres
 - **Mapa de red y Panel de Enumeración** - Visualización detallada de máquinas, puertos y vulnerabilidades. El panel de **Enumeración** muestra información dinámica (directorios, credenciales) extraída en tiempo real de los archivos de la máquina (ej: `config.bak`).
 - **Credenciales Dinámicas** - El sistema de login de sitios web (WordPress) y el panel de enumeración son sensibles a cambios en los archivos virtuales. Si un usuario edita un archivo de configuración, las credenciales aceptadas por el simulador cambian automáticamente.
 - **Seguimiento de Reconocimiento** - Muestra posibles usuarios SSH descubiertos y resalta fallos en rojo o éxitos en verde.
-- **Persistencia de estado** - El progreso se guarda automáticamente con Zustand persist
+- **Pantalla de Carga Inmersiva** — Countdown "DESPLEGANDO LABORATORIO" 3..2..1 con animación pop, seguido de carga progresiva de ~6.5s con logs estilo terminal (DNS, provisioning, red, servicios, vectores de ataque, conectividad). Barra de progreso continua con fases visuales y mensaje final "LABORATORIO ACTIVO — Acceso concedido. Ready for attack."
 - **Tests completos** - 579 tests unitarios e integración (todos pasando ✓)
 - **Comando Netcat (nc)** - Listener activo con flexibilidad de argumentos
 - **Terminal bloqueante** - Soporte para comandos que requieren escucha (nc -nlvp)
@@ -72,7 +74,7 @@ ZeroInfra Labs incluye una serie de escenarios progresivos:
 ### Laboratorio 01: WordPress Exploitation
 Enfocado en enumeración web, descubrimiento de archivos sensibles (`config.bak`) y explotación de vulnerabilidades conocidas en CMS.
 
-### Laboratorio 02: SSH Brute Force
+### Laboratorio 02: Web OSINT & SSH Compromise *(antes "SSH Brute Force")*
 Práctica de recolección de información (OSINT) en sitios corporativos para generar listas de usuarios y ataque de fuerza bruta con `hydra`.
 
 ### Laboratorio 03: EternalBlue (MS17-010)
@@ -142,6 +144,124 @@ VITE_ANALYTICS_WEBHOOK=https://script.google.com/macros/s/TU_ID/exec
 | `lab_changed` | Al cambiar de lab sin progreso |
 | `survey_submitted` | Al enviar la encuesta post-lab |
 
+#### Estructura de Datos en Google Sheets
+
+Cada evento genera una fila con 13 columnas:
+
+| Columna | Contenido | Ejemplo |
+|---|---|---|
+| A: Timestamp | Fecha/hora del evento | 1/4/2026 21:17:18 |
+| B: EventType | Tipo de evento | `mission_complete` |
+| C: ScenarioId | ID del escenario | `scenario-01` |
+| D: ScenarioName | Nombre del lab | `WordPress Vulnerable Lab` |
+| E: Details | JSON completo con todos los datos | `{"overall":9,...}` |
+| F: sessionId | ID anónimo de sesión | `sess_1e0ce066` |
+| G: language | Idioma del usuario | `en` / `es` |
+| H: sessionDuration | Segundos desde que abrió la página | `1344` |
+| I: labDuration | Segundos en el lab actual | `1344` |
+| J: overall | Rating encuesta (1-10) | `9` |
+| K: difficulty | Dificultad percibida | `medium` |
+| L: recommend | ¿Lo recomendaría? | `TRUE` / `FALSE` |
+| M: comments | Comentario libre | `cool!!!!` |
+
+#### Google Apps Script — Código Completo
+
+```javascript
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const data = JSON.parse(e.postData.contents);
+    const d = data.details || {};
+
+    sheet.appendRow([
+      new Date(),
+      data.eventType || 'unknown',
+      data.scenarioId || '-',
+      data.scenarioName || '-',
+      JSON.stringify(d),
+      d.sessionId || '',
+      d.language || '',
+      d.sessionDuration || '',
+      d.labDuration || '',
+      d.overall !== undefined ? d.overall : '',
+      d.difficulty || '',
+      d.recommend !== undefined ? String(d.recommend) : '',
+      d.comments || ''
+    ]);
+
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: 'ok' })
+    ).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: 'error', error: err.toString() })
+    ).setMimeType(ContentService.MimeType.JSON);
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+```
+
+> **Importante**: Cada vez que modifiques el script, hacé **Deploy → Manage deployments → Edit → New version → Deploy**.
+
+#### Cómo Analizar los Datos
+
+**1. Ver actividad por usuario (sheet "PorUsuario")**
+
+Creá una sheet nueva y en A1:
+
+```
+=QUERY('Hoja 1'!A:M, "SELECT F, A, B, C, D, J, K, L, M WHERE F <> '' ORDER BY F, A", 1)
+```
+
+Esto agrupa todos los eventos por `sessionId`, mostrando el recorrido completo de cada usuario.
+
+**2. Ver detalle de un usuario específico (sheet "DetalleUsuario")**
+
+- En **A1** creá un dropdown: **Datos → Validación de datos → Menú desplegable (desde un intervalo)**
+- El intervalo apuntá a una lista de sessionIds únicos generada con:
+  ```
+  =UNIQUE(FILTER('Hoja 1'!F:F, 'Hoja 1'!F:F<>"", 'Hoja 1'!F:F<>"sessionId"))
+  ```
+- En **A3** poné:
+  ```
+  =QUERY('Hoja 1'!A:M, "SELECT A, B, C, D, J, K, L, M WHERE F = '"&A1&"' ORDER BY A", 1)
+  ```
+
+**3. Solo encuestas (sheet "Respuestas")**
+
+En una sheet nueva, en A1:
+```
+=FILTER('Hoja 1'!A:E, 'Hoja 1'!B:B="survey_submitted")
+```
+
+Luego extraé los campos de la encuesta con `REGEXEXTRACT` en las columnas siguientes.
+
+**4. Tabla dinámica de encuestas**
+
+Seleccioná la tabla de respuestas → **Insertar → Tabla dinámica**:
+- **Filas**: `scenario` (nombre del lab)
+- **Columnas**: `difficulty`
+- **Valores**: `difficulty` → CONTARA (cuenta respuestas por dificultad)
+- **Valores**: `overall` → PROMEDIO (rating promedio por lab)
+- **Valores**: `recommend` → PROMEDIO (% que lo recomendaría)
+
+#### Métricas Útiles
+
+| Pregunta | Cómo verla |
+|---|---|
+| ¿Cuántos usuarios únicos? | `=COUNTUNIQUE(F:F)` en Hoja 1 |
+| ¿Cuántos completaron un lab? | Contar filas con `lab_completed` |
+| ¿Dónde abandonan la mayoría? | Último `EventType` antes de `lab_abandoned` |
+| ¿Qué lab es más difícil? | Tabla dinámica: scenario vs difficulty |
+| ¿Rating promedio general? | `=AVERAGE(J:J)` en sheet Respuestas |
+| ¿Cuánto tardan en promedio? | `=AVERAGE(I:I)` filtrando por `lab_completed` |
+
 ---
 
 ## 📂 Estructura del Proyecto
@@ -157,13 +277,15 @@ src/
 ├── utils/
 │   ├── autocomplete.ts               # Sistema de autocompletado
 │   ├── network.ts                    # assignDHCP helper
+│   ├── networkAlert.ts               # Detección de cambios en enumeración
 │   └── __tests__/                    # Tests de utilidades
 │
 ├── hooks/                            # Custom React hooks
 │   ├── useKeyboardShortcuts.ts       # Atajos de teclado (Ctrl+L/C/U, Tab, flechas)
+│   ├── useTerminalIdentity.ts        # Hook para sshUser/isRoot + getShortPath
 │   └── __tests__/
 │
-├── fs-models/                         # Modelos de sistemas de archivos
+├── fs-models/                        # Modelos de sistemas de archivos
 │   ├── fs-linux.ts                   # Sistema de archivos Linux
 │   ├── fs-windows.ts                 # Sistema de archivos Windows
 │   ├── index.ts                      # Exportaciones centralizadas
@@ -181,7 +303,7 @@ src/
 │   │   ├── clear.ts, ifconfig.ts, hashcat.ts
 │   │   └── __tests__/                # Tests de comandos built-in
 │   └── tools/                        # Herramientas de pentesting
-│       ├── nmap.ts, ssh.ts, hydra.ts, msfconsole.ts, nc.ts
+│       ├── nmap.ts, ssh.ts, hydra.ts, msfconsole.ts, nc.ts, ftp.ts
 │       ├── arp-scan.ts, gobuster.ts
 │       ├── msfHelpers.ts, msfModules.ts, msfTypes.ts
 │       ├── msfCommands/              # Submódulos de Metasploit
@@ -189,20 +311,30 @@ src/
 │       │   ├── msfMeterpreter.ts, msfShell.ts
 │       └── __tests__/                # Tests de herramientas
 │
-├── laboratorios/                      # Configuración de laboratorios (escenarios)
-│   ├── laboratorios.ts                # Registro central
+├── laboratorios/                     # Configuración de laboratorios (escenarios)
+│   ├── laboratorios.ts               # Registro central (SCENARIOS)
 │   ├── laboratorio01.ts ~ laboratorio05.ts # Escenarios numerados
-│   └── templates.ts                   # Plantillas de máquinas y servicios
+│   ├── templates.ts                  # Plantillas reutilizables (buildScenario, COMMON_PORTS)
+│   └── attackers/                    # Máquinas atacantes (centralizado)
+│       ├── index.ts                  # Registry de attackers
+│       └── kali.ts                   # Kali Linux 2026.1 (filesystem, diccionarios, factory)
 │
 ├── components/                       # Componentes React
-│   ├── Terminal.tsx                  # Terminal interactiva (~430 líneas)
+│   ├── Terminal.tsx                  # Terminal interactiva (~440 líneas)
+│   ├── TerminalPrompt.tsx            # Renderers de prompts (Kali, MSF, FTP)
+│   ├── StreamingOutput.tsx           # Output animado línea por línea
 │   ├── FakeBrowser.tsx               # Navegador simulado (~280 líneas)
 │   ├── AutocompletePanel.tsx         # Panel de autocompletado
-│   ├── NetworkMap.tsx
-│   ├── MissionPanel.tsx
-│   ├── LandingPage.tsx
-│   ├── MachineLoader.tsx
+│   ├── EnumerationPanel.tsx          # Panel de detalles de máquina
+│   ├── NetworkMap.tsx                # Visualización de topología de red
+│   ├── MissionPanel.tsx              # Panel de misiones + hints + carrusel
+│   ├── MachineLoader.tsx             # Pantalla de carga con countdown 3..2..1
+│   ├── LandingPage.tsx               # Página de inicio / selección de lab
+│   ├── FeedbackModal.tsx             # Modal de feedback con captcha visual
+│   ├── SurveyModal.tsx               # Encuesta post-lab
+│   ├── LabCompletionOverlay.tsx      # Animación de lab completo (confetti + trophy)
 │   ├── __tests__/                    # Tests de componentes
+│   ├── fixtures.ts                   # Fixtures compartidos para tests
 │   └── fakesites/
 │       ├── WordPressSite.tsx         # Router de contenido WordPress
 │       ├── ConsultancySite.tsx       # Sitio de consultoría (Escenario 02)
@@ -215,61 +347,28 @@ src/
 │       │   └── __tests__/
 │       └── __tests__/                # Tests de fakesites
 │
-├── test/                            # Configuración de tests
-│   └── setup.ts                     # Setup de Vitest
+├── shells/                           # Sesiones interactivas (FTP, SSH, NC)
+│   ├── index.ts                      # ShellManager central
+│   ├── ftp/FtpSession.ts             # Sesión FTP con login y navegación
+│   └── nc/NcSession.ts               # Sesión Netcat listener
 │
-└── store/
-    ├── index.ts
-    ├── scenarioStore.ts              # Estado global (Zustand)
-    └── __tests__/                    # Tests del store
+├── store/                            # Zustand global state
+│   ├── index.ts                      # Re-exports centralizados
+│   ├── scenarioStore.ts              # Estado global (Zustand + persist)
+│   ├── types.ts                      # Tipos del store (ScenarioState, etc.)
+│   ├── selectors.ts                  # Selectores memoizados
+│   └── __tests__/                    # Tests del store
+│
+├── i18n/
+│   └── translations.ts               # Sistema de traducción EN/ES
+│
+└── test/
+    └── setup.ts                      # Setup de Vitest (mocks, cleanup)
 ```
 
 ---
 
-## 🐛 Bugs Pendientes (Por Resolver)
-
-### ✅ Bug #1: OS visible en topología tras arp-scan
-**Descripción:** Resuelto. El OS ahora solo se muestra cuando `discovery_level >= 2` (después de nmap). Tras arp-scan, el nivel es 1, mostrando correctamente "System: Unknown".
-
-### 🔴 Bug #2: Pasos de EternalBlue necesitan más detalle
-**Descripción:** Los pasos para EternalBlue son demasiado breves. Se necesitan agregar pasos intermedios:
-1. Ingresar a metasploit con `msfconsole`
-2. Buscar exploit con `search ms17-010`
-3. Seleccionar con `use 0` para auxiliar
-4. Ejecutar `show options`
-5. Configurar `set rhosts <ip>`
-6. Ejecutar `run` o `exploit` para verificar vulnerabilidad
-7. `back` para salir del módulo
-8. Repetir `search ms17` para buscar exploit
-9. `use 1` para seleccionar exploit
-10. Configurar rhosts y lhost
-11. `run` o `exploit`
-12. `getuid` para verificar usuario admin
-**Prioridad:** Alta
-
-### 🔴 Bug #3: Escenario 5 - Validaciones de steps
-**Descripción:** Al ejecutar SSH, no se marca como confirmada la info de credenciales en la topología. Al ejecutar `sudo -l`, el step no cambia a confirmado.
-**Prioridad:** Alta
-
-### 🟠 Bug #4: Sesión activa de máquina atacante dice "TU ESTACION"
-**Descripción:** En el NetworkMap, la máquina atacante activa muestra "TU ESTACION" en lugar de "SESION ACTIVA".
-**Prioridad:** Media
-
-### 🟠 Bug #5: `whoami` en conexión SSH muestra hostname e IP
-**Descripción:** Al ejecutar `whoami` en una sesión SSH, muestra información adicional (hostname, IP) cuando solo debería mostrar el nombre de usuario.
-**Prioridad:** Media
-
-### 🟠 Bug #6: Escenario 5 - PrivEsc no cambia prompt a root
-**Descripción:** Al escalar privilegios con `sudo vim -c '!bash'`, el prompt no cambia a `root@hostname`.
-**Prioridad:** Media
-
-### 🟡 Bug #8: Validación de navegador (google.com)
-**Descripción:** El navegador solo valida `www.google.com` y `https://www.google.com`, pero debería aceptar también `http://www.google.com` y `https://google.com` redirigiendo a la URL canónica.
-**Prioridad:** Baja
-
----
-
-> **Nota:** Los bugs resueltos en versiones anteriores están documentados en el [CHANGELOG.md](CHANGELOG.md).
+> **Nota:** Para ver el historial completo de bugs resueltos y nuevas características, consulta el [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -459,7 +558,7 @@ npm run preview          # Preview del build
 - ✓ Sistema de terminal interactivo
 - ✓ 5 escenarios educativos completos
 - ✓ Integración con Metasploit Framework
-- ✓ 609 tests unitarios (todos pasando ✓)
+- ✓ 618 tests unitarios (todos pasando ✓)
 - ✓ State management con Zustand
 - ✓ Navegador web simulado
 - ✓ Mapa de red interactivo
@@ -478,25 +577,31 @@ npm run preview          # Preview del build
 - ✓ Internacionalización (i18n) — inglés/español
 - ✓ Encuestas post-lab con analytics
 - ✓ Tracking de actividad del usuario
+- ✓ Sistema de pistas progresivas (hint1/herramienta + hint2/comando)
+- ✓ Carrusel de pasos con navegación < >
+- ✓ Auto-advance del carrusel al completar paso
+- ✓ Feedback modal con captcha visual
+- ✓ Rediseño completo de todos los labs con hints
 
 ### 📋 En Progreso / Planeado
-- [ ] Tests para comandos faltantes (gobuster, arp-scan)
-- [ ] Tests end-to-end (E2E)
-- [ ] Más escenarios educativos
-- [ ] Modo tutorial con hints contextual
-- [ ] Sistema de badges/logros
 - [ ] Dashboard de analytics con visualización de encuestas
+- [ ] Sistema de badges/logros
+- [ ] Más escenarios educativos
+- [ ] Tests adicionales para覆盖率
 
 ---
 
 ## 📈 Estado del Proyecto
 
 ### 📊 Métricas Actuales
-- **Tests**: 579 tests unitarios pasando
-- **Archivos de test**: 53 archivos de test
-- **Terminal.tsx**: ~430 líneas (antes 899)
-- **FakeBrowser.tsx**: ~280 líneas (antes 547)
-- **Nuevo**: hooks/, AutocompletePanel.tsx, WordPressSite.tsx
+- **Tests**: 618 tests unitarios pasando
+- **Archivos de test**: 55 archivos de test
+- **Terminal.tsx**: ~440 líneas (antes 648)
+- **scenarioStore.ts**: ~380 líneas (antes 558)
+- **EnumerationPanel.test.tsx**: ~413 líneas (antes 518)
+- **Componentes nuevos**: StreamingOutput.tsx, TerminalPrompt.tsx, LabCompletionOverlay.tsx, store/types.ts, store/selectors.ts, useTerminalIdentity.ts, fixtures.ts
+- **Kali Linux**: 2026.1 (última versión)
+- **Comandos de ayuda**: todos en inglés
 
 ### 🔧 Tareas Pendientes (Technical Debt)
 - **Mejora**: Aumentar coverage de componentes con lógica condicional
@@ -628,6 +733,57 @@ Esto permitiría:
 
 ---
 
+## 🚀 Future Roadmap & Community Vision
+
+### Fase 1: Admin Panel (CRUD de Labs)
+Interfaz web protegida para crear, editar y eliminar laboratorios sin tocar código.
+
+- **Lab Editor:** Formulario con secciones para metadata, máquinas, learning steps, misiones, hints
+- **File Manager:** Editor de archivos virtuales para cada máquina
+- **Preview:** Vista previa del lab antes de guardarlo
+- **Export/Import:** Labs como JSON portable
+
+### Fase 2: Lab Builder con Piezas Modulares
+Interfaz para armar labs combinando componentes predefinidos.
+
+| Categoría | Piezas |
+|---|---|
+| **Attacker** | Kali Linux 2026.1, Parrot OS, Arch Linux |
+| **Target OS** | Ubuntu 22.04, Windows 7, Windows 10, Debian |
+| **Services** | SSH, FTP, HTTP, SMB, MySQL, PostgreSQL |
+| **Vulnerabilities** | LFI, SQLi, EternalBlue, FTP Anonymous, Weak SSH Creds, Misconfigured Sudo, WordPress Admin Leak |
+| **Web Sites** | WordPress, Consultancy Site, Login Portal, Custom |
+| **Flags** | User flag, Root flag, Custom flag |
+
+**Crear un lab nuevo:** De ~100 líneas de código → 5 minutos en UI.
+
+### Fase 3: Community Platform & Gamification
+Plataforma viva donde la comunidad crea, vota y comparte labs.
+
+- **Votación de labs:** Los usuarios votan los mejores labs de la comunidad
+- **Niveles de creador:** Novato → Creador → Arquitecto → Maestro
+- **Recompensas:** Labs más votados = meses gratis de premium
+- **Template gallery:** Labs de la comunidad con rating y sharing
+- **Lab Composer:** Usuarios avanzados combinan piezas y comparten sus creaciones
+
+### Fase 4: Rutas de Aprendizaje (Premium)
+Diferenciador clave: no solo "hacé el lab", sino "aprendé pentesting paso a paso".
+
+- Rutas progresivas: Recon → Enumeración → Explotación → Post-explotación → Reporting
+- Labs con dificultad creciente dentro de cada ruta
+- Certificados descargables al completar rutas
+- Scoring y leaderboards
+
+### Modelo Freemium
+| Free | Premium |
+|---|---|
+| Labs básicos | Rutas de aprendizaje completas |
+| Crear labs propios | Labs avanzados exclusivos |
+| Comunidad | Certificados + mentoring |
+| Votar labs | Leaderboards + badges especiales |
+
+---
+
 ## 🔒 Seguridad
 
 El proyecto simula comandos reales pero en un entorno controlado. **No hay código malicioso** ni acceso real a sistemas. Es solo educativo.
@@ -640,6 +796,6 @@ Este proyecto es de código abierto. Siéntete libre de usarlo, modificarlo y co
 
 ---
 
-**Versión:** 2.7.0
-**Última actualización:** 31 de Marzo, 2026
+**Versión:** 2.9.0
+**Última actualización:** 4 de Abril, 2026
 **Tecnologías:** React 18 + TypeScript + Vitest + Zustand

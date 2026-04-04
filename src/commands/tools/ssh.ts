@@ -6,9 +6,9 @@ import type { CommandContext, CommandResponse } from '../../types';
 export const cmd_ssh = {
   name: 'ssh',
   execute: (args: string[], { allMachines, currentMissionId }: CommandContext): CommandResponse => {
-    if (!args[0]) return { output: 'uso: ssh user@ip [password]', isError: true };
+    if (!args[0]) return { output: 'usage: ssh user@ip [password]', isError: true };
     const [user, ip] = args[0].split('@');
-    if (!user || !ip) return { output: 'uso: ssh user@ip', isError: true };
+    if (!user || !ip) return { output: 'usage: ssh user@ip', isError: true };
 
     const target = allMachines.find(m => m.machine_info.ip === ip);
     if (!target) return { output: `ssh: connect to host ${ip} port 22: No route to host`, isError: true };

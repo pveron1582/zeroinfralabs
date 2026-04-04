@@ -9,7 +9,7 @@ export const cmd_gobuster = {
     const urlIdx = args.indexOf('-u');
     const wIdx = args.indexOf('-w');
     if (args[0] !== 'dir' || urlIdx === -1 || wIdx === -1)
-      return { output: 'Uso: gobuster dir -u http://<IP> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', isError: true };
+      return { output: 'Usage: gobuster dir -u http://<IP> -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', isError: true };
 
     const url = args[urlIdx + 1];
     const wl = args[wIdx + 1];
@@ -18,7 +18,7 @@ export const cmd_gobuster = {
     // Validar wordlist - debe ser common.txt de SecLists en la ruta correcta
     if (!wl || !wl.includes('SecLists/Discovery/Web-Content/common.txt')) {
       return { 
-        output: `Error: Wordlist "${wl}" no válida para enumeración de directorios.\nUsa: -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt`, 
+        output: `Error: Wordlist "${wl}" not valid for directory enumeration.\nUse: -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt`, 
         isError: true 
       };
     }

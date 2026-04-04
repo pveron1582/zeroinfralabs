@@ -6,23 +6,13 @@ import { assignDHCP } from '../utils/network';
 import type { Machine, Scenario, MachineInfo, Port, LearningStep, Mission, FileEntry } from '../types';
 import { createLinuxFileSystem, createWindowsFileSystem } from '../fs-models';
 import type { LinuxFileSystemConfig, WindowsFileSystemConfig } from '../fs-models';
+import { createKaliMachine, resetKaliCounter } from './attackers';
 
-// MACs únicas para máquinas atacantes (evita colisiones entre escenarios)
-const ATTACKER_MACS = ['08:00:27:AA:BB:CC', '08:00:27:AA:BB:CD', '08:00:27:AA:BB:CE'];
-let attackerCount = 0;
-
-// Resetea el contador de MACs al cambiar de escenario
-export function resetAttackerCounter() { attackerCount = 0; }
+// Re-export para que los labs que usaban resetAttackerCounter sigan funcionando
+export const resetAttackerCounter = resetKaliCounter;
 
 export function createAttackerMachine(networkRange: string, customHostname?: string): Machine {
-  const mac = ATTACKER_MACS[attackerCount % ATTACKER_MACS.length];
-  attackerCount++;
-  return {
-    id: 'attacker-01',
-    machine_info: { hostname: customHostname || 'kali-attacker', ip: '', mac, os: 'Kali Linux 2023.4', status: 'up', type: 'workstation' },
-    discovery_level: 4, scan_results: { ports: [] }, web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-    learning_steps: [], files: createLinuxFileSystem({ username: 'kali' }),
-  };
+  return createKaliMachine({ networkRange, hostname: customHostname });
 }
 
 export interface ScenarioBuilderConfig {
@@ -49,9 +39,20 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
     files: config.targetMachine.files || [],
   };
   const machines = assignDHCP(config.networkRange, [attacker, target]);
+
+  // Reemplazar placeholders en archivos del atacante (payloads, etc.)
+  const attackerIp = machines.find(m => m.id === 'attacker-01')?.machine_info.ip || '127.0.0.1';
+  attacker.files = attacker.files.map(f => ({
+    ...f,
+    content: f.content
+      .replace(/ATTACKER_IP/g, attackerIp)
+      .replace(/LISTENER_PORT/g, '4444'),
+  }));
+
   const missions: Mission[] = config.learningSteps.map((step, idx) => ({
     id: idx + 1, title: step.task, titleEs: step.taskEs, description: step.text, descriptionEs: step.textEs,
     status: idx === 0 ? 'active' : 'pending', targetMachineId: config.targetMachine.id, discoveryLevel: step.discoveryLevel,
+    hints: step.hints, hintLevel: 0,
   }));
   return {
     id: config.id, name: config.name, description: config.description,
