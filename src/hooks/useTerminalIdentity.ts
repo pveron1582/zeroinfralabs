@@ -32,8 +32,11 @@ export function useTerminalIdentity(machine: Machine) {
   return { sshUser, isRoot, rceCred };
 }
 
-export function getShortPath(dir: string): string {
+export function getShortPath(dir: string, isRootUser: boolean = false): string {
   if (!dir || dir === '/') return '/';
+  if (dir.startsWith('/root') && isRootUser) {
+    return dir === '/root' ? '/root' : '/root' + dir.slice(5).replace(/\/$/, '');
+  }
   if (dir.startsWith('/home/') || dir === '/home') {
     const homeRelative = dir.slice(6);
     if (!homeRelative || homeRelative === '') return '~';

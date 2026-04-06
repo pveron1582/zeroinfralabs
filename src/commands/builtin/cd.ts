@@ -13,6 +13,11 @@ export const cmd_cd = {
       return { output: `cd: ${target}: No such file or directory`, isError: true };
     }
 
+    // Determinar si es usuario root
+    const isRootUser = machine.id.includes('attacker') || 
+      machine.found_credentials?.some(c => c.service === 'ssh' && c.verified && c.user === 'root') ||
+      machine.privesc_completed;
+
     // Normalizar el directorio actual
     const normalizeDir = (dir: string): string => {
       if (!dir) return '/';
@@ -30,15 +35,26 @@ export const cmd_cd = {
       parts.pop();
       resolvedPath = parts.length === 0 ? '/' : '/' + parts.join('/') + '/';
     } else if (target === '~' || target === '') {
-      // Home directory
-      resolvedPath = '/home/user/';
+      // Home directory - depende del usuario
+      resolvedPath = isRootUser ? '/root/' : '/home/user/';
     } else if (target.startsWith('/')) {
       // Path absoluto
       resolvedPath = normalizeDir(target);
     } else if (target.startsWith('~')) {
-      // Path relativo a home
-      resolvedPath = '/home/user/' + target.slice(2).replace(/^\//, '');
-      resolvedPath = normalizeDir(resolvedPath);
+      // Para usuario root, ~/root no es válido - debe ser /root
+      if (isRootUser && target === '~') {
+        resolvedPath = '/root/';
+      } else if (isRootUser && target.startsWith('~/')) {
+        // ~/ algo para root va a /root/ algo, pero ~/root es invalido
+        if (target.slice(2).replace(/^\//, '') === 'root') {
+          return { output: `cd: ${target}: No such file or directory`, isError: true };
+        }
+        resolvedPath = '/root/' + target.slice(2).replace(/^\//, '');
+        resolvedPath = normalizeDir(resolvedPath);
+      } else {
+        resolvedPath = '/home/user/' + target.slice(2).replace(/^\//, '');
+        resolvedPath = normalizeDir(resolvedPath);
+      }
     } else {
       // Path relativo al directorio actual
       resolvedPath = normalizeDir(currentDir + target);

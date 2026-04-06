@@ -163,6 +163,7 @@ export const sshSession: ShellSession<SshState> = {
               pass: password,
               file: '/etc/passwd',
               service: 'ssh',
+              verified: true,
             },
           },
           newState: {

@@ -5,6 +5,7 @@
 //   sudo <cmd>           → respuesta genérica
 
 import type { CommandContext, CommandResponse } from '../../types';
+import { getDonationMessage } from '../../utils/donationMessage';
 
 // Parsea el archivo /etc/sudoers de la máquina y extrae las reglas del usuario actual
 function parseSudoers(sudoersContent: string, username: string): string[] {
@@ -67,7 +68,7 @@ function isDirectRoot(args: string[]): boolean {
 
 export const cmd_sudo = {
   name: 'sudo',
-  execute: (args: string[], { machine, allMachines, currentMissionId }: CommandContext): CommandResponse => {
+  execute: (args: string[], { machine, allMachines, currentMissionId, language }: CommandContext): CommandResponse => {
     // Sin argumentos
     if (args.length === 0) {
       return {
@@ -183,16 +184,17 @@ export const cmd_sudo = {
         if (step) { missionId = step.id; break; }
       }
 
+      const donationMsg = getDonationMessage(language || 'es');
+
       return {
         output: `\n# vim abriendo shell como root...
 root@${machine.machine_info.hostname}:/home/developer# id
 uid=0(root) gid=0(root) groups=0(root)
 root@${machine.machine_info.hostname}:/home/developer# whoami
-root`,
+root${donationMsg}`,
         completedMissionId: missionId,
         newMachineId: machine.id,
         privescCompleted: machine.id,
-        discoveryLevel: 4,
         isError: false,
       };
     }

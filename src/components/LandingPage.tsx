@@ -3,6 +3,7 @@ import type { Scenario } from '../types';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
 import { SCENARIOS_META } from '../laboratorios/laboratorios';
 import { FeedbackModal } from './FeedbackModal';
+import { DonationModal } from './DonationModal';
 
 // Dynamic metadata from lab files with SVG illustrations
 interface ScenarioMeta { 
@@ -204,6 +205,7 @@ interface Props { scenarios: Scenario[]; onSelect: (id: string) => void; }
 export function LandingPage({ scenarios, onSelect }: Props) {
   const [ready, setReady] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showDonation, setShowDonation] = useState(false);
   const language = useLanguage();
   const setLanguage = useSetLanguage();
   const t = useT();
@@ -251,6 +253,18 @@ export function LandingPage({ scenarios, onSelect }: Props) {
             </svg>
             <span>Feedback</span>
           </button>
+
+          {/* Donation button */}
+          <button
+            onClick={() => setShowDonation(true)}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-mono rounded-lg border border-gray-700 text-gray-400 hover:text-amber-400 hover:border-amber-500/50 transition-all"
+            title={language === 'es' ? 'Apoyar el proyecto' : 'Support the project'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span>{language === 'es' ? 'Apoyar' : 'Support'}</span>
+          </button>
           
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" style={{ boxShadow: '0 0 6px #10b981' }}/>
@@ -295,9 +309,11 @@ export function LandingPage({ scenarios, onSelect }: Props) {
       <footer className="relative z-10 py-4 text-center text-xs text-gray-600" style={{ borderTop: '1px solid #1c2a2a' }}>
         <div className="mb-1 text-gray-500">{t('privacyNotice')}</div>
         ZI Labs · Controlled practice environment · All scenarios are fictional
+        <div className="mt-1 text-gray-500">Designed &amp; Developed by <span className="text-violet-400">@pabloveron</span></div>
       </footer>
       
       <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
+      <DonationModal isOpen={showDonation} onClose={() => setShowDonation(false)} />
       
       <style>{`@keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }`}</style>
     </div>

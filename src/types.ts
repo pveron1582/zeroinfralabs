@@ -143,6 +143,7 @@ export interface CommandResponse {
     pass: string;
     file: string;
     service?: string; // 'ssh', 'wp-admin', 'ftp', etc.
+    verified?: boolean; // true if credentials have been verified (e.g., successful SSH login)
   };
   sudoPrivileges?: {
     machineId: string;

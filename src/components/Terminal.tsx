@@ -83,7 +83,7 @@ export function Terminal({
   const language = useScenarioStore(state => state.language);
 
   const { sshUser, isRoot } = useTerminalIdentity(machine);
-  const displayPath = getShortPath(currentDir || '/');
+  const displayPath = getShortPath(currentDir || '/', isRoot);
 
   const basePrompt = machine.id === 'attacker-01'
     ? `root@${machine.machine_info.hostname}:${displayPath}#`
@@ -268,7 +268,7 @@ export function Terminal({
 
     // ── FTP session active ──
     if (ftpSession?.active) {
-      const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
+      const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir, undefined, language);
       if (result.ftpSession) {
         setFtpSession(result.ftpSession.active ? {
           active: result.ftpSession.active,
@@ -318,7 +318,7 @@ export function Terminal({
 
     // ── SSH session active (waiting for password) ──
     if (sshSession?.active && sshSession.step === 'password') {
-      const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
+      const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir, undefined, language);
       if (result.sshSession) {
         setSshSession(result.sshSession.active ? {
           active: result.sshSession.active,
@@ -343,7 +343,7 @@ export function Terminal({
       }
       if (result.newMachineId) onChangeMachine(result.newMachineId);
       if (result.sshLoginUser) {
-        setCurrentDir(`/home/${result.sshLoginUser}`);
+        setCurrentDir(result.sshLoginUser === 'root' ? '/root' : `/home/${result.sshLoginUser}`);
       }
       if (result.sshSessionClosed || !result.sshSession?.active) {
         setSshSession(null);
@@ -356,7 +356,7 @@ export function Terminal({
       return;
     }
 
-    const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
+    const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir, undefined, language);
 
     if (result.ftpSession?.connected && !ftpSession?.active) {
       const targetIp = result.ftpSession.targetIp;

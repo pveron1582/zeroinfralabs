@@ -235,7 +235,8 @@ export const executeCommand = (
   onMsfStateChange?: (state: MsfState | null) => void,
   currentDir: string = '/',
   setCurrentDir?: (dir: string) => void,
-  ftpSession?: CommandContext['ftpSession']
+  ftpSession?: CommandContext['ftpSession'],
+  language?: 'en' | 'es'
 ): CommandResponse => {
   const parts = line.trim().split(/\s+/);
   const cmdName = parts[0].toLowerCase();
@@ -243,7 +244,7 @@ export const executeCommand = (
 
   let result: CommandResponse;
 
-  const ctx: CommandContext = { machine, allMachines, currentMissionId, currentDir, setCurrentDir, ftpSession };
+  const ctx: CommandContext = { machine, allMachines, currentMissionId, currentDir, setCurrentDir, ftpSession, language };
 
   // ── Si hay una sesión de shell activa (FTP, etc.), enviar el comando al shell
   if (shellManager.isActive()) {

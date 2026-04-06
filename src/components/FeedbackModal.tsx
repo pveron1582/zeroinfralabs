@@ -82,6 +82,7 @@ interface Props {
 export function FeedbackModal({ isOpen, onClose }: Props) {
   const language = useLanguage();
   const isSpanish = language === 'es';
+  const COOLDOWN_MS = 5 * 60 * 1000;
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -92,6 +93,38 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [wrongAnswer, setWrongAnswer] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  
+  // Check cooldown on mount and when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const lastSubmit = localStorage.getItem('feedback_last_submit');
+      if (lastSubmit) {
+        const elapsed = Date.now() - parseInt(lastSubmit, 10);
+        const remaining = COOLDOWN_MS - elapsed;
+        if (remaining > 0) {
+          setCooldownRemaining(remaining);
+        } else {
+          setCooldownRemaining(0);
+        }
+      }
+    }
+  }, [isOpen]);
+  
+  // Update countdown timer
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const timer = setInterval(() => {
+      setCooldownRemaining(prev => {
+        if (prev <= 1000) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownRemaining > 0]);
   
   // Reset form when modal closes
   useEffect(() => {
@@ -106,6 +139,12 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
       setCaptchaQuestion(generateCaptchaQuestion(isSpanish));
     }
   }, [isOpen, isSpanish]);
+  
+  const formatTime = (ms: number): string => {
+    const mins = Math.floor(ms / 60000);
+    const secs = Math.floor((ms % 60000) / 1000);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
   
   const t = {
     en: {
@@ -178,6 +217,9 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
         details: feedbackData,
       });
       
+      localStorage.setItem('feedback_last_submit', Date.now().toString());
+      setCooldownRemaining(COOLDOWN_MS);
+      
       setSubmitted(true);
       setTimeout(() => {
         onClose();
@@ -230,6 +272,24 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
                 </svg>
               </div>
               <p className="text-lg text-emerald-400">{texts.success}</p>
+            </div>
+          ) : cooldownRemaining > 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mb-4">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <p className="text-lg text-amber-400 mb-2">
+                {language === 'es' ? 'Enviaste un comentario recientemente' : 'You recently submitted feedback'}
+              </p>
+              <p className="text-sm text-gray-400">
+                {language === 'es' 
+                  ? `Podés enviar otro en ${formatTime(cooldownRemaining)}`
+                  : `You can send another in ${formatTime(cooldownRemaining)}`
+                }
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
