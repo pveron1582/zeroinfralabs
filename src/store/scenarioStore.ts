@@ -42,6 +42,7 @@ const initialState = {
   currentDir: '/',
   msfState: null as MsfState | null,
   ftpSession: null as FtpSessionState | null,
+  sshSession: null as SshSessionState | null,
   _prevMachinesSnapshot: [] as EnumerationSnapshot[],
   showCompletionOverlay: false,
 };
@@ -79,6 +80,7 @@ export const useScenarioStore = create<ScenarioState>()(
       // ── Session ───────────────────────────────────────────────────────
       setMsfState: (state) => set({ msfState: state }),
       setFtpSession: (session) => set({ ftpSession: session }),
+      setSshSession: (session) => set({ sshSession: session }),
 
       // ── Scenario selection ────────────────────────────────────────────
       selectScenario: (id) => {
@@ -123,6 +125,7 @@ export const useScenarioStore = create<ScenarioState>()(
             blockingCommand: null,
             msfState: null,
             ftpSession: null,
+            sshSession: null,
             currentDir: '/root/',
             _prevMachinesSnapshot: createEnumerationSnapshot(newMachines),
             showCompletionOverlay: false,

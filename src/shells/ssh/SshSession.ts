@@ -1,5 +1,5 @@
 // ── shells/ssh/SshSession.ts ──────────────────────────────────────
-// Implementación modular del shell SSH
+// Implementación modular del shell SSH con flujo interactivo real
 
 import type { ShellSession, ShellContext, ShellResult } from '../ShellSession';
 
@@ -8,8 +8,9 @@ export interface SshState {
   connected: boolean;
   targetIp?: string;
   targetId?: string;
-  user?: string;
+  username?: string;
   authenticated: boolean;
+  step: 'connecting' | 'password' | 'connected';
 }
 
 // ── Implementación del shell SSH ──────────────────────────────────
@@ -17,190 +18,183 @@ export const sshSession: ShellSession<SshState> = {
   name: 'ssh',
 
   getPrompt(state: SshState): string {
-    if (state.authenticated && state.targetIp) {
-      return `${state.user}@${state.targetIp}:~$ `;
+    if (state.step === 'password') {
+      return `${state.username}@${state.targetIp}'s password: `;
     }
     return '';
   },
 
   createInitialState(args: string[], ctx: ShellContext): SshState {
-    // Formato: ssh user@ip [password]
     if (!args[0]) {
-      return { connected: false, authenticated: false };
+      return { connected: false, authenticated: false, step: 'connecting' };
     }
 
-    const [userAtIp, password] = args;
-    const [user, ip] = userAtIp.split('@');
+    const targetArg = args[0];
+    const [user, ip] = targetArg.split('@');
 
     if (!user || !ip) {
-      return { connected: false, authenticated: false };
+      return { connected: false, authenticated: false, step: 'connecting' };
     }
 
     const target = ctx.allMachines.find(m => m.machine_info.ip === ip);
     if (!target) {
-      return { connected: false, authenticated: false };
+      return { connected: false, authenticated: false, step: 'connecting' };
     }
 
     const sshPort = target.scan_results.ports.find(
       p => p.service === 'ssh' && p.state === 'open'
     );
     if (!sshPort) {
-      return { connected: false, authenticated: false };
+      return { connected: false, authenticated: false, step: 'connecting' };
     }
 
-    // Verificar credenciales
-    if (sshPort.credentials?.user === user && sshPort.credentials?.pass === password) {
-      return {
-        connected: true,
-        targetIp: ip,
-        targetId: target.id,
-        user,
-        authenticated: true,
-      };
-    }
-
-    // Conexión establecida pero no autenticada
+    // Conexión establecida, esperando password
     return {
       connected: true,
       targetIp: ip,
       targetId: target.id,
-      user,
+      username: user,
       authenticated: false,
+      step: 'password',
     };
   },
 
   executeCommand(input: string, state: SshState, ctx: ShellContext): { result: ShellResult; newState: SshState } {
-    const parts = input.trim().split(/\s+/);
-    const cmd = parts[0]?.toLowerCase() || '';
-
-    // ── Si no está autenticado, manejar login ─────────────────────
-    if (!state.authenticated) {
-      // Si tenemos usuario pero no password, pedir password
-      if (state.user && !state.authenticated) {
-        const password = input.trim();
-        const target = ctx.allMachines.find(m => m.id === state.targetId);
-        const sshPort = target?.scan_results.ports.find(
-          p => p.service === 'ssh' && p.state === 'open'
-        );
-
-        if (sshPort?.credentials?.user === state.user && sshPort?.credentials?.pass === password) {
-          const atkIp = ctx.allMachines.find(m => m.id.includes('attacker'))?.machine_info.ip || '10.0.0.1';
-          const output = `Warning: Permanently added '${state.targetIp}' (ECDSA) to list of known hosts.\n` +
-            `Welcome to ${target?.machine_info.os || 'Linux'} (GNU/Linux 5.15.0 x86_64)\n\n` +
-            `Last login: ${new Date().toLocaleString()} from ${atkIp}`;
-
-          return {
-            result: {
-              output,
-              newMachineId: state.targetId,
-              foundCredentials: {
-                machineId: state.targetId!,
-                user: state.user!,
-                pass: password,
-                file: '/etc/passwd',
-                service: 'ssh',
-              },
-            },
-            newState: { ...state, authenticated: true },
-          };
-        }
-
+    // ── Si no está conectado, manejar conexión ─────────────────────
+    if (!state.connected) {
+      const trimmedInput = input.trim();
+      if (!trimmedInput) {
         return {
-          result: { output: `${state.user}@${state.targetIp}'s password:\nPermission denied, please try again.`, isError: true },
+          result: { output: 'usage: ssh user@ip', isError: true },
+          newState: state,
+        };
+      }
+
+      const parts = trimmedInput.split(/\s+/);
+      const targetArg = parts[0];
+      const [user, ip] = targetArg.split('@');
+
+      if (!user || !ip) {
+        return {
+          result: { output: 'usage: ssh user@ip', isError: true },
+          newState: state,
+        };
+      }
+
+      const target = ctx.allMachines.find(m => m.machine_info.ip === ip);
+      if (!target) {
+        return {
+          result: { output: `ssh: connect to host ${ip} port 22: No route to host`, isError: true },
+          newState: state,
+        };
+      }
+
+      const sshPort = target.scan_results.ports.find(
+        p => p.service === 'ssh' && p.state === 'open'
+      );
+
+      if (!sshPort) {
+        return {
+          result: { output: `ssh: connect to host ${ip} port 22: Connection refused`, isError: true },
           newState: state,
         };
       }
 
       return {
-        result: { output: 'Not connected.', isError: true, closeSession: true },
-        newState: state,
+        result: { output: `${user}@${ip}'s password: ` },
+        newState: {
+          connected: true,
+          targetIp: ip,
+          targetId: target.id,
+          username: user,
+          authenticated: false,
+          step: 'password',
+        },
       };
     }
 
-    // ── Comandos SSH autenticados ──────────────────────────────────
-    switch (cmd) {
-      case 'exit':
-      case 'quit':
-      case 'logout': {
+    // ── Esperando password ───────────────────────────────────────
+    if (state.step === 'password') {
+      const target = ctx.allMachines.find(m => m.id === state.targetId);
+
+      if (!target) {
         return {
-          result: { output: 'logout\nConnection to closed.', closeSession: true, sshSessionClosed: true },
+          result: { output: `Connection lost.`, isError: true, closeSession: true },
           newState: { ...state, connected: false, authenticated: false },
         };
       }
 
-      case 'whoami': {
+      const sshPort = target.scan_results.ports.find(
+        p => p.service === 'ssh' && p.state === 'open'
+      );
+
+      if (!sshPort) {
         return {
-          result: { output: state.user || 'user' },
-          newState: state,
+          result: { output: `ssh: connect to host ${state.targetIp} port 22: Connection refused`, isError: true, closeSession: true },
+          newState: { ...state, connected: false, authenticated: false },
         };
       }
 
-      case 'pwd': {
-        return {
-          result: { output: `/home/${state.user}` },
-          newState: state,
-        };
-      }
+      const password = input.trim();
 
-      case 'ls': {
-        return {
-          result: { output: `Desktop  Documents  Downloads  Music  Pictures  Videos` },
-          newState: state,
-        };
-      }
+      if (sshPort.credentials?.user === state.username && sshPort.credentials?.pass === password) {
+        const atkIp = ctx.allMachines.find(m => m.id.includes('attacker'))?.machine_info.ip || '10.0.0.1';
+        const osName = target.machine_info.os.includes('Windows')
+          ? target.machine_info.os
+          : `${target.machine_info.os} (GNU/Linux 5.15.0 x86_64)`;
 
-      case 'hostname': {
-        return {
-          result: { output: state.targetIp || 'target' },
-          newState: state,
-        };
-      }
+        let output = `Warning: Permanently added '${state.targetIp}' (ECDSA) to list of known hosts.\n`;
+        output += `Welcome to ${osName}\n\n`;
+        output += `Last login: ${new Date().toLocaleString()} from ${atkIp}`;
 
-      case 'id': {
-        const uid = state.user === 'root' ? '0' : '1000';
-        const gid = state.user === 'root' ? '0' : '1000';
-        return {
-          result: { output: `uid=${uid}(${state.user}) gid=${gid}(${state.user}) groups=${gid}(${state.user})` },
-          newState: state,
-        };
-      }
+        const canComplete = target.learning_steps.some(s => s.id === ctx.currentMissionId);
 
-      case 'uname': {
-        if (parts.includes('-a')) {
-          return {
-            result: { output: `Linux ${state.targetIp} 5.15.0-generic #1 SMP x86_64 GNU/Linux` },
-            newState: state,
-          };
-        }
-        return {
-          result: { output: 'Linux' },
-          newState: state,
-        };
-      }
-
-      case 'help':
-      case '?': {
         return {
           result: {
-            output: `Available commands:\n  whoami    Show current user\n  pwd       Print working directory\n  ls        List files\n  hostname  Show hostname\n  id        Show user/group IDs\n  uname     System information\n  exit      Logout`,
+            output,
+            completedMissionId: canComplete ? ctx.currentMissionId : undefined,
+            newMachineId: state.targetId,
+            sshLoginUser: state.username,
+            closeSession: true,
+            sshSessionClosed: true,
+            foundCredentials: {
+              machineId: state.targetId!,
+              user: state.username!,
+              pass: password,
+              file: '/etc/passwd',
+              service: 'ssh',
+            },
           },
-          newState: state,
+          newState: {
+            ...state,
+            authenticated: true,
+            step: 'connected',
+          },
         };
       }
 
-      default: {
-        if (cmd) {
-          return {
-            result: { output: `${cmd}: command not found` },
-            newState: state,
-          };
-        }
-        return { result: { output: '' }, newState: state };
-      }
+      return {
+        result: {
+          output: `Permission denied, please try again.`,
+          isError: true,
+          closeSession: true,
+          failedUser: state.username ? {
+            machineId: state.targetId!,
+            user: state.username,
+          } : undefined,
+        },
+        newState: { ...state, connected: false, authenticated: false },
+      };
     }
+
+    // ── Fallback ──────────────────────────────────────────────────
+    return {
+      result: { output: `Connection lost.`, isError: true, closeSession: true },
+      newState: { ...state, connected: false, authenticated: false },
+    };
   },
 
   isActive(state: SshState): boolean {
-    return state.connected && state.authenticated;
+    return state.connected && !state.authenticated;
   },
 };

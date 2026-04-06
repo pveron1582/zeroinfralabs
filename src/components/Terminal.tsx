@@ -78,6 +78,8 @@ export function Terminal({
   const setBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
   const ftpSession = useScenarioStore(state => state.ftpSession);
   const setFtpSession = useScenarioStore(state => state.setFtpSession);
+  const sshSession = useScenarioStore(state => state.sshSession);
+  const setSshSession = useScenarioStore(state => state.setSshSession);
   const language = useScenarioStore(state => state.language);
 
   const { sshUser, isRoot } = useTerminalIdentity(machine);
@@ -97,11 +99,21 @@ export function Terminal({
     }
   };
 
+  const getSshPrompt = (): string => {
+    if (!sshSession?.active) return '';
+    if (sshSession.step === 'password') {
+      return `${sshSession.username}@${sshSession.targetIp}'s password: `;
+    }
+    return '';
+  };
+
   const prompt = isMsfActive()
     ? (getMsfPrompt() || 'msf6 >')
     : ftpSession?.active
       ? (getFtpPrompt() || 'ftp> ')
-      : basePrompt;
+      : sshSession?.active
+        ? (getSshPrompt() || '')
+        : basePrompt;
 
   const makeWelcome = (machines: Machine[]): HistoryEntry => ({
     command: null, streaming: false,
@@ -142,6 +154,7 @@ export function Terminal({
     setListeningPort(null);
     resetShellManager();
     setFtpSession(null);
+    setSshSession(null);
     const timer = setTimeout(() => inputRef.current?.focus(), 150);
     return () => clearTimeout(timer);
   }, [scenarioId, allMachines.length]);
@@ -184,13 +197,6 @@ export function Terminal({
 
   const processCommandResult = (result: any, trimmed: string, currentPrompt: string, isStreaming: boolean) => {
     if (result.completedMissionId) onMissionComplete(result.completedMissionId);
-    if (result.completedMissionId === 5) {
-      const target = allMachines.find(m => m.scan_results.ports.some(p => p.service === 'ssh'));
-      if (target && !target.id.includes('lfi')) {
-        const { setPossibleUsers } = useScenarioStore.getState();
-        setPossibleUsers(target.id, ['john']);
-      }
-    }
     if (result.blockingCommand) {
       setBlockingCommand(result.blockingCommand);
       if (result.blockingCommand.listeningPort) {
@@ -212,6 +218,19 @@ export function Terminal({
     }
     if (result.sshSessionClosed) {
       setCurrentDir('/root/');
+    }
+    if (result.possibleUsers) {
+      const target = allMachines.find(m => m.id === result.possibleUsers.machineId);
+      if (target) {
+        useScenarioStore.getState().setPossibleUsers(target.id, result.possibleUsers.users);
+      }
+    }
+    if (result.createdFiles && result.createdFiles.length > 0) {
+      const attacker = allMachines.find(m => m.machine_info.type === 'workstation' || m.machine_info.hostname?.toLowerCase().includes('kali'));
+      if (attacker) {
+        const { addFileToMachine } = useScenarioStore.getState();
+        result.createdFiles.forEach((f: FileEntry) => addFileToMachine(attacker.id, f));
+      }
     }
   };
 
@@ -242,11 +261,12 @@ export function Terminal({
 
   const runCommand = (cmd: string) => {
     const trimmed = cmd.trim();
-    if ((!trimmed && !ftpSession?.active) || busy) return;
+    if ((!trimmed && !ftpSession?.active && !sshSession?.active) || busy) return;
     setCmdHistory(prev => [trimmed, ...prev]);
     setInput(''); setHistIdx(-1);
     const currentPrompt = prompt;
 
+    // ── FTP session active ──
     if (ftpSession?.active) {
       const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
       if (result.ftpSession) {
@@ -292,6 +312,41 @@ export function Terminal({
             timestamp: Date.now()
           }]);
         }
+      }
+      return;
+    }
+
+    // ── SSH session active (waiting for password) ──
+    if (sshSession?.active && sshSession.step === 'password') {
+      const result = executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir);
+      if (result.sshSession) {
+        setSshSession(result.sshSession.active ? {
+          active: result.sshSession.active,
+          targetIp: result.sshSession.targetIp,
+          targetId: result.sshSession.targetId,
+          username: result.sshSession.username,
+          authenticated: result.sshSession.authenticated,
+          step: result.sshSession.step || 'password'
+        } : null);
+      }
+      setHistory(prev => [...prev, {
+        command: trimmed,
+        output: result.output,
+        streaming: false,
+        prompt: currentPrompt,
+        timestamp: Date.now()
+      }]);
+      if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+      if (result.foundCredentials) {
+        onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
+        onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
+      }
+      if (result.newMachineId) onChangeMachine(result.newMachineId);
+      if (result.sshLoginUser) {
+        setCurrentDir(`/home/${result.sshLoginUser}`);
+      }
+      if (result.sshSessionClosed || !result.sshSession?.active) {
+        setSshSession(null);
       }
       return;
     }
@@ -353,6 +408,26 @@ export function Terminal({
       handleDownloadedFile(result, currentPrompt, ftpSession);
     }
 
+    // ── SSH session started ──
+    if (result.sshSession?.active && !sshSession?.active) {
+      setSshSession({
+        active: true,
+        targetIp: result.sshSession.targetIp,
+        targetId: result.sshSession.targetId,
+        username: result.sshSession.username,
+        authenticated: result.sshSession.authenticated,
+        step: result.sshSession.step || 'password'
+      });
+      setHistory(prev => [...prev, {
+        command: trimmed,
+        output: result.output,
+        streaming: false,
+        prompt: currentPrompt,
+        timestamp: Date.now()
+      }]);
+      return;
+    }
+
     if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
     if (result.output === 'EXIT_TO_LANDING') {
       const { missions } = useScenarioStore.getState();
@@ -368,7 +443,8 @@ export function Terminal({
 
     const cmdName = trimmed.split(/\s+/)[0].toLowerCase();
     const cfg = CMD_DELAYS[cmdName] || CMD_DELAYS['default'];
-    const useStreaming = cfg.minTotal > 0;
+    const customDelays = result.streamingLineDelays;
+    const useStreaming = cfg.minTotal > 0 || (customDelays && customDelays.length > 0);
 
     if (!useStreaming) {
       setHistory(prev => [...prev, { command: trimmed, output: result.output, streaming: false, prompt: currentPrompt, timestamp: Date.now() }]);
@@ -379,7 +455,6 @@ export function Terminal({
     const entryTs = Date.now();
     setBusy(true);
     const lines = (result.output as string).split('\n');
-    const customDelays = result.streamingLineDelays;
     const totalDelay = customDelays
       ? customDelays.reduce((a, b) => a + b, 0)
       : Math.max(cfg.minTotal, lines.length * 42 + 200);
@@ -433,7 +508,7 @@ export function Terminal({
           <div key={entry.timestamp + i} className="space-y-0.5" style={{ animation: 'fadeInEntry 0.12s ease-out' }}>
             {entry.command !== null && (
               <div className="flex flex-col gap-0.5">
-                {entry.prompt?.includes('ftp') || entry.prompt?.includes('Name') || entry.prompt?.includes('Password') ? (
+                {entry.prompt?.includes('ftp') || entry.prompt?.includes('Name') || entry.prompt?.includes('Password') || entry.prompt?.includes("'s password") ? (
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
                       {entry.prompt?.trim() === 'ftp>' ? 'ftp> ' : entry.prompt}
@@ -466,6 +541,26 @@ export function Terminal({
               <div className="flex items-center gap-2">
                 <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
                   {prompt?.trim() === 'ftp>' ? 'ftp> ' : prompt}
+                </span>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="flex-1 bg-transparent border-none outline-none text-sm min-w-[100px]"
+                  style={{ color, caretColor: color, minWidth: '50px' }}
+                  autoFocus
+                  spellCheck={false}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                />
+              </div>
+            ) : sshSession?.active ? (
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
+                  {prompt}
                 </span>
                 <input
                   ref={inputRef}

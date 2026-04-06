@@ -46,10 +46,20 @@ export const cmd_cat = {
         const step = m.learning_steps.find(s => {
           const lTask = (s.task || '').toLowerCase();
           const lText = (s.text || '').toLowerCase();
-          return (lTask.includes('read') || lTask.includes('leer'))
-            && (lText.includes('cat') || lText.includes('nota') || lText.includes('note'));
+          return (lTask.includes('read') || lTask.includes('leer') || lTask.includes('ftp') || lTask.includes('enumeration') || lTask.includes('enumeración') || lTask.includes('download'))
+            && (lText.includes('cat') || lText.includes('nota') || lText.includes('note') || lText.includes('ftp') || lText.includes('download'));
         });
         if (step) { completedMissionId = step.id; break; }
+      }
+    }
+
+    // Discover usernames from notes mentioning a user
+    let possibleUsers: { machineId: string; users: string[] } | undefined;
+    const mentionedUser = file.content.match(/(?:Para|To|user|username|login)\s*[:=]?\s*([a-zA-Z0-9_]+)/i);
+    if (mentionedUser && !mentionedUser[1].toLowerCase().includes('root')) {
+      const target = allMachines.find(m => m.id !== machine.id);
+      if (target) {
+        possibleUsers = { machineId: target.id, users: [mentionedUser[1]] };
       }
     }
 
@@ -72,6 +82,6 @@ export const cmd_cat = {
       }
     }
 
-    return { output: file.content, completedMissionId };
+    return { output: file.content, completedMissionId, possibleUsers };
   }
 };

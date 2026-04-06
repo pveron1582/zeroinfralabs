@@ -164,6 +164,8 @@ export interface CommandResponse {
   streamingLineDelays?: number[]; // ms delay before each line (for realistic streaming)
   discoveredPorts?: string; // machineId whose ports were discovered - triggers network map pulse
   sshSessionClosed?: boolean; // SSH session was closed (reset dir to /root/)
+  createdFiles?: FileEntry[]; // files created by command (e.g. nmap -oN)
+  possibleUsers?: { machineId: string; users: string[] }; // users discovered from notes/files
 }
 
 export interface CommandContext {
@@ -183,5 +185,13 @@ export interface CommandContext {
     loggedIn?: boolean;
     currentDir?: string;
     step: 'connecting' | 'username' | 'password' | 'connected';
+  };
+  sshSession?: {
+    active: boolean;
+    targetIp?: string;
+    targetId?: string;
+    username?: string;
+    authenticated?: boolean;
+    step: 'connecting' | 'password' | 'connected';
   };
 }

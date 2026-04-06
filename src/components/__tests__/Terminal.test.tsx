@@ -25,6 +25,8 @@ vi.mock('../../store/scenarioStore', () => ({
       setBlockingCommand: vi.fn(),
       ftpSession: null,
       setFtpSession: vi.fn(),
+      sshSession: null,
+      setSshSession: vi.fn(),
     };
     return selector(state);
   })

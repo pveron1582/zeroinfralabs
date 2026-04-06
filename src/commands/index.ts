@@ -122,14 +122,9 @@ export const startShellSession = (shellName: string, args: string[], ctx: Comman
   if (shellName === 'ftp' && current) {
     const state = current.state;
     const targetIp = args[0] || state.targetIp || 'localhost';
-    
-    // Determinar el missionId basado en el estado de conexión
-    // NO completar misión aquí — se completa solo tras login exitoso (password step)
-    let completedMissionId: number | undefined;
-    
+
     return {
       output: `Connected to ${targetIp}.\n220 (vsFTPd 3.0.3)`,
-      completedMissionId,
       ftpSession: {
         active: true,
         connected: state.connected,
@@ -137,6 +132,24 @@ export const startShellSession = (shellName: string, args: string[], ctx: Comman
         targetId: state.targetId,
         username: state.username,
         loggedIn: state.loggedIn,
+        step: state.step,
+      }
+    };
+  }
+
+  // Para SSH, devolver el estado compatible con el store
+  if (shellName === 'ssh' && current) {
+    const state = current.state;
+
+    return {
+      output: `${state.username}@${state.targetIp}'s password: `,
+      sshSession: {
+        active: true,
+        connected: state.connected,
+        targetIp: state.targetIp,
+        targetId: state.targetId,
+        username: state.username,
+        authenticated: state.authenticated,
         step: state.step,
       }
     };
@@ -152,6 +165,7 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
   }
 
   const shellCtx = toShellContext(ctx);
+  const shellName = shellManager.getCurrentShellName();
   const result = shellManager.execute(line, shellCtx);
   const current = shellManager.current();
 
@@ -167,19 +181,34 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
     failedUser: result.failedUser,
     foundVulnerability: result.foundVulnerability,
     sshSessionClosed: result.sshSessionClosed,
+    sshLoginUser: result.sshLoginUser,
   };
 
   // Si es sesión FTP, mantener compatibilidad con el store
-  if (current?.shell.name === 'ftp') {
-    const state = current.state;
+  if (shellName === 'ftp' || current?.shell.name === 'ftp') {
+    const state = current?.state;
     response.ftpSession = {
       active: shellManager.isActive(),
-      connected: state.connected,
-      targetIp: state.targetIp,
-      targetId: state.targetId,
-      username: state.username,
-      loggedIn: state.loggedIn,
-      step: state.step,
+      connected: state?.connected,
+      targetIp: state?.targetIp,
+      targetId: state?.targetId,
+      username: state?.username,
+      loggedIn: state?.loggedIn,
+      step: state?.step,
+    };
+  }
+
+  // Si es sesión SSH, mantener compatibilidad con el store
+  if (shellName === 'ssh' || current?.shell.name === 'ssh') {
+    const state = current?.state;
+    response.sshSession = {
+      active: shellManager.isActive(),
+      connected: state?.connected,
+      targetIp: state?.targetIp,
+      targetId: state?.targetId,
+      username: state?.username,
+      authenticated: state?.authenticated,
+      step: state?.step,
     };
   }
 

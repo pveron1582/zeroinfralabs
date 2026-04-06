@@ -2,6 +2,52 @@
 
 ## [Unreleased]
 
+### 🎮 Game Designer — Revisión y Corrección del Laboratorio 05
+
+**Problemas encontrados:**
+- 10 pasos para un lab Medium (demasiados, con pasos redundantes)
+- Tagline incompleto (solo describía privesc, ignoraba FTP e hydra)
+- Array `tools` incompleto (faltaban `ftp` e `hydra`)
+- Paso 4 tenía `discoveryLevel: 0` (inconsistente)
+- Validación de FTP se completaba solo con login, no al descargar/leer
+
+**Correcciones aplicadas:**
+- **Pasos reducidos de 10 a 8** — Fusionados pasos 3-5 (FTP connect + download + read) en un solo paso "FTP Enumeration"
+- **Tagline actualizado** — Ahora refleja todo el flujo: FTP → hydra → privesc
+- **`tools` completo** — Agregados `ftp` e `hydra`
+- **`discoveryLevel` inconsistente eliminado** — El paso 4 (descargar nota) ya no existe como paso separado
+- **Validación de FTP corregida** — La misión 3 se completa al **leer** la nota con `cat`, no al descargarla con `get`
+  - `FtpSession.ts`: removido `completedMissionId` del login y del `get`
+  - `cat.ts`: ampliada detección de notas para incluir keywords de FTP Enumeration
+
+### 📋 Documentación del Sistema de Agentes
+
+**Archivos nuevos:**
+- `specs/LAB_SPEC.md` — Anatomía completa de un laboratorio basada en el lab01
+- `specs/SKILLS.md` — 10 skills reutilizables documentadas (generate_spec, generate_lab, generate_tests, analyze_scenario, etc.)
+- `specs/ROLES.md` — 6 roles de agente documentados con mindset, criterios y ejemplos de uso
+
+### 🛠️ Nmap — Flags Completas
+
+**Nuevas flags soportadas:**
+- Scan types: `-sS` (SYN stealth), `-sn`/`-sP` (ping scan), `-O` (OS detection), `-A` (aggressive)
+- Host discovery: `-Pn` (skip host discovery)
+- Verbosidad: `-v`, `-vv`, `-vvv` (raw packets simulados)
+- Puertos: `-p 22,80`, `-p 1-1000`, `-p-` (todos los 65535)
+- Output: `-oN archivo.txt` (normal), `-oG archivo.gnmap` (grepable)
+- Ayuda: `-h`, `--help`
+
+**Archivos modificados:**
+- `nmap.ts` — Reescrito con soporte completo de flags (~350 líneas)
+- `nmap.test.ts` — 24 tests (de 5 a 24) cubriendo todas las flags nuevas
+- `types.ts` — Agregado `createdFiles` a `CommandResponse`
+- `Terminal.tsx` — Procesamiento de `createdFiles` para archivos generados por comandos
+
+### 🐛 Bug Fixes
+
+- **Streaming del exploit ms17-010** — El exploit ahora muestra output línea por línea con delays dramáticos (antes se mostraba todo de golpe)
+- **FTP mission validation** — La misión FTP se completa al leer la nota descargada, no solo al conectarse
+
 ### 🏗️ Modularización de Componentes Grandes
 
 #### Lab Completion Overlay (`src/components/LabCompletionOverlay.tsx`)

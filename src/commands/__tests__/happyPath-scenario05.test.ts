@@ -88,9 +88,20 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     expect(result.completedMissionId).toBe(6);
   });
 
-  it('Paso 5: ssh — valida cambio de máquina activa', () => {
+  it('Paso 5: ssh — inicia sesión interactiva y pide contraseña', () => {
     const target = withLevel(ftpTarget, 3);
-    const result = exec('ssh john@192.168.30.11 ilovelinux', attacker, [attacker, target], 7);
+    const result = exec('ssh john@192.168.30.11', attacker, [attacker, target], 7);
+    expectSuccess(result);
+    expect(result.output).toContain('password');
+    expect(result.sshSession?.active).toBe(true);
+  });
+
+  it('Paso 5b: ssh — autentica con contraseña correcta', () => {
+    const target = withLevel(ftpTarget, 3);
+    // First start the session
+    exec('ssh john@192.168.30.11', attacker, [attacker, target], 7);
+    // Then provide password
+    const result = exec('ilovelinux', attacker, [attacker, target], 7);
     expectSuccess(result);
     expect(result.newMachineId).toBe('lab-scenario-05-target');
     expect(result.completedMissionId).toBe(7);
@@ -155,7 +166,10 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     expect(result.foundCredentials?.pass).toBe('ilovelinux');
     machines = evolveState(machines, result);
 
-    result = exec('ssh john@192.168.30.11 ilovelinux', attackerWithDict, machines, 7);
+    result = exec('ssh john@192.168.30.11', attackerWithDict, machines, 7);
+    expect(result.sshSession?.active).toBe(true);
+    // Provide password
+    result = exec('ilovelinux', attackerWithDict, machines, 7);
     expect(result.completedMissionId).toBe(7);
     expect(result.newMachineId).toBe('lab-scenario-05-target');
     machines = evolveState(machines, result);

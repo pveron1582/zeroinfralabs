@@ -148,13 +148,12 @@ export const ftpSession: ShellSession<FtpState> = {
       return {
         result: {
           output: `230 Login successful.\nRemote system type is UNIX.\nUsing binary mode to transfer files.`,
-          completedMissionId: 3,
         },
         newState: {
           ...state,
           loggedIn: true,
           step: 'connected',
-          password: trimmedInput, // Guardar la contraseña ingresada (puede ser vacía)
+          password: trimmedInput,
         },
       };
     }
@@ -218,8 +217,7 @@ export const ftpSession: ShellSession<FtpState> = {
                 `local: ${filename} remote: ${filename}\n` +
                 `200 PORT command successful.\n` +
                 `150 Opening BINARY mode data connection for ${filename} (${targetFile.content.length} bytes).\n` +
-                `226 Transfer complete.`,
-              completedMissionId: 4,
+                `226 Transfer complete.\nFile saved to: ${downloadPath}`,
               downloadedFile: {
                 path: downloadPath,
                 content: targetFile.content,

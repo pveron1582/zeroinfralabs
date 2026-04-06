@@ -587,7 +587,61 @@ npm run preview          # Preview del build
 - [ ] Dashboard de analytics con visualización de encuestas
 - [ ] Sistema de badges/logros
 - [ ] Más escenarios educativos
-- [ ] Tests adicionales para覆盖率
+- [ ] Tests adicionales para coverage
+
+---
+
+### 🏗️ Mejora Arquitectónica Planificada: Command Evaluator
+
+**Problema actual:** Cada herramienta (nmap, hydra, gobuster, etc.) decide por su cuenta si completa una misión. Esto genera:
+- **Alto acoplamiento**: hydra y gobuster validan hardcodeado que nmap se haya ejecutado (`discovery_level < 2` → "Primero escanea con nmap")
+- **Lógica duplicada**: 11+ archivos con patrones distintos para decidir misión completada (keyword search, hardcoded IDs, file path matching)
+- **Baja extensibilidad**: agregar herramientas alternativas (ncrack, medusa, ffuf, feroxbuster) requiere duplicar validaciones en cada una
+
+**Solución propuesta:** Separar ejecución de decisión mediante 3 capas:
+
+| Capa | Responsabilidad | Archivos |
+|------|----------------|----------|
+| **Herramientas** | Solo ejecutan y reportan estado (`error` / `fail` / `success`) con metadatos | `nmap.ts`, `hydra.ts`, etc. |
+| **Command Evaluator** | Compara el resultado contra las condiciones del lab | `commandEvaluator.ts` (nuevo) |
+| **Laboratorios** | Declaran qué condiciones habilitan cada step | `laboratorio01.ts`–`05.ts` |
+
+**Principios de diseño aplicados:**
+- **Separation of Concerns**: cada capa hace una sola cosa
+- **Open/Closed Principle**: agregar `ncrack` = 1 línea en el registro de categorías, sin tocar nada más
+- **Dependency Inversion**: herramientas y labs dependen de abstracciones (categorías y condiciones), no entre sí
+
+**Patrones involucrados:**
+- **Observer/Pub-Sub**: herramientas publican eventos de ejecución, el evaluator reacciona
+- **Strategy Pattern**: el evaluator aplica diferentes estrategias de validación según las condiciones del lab
+- **Chain of Responsibility**: flujo `comando → herramienta → evaluator → misión`
+
+**Ejemplo de cómo funcionaría:**
+
+```typescript
+// laboratorio01.ts — el lab declara condiciones, no herramientas específicas
+learningSteps: [
+  { task: 'Port Scanning', conditions: { toolCategory: 'port_scanner', requiredFlags: ['-sV'] } },
+  { task: 'Directory Discovery', conditions: { toolCategory: 'web_scanner' } },  // acepta gobuster, ffuf, feroxbuster
+]
+
+// toolCategories.ts — registro central de categorías
+export const TOOL_CATEGORIES = {
+  port_scanner:  ['nmap'],
+  web_scanner:   ['gobuster', 'ffuf', 'feroxbuster'],
+  brute_force:   ['hydra', 'ncrack', 'medusa'],
+  cracker:       ['hashcat', 'john'],
+};
+```
+
+**Estados de ejecución estandarizados:**
+- `error` → comando mal formado (flags inválidas, IP como `444.1.1.1`, sintaxis rota)
+- `fail` → comando válido pero no cumple (IP correcta pero servicio no encontrado, credenciales incorrectas)
+- `success` → comando válido + flags correctas + IP del lab + servicio disponible
+
+**Archivos nuevos:** `commandEvaluator.ts`, `toolCategories.ts`
+**Archivos modificados:** ~20 (tools, labs, types, store, terminal, tests)
+**Riesgo:** medio-alto por cantidad de archivos, pero migración incremental posible (ambos caminos coexisten hasta completar la migración)
 
 ---
 

@@ -41,13 +41,16 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
   const machines = assignDHCP(config.networkRange, [attacker, target]);
 
   // Reemplazar placeholders en archivos del atacante (payloads, etc.)
-  const attackerIp = machines.find(m => m.id === 'attacker-01')?.machine_info.ip || '127.0.0.1';
-  attacker.files = attacker.files.map(f => ({
-    ...f,
-    content: f.content
-      .replace(/ATTACKER_IP/g, attackerIp)
-      .replace(/LISTENER_PORT/g, '4444'),
-  }));
+  // IMPORTANTE: se aplica a machines[0] porque assignDHCP crea nuevos objetos via spread
+  const attackerMachine = machines.find(m => m.id === 'attacker-01');
+  if (attackerMachine?.files) {
+    attackerMachine.files = attackerMachine.files.map(f => ({
+      ...f,
+      content: f.content
+        .replace(/ATTACKER_IP/g, attackerMachine.machine_info.ip || '127.0.0.1')
+        .replace(/LISTENER_PORT/g, '4444'),
+    }));
+  }
 
   const missions: Mission[] = config.learningSteps.map((step, idx) => ({
     id: idx + 1, title: step.task, titleEs: step.taskEs, description: step.text, descriptionEs: step.textEs,

@@ -64,9 +64,18 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
     expect(result.completedMissionId).toBe(4);
   });
 
-  it('Paso 5: ssh conecta con gonzalo', () => {
+  it('Paso 5: ssh inicia sesión interactiva con gonzalo', () => {
     const target = withLevel(sshTarget, 3);
-    const result = exec('ssh gonzalo@10.10.10.10 Quier0unaument0', attacker, [attacker, target], 5);
+    const result = exec('ssh gonzalo@10.10.10.10', attacker, [attacker, target], 5);
+    expectSuccess(result);
+    expect(result.output).toContain('password');
+    expect(result.sshSession?.active).toBe(true);
+  });
+
+  it('Paso 5b: ssh autentica con contraseña de gonzalo', () => {
+    const target = withLevel(sshTarget, 3);
+    exec('ssh gonzalo@10.10.10.10', attacker, [attacker, target], 5);
+    const result = exec('Quier0unaument0', attacker, [attacker, target], 5);
     expectSuccess(result);
     expect(result.newMachineId).toBe('lab-scenario-02-ssh');
     expect(result.completedMissionId).toBe(5);
@@ -91,7 +100,9 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
     expect(result.foundCredentials?.pass).toBe('Quier0unaument0');
     machines = evolveState(machines, result);
 
-    result = exec('ssh gonzalo@10.10.10.10 Quier0unaument0', attacker, machines, 5);
+    result = exec('ssh gonzalo@10.10.10.10', attacker, machines, 5);
+    expect(result.sshSession?.active).toBe(true);
+    result = exec('Quier0unaument0', attacker, machines, 5);
     expect(result.completedMissionId).toBe(5);
     expect(result.newMachineId).toBe('lab-scenario-02-ssh');
   });

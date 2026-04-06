@@ -20,6 +20,15 @@ export interface FtpSessionState {
   step: 'connecting' | 'username' | 'password' | 'connected';
 }
 
+export interface SshSessionState {
+  active: boolean;
+  targetIp?: string;
+  targetId?: string;
+  username?: string;
+  authenticated?: boolean;
+  step: 'connecting' | 'password' | 'connected';
+}
+
 export type AppView = 'landing' | 'workspace';
 
 export interface ScenarioState {
@@ -54,6 +63,8 @@ export interface ScenarioState {
   msfState: MsfState | null;
 
   ftpSession: FtpSessionState | null;
+
+  sshSession: SshSessionState | null;
 
   _prevMachinesSnapshot: EnumerationSnapshot[];
 
@@ -98,5 +109,6 @@ export interface ScenarioState {
   setCurrentDir: (dir: string) => void;
   setMsfState: (state: MsfState | null) => void;
   setFtpSession: (session: FtpSessionState | null) => void;
+  setSshSession: (session: SshSessionState | null) => void;
   reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 }

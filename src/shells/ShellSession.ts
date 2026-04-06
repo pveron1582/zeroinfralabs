@@ -46,6 +46,10 @@ export interface ShellResult {
   closeSession?: boolean;
   // Indica que se cerró una sesión SSH (para resetear directorio)
   sshSessionClosed?: boolean;
+  // Usuario con el que se hizo login SSH
+  sshLoginUser?: string;
+  // Indica que se debe forward el comando al sistema real
+  forwardCommand?: string;
 }
 
 // ── Interfaz que debe implementar cada shell ──────────────────────

@@ -15,7 +15,9 @@ describe('SshSession', () => {
         : []
     },
     web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-    learning_steps: [],
+    learning_steps: [
+      { id: 1, task: 'SSH Access', text: 'Connect via SSH', targetMachineId: 'target-01', discoveryLevel: 4 },
+    ],
     files: [],
   });
 
@@ -35,142 +37,94 @@ describe('SshSession', () => {
       const state = sshSession.createInitialState([], ctx);
       expect(state.connected).toBe(false);
       expect(state.authenticated).toBe(false);
+      expect(state.step).toBe('connecting');
     });
 
-    it('debe conectar con credenciales correctas', () => {
-      const state = sshSession.createInitialState(['admin@192.168.1.100', 'secret123'], ctx);
+    it('debe conectar y esperar password (sin autenticar aun)', () => {
+      const state = sshSession.createInitialState(['admin@192.168.1.100'], ctx);
       expect(state.connected).toBe(true);
-      expect(state.authenticated).toBe(true);
-      expect(state.user).toBe('admin');
+      expect(state.authenticated).toBe(false);
+      expect(state.step).toBe('password');
+      expect(state.username).toBe('admin');
       expect(state.targetIp).toBe('192.168.1.100');
     });
 
-    it('debe conectar sin autenticación si credenciales incorrectas', () => {
-      const state = sshSession.createInitialState(['admin@192.168.1.100', 'wrong'], ctx);
-      expect(state.connected).toBe(true);
-      expect(state.authenticated).toBe(false);
+    it('debe retornar desconectado si la máquina no existe', () => {
+      const state = sshSession.createInitialState(['admin@10.10.10.99'], ctx);
+      expect(state.connected).toBe(false);
     });
 
-    it('debe retornar desconectado si la máquina no existe', () => {
-      const state = sshSession.createInitialState(['admin@192.168.999.999', 'pass'], ctx);
+    it('debe retornar desconectado si no hay puerto SSH', () => {
+      const noSshTarget = createMockMachine('192.168.1.200');
+      const ctxNoSsh: ShellContext = { ...ctx, allMachines: [attacker, noSshTarget] };
+      const state = sshSession.createInitialState(['admin@192.168.1.200'], ctxNoSsh);
       expect(state.connected).toBe(false);
     });
   });
 
   describe('getPrompt', () => {
-    it('debe mostrar prompt con usuario e IP cuando está autenticado', () => {
-      const state = { connected: true, targetIp: '192.168.1.100', targetId: 'target-01', user: 'admin', authenticated: true };
-      expect(sshSession.getPrompt(state)).toBe('admin@192.168.1.100:~$ ');
+    it('debe mostrar prompt de password cuando espera contraseña', () => {
+      const state = { connected: true, targetIp: '192.168.1.100', targetId: 'target-01', username: 'admin', authenticated: false, step: 'password' as const };
+      expect(sshSession.getPrompt(state)).toBe('admin@192.168.1.100\'s password: ');
     });
 
-    it('debe retornar string vacío cuando no está autenticado', () => {
-      const state = { connected: true, targetIp: '192.168.1.100', targetId: 'target-01', user: 'admin', authenticated: false };
+    it('debe retornar string vacío cuando está conectado', () => {
+      const state = { connected: true, targetIp: '192.168.1.100', targetId: 'target-01', username: 'admin', authenticated: true, step: 'connected' as const };
       expect(sshSession.getPrompt(state)).toBe('');
     });
   });
 
   describe('executeCommand - autenticación', () => {
-    it('debe pedir password si solo se proporciona usuario', () => {
-      const state = { connected: true, targetIp: '192.168.1.100', targetId: 'target-01', user: 'admin', authenticated: false };
-      const { result } = sshSession.executeCommand('secret123', state, ctx);
+    it('debe autenticar con contraseña correcta', () => {
+      const state = sshSession.createInitialState(['admin@192.168.1.100'], ctx);
+      const { result, newState } = sshSession.executeCommand('secret123', state, ctx);
+
+      expect(result.isError).toBeUndefined();
+      expect(result.output).toContain('Warning: Permanently added');
       expect(result.output).toContain('Welcome to');
+      expect(result.output).toContain('Last login:');
       expect(result.newMachineId).toBe('target-01');
+      expect(result.closeSession).toBe(true);
+      expect(result.sshSessionClosed).toBe(true);
       expect(result.foundCredentials).toBeDefined();
+      expect(result.foundCredentials?.user).toBe('admin');
+      expect(result.foundCredentials?.pass).toBe('secret123');
+      expect(newState.authenticated).toBe(true);
     });
 
-    it('debe rechazar password incorrecto', () => {
-      const state = { connected: true, targetIp: '192.168.1.100', targetId: 'target-01', user: 'admin', authenticated: false };
-      const { result } = sshSession.executeCommand('wrongpass', state, ctx);
+    it('debe rechazar contraseña incorrecta', () => {
+      const state = sshSession.createInitialState(['admin@192.168.1.100'], ctx);
+      const { result, newState } = sshSession.executeCommand('wrongpass', state, ctx);
+
       expect(result.isError).toBe(true);
       expect(result.output).toContain('Permission denied');
-    });
-  });
-
-  describe('executeCommand - comandos autenticados', () => {
-    const authState = { connected: true, targetIp: '192.168.1.100', targetId: 'target-01', user: 'admin', authenticated: true };
-
-    it('debe ejecutar whoami', () => {
-      const { result } = sshSession.executeCommand('whoami', authState, ctx);
-      expect(result.output).toBe('admin');
-    });
-
-    it('debe ejecutar pwd', () => {
-      const { result } = sshSession.executeCommand('pwd', authState, ctx);
-      expect(result.output).toBe('/home/admin');
-    });
-
-    it('debe ejecutar ls', () => {
-      const { result } = sshSession.executeCommand('ls', authState, ctx);
-      expect(result.output).toContain('Desktop');
-      expect(result.output).toContain('Documents');
-    });
-
-    it('debe ejecutar hostname', () => {
-      const { result } = sshSession.executeCommand('hostname', authState, ctx);
-      expect(result.output).toBe('192.168.1.100');
-    });
-
-    it('debe ejecutar id', () => {
-      const { result } = sshSession.executeCommand('id', authState, ctx);
-      expect(result.output).toContain('uid=');
-      expect(result.output).toContain('admin');
-    });
-
-    it('debe ejecutar uname', () => {
-      const { result } = sshSession.executeCommand('uname', authState, ctx);
-      expect(result.output).toBe('Linux');
-    });
-
-    it('debe ejecutar uname -a', () => {
-      const { result } = sshSession.executeCommand('uname -a', authState, ctx);
-      expect(result.output).toContain('Linux');
-      expect(result.output).toContain('x86_64');
-    });
-
-    it('debe ejecutar help', () => {
-      const { result } = sshSession.executeCommand('help', authState, ctx);
-      expect(result.output).toContain('whoami');
-      expect(result.output).toContain('pwd');
-      expect(result.output).toContain('ls');
-    });
-
-    it('debe ejecutar exit y cerrar sesión', () => {
-      const { result, newState } = sshSession.executeCommand('exit', authState, ctx);
-      expect(result.output).toContain('Connection to closed');
       expect(result.closeSession).toBe(true);
-      expect(newState.connected).toBe(false);
+      expect(result.failedUser).toBeDefined();
+      expect(result.failedUser?.user).toBe('admin');
       expect(newState.authenticated).toBe(false);
+      expect(newState.connected).toBe(false);
     });
 
-    it('debe ejecutar quit', () => {
-      const { result } = sshSession.executeCommand('quit', authState, ctx);
-      expect(result.closeSession).toBe(true);
-    });
-
-    it('debe ejecutar logout', () => {
-      const { result } = sshSession.executeCommand('logout', authState, ctx);
-      expect(result.closeSession).toBe(true);
-    });
-
-    it('debe retornar error para comando desconocido', () => {
-      const { result } = sshSession.executeCommand('comandoinexistente', authState, ctx);
-      expect(result.output).toContain('command not found');
+    it('debe completar misión si currentMissionId coincide', () => {
+      const state = sshSession.createInitialState(['admin@192.168.1.100'], ctx);
+      const { result } = sshSession.executeCommand('secret123', state, ctx);
+      expect(result.completedMissionId).toBe(1);
     });
   });
 
   describe('isActive', () => {
-    it('debe retornar true cuando está conectado y autenticado', () => {
-      const state = { connected: true, authenticated: true };
+    it('debe retornar true cuando está conectado y esperando password', () => {
+      const state = { connected: true, authenticated: false, step: 'password' as const };
       expect(sshSession.isActive(state)).toBe(true);
     });
 
-    it('debe retornar false cuando no está autenticado', () => {
-      const state = { connected: true, authenticated: false };
+    it('debe retornar false cuando está autenticado (sesión se cierra)', () => {
+      const state = { connected: true, authenticated: true, step: 'connected' as const };
       expect(sshSession.isActive(state)).toBe(false);
     });
 
     it('debe retornar false cuando no está conectado', () => {
-      const state = { connected: false, authenticated: false };
+      const state = { connected: false, authenticated: false, step: 'connecting' as const };
       expect(sshSession.isActive(state)).toBe(false);
     });
   });
