@@ -29,7 +29,7 @@ export interface SshSessionState {
   step: 'connecting' | 'password' | 'connected';
 }
 
-export type AppView = 'landing' | 'workspace';
+export type AppView = 'landing' | 'workspace' | 'blog';
 
 export interface ScenarioState {
   view: AppView;

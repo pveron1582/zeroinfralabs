@@ -4,6 +4,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { LandingPage } from '../LandingPage';
 import type { Scenario } from '../../types';
 
@@ -11,6 +12,10 @@ import type { Scenario } from '../../types';
 beforeEach(() => {
   localStorage.clear();
 });
+
+const renderWithRouter = (ui: React.ReactElement) => {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+};
 
 const mockScenarios: Scenario[] = [
   {
@@ -23,8 +28,8 @@ const mockScenarios: Scenario[] = [
     initialMachineId: 'attacker-01',
     machines: [],
     missions: [
-      { id: 1, title: 'M1', description: 'D1', status: 'active', targetMachineId: 't1', discoveryLevel: 1 },
-      { id: 2, title: 'M2', description: 'D2', status: 'pending', targetMachineId: 't1', discoveryLevel: 2 },
+      { id: 1, title: 'M1', description: 'D1', status: 'active', targetMachineId: 't1', discoveryLevel: 1, hintLevel: 0 },
+      { id: 2, title: 'M2', description: 'D2', status: 'pending', targetMachineId: 't1', discoveryLevel: 2, hintLevel: 0 },
     ],
   },
   {
@@ -37,7 +42,7 @@ const mockScenarios: Scenario[] = [
     initialMachineId: 'attacker-01',
     machines: [],
     missions: [
-      { id: 1, title: 'M1', description: 'D1', status: 'active', targetMachineId: 't1', discoveryLevel: 1 },
+      { id: 1, title: 'M1', description: 'D1', status: 'active', targetMachineId: 't1', discoveryLevel: 1, hintLevel: 0 },
     ],
   },
   {
@@ -55,7 +60,7 @@ const mockScenarios: Scenario[] = [
 
 describe('LandingPage', () => {
   it('debe renderizar el header con el logo', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('ZI Labs')).toBeInTheDocument();
@@ -64,7 +69,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar la cantidad de labs disponibles', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText(/3 missions/)).toBeInTheDocument();
@@ -72,7 +77,7 @@ describe('LandingPage', () => {
   });
 
   it('debe renderizar el título principal', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText(/Choose a/)).toBeInTheDocument();
@@ -81,7 +86,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar todas las tarjetas de escenarios', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('WordPress Lab')).toBeInTheDocument();
@@ -91,7 +96,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar la dificultad de cada escenario', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('Easy')).toBeInTheDocument();
@@ -101,7 +106,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar la categoría de cada escenario', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('Web')).toBeInTheDocument();
@@ -111,7 +116,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar el rango de red de cada escenario', async () => {
-    const { container } = render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    const { container } = renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(container.textContent).toContain('192.168.1.0/24');
@@ -120,7 +125,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar la cantidad de misiones por escenario', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('2 missions')).toBeInTheDocument();
@@ -130,7 +135,7 @@ describe('LandingPage', () => {
 
   it('debe llamar onSelect al hacer clic en START', async () => {
     const onSelect = vi.fn();
-    render(<LandingPage scenarios={mockScenarios} onSelect={onSelect} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={onSelect} />);
 
     await waitFor(() => {
       const startButtons = screen.getAllByText('START');
@@ -141,7 +146,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar los badges hexadecimales', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('0x01')).toBeInTheDocument();
@@ -151,7 +156,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar las herramientas de cada escenario', async () => {
-    const { container } = render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    const { container } = renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       // Herramientas del escenario 01
@@ -163,7 +168,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar el botón START en cada tarjeta', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       const startButtons = screen.getAllByText('START');
@@ -172,7 +177,7 @@ describe('LandingPage', () => {
   });
 
   it('debe renderizar el footer', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText(/ZI Labs · Controlled practice environment/)).toBeInTheDocument();
@@ -180,7 +185,7 @@ describe('LandingPage', () => {
   });
 
   it('debe mostrar el subtítulo correcto', async () => {
-    render(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
+    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('Pentesting Lab Simulator')).toBeInTheDocument();

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import type { Scenario } from '../types';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
 import { SCENARIOS_META } from '../laboratorios/laboratorios';
@@ -242,6 +243,18 @@ export function LandingPage({ scenarios, onSelect }: Props) {
             </button>
           </div>
           
+          {/* Blog button */}
+          <Link
+            to={`/${language}/blog`}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-mono rounded-lg border border-gray-700 text-gray-400 hover:text-emerald-400 hover:border-emerald-500/50 transition-all"
+            title={language === 'es' ? 'Ir al blog' : 'Go to blog'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span>{language === 'es' ? 'Blog' : 'Blog'}</span>
+          </Link>
+
           {/* Feedback button */}
           <button
             onClick={() => setShowFeedback(true)}

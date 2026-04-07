@@ -2,6 +2,7 @@
 // Componente raíz que usa Zustand para el estado global
 
 import { useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useScenarioStore } from './store/scenarioStore';
 import { SCENARIOS } from './laboratorios/laboratorios';
 import { resetMsfState, restoreMsfState, getMsfState } from './commands';
@@ -13,6 +14,8 @@ import { NetworkMap }   from './components/NetworkMap';
 import { MachineLoader } from './components/MachineLoader';
 import { SurveyModal }  from './components/SurveyModal';
 import { LabCompletionOverlay } from './components/LabCompletionOverlay';
+import { BlogListPage } from './components/BlogListPage';
+import { BlogArticlePage } from './components/BlogArticlePage';
 import { trackEvent, recordLabStart }   from './utils/analytics';
 
 // ── Constantes de UI ───────────────────────────────────────────────
@@ -24,6 +27,18 @@ const TERM_COLORS = [
 ];
 
 export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/:lang/blog" element={<BlogListPage />} />
+        <Route path="/:lang/blog/:slug" element={<BlogArticlePage />} />
+        <Route path="*" element={<AppContent />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export function AppContent() {
   // ── Selectores del Store ────────────────────────────────────────
   const view = useScenarioStore(state => state.view);
   const currentScenario = useScenarioStore(state => state.currentScenario);

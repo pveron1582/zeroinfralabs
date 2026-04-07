@@ -60,6 +60,7 @@ interface Translations {
   badgeNoDownloads: string;
   badgeNoRegistration: string;
   badgeSafeEnv: string;
+  backToLabs: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -109,6 +110,7 @@ const translations: Record<Language, Translations> = {
     badgeNoDownloads: 'No downloads',
     badgeNoRegistration: 'No registration',
     badgeSafeEnv: 'Safe & virtual',
+    backToLabs: 'Back to Labs',
   },
   es: {
     title: 'ZeroInfra Labs',
@@ -156,6 +158,7 @@ const translations: Record<Language, Translations> = {
     badgeNoDownloads: 'Sin descargas',
     badgeNoRegistration: 'Sin registro',
     badgeSafeEnv: 'Entorno seguro',
+    backToLabs: 'Volver a Labs',
   }
 };
 
