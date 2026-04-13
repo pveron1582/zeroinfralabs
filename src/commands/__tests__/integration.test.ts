@@ -23,14 +23,16 @@ describe('Integración de Comandos y Lógica de Pentesting', () => {
 
     it('debe completar la misión de arp-scan y permitir nmap posteriormente', () => {
       const resArp = executeCommand(`arp-scan ${scenario.network_range}`, attacker, scenario.machines, 1);
-      expect(resArp.completedMissionId).toBe(1);
+      // arp-scan ya no completa misiones - es un comando libre
+      expect(resArp.discoveredHosts).toBeDefined();
 
       const discoveredTarget = { ...target, discovery_level: 1 };
       const resNmap = executeCommand(`nmap -sV ${target.machine_info.ip}`, attacker, [attacker, discoveredTarget], 2);
       
       expect(resNmap.isError).toBeUndefined();
       expect(resNmap.output).toContain('Nmap scan report');
-      expect(resNmap.completedMissionId).toBe(2);
+      // nmap ya no completa misiones - es un comando libre
+      expect(resNmap.scanResults).toBeDefined();
     });
   });
 

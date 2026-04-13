@@ -49,16 +49,17 @@ describe('cmd_cat', () => {
     expect(result.output).toContain('No such file');
   });
 
-  it('debe completar misión al leer note.txt (escenario 05)', () => {
+  it('debe reportar fileRead y mentionedUsers al leer note.txt (escenario 05)', () => {
     const machine = createMockMachine([
       { path: '/root/note.txt', content: 'To: john\nURGENT', type: 'text' },
     ]);
-    machine.learning_steps = [
-      { id: 5, task: 'Read Note', text: 'cat note.txt', discoveryLevel: 2, targetMachineId: 'target-01' },
-    ];
-    const result = cmd_cat.execute(['note.txt'], { machine, allMachines: [machine] } as any);
+    const result = cmd_cat.execute(['note.txt'], { machine } as any);
 
     expect(result.output).toContain('john');
-    expect(result.completedMissionId).toBe(5);
+    // cat ya no completa misiones - es un comando libre
+    expect(result.fileRead).toBeDefined();
+    expect(result.fileRead?.isNote).toBe(true);
+    expect(result.mentionedUsers).toBeDefined();
+    expect(result.mentionedUsers?.users).toContain('john');
   });
 });

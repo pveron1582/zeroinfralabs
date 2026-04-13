@@ -10,9 +10,11 @@ import { executeBaseCommand } from './msfCommands/msfBase';
 import { executeMeterpreterCommand } from './msfCommands/msfMeterpreter';
 import { executeShellCommand } from './msfCommands/msfShell';
 import { executeExploitCommand } from './msfCommands/msfExploits';
+import { executeContextHelp, getContextPrompt } from './msfCommands/msfContextHelp';
 
 // ── MSF sub-command handler (called when inside MSF session) ──────
 // Orchestrates all command handlers in order of priority
+// Fase 3: Now uses ContextRegistry for context-aware help
 export const executeMsfCommand = (
   line: string,
   state: MsfState,
@@ -21,6 +23,11 @@ export const executeMsfCommand = (
   const parts = line.trim().split(/\s+/);
   const cmd   = parts[0].toLowerCase();
   const args  = parts.slice(1);
+
+  // ── CONTEXT-AWARE HELP (Fase 3) ─────────────────────────────────
+  // Help now shows only commands available in current context
+  const helpResult = executeContextHelp(cmd, args, state);
+  if (helpResult) return helpResult;
 
   // ── WINDOWS SHELL SESSION ────────────────────────────────────────
   // When shellMode=true the user is inside a Windows cmd shell.

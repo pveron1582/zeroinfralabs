@@ -8,6 +8,7 @@ import {
   startShellSession
 } from '../commands';
 import { getAutocompleteSuggestions } from '../utils/autocomplete';
+import { validateMission } from '../utils/labValidator';
 import { AutocompletePanel } from './AutocompletePanel';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { StreamingOutput } from './StreamingOutput';
@@ -196,7 +197,23 @@ export function Terminal({
   }, [blockingCommand?.connected, busy, allMachines, listeningPort, prompt, setBlockingCommand, setListeningPort, onChangeMachine, setCurrentDir]);
 
   const processCommandResult = (result: any, trimmed: string, currentPrompt: string, isStreaming: boolean) => {
-    if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+    // Legacy support: command explicitly set completedMissionId
+    if (result.completedMissionId) {
+      onMissionComplete(result.completedMissionId);
+    }
+    
+    // ── Universal Lab Validation ─────────────────────────────────────────
+    // Free commands report metadata - the lab validates based on mission criteria
+    const { missions } = useScenarioStore.getState();
+    const activeMission = missions.find(m => m.status === 'active');
+    
+    if (activeMission && activeMission.validationCriteria) {
+      const shouldComplete = validateMission(result, activeMission);
+      if (shouldComplete) {
+        onMissionComplete(activeMission.id);
+      }
+    }
+    
     if (result.blockingCommand) {
       setBlockingCommand(result.blockingCommand);
       if (result.blockingCommand.listeningPort) {
@@ -337,6 +354,17 @@ export function Terminal({
         timestamp: Date.now()
       }]);
       if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+
+      // ── Universal Lab Validation for SSH ──
+      const { missions } = useScenarioStore.getState();
+      const activeMission = missions.find(m => m.status === 'active');
+      if (activeMission && activeMission.validationCriteria) {
+        const shouldComplete = validateMission(result, activeMission);
+        if (shouldComplete) {
+          onMissionComplete(activeMission.id);
+        }
+      }
+
       if (result.foundCredentials) {
         onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
         onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
@@ -430,13 +458,28 @@ export function Terminal({
 
     if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
     if (result.output === 'EXIT_TO_LANDING') {
-      const { missions } = useScenarioStore.getState();
-      const allComplete = missions.length > 0 && missions.every(m => m.status === 'completed');
+      const state = useScenarioStore.getState();
+      const allComplete = state.missions.length > 0 && state.missions.every(m => m.status === 'completed');
       if (allComplete) {
-        const { currentScenario, triggerSurvey } = useScenarioStore.getState();
-        triggerSurvey(currentScenario);
+        state.triggerSurvey(state.currentScenario);
       } else {
-        goHome();
+        // Reset store state - ScenarioLauncher will handle redirect to /labs
+        useScenarioStore.setState({
+          view: 'landing',
+          showNetworkMap: false,
+          hasNewNetworkInfo: false,
+          notification: null,
+          browserCurrentUrl: 'https://www.google.com',
+          browserIsLoggedIn: false,
+          browserNavHistory: ['https://www.google.com'],
+          browserNavIdx: 0,
+          listeningPort: null,
+          msfState: null,
+          showSurvey: false,
+          pendingSurveyScenario: null,
+          showCompletionOverlay: false,
+          _prevMachinesSnapshot: [],
+        });
       }
       return;
     }

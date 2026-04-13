@@ -1,11 +1,13 @@
 // ── commands/tools/gobuster.ts ─────────────────────────────────────
 // Simulador de enumeración de directorios web
+// Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
+// Solo reporta directorios encontrados para que el laboratorio valide.
 
 import type { CommandContext, CommandResponse } from '../../types';
 
 export const cmd_gobuster = {
   name: 'gobuster',
-  execute: (args: string[], { allMachines, currentMissionId }: CommandContext): CommandResponse => {
+  execute: (args: string[], { allMachines }: CommandContext): CommandResponse => {
     const urlIdx = args.indexOf('-u');
     const wIdx = args.indexOf('-w');
     if (args[0] !== 'dir' || urlIdx === -1 || wIdx === -1)
@@ -35,26 +37,26 @@ export const cmd_gobuster = {
 
     let output = `===============================================================\nGobuster v3.1.0\n===============================================================\n[+] Url: ${url}\n[+] Wordlist: ${wl}\n[+] Threads: 10\n===============================================================\n${new Date().toLocaleString()} Starting\n===============================================================\n`;
 
+    const foundDirectories: Array<{path: string; status: number; size?: number}> = [];
+    
     target.web_enumeration?.directories?.forEach(d => {
-      if (d.status === 200 || d.status === 301)
-        output += `${d.path.padEnd(25)} (Status: ${d.status}) [Size: ${Math.floor(Math.random() * 4000 + 500)}]\n`;
+      if (d.status === 200 || d.status === 301) {
+        const size = Math.floor(Math.random() * 4000 + 500);
+        output += `${d.path.padEnd(25)} (Status: ${d.status}) [Size: ${size}]\n`;
+        foundDirectories.push({ path: d.path, status: d.status, size });
+      }
     });
+    
     output += `===============================================================\n${new Date().toLocaleString()} Finished\n===============================================================`;
 
-    let missionId: number | undefined;
-    for (const m of allMachines) {
-      const step = m.learning_steps.find(s =>
-        s.task.toLowerCase().includes('directorio') || s.task.toLowerCase().includes('gobuster')
-      );
-      if (step) { missionId = step.id; break; }
-    }
-
-    const canComplete = currentMissionId === (missionId || 4);
-    // No mutar directamente el estado aquí; el discovery_level se actualiza en completeMission
-
+    // Comando libre: reporta directorios encontrados para que el lab valide
     return {
       output,
-      completedMissionId: canComplete ? (missionId || 4) : undefined
+      foundDirectories: foundDirectories.length > 0 ? {
+        targetId: target.id,
+        targetUrl: url,
+        directories: foundDirectories,
+      } : undefined,
     };
   }
 };

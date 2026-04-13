@@ -42,7 +42,10 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
       { id: 2, task: 'Escaneo de puertos', text: 'Escanear: nmap -sV', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 2 },
       { id: 3, task: 'Enumeración Web', text: 'Acceder al sitio web', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 2 },
       { id: 4, task: 'Descubrimiento de directorios', text: 'gobuster dir', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 3 },
-      { id: 5, task: 'Compromiso del servidor', text: 'Buscar credenciales y acceder', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 4 },
+      { id: 5, task: 'Find Credentials', text: 'Buscar credenciales en el servidor web', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 3 },
+      { id: 6, task: 'Compromiso del WP-Admin', text: 'Acceder al panel de admin con credenciales', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 4 },
+      { id: 7, task: 'Conexión SSH', text: 'Conectar por SSH como root', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 4 },
+      { id: 8, task: 'Capturar flag root', text: 'Leer la flag de root', targetMachineId: 'lab-scenario-01-wp', discoveryLevel: 4 },
     ],
     files: [
       { path: '/uploads/config.bak', content: 'DB_USER=admin\nDB_PASS=P@ssw0rd123!', type: 'text' },
@@ -52,7 +55,9 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
   it('Paso 1: arp-scan descubre el host', () => {
     const result = exec('arp-scan 192.168.1.0/24', attacker, [attacker, wpTarget], 1);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones - es un comando libre
+    expect(result.discoveredHosts).toBeDefined();
+    expect(result.discoveredHosts?.some(h => h.ip === '192.168.1.11')).toBe(true);
     expect(result.output).toContain('192.168.1.11');
   });
 
@@ -60,7 +65,9 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     const target = withLevel(wpTarget, 1);
     const result = exec('nmap -sV 192.168.1.11', attacker, [attacker, target], 2);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones - es un comando libre
+    expect(result.scanResults).toBeDefined();
+    expect(result.scanResults?.targetIp).toBe('192.168.1.11');
     expect(result.output).toContain('22/tcp');
     expect(result.output).toContain('80/tcp');
   });
@@ -69,7 +76,9 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     const target = withLevel(wpTarget, 2);
     const result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, [attacker, target], 4);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(4);
+    // gobuster ya no completa misiones - es un comando libre
+    expect(result.foundDirectories).toBeDefined();
+    expect(result.foundDirectories?.directories.some(d => d.path === '/wp-admin')).toBe(true);
     expect(result.output).toContain('/wp-admin');
     expect(result.output).toContain('/uploads');
   });
@@ -91,15 +100,19 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     let machines: Machine[] = [attacker, wpTarget];
 
     let result = exec('arp-scan 192.168.1.0/24', attacker, machines, 1);
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones - verificar metadata
+    expect(result.discoveredHosts).toBeDefined();
     machines = evolveState(machines, result);
 
     result = exec('nmap -sV 192.168.1.11', attacker, machines, 2);
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones - verificar metadata
+    expect(result.scanResults).toBeDefined();
+    expect(result.scanResults?.ports.some(p => p.port === 22)).toBe(true);
     machines = evolveState(machines, result);
 
     result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, machines, 4);
-    expect(result.completedMissionId).toBe(4);
+    // gobuster ya no completa misiones - verificar metadata
+    expect(result.foundDirectories).toBeDefined();
     expectSuccess(result);
   });
 });

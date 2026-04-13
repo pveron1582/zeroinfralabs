@@ -15,7 +15,8 @@ import {
   cmd_ssh, cmd_nc, cmd_msfconsole, executeMsfCommand, type MsfState,
   cmd_ftp
 } from './tools';
-import { shellManager, type ShellContext as ManagerContext, type ShellResult } from '../shells';
+import { shellManager, type ShellContext as ManagerContext, type ShellResult } from '../frameworks/shells';
+import { getContextPrompt } from './tools/msfCommands/msfContextHelp';
 
 interface Command {
   name: string;
@@ -173,7 +174,6 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
   const response: CommandResponse = {
     output: result.output,
     isError: result.isError,
-    completedMissionId: result.completedMissionId,
     newMachineId: result.newMachineId,
     blockingCommand: result.blockingCommand,
     downloadedFile: result.downloadedFile,
@@ -290,22 +290,12 @@ export const restoreMsfState = (storedState: MsfState | null) => { _msfState = s
 export const isMsfActive = () => !!_msfState?.active;
 
 // ── Get current MSF prompt (for dynamic prompt display)
+// Fase 3: Now uses context-aware prompt detection
 export const getMsfPrompt = () => {
   if (!_msfState?.active) return null;
-  // Windows cmd shell takes priority
-  if (_msfState.shellMode) {
-    return 'C:\\Windows\\system32> ';
-  }
-  // If meterpreter session is open, show meterpreter prompt
-  if (_msfState.sessionOpen) {
-    return 'meterpreter > ';
-  }
-  if (_msfState.module) {
-    const short = _msfState.module.split('/').slice(-2).join('/');
-    const type = _msfState.module.startsWith('auxiliary') ? 'auxiliary' : 'exploit';
-    return `msf6 ${type}(${short}) > `;
-  }
-  return 'msf6 > ';
+
+  // Use context-aware prompt generation from msfContextHelp
+  return getContextPrompt(_msfState);
 };
 
 // ── Get a snapshot of the current MSF state (for UI components) ──

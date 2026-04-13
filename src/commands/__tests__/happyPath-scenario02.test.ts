@@ -41,7 +41,9 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
   it('Paso 1: arp-scan descubre el host', () => {
     const result = exec('arp-scan 10.10.10.0/24', attacker, [attacker, sshTarget], 1);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones - es un comando libre
+    expect(result.discoveredHosts).toBeDefined();
+    expect(result.discoveredHosts?.some(h => h.ip === '10.10.10.10')).toBe(true);
     expect(result.output).toContain('10.10.10.10');
   });
 
@@ -49,7 +51,9 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
     const target = withLevel(sshTarget, 1);
     const result = exec('nmap -sV 10.10.10.10', attacker, [attacker, target], 2);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones - es un comando libre
+    expect(result.scanResults).toBeDefined();
+    expect(result.scanResults?.ports.some(p => p.port === 22)).toBe(true);
     expect(result.output).toContain('22/tcp');
     expect(result.output).toContain('80/tcp');
   });
@@ -58,10 +62,11 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
     const target = { ...withLevel(sshTarget, 3), possible_ssh_users: ['gonzalo'] };
     const result = exec('hydra -l gonzalo -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, [attacker, target], 4);
     expectSuccess(result);
+    // hydra ya no completa misiones - es un comando libre
     expect(result.foundCredentials).toBeDefined();
     expect(result.foundCredentials?.user).toBe('gonzalo');
     expect(result.foundCredentials?.pass).toBe('Quier0unaument0');
-    expect(result.completedMissionId).toBe(4);
+    expect(result.foundCredentials?.verified).toBe(true);
   });
 
   it('Paso 5: ssh inicia sesión interactiva con gonzalo', () => {
@@ -78,32 +83,36 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
     const result = exec('Quier0unaument0', attacker, [attacker, target], 5);
     expectSuccess(result);
     expect(result.newMachineId).toBe('lab-scenario-02-ssh');
-    expect(result.completedMissionId).toBe(5);
+    // ssh ya no completa misiones - es un comando libre
+    expect(result.sshLoginUser).toBe('gonzalo');
   });
 
   it('Golden path: arp-scan → nmap → hydra → ssh (con gonzalo)', () => {
     let machines: Machine[] = [attacker, sshTarget];
 
     let result = exec('arp-scan 10.10.10.0/24', attacker, machines, 1);
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones - verificar metadata
+    expect(result.discoveredHosts).toBeDefined();
     machines = evolveState(machines, result);
 
     result = exec('nmap -sV 10.10.10.10', attacker, machines, 2);
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones - verificar metadata
+    expect(result.scanResults).toBeDefined();
     machines = evolveState(machines, result);
 
     machines = machines.map(m => m.id === 'lab-scenario-02-ssh' ? { ...m, discovery_level: 3 } : m);
 
     result = exec('hydra -l gonzalo -P /usr/share/wordlists/rockyou.txt 10.10.10.10 ssh', attacker, machines, 4);
-    expect(result.completedMissionId).toBe(4);
+    // hydra ya no completa misiones - verificar metadata
     expect(result.foundCredentials?.user).toBe('gonzalo');
     expect(result.foundCredentials?.pass).toBe('Quier0unaument0');
+    expect(result.foundCredentials?.verified).toBe(true);
     machines = evolveState(machines, result);
 
     result = exec('ssh gonzalo@10.10.10.10', attacker, machines, 5);
-    expect(result.sshSession?.active).toBe(true);
     result = exec('Quier0unaument0', attacker, machines, 5);
-    expect(result.completedMissionId).toBe(5);
+    // ssh ya no completa misiones - verificar metadata
     expect(result.newMachineId).toBe('lab-scenario-02-ssh');
+    expect(result.sshLoginUser).toBe('gonzalo');
   });
 });

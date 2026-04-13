@@ -1,11 +1,13 @@
 // ── commands/tools/hydra.ts ──────────────────────────────────────
 // Simulador de fuerza bruta de credenciales
+// Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
+// Solo reporta credenciales encontradas para que el laboratorio valide.
 
 import type { CommandContext, CommandResponse } from '../../types';
 
 export const cmd_hydra = {
   name: 'hydra',
-  execute: (args: string[], { allMachines, currentMissionId }: CommandContext): CommandResponse => {
+  execute: (args: string[], { allMachines }: CommandContext): CommandResponse => {
     const lIdx = args.indexOf('-l');
     const pIdx = args.indexOf('-P');
     if (lIdx === -1 || pIdx === -1)
@@ -52,28 +54,16 @@ export const cmd_hydra = {
     if (port.credentials && port.credentials.user === user && hasCorrectPass) {
       output += `\n[${port.port}][${svc}] host: ${ip}   login: ${user}   password: ${port.credentials.pass}\n1 of 1 target successfully completed, 1 valid password found`;
 
-      let missionId: number | undefined;
-      for (const m of allMachines) {
-        const step = m.learning_steps.find(s =>
-          s.task.toLowerCase().includes('hydra') ||
-          s.task.toLowerCase().includes('fuerza') ||
-          s.task.toLowerCase().includes('brute') ||
-          s.task.toLowerCase().includes('credential')
-        );
-        if (step) { missionId = step.id; break; }
-      }
-
-      const canComplete = currentMissionId === (missionId || 3);
-      // No mutar directamente el estado aquí; el discovery_level se actualiza en completeMission
+      // Comando libre: reporta credenciales para que el lab valide
       return {
         output,
-        completedMissionId: canComplete ? (missionId || 3) : undefined,
         foundCredentials: {
           machineId: target.id,
           user,
           pass: port.credentials.pass,
           file: `/etc/hydra_${svc}.txt`,
-          service: svc.toLowerCase() // 'ssh', 'ftp', etc.
+          service: svc.toLowerCase(),
+          verified: true,
         }
       };
     }

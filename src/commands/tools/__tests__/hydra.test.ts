@@ -74,7 +74,8 @@ describe('cmd_hydra', () => {
       user: 'gonzalo',
       pass: 'Quier0unaunment0',
       file: '/etc/hydra_ssh.txt',
-      service: 'ssh'
+      service: 'ssh',
+      verified: true,
     });
   });
 

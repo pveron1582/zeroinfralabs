@@ -6,9 +6,9 @@ import { persist } from 'zustand/middleware';
 import { assignDHCP } from '../utils/network';
 import { createEnumerationSnapshot, hasEnumerationChanged } from '../utils/networkAlert';
 import type { Machine, FileEntry, BlockingCommand } from '../types';
-import { SCENARIOS } from '../laboratorios/laboratorios';
+import { SCENARIOS, TEST_SCENARIO } from '../laboratorios/laboratorios';
 import type { MsfState } from '../commands/tools/msfconsole';
-import type { ScenarioState, Notification, FtpSessionState, AppView } from './types';
+import type { ScenarioState, Notification, FtpSessionState, SshSessionState, AppView } from './types';
 import type { EnumerationSnapshot } from '../utils/networkAlert';
 
 // ── Constants ────────────────────────────────────────────────────────
@@ -84,8 +84,14 @@ export const useScenarioStore = create<ScenarioState>()(
 
       // ── Scenario selection ────────────────────────────────────────────
       selectScenario: (id) => {
-        const scenario = SCENARIOS.find(s => s.id === id);
-        if (!scenario) return;
+        // Handle test scenario (Lab 6)
+        console.log('selectScenario called with id:', id);
+        const scenario = id === TEST_SCENARIO.id ? TEST_SCENARIO : SCENARIOS.find(s => s.id === id);
+        console.log('Found scenario:', scenario);
+        if (!scenario) {
+          console.log('Scenario not found!');
+          return;
+        }
 
         set({
           loadingMachine: scenario.machines[0],

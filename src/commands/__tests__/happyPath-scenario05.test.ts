@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { createAttacker, exec, evolveState, expectSuccess, withLevel, setupBeforeEach } from './happyPathHelpers';
-import { shellManager } from '../../shells';
+import { shellManager } from '../../frameworks/shells';
 import type { Machine } from '../../types';
 
 setupBeforeEach();
@@ -51,7 +51,9 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
   it('Paso 1: arp-scan descubre el host', () => {
     const result = exec('arp-scan 192.168.30.0/24', attacker, [attacker, ftpTarget], 1);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones - es un comando libre
+    expect(result.discoveredHosts).toBeDefined();
+    expect(result.discoveredHosts?.some(h => h.ip === '192.168.30.11')).toBe(true);
     expect(result.output).toContain('192.168.30.11');
   });
 
@@ -59,7 +61,9 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     const target = withLevel(ftpTarget, 1);
     const result = exec('nmap -sV 192.168.30.11', attacker, [attacker, target], 2);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones - es un comando libre
+    expect(result.scanResults).toBeDefined();
+    expect(result.scanResults?.ports.some(p => p.port === 21)).toBe(true);
     expect(result.output).toContain('21/tcp');
     expect(result.output).toContain('22/tcp');
   });
@@ -82,10 +86,11 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     const target = withLevel(ftpTarget, 2);
     const result = exec('hydra -l john -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attackerWithDict, [attackerWithDict, target], 6);
     expectSuccess(result);
+    // hydra ya no completa misiones - es un comando libre
     expect(result.foundCredentials).toBeDefined();
     expect(result.foundCredentials?.user).toBe('john');
     expect(result.foundCredentials?.pass).toBe('ilovelinux');
-    expect(result.completedMissionId).toBe(6);
+    expect(result.foundCredentials?.verified).toBe(true);
   });
 
   it('Paso 5: ssh — inicia sesión interactiva y pide contraseña', () => {
@@ -103,15 +108,18 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     // Then provide password
     const result = exec('ilovelinux', attacker, [attacker, target], 7);
     expectSuccess(result);
+    // ssh ya no completa misiones - es un comando libre
     expect(result.newMachineId).toBe('lab-scenario-05-target');
-    expect(result.completedMissionId).toBe(7);
+    expect(result.sshLoginUser).toBe('john');
   });
 
   it('Paso 6: sudo -l, muestra permisos de vim (NOPASSWD)', () => {
     const target = withLevel(ftpTarget, 3);
     const result = exec('sudo -l', target, [attacker, target], 8);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(8);
+    // sudo ya no completa misiones - es un comando libre
+    expect(result.sudoPrivileges).toBeDefined();
+    expect(result.sudoPrivileges?.canSudo).toBe(true);
     expect(result.output).toContain('NOPASSWD');
     expect(result.output).toContain('vim');
   });
@@ -120,7 +128,9 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     const target = withLevel(ftpTarget, 3);
     const result = exec("sudo vim -c '!bash'", target, [attacker, target], 9);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(9);
+    // sudo ya no completa misiones - es un comando libre
+    expect(result.privescAttempted).toBe(true);
+    expect(result.privescTool).toBe('vim');
     expect(result.output).toContain('uid=0');
   });
 
@@ -128,7 +138,9 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     const target = withLevel(ftpTarget, 4);
     const result = exec('cat /root/flag2.txt', target, [attacker, target], 10);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(10);
+    // cat ya no completa misiones - es un comando libre. El lab debería detectar fileRead.isFlag
+    expect(result.fileRead).toBeDefined();
+    expect(result.fileRead?.isFlag).toBe(true);
     expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });
 
@@ -144,15 +156,17 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     let machines: Machine[] = [attacker, ftpTarget];
 
     let result = exec('arp-scan 192.168.30.0/24', attacker, machines, 1);
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones
+    expect(result.discoveredHosts).toBeDefined();
     machines = evolveState(machines, result);
 
     result = exec('nmap -sV 192.168.30.11', attacker, machines, 2);
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones
+    expect(result.scanResults?.ports.some(p => p.port === 21)).toBe(true);
     machines = evolveState(machines, result);
 
     result = exec('ftp 192.168.30.11', attacker, machines, 3);
-    expect(result.completedMissionId).toBeUndefined();
+    // ftp ya no completa misiones
     expect(result.ftpSession?.connected).toBe(true);
     machines = evolveState(machines, result);
 
@@ -161,16 +175,18 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     machines = machines.map(m => m.id === 'attacker-01' ? { ...m, files: [{ path: '/usr/share/wordlists/rockyou.txt', content: 'password\n123456\nilovelinux\n', type: 'text' }] } : m);
     const attackerWithDict = machines.find(m => m.id === 'attacker-01')!;
     result = exec('hydra -l john -P /usr/share/wordlists/rockyou.txt 192.168.30.11 ssh', attackerWithDict, machines, 6);
-    expect(result.completedMissionId).toBe(6);
+    // hydra ya no completa misiones
     expect(result.foundCredentials?.user).toBe('john');
     expect(result.foundCredentials?.pass).toBe('ilovelinux');
+    expect(result.foundCredentials?.verified).toBe(true);
     machines = evolveState(machines, result);
 
     result = exec('ssh john@192.168.30.11', attackerWithDict, machines, 7);
+    // ssh ya no completa misiones
     expect(result.sshSession?.active).toBe(true);
     // Provide password
     result = exec('ilovelinux', attackerWithDict, machines, 7);
-    expect(result.completedMissionId).toBe(7);
+    expect(result.sshLoginUser).toBe('john');
     expect(result.newMachineId).toBe('lab-scenario-05-target');
     machines = evolveState(machines, result);
 
@@ -181,13 +197,17 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     machines = evolveState(machines, result);
 
     result = exec("sudo vim -c '!bash'", sessionTarget, machines, 9);
-    expect(result.completedMissionId).toBe(9);
+    // sudo ya no completa misiones - es un comando libre. El lab debería detectar privescAttempted.
+    expect(result.privescAttempted).toBe(true);
+    expect(result.privescTool).toBe('vim');
     expect(result.output).toContain('uid=0');
     machines = evolveState(machines, result);
 
     const rootTarget = machines.find(m => m.id === 'lab-scenario-05-target')!;
     result = exec('cat /root/flag2.txt', rootTarget, machines, 10);
-    expect(result.completedMissionId).toBe(10);
+    // cat ya no completa misiones - es un comando libre. El lab debería detectar fileRead.isFlag
+    expect(result.fileRead).toBeDefined();
+    expect(result.fileRead?.isFlag).toBe(true);
     expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });
 });

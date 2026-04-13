@@ -87,6 +87,40 @@ export interface Machine {
   };
 }
 
+// ── Mission Validation Criteria ───────────────────────────────────
+// Defines what command result validates each mission
+export type MissionCriteriaType =
+  | 'discoveredHosts'      // arp-scan found hosts
+  | 'scanResults'          // nmap scanned ports
+  | 'foundCredentials'     // hydra found creds
+  | 'foundDirectories'     // gobuster found dirs
+  | 'fileRead'             // cat read a file
+  | 'privesc'              // sudo escalation
+  | 'sshLogin'             // successful ssh
+  | 'ftpLogin'             // successful ftp
+  | 'vulnerabilityFound'   // msf vulnerability check
+  | 'exploit'              // msf exploit ran
+  | 'uidChecked'           // meterpreter getuid
+  | 'ncListener'           // netcat listener started
+  | 'blockingCommand'      // listener/payload active
+  | 'custom';              // special cases
+
+export interface ValidationCriteria {
+  type: MissionCriteriaType;
+  // Optional conditions to match
+  targetIp?: string;              // IP must match
+  port?: number;                  // Port must be present
+  minHosts?: number;              // Minimum hosts discovered
+  fileType?: 'flag' | 'payload' | 'note' | 'any';
+  user?: string;                  // User must match
+  verified?: boolean;             // Credentials verified
+  isSystem?: boolean;             // UID is SYSTEM/root
+  vulnId?: string;                // Vulnerability ID
+  directories?: string[];         // Directories that must be found
+  // For complex conditions
+  conditions?: Record<string, any>;
+}
+
 export interface Mission {
   id: number;
   title: string;
@@ -99,6 +133,8 @@ export interface Mission {
   // Progressive hints support
   hints?: StepHint;
   hintLevel: number; // 0 = no hints revealed, 1 = hint1 revealed, 2 = all hints revealed
+  // Validation criteria for automatic mission completion
+  validationCriteria?: ValidationCriteria;
 }
 
 export interface Scenario {
@@ -123,7 +159,6 @@ export interface BlockingCommand {
 export interface CommandResponse {
   output: string;
   isError?: boolean;
-  completedMissionId?: number;
   newMachineId?: string;
   blockingCommand?: BlockingCommand;
   ftpSession?: {
@@ -161,12 +196,61 @@ export interface CommandResponse {
     status: 'detected' | 'confirmed';
   };
   privescCompleted?: string; // machineId that was privesc'd
+  privescAttempted?: boolean; // privesc command was executed (lab validates if it completes mission)
+  privescTool?: string; // tool used for privesc (vim, su, bash, etc.)
+  privescViaSudo?: boolean; // privesc was attempted via sudo
+  // File reading metadata (for lab validation)
+  fileRead?: {
+    path: string;
+    isNote: boolean;
+    isFlag: boolean;
+    isPayload: boolean;
+    content: string;
+  };
+  mentionedUsers?: { machineId: string; users: string[] }; // users discovered from file content
+  // Network discovery (for lab validation)
+  discoveredHosts?: Array<{ip: string; mac: string; hostname: string}>;
+  networkScanned?: string;
+  // Meterpreter session info (for lab validation)
+  uidChecked?: boolean; // getuid was executed
+  currentUser?: string; // current user in meterpreter session
+  isSystem?: boolean; // user is SYSTEM/root
   sshLoginUser?: string; // username used for SSH login
+  // Nmap scan results (for lab validation)
+  scanResults?: {
+    targetId: string;
+    targetIp: string;
+    targetHostname: string;
+    ports: Array<{
+      port: number;
+      protocol: string;
+      state: string;
+      service: string;
+      version?: string;
+    }>;
+    osDetected?: string;
+  };
   streamingLineDelays?: number[]; // ms delay before each line (for realistic streaming)
   discoveredPorts?: string; // machineId whose ports were discovered - triggers network map pulse
   sshSessionClosed?: boolean; // SSH session was closed (reset dir to /root/)
   createdFiles?: FileEntry[]; // files created by command (e.g. nmap -oN)
+  // Gobuster directory enumeration results (for lab validation)
+  foundDirectories?: {
+    targetId: string;
+    targetUrl: string;
+    directories: Array<{path: string; status: number; size?: number}>;
+  };
   possibleUsers?: { machineId: string; users: string[] }; // users discovered from notes/files
+  // SSH session state (returned by ssh command)
+  sshSession?: {
+    active: boolean;
+    connected?: boolean;
+    targetIp?: string;
+    targetId?: string;
+    username?: string;
+    authenticated?: boolean;
+    step?: 'connecting' | 'password' | 'connected';
+  };
 }
 
 export interface CommandContext {

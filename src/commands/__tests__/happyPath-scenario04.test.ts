@@ -53,7 +53,9 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
     const result = exec('arp-scan 192.168.20.0/24', attacker, allMachines, 1);
     expectSuccess(result);
     expect(result.output).toContain('192.168.20.11');
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones - es un comando libre
+    expect(result.discoveredHosts).toBeDefined();
+    expect(result.discoveredHosts?.some(h => h.ip === '192.168.20.11')).toBe(true);
   });
 
   it('Paso 2: nmap detecta HTTP en puerto 80', () => {
@@ -61,13 +63,15 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
     const result = exec('nmap -sV 192.168.20.11', attacker, [attacker, target], 2);
     expectSuccess(result);
     expect(result.output).toContain('80/tcp');
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones - es un comando libre
+    expect(result.scanResults).toBeDefined();
+    expect(result.scanResults?.ports.some(p => p.port === 80)).toBe(true);
   });
 
   it('Paso 4: nc -nlvp activa listener — valida propiedades de blockingCommand', () => {
     const result = exec('nc -nlvp 4444', attacker, allMachines, 4);
     expectSuccess(result);
-    expect(result.completedMissionId).toBe(4);
+    // nc ya no completa misiones - es un comando libre
     expect(result.blockingCommand).toBeDefined();
     expect(result.blockingCommand?.listeningPort).toBe(4444);
   });
@@ -94,15 +98,17 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
     let machines: Machine[] = [attacker, lfiTarget];
 
     let result = exec('arp-scan 192.168.20.0/24', attacker, machines, 1);
-    expect(result.completedMissionId).toBe(1);
+    // arp-scan ya no completa misiones
+    expect(result.discoveredHosts).toBeDefined();
     machines = evolveState(machines, result);
 
     result = exec('nmap -sV 192.168.20.11', attacker, machines, 2);
-    expect(result.completedMissionId).toBe(2);
+    // nmap ya no completa misiones
+    expect(result.scanResults?.ports.some(p => p.port === 80)).toBe(true);
     machines = evolveState(machines, result);
 
     result = exec('nc -nlvp 4444', attacker, machines, 4);
-    expect(result.completedMissionId).toBe(4);
+    // nc ya no completa misiones
     expect(result.blockingCommand?.listeningPort).toBe(4444);
   });
 });

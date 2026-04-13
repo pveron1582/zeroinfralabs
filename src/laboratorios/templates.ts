@@ -21,7 +21,7 @@ export interface ScenarioBuilderConfig {
   category: 'Web' | 'Network' | 'Crypto' | 'Forensics';
   networkRange: string; attackerFiles?: FileEntry[];
   targetMachine: Omit<Machine, 'machine_info' | 'id' | 'learning_steps'> & { id: string; machine_info: Omit<MachineInfo, 'ip'>; ports: Port[] };
-  learningSteps: Omit<LearningStep, 'id' | 'targetMachineId'>[];
+  learningSteps: (Omit<LearningStep, 'id' | 'targetMachineId'> & { validationCriteria?: import('../types').ValidationCriteria })[];
 }
 
 export function buildScenario(config: ScenarioBuilderConfig): Scenario {
@@ -56,6 +56,7 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
     id: idx + 1, title: step.task, titleEs: step.taskEs, description: step.text, descriptionEs: step.textEs,
     status: idx === 0 ? 'active' : 'pending', targetMachineId: config.targetMachine.id, discoveryLevel: step.discoveryLevel,
     hints: step.hints, hintLevel: 0,
+    validationCriteria: step.validationCriteria,
   }));
   return {
     id: config.id, name: config.name, description: config.description,

@@ -54,7 +54,7 @@ export function WordPressSite({
   const dynamicCreds = configFile ? parseWPConfig(configFile.content) : null;
 
   const doLogin = () => {
-    onLoginSuccess(5);
+    onLoginSuccess(6);
     onVerifyCredentials(machine.id, 'wp-admin');
     onNavigate(`http://${ip}/wp-admin/dashboard`);
   };
@@ -109,6 +109,7 @@ export function WordPressSite({
           ip={ip}
           onNavigate={onNavigate}
           onCredentialsFound={(u, p, f, s) => onCredentialsFound(machine.id, u, p, f || '/uploads/config.bak', s || 'wp-admin')}
+          onMissionComplete={onMissionComplete}
         />
       );
     }

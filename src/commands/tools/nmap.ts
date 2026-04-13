@@ -1,5 +1,7 @@
 // ── commands/tools/nmap.ts ────────────────────────────────────────
 // Simulador de escaneo de puertos Nmap con flags realistas
+// Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
+// Solo reporta resultados del escaneo para que el laboratorio valide.
 
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 
@@ -99,7 +101,17 @@ export const cmd_nmap = {
       if (vLevel >= 2) output += `Device type: ${target.machine_info.type === 'workstation' ? 'general purpose' : 'server'}\nRunning: ${target.machine_info.os.split(' ')[0]}\n`;
       output += `Nmap done: 1 IP address (1 host up) scanned in 0.42 seconds\n`;
 
-      return { output, completedMissionId: getMissionId(ctx, target), discoveredPorts: target.id };
+      return { 
+        output, 
+        scanResults: {
+          targetId: target.id,
+          targetIp: ip,
+          targetHostname: target.machine_info.hostname,
+          ports: [], // Ping scan doesn't scan ports
+          osDetected: undefined,
+        },
+        discoveredPorts: target.id 
+      };
     }
 
     // ── Full port scan ──
@@ -238,7 +250,20 @@ export const cmd_nmap = {
 
     const response: CommandResponse = {
       output,
-      completedMissionId: getMissionId(ctx, target),
+      // Metadata para que el laboratorio valide
+      scanResults: {
+        targetId: target.id,
+        targetIp: ip,
+        targetHostname: target.machine_info.hostname,
+        ports: openPorts.map(p => ({
+          port: p.port,
+          protocol: p.protocol,
+          state: p.state,
+          service: p.service,
+          version: p.version
+        })),
+        osDetected: osDetect || aggressive ? target.machine_info.os : undefined,
+      },
       discoveredPorts: target.id,
     };
 
@@ -338,18 +363,19 @@ function getVendor(mac: string): string {
   return vendors[prefix] || 'Unknown';
 }
 
-function getMissionId(ctx: CommandContext, target: any): number | undefined {
-  let missionId: number | undefined;
-  for (const m of ctx.allMachines) {
-    const step = m.learning_steps.find((s: any) =>
-      s.task.toLowerCase().includes('escaneo') ||
-      s.task.toLowerCase().includes('puerto') ||
-      s.task.toLowerCase().includes('nmap') ||
-      s.task.toLowerCase().includes('scanning') ||
-      s.task.toLowerCase().includes('port')
-    );
-    if (step) { missionId = step.id; break; }
-  }
-  const canComplete = ctx.currentMissionId === (missionId || 2);
-  return canComplete ? (missionId || 2) : undefined;
+// Types for scan results (used by labs to validate)
+export interface ScanResultPort {
+  port: number;
+  protocol: string;
+  state: string;
+  service: string;
+  version?: string;
+}
+
+export interface ScanResults {
+  targetId: string;
+  targetIp: string;
+  targetHostname: string;
+  ports: ScanResultPort[];
+  osDetected?: string;
 }

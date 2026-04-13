@@ -5,6 +5,7 @@ import { useScenarioStore } from '../store/scenarioStore';
 import { WordPressSite } from './fakesites/WordPressSite';
 import { InclusionSite } from './fakesites/lfi_lab/InclusionSIte';
 import { ConsultancySite } from './fakesites/ConsultancySite';
+import { SqlInjectionSite } from './fakesites/SqlInjectionSite';
 
 function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
   const [query, setQuery] = useState('');
@@ -214,6 +215,10 @@ export function FakeBrowser({
   const wpMachine = useMemo(() => allMachines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress')), [allMachines]);
   const lfiMachine = useMemo(() => allMachines.find(m => m.id.includes('lfi')), [allMachines]);
   const sshMachine = useMemo(() => allMachines.find(m => m.id === 'lab-scenario-02-ssh'), [allMachines]);
+  const sqliMachine = useMemo(() => {
+    console.log('Available machines:', allMachines.map(m => ({ id: m.id, ip: m.machine_info.ip })));
+    return allMachines.find(m => m.id.includes('sqli'));
+  }, [allMachines]);
 
   const reload = () => {
     setReloading(true);
@@ -377,6 +382,28 @@ export function FakeBrowser({
           attackerFiles={attackerFiles}
           listeningPort={listeningPort ?? undefined}
           victimFiles={lfiMachine.files || []}
+        />
+      );
+    }
+
+    if (sqliMachine && currentUrl.includes(sqliMachine.machine_info.ip)) {
+      return (
+        <SqlInjectionSite
+          machine={sqliMachine}
+          currentUrl={currentUrl}
+          browserIsLoggedIn={browserIsLoggedIn}
+          onNavigate={navigate}
+          onLoginSuccess={(id) => {
+            setBrowserLoggedIn(true);
+            onMissionComplete(id);
+          }}
+          onLogout={() => {
+            setBrowserLoggedIn(false);
+            navigate(`http://${sqliMachine.machine_info.ip}/`);
+          }}
+          onCredentialsFound={onCredentialsFound}
+          onVerifyCredentials={onVerifyCredentials}
+          onMissionComplete={onMissionComplete}
         />
       );
     }

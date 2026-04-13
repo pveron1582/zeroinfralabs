@@ -10,26 +10,29 @@ import { useScenarioStore } from '../../store/scenarioStore';
 import type { Machine } from '../../types';
 
 // Mock dinámico del store para simular el comportamiento global
+const mockState = {
+  msfState: null,
+  setMsfState: vi.fn(),
+  reportVulnerability: vi.fn(),
+  setListeningPort: vi.fn(),
+  listeningPort: null,
+  currentDir: '/',
+  setCurrentDir: vi.fn(),
+  goHome: vi.fn(),
+  blockingCommand: null,
+  setBlockingCommand: vi.fn(),
+  ftpSession: null,
+  setFtpSession: vi.fn(),
+  sshSession: null,
+  setSshSession: vi.fn(),
+  missions: [],
+};
+
 vi.mock('../../store/scenarioStore', () => ({
-  useScenarioStore: vi.fn((selector) => {
-    const state = {
-      msfState: null,
-      setMsfState: vi.fn(),
-      reportVulnerability: vi.fn(),
-      setListeningPort: vi.fn(),
-      listeningPort: null,
-      currentDir: '/',
-      setCurrentDir: vi.fn(),
-      goHome: vi.fn(),
-      blockingCommand: null,
-      setBlockingCommand: vi.fn(),
-      ftpSession: null,
-      setFtpSession: vi.fn(),
-      sshSession: null,
-      setSshSession: vi.fn(),
-    };
-    return selector(state);
-  })
+  useScenarioStore: Object.assign(
+    vi.fn((selector) => selector(mockState)),
+    { getState: vi.fn(() => mockState) }
+  )
 }));
 
 const createMockMachine = (overrides: Partial<Machine> = {}): Machine => ({

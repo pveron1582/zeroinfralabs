@@ -280,9 +280,132 @@ describe('scenarioStore', () => {
     useScenarioStore.getState().reportVulnerability(machineId, 'CVE-2021-44228', 'detected');
     // Luego actualizarla
     useScenarioStore.getState().reportVulnerability(machineId, 'CVE-2021-44228', 'confirmed');
-    
+
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
     const vuln = machine?.vulnerabilities?.find(v => v.id === 'CVE-2021-44228');
     expect(vuln?.status).toBe('confirmed');
+  });
+
+  // ── Additional store coverage ─────────────────────────────────────────
+
+  it('setPossibleUsers debe agregar usuarios SSH a la máquina', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().setPossibleUsers(machineId, ['admin', 'root']);
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.possible_ssh_users).toEqual(['admin', 'root']);
+  });
+
+  it('addFailedUser debe agregar usuarios fallidos', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().addFailedUser(machineId, 'hacker');
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.failed_ssh_users).toContain('hacker');
+  });
+
+  it('setSudoPrivileges debe establecer privilegios sudo', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().setSudoPrivileges(machineId, 'developer', ['vim', 'bash'], true);
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.sudo_privileges).toEqual({
+      user: 'developer',
+      commands: ['vim', 'bash'],
+      canSudo: true,
+    });
+  });
+
+  it('addFileToMachine debe agregar archivo a la máquina', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().addFileToMachine(machineId, {
+      path: '/tmp/test.txt',
+      content: 'test content',
+      type: 'text',
+    });
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.files.some(f => f.path === '/tmp/test.txt')).toBe(true);
+  });
+
+  it('addFileToMachine debe reemplazar archivo existente', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().addFileToMachine(machineId, {
+      path: '/tmp/test.txt',
+      content: 'old content',
+      type: 'text',
+    });
+    useScenarioStore.getState().addFileToMachine(machineId, {
+      path: '/tmp/test.txt',
+      content: 'new content',
+      type: 'text',
+    });
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    const file = machine?.files.find(f => f.path === '/tmp/test.txt');
+    expect(file?.content).toBe('new content');
+  });
+
+  it('setPrivescCompleted debe marcar privesc como completado', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().setPrivescCompleted(machineId);
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.privesc_completed).toBe(true);
+  });
+
+  it('triggerSurvey debe activar la encuesta', () => {
+    const scenario = useScenarioStore.getState().currentScenario;
+    useScenarioStore.getState().triggerSurvey(scenario);
+
+    const state = useScenarioStore.getState();
+    expect(state.showSurvey).toBe(true);
+    expect(state.pendingSurveyScenario).toBe(scenario);
+  });
+
+  it('closeSurvey debe cerrar la encuesta', () => {
+    useScenarioStore.getState().showSurvey = true;
+    useScenarioStore.getState().pendingSurveyScenario = useScenarioStore.getState().currentScenario;
+    useScenarioStore.getState().closeSurvey();
+
+    const state = useScenarioStore.getState();
+    expect(state.showSurvey).toBe(false);
+    expect(state.pendingSurveyScenario).toBeNull();
+  });
+
+  it('confirmRCE debe agregar credenciales reverse-shell', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().confirmRCE(machineId, 'www-data', '/var/www/html/uploads/shell.php');
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.found_credentials?.some(c => c.service === 'reverse-shell')).toBe(true);
+  });
+
+  it('confirmRCE no debe duplicar credenciales reverse-shell', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().confirmRCE(machineId, 'www-data', '/var/www/html/uploads/shell.php');
+    useScenarioStore.getState().confirmRCE(machineId, 'www-data', '/var/www/html/uploads/shell.php');
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    const reverseShellCreds = machine?.found_credentials?.filter(c => c.service === 'reverse-shell');
+    expect(reverseShellCreds?.length).toBe(1);
+  });
+
+  it('addExploredDirectory debe agregar directorio web', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().addExploredDirectory(machineId, '/wp-content');
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    expect(machine?.web_enumeration?.directories.some(d => d.path === '/wp-content')).toBe(true);
+  });
+
+  it('addExploredDirectory no debe duplicar directorios', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().addExploredDirectory(machineId, '/wp-content');
+    useScenarioStore.getState().addExploredDirectory(machineId, '/wp-content');
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    const wpContentDirs = machine?.web_enumeration?.directories.filter(d => d.path === '/wp-content');
+    expect(wpContentDirs?.length).toBe(1);
   });
 });

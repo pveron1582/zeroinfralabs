@@ -99,8 +99,14 @@ Priv: Elevate Commands
 
   if (cmd === 'getuid') {
     const newState: MsfState = { ...state, uidChecked: true };
+    // Comando libre: reporta el usuario para que el lab valide si es SYSTEM
     const res = withState(`Server username: NT AUTHORITY\\SYSTEM\n`, newState);
-    return { ...res, completedMissionId: ctx.currentMissionId === 5 ? 5 : undefined };
+    return { 
+      ...res, 
+      uidChecked: true,
+      currentUser: 'NT AUTHORITY\\SYSTEM',
+      isSystem: true,
+    };
   }
 
   if (cmd === 'sysinfo') {

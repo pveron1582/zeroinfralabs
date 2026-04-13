@@ -20,7 +20,7 @@ export function WPLogin({ ip, credentials, onNavigate, onLoginSuccess }: Props) 
     setTimeout(() => {
       setLoading(false);
       if (credentials && user === credentials.user && pass === credentials.pass) {
-        onLoginSuccess(5);
+        onLoginSuccess(6);
         // onLoginSuccess (doLogin) already navigates to /wp-admin/dashboard — no extra navigate needed
       } else {
         setError('ERROR: incorrect username or password.');

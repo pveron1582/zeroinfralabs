@@ -2,11 +2,12 @@
 // Componente raíz que usa Zustand para el estado global
 
 import { useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useParams, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useScenarioStore } from './store/scenarioStore';
-import { SCENARIOS } from './laboratorios/laboratorios';
+import { SCENARIOS, TEST_SCENARIO } from './laboratorios/laboratorios';
 import { resetMsfState, restoreMsfState, getMsfState } from './commands';
 import { LandingPage }  from './components/LandingPage';
+import { LabGrid }      from './components/LabGrid';
 import { Terminal }     from './components/Terminal';
 import { FakeBrowser }  from './components/FakeBrowser';
 import { MissionPanel } from './components/MissionPanel';
@@ -17,6 +18,116 @@ import { LabCompletionOverlay } from './components/LabCompletionOverlay';
 import { BlogListPage } from './components/BlogListPage';
 import { BlogArticlePage } from './components/BlogArticlePage';
 import { trackEvent, recordLabStart }   from './utils/analytics';
+
+// ── Test Lab Component ───────────────────────────────────────────
+function TestLab() {
+  const { selectScenario, setView } = useScenarioStore();
+
+  useEffect(() => {
+    // Force clear any persisted state before loading test scenario
+    localStorage.clear();
+    console.log('Loading TEST_SCENARIO:', TEST_SCENARIO);
+    console.log('TEST_SCENARIO category:', TEST_SCENARIO.category);
+    setTimeout(() => {
+      console.log('Selecting scenario:', TEST_SCENARIO.id);
+      selectScenario(TEST_SCENARIO.id);
+      setView('workspace');
+    }, 100);
+  }, [selectScenario, setView]);
+
+  return <AppContent />;
+}
+
+// ── Wrapper to force remount on every navigation ─────────────────
+function ScenarioLauncherWrapper() {
+  const location = useLocation();
+  // Use location.key (unique per navigation) instead of pathname
+  // so that re-selecting the same lab forces a fresh mount
+  return <ScenarioLauncher key={location.key} />;
+}
+
+// ── Scenario Launcher (from /:lang/scenario/:id route) ────────────
+function ScenarioLauncher() {
+  const { lang, id } = useParams<{ lang: string; id: string }>();
+  const navigate = useNavigate();
+  const setLanguage = useScenarioStore(state => state.setLanguage);
+  const showMachineLoader = useScenarioStore(state => state.showMachineLoader);
+  const loadingMachine = useScenarioStore(state => state.loadingMachine);
+  const view = useScenarioStore(state => state.view);
+  const selectScenario = useScenarioStore(state => state.selectScenario);
+  const machines = useScenarioStore(state => state.machines);
+  const missions = useScenarioStore(state => state.missions);
+  const activeMachineId = useScenarioStore(state => state.activeMachineId);
+  const currentScenarioId = useScenarioStore(state => state.currentScenario?.id);
+
+  // Set language SYNCHRONOUSLY before first render to avoid showing wrong language
+  const langRef = useRef<string | null>(null);
+  const validLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
+  if (langRef.current !== validLang) {
+    langRef.current = validLang;
+    setLanguage(validLang);
+  }
+
+  useEffect(() => {
+    if (!validLang || !id) return;
+
+    const scenario = SCENARIOS.find(s => s.id === id);
+    if (!scenario) {
+      navigate(`/${validLang}/labs`, { replace: true });
+      return;
+    }
+
+    // If scenario is already loaded and workspace is active, nothing to do
+    if (currentScenarioId === id && view === 'workspace') {
+      return;
+    }
+
+    console.log(`[ScenarioLauncher] Loading scenario: ${id}, lang: ${validLang}`);
+    resetMsfState();
+    selectScenario(scenario.id);
+  }, [validLang, id]);
+
+  console.log(`[ScenarioLauncher] Render: view=${view}, showMachineLoader=${showMachineLoader}, currentScenarioId=${currentScenarioId}, requestedId=${id}`);
+
+  // Phase 1: Machine loader (6.5s animation)
+  if (showMachineLoader && loadingMachine) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950"
+        style={{ fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
+        <MachineLoader
+          machineName={loadingMachine.machine_info.hostname}
+          machineIp={loadingMachine.machine_info.ip}
+          machineOs={loadingMachine.machine_info.os}
+          onComplete={() => {}}
+          language={validLang}
+        />
+      </div>
+    );
+  }
+
+  // Phase 2: Workspace loaded
+  if (view === 'workspace' && activeMachineId && machines.length > 0 && missions.length > 0) {
+    return <AppContent />;
+  }
+
+  // Phase 3: User exited lab (end command or menu button) → navigate to LabGrid
+  if (view === 'landing') {
+    // Navigate to the lab grid so the URL matches what the user sees
+    // Use replace to avoid adding extra history entries
+    const validNavLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
+    navigate(`/${validNavLang}/labs`, { replace: true });
+    // Show LabGrid while navigation happens (prevents flash of loading state)
+    return <LabGrid />;
+  }
+
+  // Fallback: initial loading state (selectScenario was called but loader hasn't started yet)
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-950"
+      style={{ fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
+      <div className="text-emerald-400 font-mono text-sm animate-pulse">Loading lab...</div>
+    </div>
+  );
+}
 
 // ── Constantes de UI ───────────────────────────────────────────────
 const TERM_COLORS = [
@@ -30,15 +141,30 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<RootRedirect />} />
+        <Route path="/:lang" element={<LandingPage />} />
+        <Route path="/:lang/labs" element={<LabGrid />} />
+        <Route path="/:lang/scenario/:id" element={<ScenarioLauncherWrapper />} />
         <Route path="/:lang/blog" element={<BlogListPage />} />
         <Route path="/:lang/blog/:slug" element={<BlogArticlePage />} />
+        <Route path="/test" element={<TestLab />} />
         <Route path="*" element={<AppContent />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
+// ── Root Redirect — reads language from store and redirects to /:lang ──
+function RootRedirect() {
+  const language = useScenarioStore(state => state.language);
+  return <Navigate to={`/${language}`} replace />;
+}
+
 export function AppContent() {
+  // ── Router hooks ────────────────────────────────────────────────
+  const navigate = useNavigate();
+  const { lang } = useParams<{ lang: string }>();
+
   // ── Selectores del Store ────────────────────────────────────────
   const view = useScenarioStore(state => state.view);
   const currentScenario = useScenarioStore(state => state.currentScenario);
@@ -65,7 +191,6 @@ export function AppContent() {
   const refreshBrowser = useScenarioStore(state => state.refreshBrowser);
   const toggleNetworkMap = useScenarioStore(state => state.toggleNetworkMap);
   const setTermColor = useScenarioStore(state => state.setTermColor);
-  const goHome = useScenarioStore(state => state.goHome);
   const selectScenario = useScenarioStore(state => state.selectScenario);
   const completeMission = useScenarioStore(state => state.completeMission);
   const findCredentials = useScenarioStore(state => state.findCredentials);
@@ -76,13 +201,12 @@ export function AppContent() {
   const addFailedUser = useScenarioStore(state => state.addFailedUser);
   const setSudoPrivileges = useScenarioStore(state => state.setSudoPrivileges);
   const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
-  const closeSurvey = useScenarioStore(state => state.closeSurvey);
 
   const currentMissionId = useScenarioStore(state => state.currentMissionId);
 
   const activeMachine = machines.find(m => m.id === activeMachineId) || machines[0];
 
-  // ── Handle goHome with survey check ─────────────────────────────
+  // ── Handle goHome — reset state, ScenarioLauncher shows LabGrid ─
   const handleGoHome = () => {
     const completedCount = missions.filter(m => m.status === 'completed').length;
     const totalMissions = missions.length;
@@ -90,7 +214,24 @@ export function AppContent() {
     if (allComplete) {
       useScenarioStore.getState().triggerSurvey(currentScenario);
     } else {
-      goHome();
+      // Reset state directly WITHOUT calling goHome() (which triggers history.back())
+      // ScenarioLauncher will detect view === 'landing' and show LabGrid
+      useScenarioStore.setState({
+        view: 'landing',
+        showNetworkMap: false,
+        hasNewNetworkInfo: false,
+        notification: null,
+        browserCurrentUrl: 'https://www.google.com',
+        browserIsLoggedIn: false,
+        browserNavHistory: ['https://www.google.com'],
+        browserNavIdx: 0,
+        listeningPort: null,
+        msfState: null,
+        showSurvey: false,
+        pendingSurveyScenario: null,
+        showCompletionOverlay: false,
+        _prevMachinesSnapshot: [],
+      });
     }
   };
 
@@ -113,12 +254,31 @@ export function AppContent() {
           setView('workspace');
         }
       } else {
-        goHome();
+        // User navigated away from workspace — clean up and go to labs grid
+        // Don't use goHome() because it calls history.back() which can cause loops
+        useScenarioStore.setState({
+          view: 'landing',
+          showNetworkMap: false,
+          hasNewNetworkInfo: false,
+          notification: null,
+          browserCurrentUrl: 'https://www.google.com',
+          browserIsLoggedIn: false,
+          browserNavHistory: ['https://www.google.com'],
+          browserNavIdx: 0,
+          listeningPort: null,
+          msfState: null,
+          showSurvey: false,
+          pendingSurveyScenario: null,
+          showCompletionOverlay: false,
+          _prevMachinesSnapshot: [],
+        });
+        const validNavLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
+        navigate(`/${validNavLang}/labs`, { replace: true });
       }
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [goHome, setView]);
+  }, [navigate, lang, setView]);
 
   // ── Reset MSF state al cambiar de escenario ─────────────────────
   useEffect(() => {
@@ -200,29 +360,31 @@ export function AppContent() {
   const wpDiscoveryLevel = wpMachine?.discovery_level ?? 0;
   const mission3Already = missions.some(m => m.id === 3 && m.status === 'completed');
 
-  // ── Landing ─────────────────────────────────────────────────────
+  // ── Landing (fallback — normal routing goes through /:lang route) ───
   if (view === 'landing') {
+    // Don't redirect if the machine loader is showing
+    if (showMachineLoader && loadingMachine) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-950"
+          style={{ fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
+          <MachineLoader
+            machineName={loadingMachine.machine_info.hostname}
+            machineIp={loadingMachine.machine_info.ip}
+            machineOs={loadingMachine.machine_info.os}
+            onComplete={() => {}}
+            language={language}
+          />
+        </div>
+      );
+    }
+    // Redirect to lab grid instead of landing for faster navigation
+    useEffect(() => {
+      window.location.href = `/${language}/labs`;
+    }, [language]);
     return (
-      <>
-        <LandingPage
-          scenarios={SCENARIOS}
-          onSelect={(id) => {
-            resetMsfState();
-            selectScenario(id);
-          }}
-        />
-        {showMachineLoader && loadingMachine && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <MachineLoader
-              machineName={loadingMachine.machine_info.hostname}
-              machineIp={loadingMachine.machine_info.ip}
-              machineOs={loadingMachine.machine_info.os}
-              onComplete={() => {}}
-              language={language}
-            />
-          </div>
-        )}
-      </>
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <div className="text-emerald-400 font-mono text-sm animate-pulse">Loading...</div>
+      </div>
     );
   }
 
@@ -301,7 +463,10 @@ export function AppContent() {
           </button>
 
           {/* Firefox button — solo en escenarios Web */}
-          {currentScenario.category === 'Web' && (
+          {(() => {
+            console.log('Current scenario category:', currentScenario.category);
+            return currentScenario.category === 'Web';
+          })() && (
           <button onClick={() => { refreshBrowser(); setActiveApp('browser'); }}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activeApp === 'browser' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}`}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -432,8 +597,26 @@ export function AppContent() {
         <SurveyModal
           scenario={pendingSurveyScenario}
           onSubmit={() => {
-            closeSurvey();
-            goHome();
+            // Clean up all survey and workspace state
+            useScenarioStore.setState({
+              view: 'landing',
+              showSurvey: false,
+              pendingSurveyScenario: null,
+              showCompletionOverlay: false,
+              showNetworkMap: false,
+              hasNewNetworkInfo: false,
+              notification: null,
+              browserCurrentUrl: 'https://www.google.com',
+              browserIsLoggedIn: false,
+              browserNavHistory: ['https://www.google.com'],
+              browserNavIdx: 0,
+              listeningPort: null,
+              msfState: null,
+              _prevMachinesSnapshot: [],
+            });
+            // Navigate directly to lab grid (avoid history.back() which can reload the same lab)
+            const validLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
+            navigate(`/${validLang}/labs`, { replace: true });
           }}
         />
       )}

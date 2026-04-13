@@ -1,14 +1,12 @@
 // ── components/__tests__/LandingPage.test.tsx ──────────────────────
-// Tests para el componente LandingPage
+// Tests for the new marketing LandingPage
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { LandingPage } from '../LandingPage';
-import type { Scenario } from '../../types';
 
-// Reset storage before each test to ensure consistent language state
 beforeEach(() => {
   localStorage.clear();
 });
@@ -17,178 +15,106 @@ const renderWithRouter = (ui: React.ReactElement) => {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
 };
 
-const mockScenarios: Scenario[] = [
-  {
-    id: 'scenario-01',
-    name: 'WordPress Lab',
-    description: 'Laboratorio de WordPress vulnerable',
-    difficulty: 'Easy',
-    category: 'Web',
-    network_range: '192.168.1.0/24',
-    initialMachineId: 'attacker-01',
-    machines: [],
-    missions: [
-      { id: 1, title: 'M1', description: 'D1', status: 'active', targetMachineId: 't1', discoveryLevel: 1, hintLevel: 0 },
-      { id: 2, title: 'M2', description: 'D2', status: 'pending', targetMachineId: 't1', discoveryLevel: 2, hintLevel: 0 },
-    ],
-  },
-  {
-    id: 'scenario-02',
-    name: 'Web OSINT & SSH Compromise',
-    description: 'Web reconnaissance and SSH compromise using Hydra',
-    difficulty: 'Medium',
-    category: 'Network',
-    network_range: '10.0.0.0/24',
-    initialMachineId: 'attacker-01',
-    machines: [],
-    missions: [
-      { id: 1, title: 'M1', description: 'D1', status: 'active', targetMachineId: 't1', discoveryLevel: 1, hintLevel: 0 },
-    ],
-  },
-  {
-    id: 'scenario-03',
-    name: 'EternalBlue',
-    description: 'Exploit MS17-010',
-    difficulty: 'Hard',
-    category: 'Exploit',
-    network_range: '10.0.0.0/24',
-    initialMachineId: 'attacker-01',
-    machines: [],
-    missions: [],
-  },
-];
-
-describe('LandingPage', () => {
+describe('LandingPage (marketing)', () => {
   it('debe renderizar el header con el logo', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
       expect(screen.getByText('ZI Labs')).toBeInTheDocument();
       expect(screen.getByText('v4.5')).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar la cantidad de labs disponibles', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar el subtítulo "Simulador de Laboratorios"', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText(/3 missions/)).toBeInTheDocument();
+      expect(screen.getByText(/LEARN ETHICAL HACKING/i)).toBeInTheDocument();
     });
   });
 
-  it('debe renderizar el título principal', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar el título principal del hero', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Choose a/)).toBeInTheDocument();
-      expect(screen.getByText('lab')).toBeInTheDocument();
+      expect(screen.getByText(/Learn hacking from scratch/i)).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar todas las tarjetas de escenarios', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar los 3 badges de valor', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText('WordPress Lab')).toBeInTheDocument();
-      expect(screen.getByText('Web OSINT & SSH Compromise')).toBeInTheDocument();
-      expect(screen.getByText('EternalBlue')).toBeInTheDocument();
+      expect(screen.getAllByText('No prior knowledge').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('No registration').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('100% safe & legal').length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  it('debe mostrar la dificultad de cada escenario', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar el botón CTA hacia los labs', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText('Easy')).toBeInTheDocument();
-      expect(screen.getByText('Medium')).toBeInTheDocument();
-      expect(screen.getByText('Hard')).toBeInTheDocument();
+      const ctaButtons = screen.getAllByText(/Start for free now/i);
+      expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  it('debe mostrar la categoría de cada escenario', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar la sección "Te presentamos ZI Labs"', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText('Web')).toBeInTheDocument();
-      expect(screen.getByText('Network')).toBeInTheDocument();
-      expect(screen.getByText('Exploit')).toBeInTheDocument();
+      expect(screen.getByText(/Never hacked anything\? Perfect/i)).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar el rango de red de cada escenario', async () => {
-    const { container } = renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar la sección "Por qué ZI Labs es diferente"', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(container.textContent).toContain('192.168.1.0/24');
-      expect(container.textContent).toContain('10.0.0.0/24');
+      expect(screen.getByText('Why ZI Labs is different')).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar la cantidad de misiones por escenario', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar las 6 tarjetas de características', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText('2 missions')).toBeInTheDocument();
-      expect(screen.getByText('1 missions')).toBeInTheDocument();
+      expect(screen.getAllByText('Realistic terminal').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('100% safe').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Guided learning').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('No registration').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('No time limits').length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  it('debe llamar onSelect al hacer clic en START', async () => {
-    const onSelect = vi.fn();
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={onSelect} />);
-
+  it('debe mostrar la sección "¿Para quién es?"', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      const startButtons = screen.getAllByText('START');
-      fireEvent.click(startButtons[0]); // Click en el primer botón START (WordPress Lab)
-    });
-
-    expect(onSelect).toHaveBeenCalledWith('scenario-01');
-  });
-
-  it('debe mostrar los badges hexadecimales', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('0x01')).toBeInTheDocument();
-      expect(screen.getByText('0x02')).toBeInTheDocument();
-      expect(screen.getByText('0x03')).toBeInTheDocument();
+      expect(screen.getByText('Who is this for?')).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar las herramientas de cada escenario', async () => {
-    const { container } = renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar la sección "¿Cómo funciona?"', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      // Herramientas del escenario 01
-      expect(container.textContent).toContain('arp-scan');
-      expect(container.textContent).toContain('nmap');
-      expect(container.textContent).toContain('gobuster');
-      expect(container.textContent).toContain('ssh');
+      expect(screen.getByText('How it works')).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar el botón START en cada tarjeta', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+  it('debe mostrar los 4 pasos', async () => {
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      const startButtons = screen.getAllByText('START');
-      expect(startButtons.length).toBe(3);
+      expect(screen.getByText('Choose a lab')).toBeInTheDocument();
+      expect(screen.getByText('Open the terminal')).toBeInTheDocument();
+      expect(screen.getByText('Start hacking')).toBeInTheDocument();
+      expect(screen.getByText('Complete the labs')).toBeInTheDocument();
+    });
+  });
+
+  it('debe mostrar el CTA final', async () => {
+    renderWithRouter(<LandingPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Ready for your first machine?')).toBeInTheDocument();
     });
   });
 
   it('debe renderizar el footer', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
+    renderWithRouter(<LandingPage />);
     await waitFor(() => {
       expect(screen.getByText(/ZI Labs · Controlled practice environment/)).toBeInTheDocument();
-    });
-  });
-
-  it('debe mostrar el subtítulo correcto', async () => {
-    renderWithRouter(<LandingPage scenarios={mockScenarios} onSelect={vi.fn()} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Pentesting Lab Simulator')).toBeInTheDocument();
     });
   });
 });

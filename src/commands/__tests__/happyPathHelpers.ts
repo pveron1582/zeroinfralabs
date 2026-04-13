@@ -4,7 +4,7 @@
 import { beforeEach, expect } from 'vitest';
 import { executeCommand, resetMsfState } from '../index';
 import { resetFtpSessions } from '../tools';
-import { shellManager } from '../../shells';
+import { shellManager } from '../../frameworks/shells';
 import type { Machine } from '../../types';
 
 export function setupBeforeEach() {
@@ -50,15 +50,43 @@ export const evolveState = (
   machines: Machine[],
   result: ReturnType<typeof exec>
 ): Machine[] => {
-  if (!result.completedMissionId) return machines;
-
+  // Free commands: update discovery level based on metadata
   return machines.map(machine => {
-    const step = machine.learning_steps.find(s => s.id === result.completedMissionId);
-    if (step?.discoveryLevel !== undefined) {
-      return {
-        ...machine,
-        discovery_level: Math.max(machine.discovery_level, step.discoveryLevel),
-      };
+    let newLevel = machine.discovery_level;
+
+    // arp-scan discovered hosts
+    if (result.discoveredHosts && result.discoveredHosts.length > 0) {
+      newLevel = Math.max(newLevel, 1);
+    }
+
+    // nmap discovered ports for this machine
+    if (result.scanResults && result.scanResults.targetId === machine.id) {
+      newLevel = Math.max(newLevel, 2);
+    }
+    if (result.discoveredPorts === machine.id) {
+      newLevel = Math.max(newLevel, 2);
+    }
+
+    // gobuster found directories for this machine's web server
+    if (result.foundDirectories?.targetId === machine.id) {
+      newLevel = Math.max(newLevel, 3);
+    }
+
+    // hydra found credentials for this machine
+    if (result.foundCredentials?.machineId === machine.id) {
+      newLevel = Math.max(newLevel, 3);
+    }
+
+    // SSH/FTP login achieved
+    if (result.sshSession?.targetId === machine.id && result.sshSession.authenticated) {
+      newLevel = Math.max(newLevel, 4);
+    }
+    if (result.ftpSession?.targetId === machine.id && result.ftpSession.loggedIn) {
+      newLevel = Math.max(newLevel, 3);
+    }
+
+    if (newLevel !== machine.discovery_level) {
+      return { ...machine, discovery_level: newLevel };
     }
     return machine;
   });

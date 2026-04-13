@@ -1,11 +1,11 @@
 // ── commands/builtin/sudo.ts ──────────────────────────────────────
 // Simula el comando sudo con soporte para:
 //   sudo -l              → lista permisos del sudoers
-//   sudo vim -c '!bash'  → escalada de privilegios (completa misión)
-//   sudo <cmd>           → respuesta genérica
+//   sudo <cmd>           → ejecuta comando como root (si autorizado)
+// Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
+// La validación de privesc debe hacerse en el laboratorio correspondiente.
 
 import type { CommandContext, CommandResponse } from '../../types';
-import { getDonationMessage } from '../../utils/donationMessage';
 
 // Parsea el archivo /etc/sudoers de la máquina y extrae las reglas del usuario actual
 function parseSudoers(sudoersContent: string, username: string): string[] {
@@ -24,51 +24,42 @@ function parseSudoers(sudoersContent: string, username: string): string[] {
   return rules;
 }
 
-// Detecta si hay una vulnerabilidad de privesc en las reglas de sudo
-function detectPrivescVuln(rules: string[]): { tool: string; description: string; descriptionEs: string } | null {
-  for (const rule of rules) {
-    const lower = rule.toLowerCase();
-    if (lower.includes('vim') && lower.includes('nopasswd')) {
-      return {
-        tool: 'vim',
-        description: `NOPASSWD sudo access to vim allows privilege escalation to root via !bash`,
-        descriptionEs: `Acceso sudo NOPASSWD a vim permite escalada de privilegios a root vía !bash`,
-      };
-    }
-    if (lower.includes('vi ') && lower.includes('nopasswd')) {
-      return {
-        tool: 'vi',
-        description: `NOPASSWD sudo access to vi allows privilege escalation to root via !bash`,
-        descriptionEs: `Acceso sudo NOPASSWD a vi permite escalada de privilegios a root vía !bash`,
-      };
+// Extrae el primer usuario no-root del sudoers
+function getUsernameFromSudoers(sudoersContent: string): string {
+  const lines = sudoersContent.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('Defaults') && !trimmed.startsWith('root')) {
+      const match = trimmed.match(/^([a-zA-Z0-9_]+)\s+/);
+      if (match) {
+        return match[1];
+      }
     }
   }
-  return null;
+  return 'root';
 }
 
-// Detecta si el comando es una escalada via vim
-function isVimPrivesc(args: string[]): boolean {
-  // Acepta variantes: sudo vim -c '!bash', sudo vim -c "!bash", sudo vim -c !bash
-  const joined = args.join(' ').toLowerCase();
-  return (
-    args[0] === 'vim' &&
-    (joined.includes('!bash') || joined.includes('!sh') || joined.includes('!/bin/bash'))
-  );
+// Verifica si un comando tiene permiso NOPASSWD en sudoers
+function hasNopasswd(sudoersContent: string, username: string, cmd: string): boolean {
+  const rules = parseSudoers(sudoersContent, username);
+  return rules.some(r => {
+    const lower = r.toLowerCase();
+    // NOPASSWD:ALL o NOPASSWD:/path/to/cmd
+    return lower.includes('nopasswd') && (lower.includes('all') || lower.includes(cmd.toLowerCase()));
+  });
 }
 
-// Detecta si el comando es sudo su o sudo bash (también válidos para escalar)
-function isDirectRoot(args: string[]): boolean {
-  return (
-    args[0] === 'su' ||
-    args[0] === 'bash' ||
-    args[0] === '/bin/bash' ||
-    (args[0] === 'su' && args[1] === '-')
+// Verifica si tiene permiso para ejecutar un comando (con o sin password)
+function hasPermission(sudoersContent: string, username: string, cmd: string): boolean {
+  const rules = parseSudoers(sudoersContent, username);
+  return rules.some(r =>
+    r.includes('ALL') || r.toLowerCase().includes(cmd.toLowerCase())
   );
 }
 
 export const cmd_sudo = {
   name: 'sudo',
-  execute: (args: string[], { machine, allMachines, currentMissionId, language }: CommandContext): CommandResponse => {
+  execute: (args: string[], { machine }: CommandContext): CommandResponse => {
     // Sin argumentos
     if (args.length === 0) {
       return {
@@ -79,38 +70,20 @@ export const cmd_sudo = {
       };
     }
 
+    const hostname = machine.machine_info.hostname;
+    const sudoersFile = machine.files?.find(f => f.path === '/etc/sudoers');
+
+    if (!sudoersFile) {
+      return {
+        output: `sudo: unable to open /etc/sudoers: No such file or directory`,
+        isError: true,
+      };
+    }
+
+    const username = getUsernameFromSudoers(sudoersFile.content);
+
     // ── sudo -l ────────────────────────────────────────────────────
     if (args[0] === '-l') {
-      const hostname = machine.machine_info.hostname;
-      const ip = machine.machine_info.ip;
-
-      // Buscar sudoers en los archivos de la máquina activa
-      const sudoersFile = machine.files?.find(f => f.path === '/etc/sudoers');
-
-      if (!sudoersFile) {
-        return {
-          output: `sudo: unable to open /etc/sudoers: No such file or directory`,
-          isError: true,
-        };
-      }
-
-      // Extraer el primer usuario no-root del sudoers
-      const sudoersLines = sudoersFile.content.split('\n');
-      let username = 'root';
-      for (const line of sudoersLines) {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('Defaults') && !trimmed.startsWith('root')) {
-          const match = trimmed.match(/^([a-zA-Z0-9_]+)\s+/);
-          if (match) {
-            username = match[1];
-            break;
-          }
-        }
-      }
-      if (machine.id.includes('attacker')) {
-        username = 'root';
-      }
-
       const rules = parseSudoers(sudoersFile.content, username);
 
       if (rules.length === 0) {
@@ -123,7 +96,6 @@ export const cmd_sudo = {
       // Formatear output al estilo real de sudo -l
       const rulesFormatted = rules
         .map(rule => {
-          // Extraer la parte de comandos (después del primer ALL=(ALL))
           const match = rule.match(/NOPASSWD:\s*(.+)/i);
           if (match) {
             return `    (ALL) NOPASSWD: ${match[1].trim()}`;
@@ -136,23 +108,8 @@ export const cmd_sudo = {
         })
         .join('\n');
 
-      // Buscar el step que contenga "sudo -l" o "Enumeración de sudo"
-      let missionId: number | undefined;
-      for (const m of allMachines) {
-        const step = m.learning_steps.find(s =>
-          s.task.toLowerCase().includes('sudo') || s.task.toLowerCase().includes('enumeración')
-        );
-        if (step) { missionId = step.id; break; }
-      }
-
-      // Fallback: usar currentMissionId si está en el rango esperado para sudo
-      if (!missionId && currentMissionId >= 5 && currentMissionId <= 10) {
-        missionId = currentMissionId;
-      }
-
       return {
-        output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may run the following commands on ${hostname} (${ip}):\n${rulesFormatted}`,
-        completedMissionId: missionId,
+        output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may run the following commands on ${hostname}:\n${rulesFormatted}`,
         isError: false,
         sudoPrivileges: {
           machineId: machine.id,
@@ -163,95 +120,48 @@ export const cmd_sudo = {
       };
     }
 
-    // ── sudo vim -c '!bash' → escalada de privilegios ──────────────
-    if (isVimPrivesc(args)) {
-      // Buscar el step de escalada de privilegios dinámicamente
-      let missionId: number | undefined;
-      for (const m of allMachines) {
-        const step = m.learning_steps.find(s => {
-          const lTask = (s.task || '').toLowerCase();
-          const lText = (s.text || '').toLowerCase();
-          const lHint2 = (s.hints?.hint2?.en || '').toLowerCase();
-          return lTask.includes('escalada') ||
-            lTask.includes('privilege escalation') ||
-            lTask.includes('privilegios') ||
-            lText.includes('escalada') ||
-            lText.includes('escalate') ||
-            lText.includes('privilege escalation') ||
-            lText.includes('vim') ||
-            lHint2.includes('vim');
-        });
-        if (step) { missionId = step.id; break; }
-      }
-
-      const donationMsg = getDonationMessage(language || 'es');
-
-      return {
-        output: `\n# vim abriendo shell como root...
-root@${machine.machine_info.hostname}:/home/developer# id
-uid=0(root) gid=0(root) groups=0(root)
-root@${machine.machine_info.hostname}:/home/developer# whoami
-root${donationMsg}`,
-        completedMissionId: missionId,
-        newMachineId: machine.id,
-        privescCompleted: machine.id,
-        isError: false,
-      };
-    }
-
-    // ── sudo su / sudo bash → también válidos ──────────────────────
-    if (isDirectRoot(args)) {
-      const sudoersFile = machine.files?.find(f => f.path === '/etc/sudoers');
-      const username = 'developer';
-      const hasNopasswd = sudoersFile?.content.includes('NOPASSWD');
-
-      if (!hasNopasswd) {
-        return {
-          output: `[sudo] password for ${username}: \nSorry, user ${username} is not allowed to execute '${args.join(' ')}' as root on ${machine.machine_info.hostname}.`,
-          isError: true,
-        };
-      }
-
-      // Buscar el step de escalada de privilegios dinámicamente
-      let missionId: number | undefined;
-      for (const m of allMachines) {
-        const step = m.learning_steps.find(s =>
-          s.task.toLowerCase().includes('escalada') ||
-          s.task.toLowerCase().includes('privilegios')
-        );
-        if (step) { missionId = step.id; break; }
-      }
-
-      return {
-        output: `root@${machine.machine_info.hostname}:/home/developer# `,
-        completedMissionId: missionId,
-        isError: false,
-      };
-    }
-
-    // ── sudo <otro comando> ────────────────────────────────────────
-    // Verificar si tiene permisos en sudoers para ese comando
-    const sudoersFile = machine.files?.find(f => f.path === '/etc/sudoers');
+    // ── sudo <cmd> ────────────────────────────────────────────────────
     const requestedCmd = args[0];
-
-    if (sudoersFile) {
-      const username = 'developer';
-      const rules = parseSudoers(sudoersFile.content, username);
-      const hasPermission = rules.some(r =>
-        r.includes('ALL') || r.toLowerCase().includes(requestedCmd.toLowerCase())
-      );
-
-      if (!hasPermission) {
-        return {
-          output: `Sorry, user developer is not allowed to execute '${args.join(' ')}' as root on ${machine.machine_info.hostname}.\nThis incident will be reported.`,
-          isError: true,
-        };
-      }
+    
+    // Verificar permisos
+    if (!hasPermission(sudoersFile.content, username, requestedCmd)) {
+      return {
+        output: `Sorry, user ${username} is not allowed to execute '${args.join(' ')}' as root on ${hostname}.\nThis incident will be reported.`,
+        isError: true,
+      };
     }
 
-    // Comando genérico permitido por sudo
+    // Verificar si requiere password (NOPASSWD)
+    const cmdRequiresPassword = !hasNopasswd(sudoersFile.content, username, requestedCmd);
+    
+    // Comandos que abren shell como root (vim con !bash, su, bash)
+    const joinedArgs = args.join(' ').toLowerCase();
+    const isShellEscalation = (
+      (requestedCmd === 'vim' && (joinedArgs.includes('!bash') || joinedArgs.includes('!sh'))) ||
+      requestedCmd === 'su' ||
+      requestedCmd === 'bash' ||
+      requestedCmd === '/bin/bash'
+    );
+
+    if (isShellEscalation) {
+      // Simulamos que el comando ejecuta y abre shell como root
+      return {
+        output: `\n# ${requestedCmd} abriendo shell como root...
+root@${hostname}:/home/${username}# id
+uid=0(root) gid=0(root) groups=0(root)
+root@${hostname}:/home/${username}# whoami
+root`,
+        isError: false,
+        // Estos campos son para que el laboratorio pueda detectar el privesc
+        privescAttempted: true,
+        privescTool: requestedCmd,
+        privescViaSudo: true,
+      };
+    }
+
+    // Comando genérico ejecutado como root
     return {
-      output: `[sudo] Ejecutando ${args.join(' ')} como root...`,
+      output: `[sudo] Ejecutando '${args.join(' ')}' como root...`,
       isError: false,
     };
   },

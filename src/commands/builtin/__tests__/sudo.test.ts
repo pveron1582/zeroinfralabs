@@ -23,19 +23,10 @@ describe('cmd_sudo', () => {
       : [],
   });
 
-  const createMockContext = (machine: Machine, missionId: number = 5): CommandContext => ({
+  const createMockContext = (machine: Machine): CommandContext => ({
     machine,
-    allMachines: [{
-      ...machine,
-      learning_steps: [
-        { id: 1, task: 'Reconocimiento de red', text: 'arp-scan', targetMachineId: machine.id, discoveryLevel: 1 },
-        { id: 2, task: 'Escaneo de puertos', text: 'nmap', targetMachineId: machine.id, discoveryLevel: 2 },
-        { id: 3, task: 'Fuerza bruta SSH', text: 'hydra', targetMachineId: machine.id, discoveryLevel: 3 },
-        { id: 4, task: 'Enumeración de sudo', text: 'sudo -l', targetMachineId: machine.id, discoveryLevel: 3 },
-        { id: 5, task: 'Escalada de privilegios', text: 'sudo vim', targetMachineId: machine.id, discoveryLevel: 4 },
-      ],
-    }],
-    currentMissionId: missionId,
+    allMachines: [machine],
+    currentMissionId: 1,
     currentDir: '/',
   });
 
@@ -67,28 +58,34 @@ describe('cmd_sudo', () => {
       expect(result.isError).toBe(true);
     });
 
-    it('debe completar misión 4 al ejecutar sudo -l', () => {
+    it('debe devolver sudoPrivileges al ejecutar sudo -l (para que el lab valide)', () => {
       const machine = createMockMachine(true);
-      const result = cmd_sudo.execute(['-l'], createMockContext(machine, 4));
+      const result = cmd_sudo.execute(['-l'], createMockContext(machine));
 
-      expect(result.completedMissionId).toBe(4);
+      expect(result.sudoPrivileges).toBeDefined();
+      expect(result.sudoPrivileges?.user).toBe('developer');
+      expect(result.sudoPrivileges?.canSudo).toBe(true);
+      // Nota: sudo ya no completa misiones, eso lo hace el laboratorio
     });
   });
 
   describe('sudo vim -c "!bash" - escalada de privilegios', () => {
     it('debe escalar a root con vim -c "!bash"', () => {
       const machine = createMockMachine(true);
-      const result = cmd_sudo.execute(['vim', '-c', '!bash'], createMockContext(machine, 5));
+      const result = cmd_sudo.execute(['vim', '-c', '!bash'], createMockContext(machine));
 
       expect(result.output).toContain('root');
       expect(result.output).toContain('uid=0');
     });
 
-    it('debe completar misión 5 al escalar privilegios', () => {
+    it('debe reportar privescAttempted al escalar (para que el lab valide)', () => {
       const machine = createMockMachine(true);
-      const result = cmd_sudo.execute(['vim', '-c', '!bash'], createMockContext(machine, 5));
+      const result = cmd_sudo.execute(['vim', '-c', '!bash'], createMockContext(machine));
 
-      expect(result.completedMissionId).toBe(5);
+      expect(result.privescAttempted).toBe(true);
+      expect(result.privescTool).toBe('vim');
+      expect(result.privescViaSudo).toBe(true);
+      // Nota: sudo ya no completa misiones, eso lo hace el laboratorio
     });
 
     it('debe aceptar variantes con comillas dobles', () => {

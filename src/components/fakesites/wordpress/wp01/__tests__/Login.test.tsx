@@ -48,7 +48,7 @@ describe('WordPress Lab (wp01) - Componentes Vulnerables', () => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(onLoginSuccess).toHaveBeenCalledWith(5);
+      expect(onLoginSuccess).toHaveBeenCalledWith(6);
     });
   });
 

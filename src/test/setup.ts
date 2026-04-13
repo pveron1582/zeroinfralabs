@@ -37,6 +37,14 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }));
 
+// Mock IntersectionObserver
+class MockIntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
 // Cleanup after each test
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, afterAll } from 'vitest';
