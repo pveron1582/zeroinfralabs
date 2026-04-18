@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased] - 2026-04-18
+
+### DevOps
+
+- ✅ **Vercel Analytics** — Agregado seguimiento de analytics con `@vercel/analytics` en `src/main.tsx`
+
+---
+
 ## [1.1.0] - 2026-04-12
 
 ### Fixes de Navegación
