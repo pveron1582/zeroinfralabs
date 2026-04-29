@@ -154,10 +154,26 @@ export default function App() {
   );
 }
 
-// ── Root Redirect — reads language from store and redirects to /:lang ──
+// ── Root Redirect — detects browser language or uses stored preference ──
 function RootRedirect() {
-  const language = useScenarioStore(state => state.language);
-  return <Navigate to={`/${language}`} replace />;
+  const storedLanguage = useScenarioStore(state => state.language);
+
+  // Detect browser language on first visit
+  const detectedLang = (() => {
+    // If user has a stored preference that's not the default, use it
+    if (storedLanguage && storedLanguage !== 'en') {
+      return storedLanguage;
+    }
+    // Otherwise detect from browser
+    const browserLang = navigator.language || (navigator as any).userLanguage || 'en';
+    // Spanish variants: es, es-ES, es-MX, es-AR, etc.
+    if (browserLang.toLowerCase().startsWith('es')) {
+      return 'es';
+    }
+    return 'en';
+  })();
+
+  return <Navigate to={`/${detectedLang}`} replace />;
 }
 
 export function AppContent() {

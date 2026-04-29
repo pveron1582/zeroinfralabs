@@ -359,7 +359,8 @@ describe('cmd_nmap', () => {
     // -A + -p + -oN + --open
     const result = cmd_nmap.execute(['-A', '-p', '22,445', '--open', '-oN', 'scan.txt', '192.168.1.10'], {
       allMachines: [machine],
-      currentMissionId: 1
+      currentMissionId: 1,
+      currentDir: '/root'
     } as any);
 
     expect(result.isError).toBeUndefined();
@@ -367,10 +368,51 @@ describe('cmd_nmap', () => {
     expect(result.output).toContain('Host script results');
     // Verifica creación de archivo
     expect(result.createdFiles).toBeDefined();
-    expect(result.createdFiles?.[0]?.path).toBe('scan.txt');
+    expect(result.createdFiles?.[0]?.path).toBe('/root/scan.txt');
   });
 
   // ── Output files ──
+
+  it('-oN debe crear archivo en el directorio actual (currentDir)', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sV', '-oN', 'basic', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1,
+      currentDir: '/root'
+    } as any);
+
+    expect(result.createdFiles).toBeDefined();
+    expect(result.createdFiles?.length).toBe(1);
+    // Debe guardar en /root/basic (sin extensión .txt por defecto)
+    expect(result.createdFiles?.[0].path).toBe('/root/basic');
+    expect(result.createdFiles?.[0].content).toContain('Nmap scan report');
+  });
+
+  it('-oN con nombre de archivo con extension debe guardar correctamente', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sV', '-oN', 'salida.txt', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1,
+      currentDir: '/home/user'
+    } as any);
+
+    expect(result.createdFiles).toBeDefined();
+    // Debe guardar en /home/user/salida.txt
+    expect(result.createdFiles?.[0].path).toBe('/home/user/salida.txt');
+  });
+
+  it('-oN con path absoluto debe respetar el path', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sV', '-oN', '/tmp/scan.txt', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1,
+      currentDir: '/root'
+    } as any);
+
+    expect(result.createdFiles).toBeDefined();
+    // Path absoluto debe respetarse
+    expect(result.createdFiles?.[0].path).toBe('/tmp/scan.txt');
+  });
 
   it('-oN debe crear archivo con output normal', () => {
     const machines = [createMockMachine('target-01', '192.168.1.10', 1)];

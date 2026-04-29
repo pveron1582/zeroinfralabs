@@ -39,7 +39,7 @@ const initialState = {
   browserNavIdx: 0,
   listeningPort: null as number | null,
   blockingCommand: null as BlockingCommand | null,
-  currentDir: '/',
+  currentDir: '/root',
   msfState: null as MsfState | null,
   ftpSession: null as FtpSessionState | null,
   sshSession: null as SshSessionState | null,
@@ -449,6 +449,7 @@ export const useScenarioStore = create<ScenarioState>()(
         browserNavHistory: state.browserNavHistory,
         browserNavIdx: state.browserNavIdx,
         msfState: state.msfState?.active ? state.msfState : null,
+        currentDir: state.currentDir,
       }),
     }
   )

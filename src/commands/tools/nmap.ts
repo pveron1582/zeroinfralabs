@@ -235,9 +235,13 @@ export const cmd_nmap = {
 
     // ── Build output files ──
     const createdFiles: FileEntry[] = [];
+    // Use current directory from context (defaults to /root if not set)
+    const currentDir = ctx.currentDir || '/root';
 
     if (outputFileNormal) {
-      createdFiles.push({ path: outputFileNormal, content: output, type: 'text' });
+      // Ensure filename has proper path (relative to current directory)
+      const filePath = outputFileNormal.startsWith('/') ? outputFileNormal : `${currentDir}/${outputFileNormal}`;
+      createdFiles.push({ path: filePath, content: output, type: 'text' });
     }
 
     if (outputFileGrep) {
@@ -245,7 +249,9 @@ export const cmd_nmap = {
       openPorts.forEach(p => {
         grepOutput += `Host: ${ip} (${target.machine_info.hostname})\tPorts: ${p.port}/${p.protocol}/${p.state}//${p.service}/${isVersionScan ? p.version : ''}\n`;
       });
-      createdFiles.push({ path: outputFileGrep, content: grepOutput, type: 'text' });
+      // Ensure filename has proper path (relative to current directory)
+      const filePath = outputFileGrep.startsWith('/') ? outputFileGrep : `${currentDir}/${outputFileGrep}`;
+      createdFiles.push({ path: filePath, content: grepOutput, type: 'text' });
     }
 
     // ── Update discovery level ──
