@@ -414,6 +414,49 @@ describe('cmd_nmap', () => {
     expect(result.createdFiles?.[0].path).toBe('/tmp/scan.txt');
   });
 
+  it('-oG debe crear archivo grepable en directorio actual', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sV', '-oG', 'scan.gnmap', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1,
+      currentDir: '/home/user'
+    } as any);
+
+    expect(result.createdFiles).toBeDefined();
+    expect(result.createdFiles?.length).toBe(1);
+    // Debe guardar en /home/user/scan.gnmap
+    expect(result.createdFiles?.[0].path).toBe('/home/user/scan.gnmap');
+    // Contenido debe ser formato grepable
+    expect(result.createdFiles?.[0].content).toContain('Host:');
+    expect(result.createdFiles?.[0].content).toContain('Ports:');
+  });
+
+  it('-oG sin extension debe guardar con nombre exacto', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sV', '-oG', 'resultado', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1,
+      currentDir: '/tmp'
+    } as any);
+
+    expect(result.createdFiles).toBeDefined();
+    expect(result.createdFiles?.[0].path).toBe('/tmp/resultado');
+  });
+
+  it('-oN y -oG juntos deben crear ambos archivos', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sV', '-oN', 'normal.txt', '-oG', 'grepable.txt', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1,
+      currentDir: '/root'
+    } as any);
+
+    expect(result.createdFiles).toBeDefined();
+    expect(result.createdFiles?.length).toBe(2);
+    expect(result.createdFiles?.[0].path).toBe('/root/normal.txt');
+    expect(result.createdFiles?.[1].path).toBe('/root/grepable.txt');
+  });
+
   it('-oN debe crear archivo con output normal', () => {
     const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
     const attacker: Machine = {
