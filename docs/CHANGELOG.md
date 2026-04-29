@@ -1,5 +1,42 @@
 # Changelog
 
+## [Unreleased] - 2026-04-29
+
+### Mejoras de UX y Routing
+
+- ✅ **Detección automática de idioma** — Detecta `navigator.language` del navegador
+  - Redirige a `/es` si el navegador está en español (es-ES, es-MX, es-AR, etc.)
+  - Redirige a `/en` por defecto o para otros idiomas
+  - Respeta preferencia guardada en localStorage si el usuario ya cambió manualmente
+
+- ✅ **Language switcher fix** — Cambio de idioma actualiza la URL correctamente
+  - Al cambiar ES → EN, la URL cambia de `/es/scenario/...` a `/en/scenario/...`
+  - Preserva la ruta completa, solo cambia el prefijo de idioma
+
+- ✅ **Persistencia de directorio actual** — `currentDir` se guarda en localStorage
+  - Valor inicial: `/root` (en lugar de `/`)
+  - Al refrescar la página, mantiene el directorio donde estabas
+
+### Comandos
+
+- ✅ **nmap -oN / -oG fix** — Guarda archivos en el directorio actual
+  - Ej: `nmap -oN basico 192.168.1.10` guarda en `/root/basico`
+  - Ej: `nmap -oN salida.txt 192.168.1.10` guarda en `/root/salida.txt`
+  - Paths absolutos se respetan: `nmap -oN /tmp/scan.txt ...` guarda en `/tmp/scan.txt`
+  - `-oG` funciona igual que `-oN`
+
+- ✅ **nmap --open** — Nuevo flag para filtrar solo puertos abiertos
+
+### DevOps
+
+- ✅ **vercel.json** — Configuración para SPA routing
+  - Soluciona error 404 al refrescar páginas con rutas dinámicas (`/es/labs`, `/en/scenario/...`)
+  - Redirige todas las rutas al `index.html` para que React Router maneje el routing
+
+- ✅ **chunkSizeWarningLimit** — Aumentado a 1000KB para suprimir warning de Vercel
+
+---
+
 ## [Unreleased] - 2026-04-23
 
 ### Comandos de Sistema y Red
