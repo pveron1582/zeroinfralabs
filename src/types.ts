@@ -153,6 +153,7 @@ export interface BlockingCommand {
   message: string;
   cancelKey?: string;
   listeningPort?: number;
+  clearScreen?: boolean;
   connected?: boolean;
 }
 

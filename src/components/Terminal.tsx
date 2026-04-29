@@ -196,6 +196,47 @@ export function Terminal({
     }
   }, [blockingCommand?.connected, busy, allMachines, listeningPort, prompt, setBlockingCommand, setListeningPort, onChangeMachine, setCurrentDir]);
 
+  // Auto-refresh effect for top/htop commands - updates display every second
+  useEffect(() => {
+    if (busy && blockingCommand?.cancelKey === 'q' && blockingCommand?.clearScreen) {
+      // This is 'top' or 'htop' - refresh every second
+      const cmdName = blockingCommand?.message?.includes('htop') ? 'htop' : 'top';
+      const refreshInterval = setInterval(() => {
+        // Regenerate output with new random values
+        const result = executeCommand(cmdName, machine, allMachines, currentMissionId, undefined, currentDir);
+        if (!result.isError && result.output) {
+          // Replace the last history entry if it's from top/htop, otherwise add new
+          setHistory(prev => {
+            const lastEntry = prev[prev.length - 1];
+            const isTopHtopEntry = lastEntry && 
+              lastEntry.command === null && 
+              (lastEntry.output?.includes('top -') || lastEntry.output?.includes('CPU0 ['));
+            if (isTopHtopEntry) {
+              // Replace last entry
+              return [...prev.slice(0, -1), {
+                command: null,
+                output: result.output,
+                streaming: false,
+                prompt,
+                timestamp: Date.now()
+              }];
+            }
+            // Add new entry
+            return [...prev, {
+              command: null,
+              output: result.output,
+              streaming: false,
+              prompt,
+              timestamp: Date.now()
+            }];
+          });
+        }
+      }, 1000);
+
+      return () => clearInterval(refreshInterval);
+    }
+  }, [busy, blockingCommand, machine, allMachines, currentMissionId, currentDir, prompt]);
+
   const processCommandResult = (result: any, trimmed: string, currentPrompt: string, isStreaming: boolean) => {
     // Legacy support: command explicitly set completedMissionId
     if (result.completedMissionId) {
@@ -218,6 +259,10 @@ export function Terminal({
       setBlockingCommand(result.blockingCommand);
       if (result.blockingCommand.listeningPort) {
         setListeningPort(result.blockingCommand.listeningPort);
+      }
+      // Clear screen if requested (e.g., for top)
+      if (result.blockingCommand.clearScreen) {
+        setHistory([]);
       }
       if (!isStreaming) setBusy(true);
     }

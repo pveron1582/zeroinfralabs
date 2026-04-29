@@ -13,25 +13,25 @@ describe('Integración de Comandos y Lógica de Pentesting', () => {
   });
 
   describe('Flujo de Reconocimiento y Gating', () => {
-    it('debe bloquear nmap si el host no ha sido descubierto (discovery_level 0)', () => {
+    it('nmap debe funcionar sin reconocimiento previo (comando libre)', () => {
+      // nmap ya no valida discovery_level - es un comando libre
       const hiddenTarget = { ...target, discovery_level: 0 };
       const result = executeCommand(`nmap -sV ${target.machine_info.ip}`, attacker, [attacker, hiddenTarget], 1);
       
-      expect(result.isError).toBe(true);
-      expect(result.output).toContain('Primero realiza el reconocimiento');
+      expect(result.isError).toBeUndefined();
+      expect(result.output).toContain('Nmap scan report');
     });
 
-    it('debe completar la misión de arp-scan y permitir nmap posteriormente', () => {
+    it('debe descubrir hosts con arp-scan y escanear con nmap', () => {
       const resArp = executeCommand(`arp-scan ${scenario.network_range}`, attacker, scenario.machines, 1);
-      // arp-scan ya no completa misiones - es un comando libre
+      // arp-scan retorna discoveredHosts para que el lab valide
       expect(resArp.discoveredHosts).toBeDefined();
 
-      const discoveredTarget = { ...target, discovery_level: 1 };
-      const resNmap = executeCommand(`nmap -sV ${target.machine_info.ip}`, attacker, [attacker, discoveredTarget], 2);
+      // nmap funciona sin depender de arp-scan (comando libre)
+      const resNmap = executeCommand(`nmap -sV ${target.machine_info.ip}`, attacker, scenario.machines, 1);
       
       expect(resNmap.isError).toBeUndefined();
       expect(resNmap.output).toContain('Nmap scan report');
-      // nmap ya no completa misiones - es un comando libre
       expect(resNmap.scanResults).toBeDefined();
     });
   });

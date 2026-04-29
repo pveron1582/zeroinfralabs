@@ -144,12 +144,12 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     expect(result.output).toBe('ZIL{SUDO_VIM_PRIVESC_COMPLETE}');
   });
 
-  it('ssh sin hydra previo debe fallar', () => {
+  it('ssh funciona sin hydra previo - inicia sesión interactiva', () => {
+    // ssh ya no valida credenciales previas - es un comando libre
     const target = withLevel(ftpTarget, 2);
-    const result = exec('ssh john@192.168.30.11 ilovelinux', attacker, [attacker, target], 6);
-    expect(result.isError).toBe(true);
-    expect(result.completedMissionId).toBeUndefined();
-    expect(result.newMachineId).toBeUndefined();
+    const result = exec('ssh john@192.168.30.11', attacker, [attacker, target], 6);
+    expectSuccess(result);
+    expect(result.sshSession?.active).toBe(true);
   });
 
   it('Golden path: arp-scan → nmap → ftp → hydra → ssh → sudo -l → privesc → flag', () => {

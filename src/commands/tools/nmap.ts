@@ -23,6 +23,7 @@ PORT SPECIFICATION:
   -p <ports>    Scan specific ports (e.g. -p 22,80,443 or -p 1-1000)
   -p-           Scan all 65535 ports
   -p22          Shorthand for -p 22
+  --open        Show only open (or possibly open) ports
 
 OUTPUT:
   -oN <file>    Save output in normal format to file
@@ -73,20 +74,22 @@ export const cmd_nmap = {
     const outputFileNormal = oNIdx >= 0 ? args[oNIdx + 1] : null;
     const outputFileGrep = oGIdx >= 0 ? args[oGIdx + 1] : null;
 
-    // ── Parse target IP ──
-    const ip = args.find(a => /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(a));
-    if (!ip) return { output: 'Error: especifica una IP válida.', isError: true };
+    // ── Parse target (IP or CIDR) ──
+    const targetSpec = args.find(a => /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(\/\d{1,2})?$/.test(a));
+    if (!targetSpec) return { output: 'Error: especifica una IP o red válida (ej: 192.168.1.10 o 192.168.1.0/24).', isError: true };
 
-    const target = ctx.allMachines.find(m => m.machine_info.ip === ip);
-    if (!target) return { output: `Nmap: Failed to resolve "${ip}".`, isError: true };
+    const isCidr = targetSpec.includes('/');
+    const ip = isCidr ? null : targetSpec;
+    const cidr = isCidr ? targetSpec : null;
 
-    // ── Discovery check (skip with -Pn) ──
-    if (!noPing && (target.discovery_level ?? 0) < 1) {
-      return {
-        output: `Error: No se puede escanear puertos de ${ip}.\nPrimero realiza el reconocimiento de red con: arp-scan <network/cidr>`,
-        isError: true
-      };
+    // ── Handle CIDR ping scan (-sn with network) ──
+    if (isCidr && isPingScan) {
+      return performNetworkPingScan(cidr!, ctx, vLevel);
     }
+
+    // ── Single IP target ──
+    const target = ip ? ctx.allMachines.find(m => m.machine_info.ip === ip) : null;
+    if (!target) return { output: `Nmap: Failed to resolve "${targetSpec}".`, isError: true };
 
     // ── Parse port specification ──
     const ports = parsePorts(args, target);
@@ -279,6 +282,7 @@ export const cmd_nmap = {
 
 function parsePorts(args: string[], target: any): any[] {
   const allPorts = target.scan_results.ports || [];
+  const openOnly = args.includes('--open');
 
   // Find -p flag: could be '-p22,80' or '-p' followed by '22,80'
   let portSpec: string | null = null;
@@ -293,49 +297,40 @@ function parsePorts(args: string[], target: any): any[] {
     }
   }
 
-  if (portSpec === null) {
-    // Default: all defined ports on target
-    return allPorts;
-  }
+  let portsToScan: number[] = [];
 
-  if (portSpec === '-') {
-    // -p- : all 65535 ports (simulated: all defined + common closed)
-    const result = [...allPorts];
-    // Add common closed ports for realism
-    const commonClosed = [21, 23, 25, 53, 110, 111, 135, 139, 143, 993, 995, 1433, 3306, 3389, 5432, 5900, 6379, 8080, 8443];
-    commonClosed.forEach(portNum => {
-      if (!result.find((p: any) => p.port === portNum)) {
-        result.push({ port: portNum, protocol: 'tcp', state: 'closed', service: getKnownService(portNum), version: '' });
+  if (portSpec === null) {
+    // Default: scan well-known ports 1-1024
+    portsToScan = Array.from({ length: 1024 }, (_, i) => i + 1);
+  } else if (portSpec === '-') {
+    // -p- : all 65535 ports
+    portsToScan = Array.from({ length: 65535 }, (_, i) => i + 1);
+  } else {
+    // Parse specific ports/ranges
+    const requestedPorts = new Set<number>();
+    portSpec.split(',').forEach(part => {
+      if (part.includes('-')) {
+        const [start, end] = part.split('-').map(Number);
+        if (!isNaN(start) && !isNaN(end)) {
+          for (let i = start; i <= end; i++) {
+            requestedPorts.add(i);
+          }
+        }
+      } else {
+        const n = Number(part);
+        if (!isNaN(n)) requestedPorts.add(n);
       }
     });
-    return result.sort((a: any, b: any) => a.port - b.port);
+    portsToScan = Array.from(requestedPorts);
   }
 
-  const requestedPorts = new Set<number>();
+  // Match against target's actual ports
+  const matched = allPorts.filter((p: any) => portsToScan.includes(p.port));
 
-  portSpec.split(',').forEach(part => {
-    if (part.includes('-')) {
-      const [start, end] = part.split('-').map(Number);
-      if (!isNaN(start) && !isNaN(end)) {
-        for (let i = start; i <= end; i++) {
-          requestedPorts.add(i);
-        }
-      }
-    } else {
-      const n = Number(part);
-      if (!isNaN(n)) requestedPorts.add(n);
-    }
-  });
-
-  // Match requested ports against target's known ports
-  const matched = allPorts.filter((p: any) => requestedPorts.has(p.port));
-
-  // Add simulated closed ports for requested ports not on target
-  requestedPorts.forEach(portNum => {
-    if (!allPorts.find((p: any) => p.port === portNum)) {
-      matched.push({ port: portNum, protocol: 'tcp', state: 'closed', service: getKnownService(portNum), version: '' });
-    }
-  });
+  // Filter only open ports if --open flag is used
+  if (openOnly) {
+    return matched.filter((p: any) => p.state === 'open');
+  }
 
   return matched.sort((a: any, b: any) => a.port - b.port);
 }
@@ -378,4 +373,90 @@ export interface ScanResults {
   targetHostname: string;
   ports: ScanResultPort[];
   osDetected?: string;
+}
+
+// ── CIDR Helpers ──
+
+function parseCidr(cidr: string): { network: number; mask: number } | null {
+  const parts = cidr.split('/');
+  if (parts.length !== 2) return null;
+
+  const ip = parts[0];
+  const maskBits = parseInt(parts[1], 10);
+  if (isNaN(maskBits) || maskBits < 0 || maskBits > 32) return null;
+
+  const ipNum = ipToNumber(ip);
+  if (ipNum === null) return null;
+
+  return { network: ipNum & (-1 << (32 - maskBits)), mask: maskBits };
+}
+
+function ipToNumber(ip: string): number | null {
+  const parts = ip.split('.').map(Number);
+  if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) {
+    return null;
+  }
+  return (parts[0] << 24) + (parts[1] << 16) + (parts[2] << 8) + parts[3];
+}
+
+function isIpInCidr(ip: string, cidr: string): boolean {
+  const parsed = parseCidr(cidr);
+  if (!parsed) return false;
+
+  const ipNum = ipToNumber(ip);
+  if (ipNum === null) return false;
+
+  const { network, mask } = parsed;
+  const maskBits = -1 << (32 - mask);
+  return (ipNum & maskBits) === network;
+}
+
+function performNetworkPingScan(
+  cidr: string,
+  ctx: CommandContext,
+  vLevel: number
+): CommandResponse {
+  const parsed = parseCidr(cidr);
+  if (!parsed) {
+    return { output: `Error: CIDR inválido "${cidr}".`, isError: true };
+  }
+
+  const machinesInNetwork = ctx.allMachines.filter(m =>
+    isIpInCidr(m.machine_info.ip, cidr)
+  );
+
+  let output = `Starting Nmap 7.92 ( https://nmap.org ) at ${new Date().toLocaleString()}\n`;
+  if (vLevel >= 1) {
+    output += `Initiating Ping Scan at ${new Date().toLocaleTimeString()}\n`;
+    output += `Scanning ${cidr} [${Math.pow(2, 32 - parsed.mask)} hosts]\n`;
+  }
+
+  const hostsFound: Array<{ip: string; mac: string; hostname: string}> = [];
+
+  if (machinesInNetwork.length === 0) {
+    output += `\nNote: Host seems down. If it is really up, but blocking our ping probes,\n`;
+    output += `      try -Pn\n`;
+  } else {
+    machinesInNetwork.forEach(target => {
+      const ip = target.machine_info.ip;
+      output += `\nNmap scan report for ${target.machine_info.hostname} (${ip})\n`;
+      output += `Host is up (${(Math.random() * 0.005 + 0.002).toFixed(4)}s latency).\n`;
+      if (vLevel >= 1) {
+        output += `MAC Address: ${target.machine_info.mac} (${getVendor(target.machine_info.mac)})\n`;
+      }
+      hostsFound.push({
+        ip: target.machine_info.ip,
+        mac: target.machine_info.mac,
+        hostname: target.machine_info.hostname
+      });
+    });
+  }
+
+  const totalHosts = Math.pow(2, 32 - parsed.mask);
+  output += `\nNmap done: ${totalHosts} IP addresses (${machinesInNetwork.length} host${machinesInNetwork.length !== 1 ? 's' : ''} up) scanned in ${(totalHosts * 0.01).toFixed(2)} seconds\n`;
+
+  return {
+    output,
+    discoveredHosts: hostsFound.length > 0 ? hostsFound : undefined,
+  };
 }

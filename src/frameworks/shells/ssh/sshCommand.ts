@@ -18,13 +18,7 @@ export const cmd_ssh = {
     const sshPort = target.scan_results.ports.find(p => p.service === 'ssh' && p.state === 'open');
     if (!sshPort) return { output: `ssh: connect to host ${ip} port 22: Connection refused`, isError: true };
 
-    // Validar que se haya hecho discovery previo (hydra o equivalente)
-    if ((target.discovery_level ?? 0) < 3) {
-      return {
-        output: `Error: No se puede conectar por SSH a ${ip}.\nPrimero descubre credenciales con: hydra -l ${user} -P /usr/share/wordlists/rockyou.txt ${ip} ssh`,
-        isError: true
-      };
-    }
+    // Comando libre - no valida discovery_level
 
     // Iniciar sesión SSH interactiva via ShellManager
     return startShellSession('ssh', args, ctx);

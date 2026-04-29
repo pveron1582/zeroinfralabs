@@ -2,7 +2,7 @@
 // Marketing landing page for ZI Labs — explains the product and links to /labs
 
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
 import { FeedbackModal } from './FeedbackModal';
 import { DonationModal } from './DonationModal';
@@ -13,6 +13,8 @@ import { AnimatedLabSelect } from './AnimatedLabSelect';
 
 export function LandingPage() {
   const { lang } = useParams<{ lang: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [ready, setReady] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showDonation, setShowDonation] = useState(false);
@@ -47,11 +49,21 @@ export function LandingPage() {
         <div className="flex items-center gap-3 md:gap-4">
           {/* Language selector */}
           <div className="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 border border-gray-700">
-            <button onClick={() => setLanguage('en')}
+            <button onClick={() => {
+              setLanguage('en');
+              // Navigate to same path but with 'en' prefix
+              const newPath = location.pathname.replace(/^\/(es|en)/, '/en');
+              navigate(newPath, { replace: true });
+            }}
               className={`px-2.5 md:px-3 py-2 text-sm font-mono rounded transition-all flex items-center gap-1.5 ${language === 'en' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}>
               <span className="text-base leading-none">🇺🇸</span>EN
             </button>
-            <button onClick={() => setLanguage('es')}
+            <button onClick={() => {
+              setLanguage('es');
+              // Navigate to same path but with 'es' prefix
+              const newPath = location.pathname.replace(/^\/(es|en)/, '/es');
+              navigate(newPath, { replace: true });
+            }}
               className={`px-2.5 md:px-3 py-2 text-sm font-mono rounded transition-all flex items-center gap-1.5 ${language === 'es' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}>
               <span className="text-base leading-none">🇪🇸</span>ES
             </button>

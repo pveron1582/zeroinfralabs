@@ -83,17 +83,19 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     expect(result.output).toContain('/uploads');
   });
 
-  it('nmap sin reconocimiento previo debe fallar', () => {
+  it('nmap funciona sin reconocimiento previo (comando libre)', () => {
+    // nmap ya no valida discovery_level - es un comando libre
     const result = exec('nmap -sV 192.168.1.11', attacker, [attacker, wpTarget], 2);
-    expect(result.isError).toBe(true);
-    expect(result.completedMissionId).toBeUndefined();
+    expectSuccess(result);
+    expect(result.scanResults).toBeDefined();
   });
 
-  it('gobuster sin nmap previo debe fallar', () => {
+  it('gobuster funciona sin nmap previo (comando libre)', () => {
+    // gobuster ya no valida discovery_level - es un comando libre
     const target = withLevel(wpTarget, 1);
     const result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, [attacker, target], 4);
-    expect(result.isError).toBe(true);
-    expect(result.completedMissionId).toBeUndefined();
+    expectSuccess(result);
+    expect(result.foundDirectories).toBeDefined();
   });
 
   it('Golden path: arp-scan → nmap → gobuster sin simular estado', () => {

@@ -1,6 +1,63 @@
 # Changelog
 
-## [Unreleased] - 2026-04-18
+## [Unreleased] - 2026-04-23
+
+### Comandos de Sistema y Red
+
+- ✅ **ping** — Comando ICMP para testear conectividad de red
+  - Flags: `-c` (count), `-i` (interval), `-W` (timeout), `-s` (size), `-h` (help)
+  - Simula respuestas de hosts existentes con TTL (64 Linux / 128 Windows)
+  - 10 tests incluidos
+
+- ✅ **traceroute** — Trazar ruta a un destino
+  - Flags: `-m` (max hops), `-q` (queries), `-w` (wait), `-h` (help)
+  - Simula saltos intermedios con latencias
+  - 7 tests incluidos
+
+- ✅ **ps** — Reportar estado de procesos
+  - Opciones: `ps`, `ps aux`, `ps -e`, `ps -ef`
+  - Procesos simulados según OS (Linux/Windows)
+  - 5 tests incluidos
+
+- ✅ **top** — Visor dinámico de procesos en tiempo real
+  - Implementado como comando bloqueante (sale con `q`)
+  - Muestra CPU%, MEM%, load average, uptime
+  - 6 tests incluidos
+
+- ✅ **which** — Localizar ejecutables en PATH
+  - Soporta múltiples comandos: `which nmap ls python`
+  - Lista completa de comandos builtin y tools
+  - 12 tests incluidos
+
+- ✅ **htop** — Visor de procesos interactivo con colores
+  - Barras visuales de CPU (múltiples cores)
+  - Barras de memoria y swap con porcentajes
+  - Proceso htop resaltado con '>'
+  - Menú de function keys (F1-F10)
+  - Sale con 'q' o F10
+  - 8 tests incluidos
+
+### Comandos de Reconocimiento de Red
+
+- ✅ **netdiscover** — Nuevo comando de descubrimiento de hosts pasivo/activo
+  - Auto-detección de red desde la IP de la máquina
+  - Flags: `-r` (rango), `-p` (pasivo), `-v` (verbose), `-P` (parseable), `-f` (fast), `-n` (nodo inicial)
+  - Output tipo netdiscover real con tabla de hosts encontrados
+  - 12 tests incluidos
+
+- ✅ **nmap -sn con CIDR** — Escaneo de red completa (`nmap -sn 192.168.1.0/24`)
+  - Encuentra todos los hosts en la red especificada
+  - Retorna `discoveredHosts` para validación de labs
+  - 4 tests nuevos para CIDR
+
+- ✅ **nmap simplificado** — Removida validación de `discovery_level` del comando
+  - El comando ahora es completamente "libre" (sin validaciones internas)
+  - La validación de pasos debe hacerse en el sistema de labs (labValidator)
+
+### Documentación
+
+- ✅ **docs/nmap/help.md** — Referencia rápida de opciones de nmap
+- ✅ **docs/nmap/man.md** — Manual completo de nmap en formato Unix man page
 
 ### DevOps
 

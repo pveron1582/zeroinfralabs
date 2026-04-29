@@ -54,6 +54,25 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions): UseK
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (blockingCommand) {
+      // Check for cancelKey first (e.g., 'q' for top/htop)
+      if (blockingCommand.cancelKey && e.key === blockingCommand.cancelKey) {
+        e.preventDefault();
+        setBlockingCommand(null);
+        setBusy(false);
+        setListeningPort(null);
+        setHistIdx(-1);
+        return;
+      }
+      // F10 also exits htop (and other tools that use function keys)
+      if (e.key === 'F10' && blockingCommand.message?.includes('htop')) {
+        e.preventDefault();
+        setBlockingCommand(null);
+        setBusy(false);
+        setListeningPort(null);
+        setHistIdx(-1);
+        return;
+      }
+      // Ctrl+C always cancels
       if (e.ctrlKey && e.key === 'c') {
         e.preventDefault();
         setBlockingCommand(null);

@@ -26,6 +26,7 @@ const AVAILABLE_COMMANDS = [
   'end',
   'hashcat',
   'arp-scan',
+  'netdiscover',
   'nmap',
   'gobuster',
   'hydra',
@@ -33,6 +34,12 @@ const AVAILABLE_COMMANDS = [
   'nc',
   'ftp',
   'msfconsole',
+  'ping',
+  'traceroute',
+  'ps',
+  'top',
+  'htop',
+  'which',
 ];
 
 /**

@@ -8,10 +8,11 @@ import type { CommandContext, CommandResponse } from '../types';
 import {
   cmd_help, cmd_clear, cmd_whoami, cmd_ifconfig,
   cmd_ls, cmd_cat, cmd_hashcat, cmd_sudo,
-  cmd_cd, cmd_exit, cmd_end, cmd_mkdir, cmd_rmdir
+  cmd_cd, cmd_exit, cmd_end, cmd_mkdir, cmd_rmdir,
+  cmd_ping, cmd_traceroute, cmd_ps, cmd_top, cmd_htop, cmd_which
 } from './builtin';
 import {
-  cmd_arpScan, cmd_nmap, cmd_gobuster, cmd_hydra,
+  cmd_arpScan, cmd_netdiscover, cmd_nmap, cmd_gobuster, cmd_hydra,
   cmd_ssh, cmd_nc, cmd_msfconsole, executeMsfCommand, type MsfState,
   cmd_ftp
 } from './tools';
@@ -55,8 +56,15 @@ const COMMANDS: Command[] = [
   cmd_rmdir,
   cmd_exit,
   cmd_end,
+  cmd_ping,
+  cmd_traceroute,
+  cmd_ps,
+  cmd_top,
+  cmd_htop,
+  cmd_which,
   // Pentesting tools
   cmd_arpScan,
+  cmd_netdiscover,
   cmd_nmap,
   cmd_gobuster,
   cmd_hydra,

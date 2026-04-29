@@ -79,7 +79,8 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
   it('nc fuera del contexto LFI no completa ninguna misión', () => {
     const result = exec('nc -nlvp 9999', attacker, [attacker], 1);
     expectSuccess(result);
-    expect(result.completedMissionId).toBeUndefined();
+    // nc es un comando libre - no completa misiones
+    expect(result.blockingCommand).toBeDefined();
   });
 
   it('nc sin puerto debe fallar', () => {
@@ -88,10 +89,11 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
     expect(result.blockingCommand).toBeUndefined();
   });
 
-  it('nmap sin reconocimiento previo debe fallar', () => {
+  it('nmap funciona sin reconocimiento previo (comando libre)', () => {
+    // nmap ya no valida discovery_level - es un comando libre
     const result = exec('nmap -sV 192.168.20.11', attacker, allMachines, 2);
-    expect(result.isError).toBe(true);
-    expect(result.completedMissionId).toBeUndefined();
+    expectSuccess(result);
+    expect(result.scanResults).toBeDefined();
   });
 
   it('Golden path: arp-scan → nmap → nc listener (estado evoluciona naturalmente)', () => {

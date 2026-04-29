@@ -46,15 +46,16 @@ describe('cmd_ssh (wrapper)', () => {
     expect(result.output).toContain('usage:');
   });
 
-  it('debe requerir fuerza bruta previa (discovery_level >= 3)', () => {
+  it('debe funcionar sin fuerza bruta previa (comando libre)', () => {
+    // ssh ya no valida discovery_level - es un comando libre
     const machines = [createMockMachine(2), createAttacker()];
     const result = cmd_ssh.execute(['root@10.10.10.10'], {
       allMachines: machines,
       currentMissionId: 1
     } as any);
 
-    expect(result.isError).toBe(true);
-    expect(result.output).toContain('Primero descubre credenciales');
+    expect(result.isError).toBeUndefined();
+    expect(result.sshSession?.active).toBe(true);
   });
 
   it('debe iniciar sesión SSH interactiva y pedir contraseña', () => {

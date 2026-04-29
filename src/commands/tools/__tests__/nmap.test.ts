@@ -31,15 +31,15 @@ describe('cmd_nmap', () => {
     expect(result.output).toContain('Usage:');
   });
 
-  it('debe requerir reconocimiento previo (discovery_level >= 1)', () => {
+  it('debe funcionar sin reconocimiento previo (comando libre)', () => {
     const machines = [createMockMachine('target-01', '192.168.1.10', 0)];
     const result = cmd_nmap.execute(['-sV', '192.168.1.10'], {
       allMachines: machines,
       currentMissionId: 1
     } as any);
 
-    expect(result.isError).toBe(true);
-    expect(result.output).toContain('Primero realiza el reconocimiento');
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('Nmap scan report');
   });
 
   it('debe escanear puertos si hay reconocimiento previo', () => {
@@ -239,16 +239,135 @@ describe('cmd_nmap', () => {
     expect(result.output).toContain('443/tcp');
   });
 
-  it('-p con puerto cerrado debe mostrarlo como closed', () => {
+  it('-p con puerto cerrado existente en máquina debe mostrarlo', () => {
+    // Crear máquina con puerto 21 closed explícitamente
+    const machine: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '08:00:27:AA:BB:CC', os: 'Ubuntu', status: 'up', type: 'server' },
+      discovery_level: 1,
+      scan_results: {
+        ports: [
+          { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.2' },
+          { port: 21, protocol: 'tcp', state: 'closed', service: 'ftp', version: '' },
+        ]
+      },
+      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+      learning_steps: [],
+      files: [],
+    };
+    const result = cmd_nmap.execute(['-sV', '-p', '22,21', '192.168.1.10'], {
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('22/tcp');
+    expect(result.output).toContain('21/tcp');
+    expect(result.output).toContain('closed');
+  });
+
+  it('-p con puerto que no existe en máquina no debe mostrarse', () => {
     const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    // El puerto 9999 no está definido en la máquina, no debe aparecer
     const result = cmd_nmap.execute(['-sV', '-p', '22,9999', '192.168.1.10'], {
       allMachines: machines,
       currentMissionId: 1
     } as any);
 
     expect(result.output).toContain('22/tcp');
-    expect(result.output).toContain('9999/tcp');
-    expect(result.output).toContain('closed');
+    expect(result.output).not.toContain('9999');
+  });
+
+  it('-p con sintaxis combinada (puertos individuales + rangos)', () => {
+    // Crear máquina con varios puertos
+    const machine: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '08:00:27:AA:BB:CC', os: 'Ubuntu', status: 'up', type: 'server' },
+      discovery_level: 1,
+      scan_results: {
+        ports: [
+          { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.2' },
+          { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache 2.4' },
+          { port: 443, protocol: 'tcp', state: 'open', service: 'https', version: 'Nginx' },
+          { port: 3306, protocol: 'tcp', state: 'closed', service: 'mysql', version: '' },
+        ]
+      },
+      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+      learning_steps: [],
+      files: [],
+    };
+    // Sintaxis: -p22,80-443,3306 (individual + rango + individual)
+    const result = cmd_nmap.execute(['-sV', '-p', '22,80-443,3306', '192.168.1.10'], {
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('22/tcp');
+    expect(result.output).toContain('80/tcp');
+    expect(result.output).toContain('443/tcp');
+    expect(result.output).toContain('3306/tcp');
+  });
+
+  it('debe soportar múltiples flags combinados', () => {
+    const machine: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '08:00:27:AA:BB:CC', os: 'Ubuntu', status: 'up', type: 'server' },
+      discovery_level: 1,
+      scan_results: {
+        ports: [
+          { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.2' },
+          { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache 2.4' },
+          { port: 443, protocol: 'tcp', state: 'filtered', service: 'https', version: '' },
+        ]
+      },
+      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+      learning_steps: [],
+      files: [],
+    };
+    // Combinación compleja: tipo de escaneo + verbose + OS detection + puertos + --open
+    const result = cmd_nmap.execute(['-sV', '-vv', '-O', '-p', '1-1000', '--open', '192.168.1.10'], {
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    // Verifica que no hay error
+    expect(result.isError).toBeUndefined();
+    // Verifica elementos del output verbose
+    expect(result.output).toContain('Initiating');
+    // Verifica OS detection
+    expect(result.output).toContain('OS detection');
+    // Solo puertos abiertos (filtrados por --open, 443 es filtered no open)
+    expect(result.output).toContain('22/tcp');
+    expect(result.output).toContain('80/tcp');
+    expect(result.output).not.toContain('443/tcp');
+  });
+
+  it('debe soportar -A (aggressive mode) combinado con -p y -oN', () => {
+    const machine: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '08:00:27:AA:BB:CC', os: 'Windows Server 2019', status: 'up', type: 'server' },
+      discovery_level: 1,
+      scan_results: {
+        ports: [
+          { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH' },
+          { port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' },
+        ]
+      },
+      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+      learning_steps: [],
+      files: [],
+    };
+    // -A + -p + -oN + --open
+    const result = cmd_nmap.execute(['-A', '-p', '22,445', '--open', '-oN', 'scan.txt', '192.168.1.10'], {
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    // Aggressive mode muestra script results
+    expect(result.output).toContain('Host script results');
+    // Verifica creación de archivo
+    expect(result.createdFiles).toBeDefined();
+    expect(result.createdFiles?.[0]?.path).toBe('scan.txt');
   });
 
   // ── Output files ──
@@ -365,5 +484,65 @@ describe('cmd_nmap', () => {
     const result = cmd_nmap.execute(['-h'], { allMachines: [], currentMissionId: 1 } as any);
     expect(result.isError).toBeUndefined();
     expect(result.output).toContain('Nmap 7.92');
+  });
+
+  // ── CIDR Network Scan ──
+
+  it('-sn con CIDR debe escanear toda la red', () => {
+    const machines = [
+      createMockMachine('target-01', '192.168.1.10', 1),
+      createMockMachine('target-02', '192.168.1.20', 1),
+    ];
+    machines[1].machine_info.hostname = 'target2';
+    machines[1].machine_info.mac = '00:0C:29:AA:BB:CC';
+
+    const result = cmd_nmap.execute(['-sn', '192.168.1.0/24'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('Nmap scan report for target (192.168.1.10)');
+    expect(result.output).toContain('Nmap scan report for target2 (192.168.1.20)');
+    expect(result.output).toContain('2 hosts up');
+    expect(result.discoveredHosts).toHaveLength(2);
+    expect(result.discoveredHosts![0].ip).toBe('192.168.1.10');
+    expect(result.discoveredHosts![1].ip).toBe('192.168.1.20');
+  });
+
+  it('-sn con CIDR sin hosts debe reportar 0 hosts', () => {
+    const result = cmd_nmap.execute(['-sn', '10.0.0.0/24'], {
+      allMachines: [],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('Host seems down');
+    expect(result.output).toContain('0 hosts up');
+    expect(result.discoveredHosts).toBeUndefined();
+  });
+
+  it('-sn -v con CIDR debe mostrar MAC addresses', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+
+    const result = cmd_nmap.execute(['-sn', '-v', '192.168.1.0/24'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('Initiating Ping Scan');
+    expect(result.output).toContain('MAC Address');
+    expect(result.output).toContain('256 hosts');
+  });
+
+  it('CIDR inválido debe retornar error', () => {
+    const result = cmd_nmap.execute(['-sn', 'invalid-cidr'], {
+      allMachines: [],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBe(true);
+    expect(result.output).toContain('especifica una IP o red válida');
   });
 });

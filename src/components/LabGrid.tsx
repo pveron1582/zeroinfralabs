@@ -2,7 +2,7 @@
 // Lab selection page — displays all scenario cards, links from the new landing
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import type { Scenario } from '../types';
 import { SCENARIOS } from '../laboratorios/laboratorios';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
@@ -208,6 +208,7 @@ function ScenarioCard({ scenario, index, onSelect }: { scenario: Scenario; index
 export function LabGrid() {
   const { lang } = useParams<{ lang: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const language = useLanguage();
   const setLanguage = useSetLanguage();
   const t = useT();
@@ -238,18 +239,28 @@ export function LabGrid() {
         </Link>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 border border-gray-700">
-            <Link
-              to="/en/labs"
+            <button
+              onClick={() => {
+                setLanguage('en');
+                // Navigate to same path but with 'en' prefix
+                const newPath = location.pathname.replace(/^\/(es|en)/, '/en');
+                navigate(newPath, { replace: true });
+              }}
               className={`px-3 py-2 text-sm font-mono rounded transition-all flex items-center gap-1.5 ${language === 'en' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <span className="text-base leading-none">🇺🇸</span>EN
-            </Link>
-            <Link
-              to="/es/labs"
+            </button>
+            <button
+              onClick={() => {
+                setLanguage('es');
+                // Navigate to same path but with 'es' prefix
+                const newPath = location.pathname.replace(/^\/(es|en)/, '/es');
+                navigate(newPath, { replace: true });
+              }}
               className={`px-3 py-2 text-sm font-mono rounded transition-all flex items-center gap-1.5 ${language === 'es' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <span className="text-base leading-none">🇪🇸</span>ES
-            </Link>
+            </button>
           </div>
         </div>
       </header>

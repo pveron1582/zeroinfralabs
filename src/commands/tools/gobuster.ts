@@ -28,12 +28,7 @@ export const cmd_gobuster = {
     const target = allMachines.find(m => url.includes(m.machine_info.ip));
     if (!target) return { output: `Error: ${url} no es alcanzable.`, isError: true };
 
-    if ((target.discovery_level ?? 0) < 2) {
-      return {
-        output: `Error: No se puede enumerar directorios de ${url}.\nPrimero escanea puertos con: nmap -sV ${target.machine_info.ip}`,
-        isError: true
-      };
-    }
+    // Comando libre - no valida discovery_level
 
     let output = `===============================================================\nGobuster v3.1.0\n===============================================================\n[+] Url: ${url}\n[+] Wordlist: ${wl}\n[+] Threads: 10\n===============================================================\n${new Date().toLocaleString()} Starting\n===============================================================\n`;
 

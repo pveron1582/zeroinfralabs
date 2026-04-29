@@ -32,7 +32,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ## 🎯 Características Principales
 
-- **Terminal Linux realista** — Comandos funcionales (ls, cd, cat, ssh, nmap, hydra...)
+- **Terminal Linux realista** — Comandos funcionales (ls, cd, cat, ssh, nmap, netdiscover, hydra, arp-scan...)
 - **6 Laboratorios progresivos** — De reconocimiento básico a privilege escalation
 - **Sistema de Validación Universal** — Comandos libres, validación declarativa
 - **Navegador web simulado** — Para ataques web (WordPress, LFI, SQLi)
@@ -55,12 +55,15 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ```
 src/
-├── commands/        # Comandos de terminal (builtin + tools)
-├── components/      # Componentes React
-├── laboratorios/    # Definición de labs (scenario-01 a 06)
+├── commands/
+│   ├── builtin/     # ls, cd, cat, help, whoami, ifconfig, hashcat, sudo, ping, traceroute, ps, top, htop, which
+│   └── tools/       # nmap, netdiscover, arp-scan, hydra, gobuster, ssh, ftp, nc, msfconsole
+├── components/      # Componentes React (Terminal, FakeBrowser, etc.)
+├── laboratorios/    # Definición de labs (laboratorio-01 a 06)
+├── shells/          # Shells interactivas (SSH, FTP, Netcat)
 ├── store/           # Zustand state management
-├── utils/           # LabValidator, analytics, etc.
-└── test/            # Configuración de tests
+├── utils/           # LabValidator, autocomplete, analytics
+└── test/            # Configuración de tests (Vitest)
 ```
 
 ## 📊 Estado del Proyecto
