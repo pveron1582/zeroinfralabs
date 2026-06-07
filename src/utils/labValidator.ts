@@ -34,6 +34,9 @@ export const validateMission = (result: CommandResponse, mission: Mission): bool
     case 'fileRead':
       return validateFileRead(result, conditions);
 
+    case 'fileDownloaded':
+      return validateFileDownloaded(result, conditions);
+
     case 'privesc':
       return validatePrivesc(result, conditions);
 
@@ -57,6 +60,9 @@ export const validateMission = (result: CommandResponse, mission: Mission): bool
 
     case 'blockingCommand':
       return validateBlockingCommand(result, conditions);
+
+    case 'sudoPrivileges':
+      return validateSudoPrivileges(result, conditions);
 
     case 'custom':
       // Custom validation handled elsewhere or via conditions
@@ -169,6 +175,27 @@ function validateFileRead(
   }
 }
 
+function validateFileDownloaded(
+  result: CommandResponse,
+  conditions: Partial<ValidationCriteria>
+): boolean {
+  if (!result.downloadedFile) return false;
+
+  const fileType = conditions.fileType ?? 'any';
+
+  if (fileType === 'note') {
+    const filename = result.downloadedFile.path.toLowerCase();
+    return filename.includes('note') || filename.includes('nota');
+  }
+
+  if (fileType === 'flag') {
+    const filename = result.downloadedFile.path.toLowerCase();
+    return filename.includes('flag');
+  }
+
+  return true;
+}
+
 function validatePrivesc(
   result: CommandResponse,
   conditions: Partial<ValidationCriteria>
@@ -251,4 +278,26 @@ function validateBlockingCommand(
   conditions: Partial<ValidationCriteria>
 ): boolean {
   return !!result.blockingCommand;
+}
+
+function validateSudoPrivileges(
+  result: CommandResponse,
+  conditions: Partial<ValidationCriteria>
+): boolean {
+  if (!result.sudoPrivileges || !result.sudoPrivileges.canSudo) {
+    return false;
+  }
+
+  if (conditions.user && result.sudoPrivileges.user !== conditions.user) {
+    return false;
+  }
+
+  // Optional: require at least one allowed command matching `conditions.command`
+  // (substring match against each sudoers rule, so "vim" matches "/usr/bin/vim").
+  if (conditions.command) {
+    const needle = conditions.command.toLowerCase();
+    return result.sudoPrivileges.commands.some(rule => rule.toLowerCase().includes(needle));
+  }
+
+  return true;
 }

@@ -88,6 +88,16 @@ describe('cmd_sudo', () => {
       // Nota: sudo ya no completa misiones, eso lo hace el laboratorio
     });
 
+    it('debe emitir privescCompleted con el id de la máquina al escalar', () => {
+      const machine = createMockMachine(true);
+      const result = cmd_sudo.execute(['vim', '-c', '!bash'], createMockContext(machine));
+
+      // Terminal.tsx escucha este campo y llama a setPrivescCompleted(machineId),
+      // que pone privesc_completed=true en la máquina. useTerminalIdentity
+      // entonces devuelve 'root' y el prompt pasa a root@...#.
+      expect(result.privescCompleted).toBe(machine.id);
+    });
+
     it('debe aceptar variantes con comillas dobles', () => {
       const machine = createMockMachine(true);
       const result = cmd_sudo.execute(['vim', '-c', '"!bash"'], createMockContext(machine));

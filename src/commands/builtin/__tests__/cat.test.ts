@@ -49,7 +49,7 @@ describe('cmd_cat', () => {
     expect(result.output).toContain('No such file');
   });
 
-  it('debe reportar fileRead y mentionedUsers al leer note.txt (escenario 05)', () => {
+  it('debe reportar fileRead y possibleUsers al leer note.txt (escenario 05)', () => {
     const machine = createMockMachine([
       { path: '/root/note.txt', content: 'To: john\nURGENT', type: 'text' },
     ]);
@@ -59,7 +59,9 @@ describe('cmd_cat', () => {
     // cat ya no completa misiones - es un comando libre
     expect(result.fileRead).toBeDefined();
     expect(result.fileRead?.isNote).toBe(true);
-    expect(result.mentionedUsers).toBeDefined();
-    expect(result.mentionedUsers?.users).toContain('john');
+    // possibleUsers es lo que Terminal.tsx escucha y vuelca en
+    // Machine.possible_ssh_users (visible en EnumerationPanel)
+    expect(result.possibleUsers).toBeDefined();
+    expect(result.possibleUsers?.users).toContain('john');
   });
 });

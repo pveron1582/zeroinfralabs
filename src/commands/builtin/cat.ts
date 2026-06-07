@@ -63,7 +63,7 @@ export const cmd_cat = {
     const isFlag = file.path.includes('flag') || file.path.includes('root.txt') || file.path.includes('user.txt');
     const isPayload = file.path.includes('payload');
 
-    return { 
+    return {
       output: file.content,
       // Metadata para que el laboratorio valide
       fileRead: {
@@ -73,9 +73,11 @@ export const cmd_cat = {
         isPayload,
         content: file.content,
       },
-      // Usuarios mencionados en el archivo
+      // Usuarios mencionados en el archivo. El consumidor es Terminal.tsx,
+      // que llama a setPossibleUsers(machineId, users) y los refleja en
+      // Machine.possible_ssh_users (visible en EnumerationPanel).
       ...(mentionedUsers.length > 0 && {
-        mentionedUsers: {
+        possibleUsers: {
           machineId: machine.id,
           users: mentionedUsers,
         }

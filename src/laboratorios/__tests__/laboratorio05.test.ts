@@ -59,16 +59,16 @@ describe('Laboratorio 05 - FTP Enumeration & Privilege Escalation', () => {
     expect(files.some(f => f.path === '/home/john/user.txt')).toBe(true);
   });
 
-  it('debe tener 8 learning steps', () => {
-    expect(scenario05Data.learningSteps).toHaveLength(8);
+  it('debe tener 9 learning steps', () => {
+    expect(scenario05Data.learningSteps).toHaveLength(9);
     
     // Verificar primer paso
     expect(scenario05Data.learningSteps[0].task).toBe('Host Discovery');
     expect(scenario05Data.learningSteps[0].discoveryLevel).toBe(1);
     
     // Verificar último paso
-    expect(scenario05Data.learningSteps[7].task).toBe('Capture Root Flag');
-    expect(scenario05Data.learningSteps[7].discoveryLevel).toBe(4);
+    expect(scenario05Data.learningSteps[8].task).toBe('Capture Root Flag');
+    expect(scenario05Data.learningSteps[8].discoveryLevel).toBe(4);
   });
 
   it('debe tener hints en ambos idiomas', () => {

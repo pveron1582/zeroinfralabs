@@ -6,13 +6,16 @@
 
 ```bash
 # Instalar dependencias
-npm install
+pnpm install
 
 # Servidor de desarrollo
-npm run dev
+pnpm dev
 
 # Ejecutar tests
-npm test
+pnpm test
+
+# Ejecutar cobertura de tests
+pnpm test:coverage
 ```
 
 Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
@@ -48,6 +51,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **State:** Zustand (persistencia localStorage)
 - **Testing:** Vitest + React Testing Library + jsdom
 - **Router:** React Router DOM v7
+- **Gestor de Paquetes:** pnpm (v11+)
 
 > 🔧 Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) para detalles de arquitectura y sistema de validación.
 

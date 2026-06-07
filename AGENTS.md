@@ -5,12 +5,13 @@ Pentesting simulator (React + TypeScript + Vite). 6 labs, 800+ tests.
 ## Commands
 
 ```bash
-npm run dev              # Dev server (port 5173)
-npm run build           # Production build
-npm test                # Vitest watch mode
-npm run test:run        # Single run (CI)
-npm test -- -t "filter" # Run tests by name
-npx tsc --noEmit        # Type check
+pnpm dev                 # Dev server (port 5173)
+pnpm build               # Production build
+pnpm test                # Vitest watch mode
+pnpm test:run            # Single run (CI)
+pnpm test:coverage       # Run tests with coverage
+pnpm test -- -t "filter" # Run tests by name
+pnpm exec tsc --noEmit   # Type check
 ```
 
 No ESLint/Prettier.

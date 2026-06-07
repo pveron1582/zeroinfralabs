@@ -156,6 +156,11 @@ root`,
         privescAttempted: true,
         privescTool: requestedCmd,
         privescViaSudo: true,
+        // Marca la escalada como completada: Terminal.tsx escucha este campo
+        // y llama a setPrivescCompleted, que pone privesc_completed=true en
+        // la máquina. useTerminalIdentity entonces devuelve 'root' y el prompt
+        // pasa de john@...$ a root@...#.
+        privescCompleted: machine.id,
       };
     }
 

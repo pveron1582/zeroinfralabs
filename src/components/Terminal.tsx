@@ -351,6 +351,15 @@ export function Terminal({
       if (result.completedMissionId) {
         onMissionComplete(result.completedMissionId);
       }
+      // ── Universal Lab Validation for FTP ──
+      const { missions } = useScenarioStore.getState();
+      const activeMission = missions.find(m => m.status === 'active');
+      if (activeMission && activeMission.validationCriteria) {
+        const shouldComplete = validateMission(result, activeMission);
+        if (shouldComplete) {
+          onMissionComplete(activeMission.id);
+        }
+      }
       if (result.downloadedFile) {
         const attacker = allMachines.find(m => m.id === 'attacker-01');
         if (attacker) {

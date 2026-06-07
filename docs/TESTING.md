@@ -9,10 +9,10 @@
 ## Comandos
 
 ```bash
-npm test                 # Watch mode (re-ejecuta al guardar)
-npm run test:run         # Ejecución única
-npm run test:coverage    # Reporte de cobertura
-npm run test:ui          # UI interactiva
+pnpm test                # Watch mode (re-ejecuta al guardar)
+pnpm test:run            # Ejecución única
+pnpm test:coverage       # Reporte de cobertura
+pnpm test:ui             # UI interactiva
 ```
 
 ## Estructura de Tests
@@ -104,20 +104,20 @@ Usar `src/commands/__tests__/happyPathHelpers.ts` para:
 
 ```bash
 # Ejecutar test específico
-npm test -- src/commands/__tests__/happyPath-scenario01.test.ts
+pnpm test -- src/commands/__tests__/happyPath-scenario01.test.ts
 
 # Ejecutar por nombre
-npm test -- -t "debe autenticar"
+pnpm test -- -t "debe autenticar"
 
 # Verbose
-npm test -- --reporter=verbose
+pnpm test -- --reporter=verbose
 ```
 
 ## CI/CD
 
 Tests ejecutan automáticamente en cada PR:
 ```bash
-npm run test:run
+pnpm test:run
 ```
 
 Fallo = bloqueo de merge.

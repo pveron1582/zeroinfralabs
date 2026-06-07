@@ -95,6 +95,7 @@ export type MissionCriteriaType =
   | 'foundCredentials'     // hydra found creds
   | 'foundDirectories'     // gobuster found dirs
   | 'fileRead'             // cat read a file
+  | 'fileDownloaded'       // file downloaded (e.g. via ftp get)
   | 'privesc'              // sudo escalation
   | 'sshLogin'             // successful ssh
   | 'ftpLogin'             // successful ftp
@@ -103,6 +104,7 @@ export type MissionCriteriaType =
   | 'uidChecked'           // meterpreter getuid
   | 'ncListener'           // netcat listener started
   | 'blockingCommand'      // listener/payload active
+  | 'sudoPrivileges'       // sudo -l enumerated allowed commands
   | 'custom';              // special cases
 
 export interface ValidationCriteria {
@@ -117,6 +119,7 @@ export interface ValidationCriteria {
   isSystem?: boolean;             // UID is SYSTEM/root
   vulnId?: string;                // Vulnerability ID
   directories?: string[];         // Directories that must be found
+  command?: string;               // Command substring that must appear in sudoers rules
   // For complex conditions
   conditions?: Record<string, any>;
 }
@@ -208,7 +211,6 @@ export interface CommandResponse {
     isPayload: boolean;
     content: string;
   };
-  mentionedUsers?: { machineId: string; users: string[] }; // users discovered from file content
   // Network discovery (for lab validation)
   discoveredHosts?: Array<{ip: string; mac: string; hostname: string}>;
   networkScanned?: string;

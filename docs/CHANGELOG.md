@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased] - 2026-06-06
+
+### Fixes de Laboratorio / Validación
+
+- ✅ **Solución a la validación del Paso 3 en Lab 5 (FTP + PrivEsc)** — Se rehizo este cambio partiendo de una versión anterior en el GitHub del 29 de abril.
+  - Implementado el tipo de validación `fileDownloaded` en `MissionCriteriaType` (`src/types.ts`) y su validador respectivo en `validateMission` (`src/utils/labValidator.ts`).
+  - Agregada la validación universal del laboratorio en el flujo interactivo de FTP (`Terminal.tsx`) al descargar archivos con `get`.
+  - Añadidas pruebas unitarias para `fileDownloaded` en `labValidator.test.ts`.
+
+---
+
+## [Unreleased] - 2026-05-28
+
+### DevOps y Gestión de Dependencias
+
+- ✅ **Migración a pnpm** — Se migró el gestor de paquetes de `npm` a `pnpm` (v11) para acelerar las instalaciones, mejorar la seguridad del árbol de dependencias y optimizar el almacenamiento.
+  - Reemplazado `package-lock.json` por `pnpm-lock.yaml`.
+  - Actualizada toda la documentación y guías del proyecto (`README.md`, `AGENTS.md`, `docs/DEVELOPMENT.md`, `docs/TESTING.md`) con las nuevas instrucciones de ejecución basadas en `pnpm`.
+
+---
+
 ## [Unreleased] - 2026-04-29
 
 ### Mejoras de UX y Routing

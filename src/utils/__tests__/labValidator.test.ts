@@ -117,10 +117,81 @@ describe('labValidator', () => {
       expect(validateMission(result, mission)).toBe(true);
     });
 
+    it('debe validar fileDownloaded correctamente', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        downloadedFile: { path: '/root/nota.txt', content: 'test', type: 'text' },
+      };
+      const mission = createMission({ type: 'fileDownloaded', fileType: 'note' });
+      expect(validateMission(result, mission)).toBe(true);
+    });
+
     it('debe validar privesc correctamente', () => {
       const result: CommandResponse = { output: 'test', privescAttempted: true };
       const mission = createMission({ type: 'privesc' });
       expect(validateMission(result, mission)).toBe(true);
+    });
+
+    it('debe validar sudoPrivileges con canSudo=true', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        sudoPrivileges: {
+          machineId: 'test',
+          user: 'john',
+          commands: ['john       ALL=(ALL) NOPASSWD: /usr/bin/vim'],
+          canSudo: true,
+        },
+      };
+      const mission = createMission({ type: 'sudoPrivileges' });
+      expect(validateMission(result, mission)).toBe(true);
+    });
+
+    it('debe fallar sudoPrivileges si canSudo es false', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        sudoPrivileges: {
+          machineId: 'test',
+          user: 'john',
+          commands: [],
+          canSudo: false,
+        },
+      };
+      const mission = createMission({ type: 'sudoPrivileges' });
+      expect(validateMission(result, mission)).toBe(false);
+    });
+
+    it('debe validar sudoPrivileges con user específico', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        sudoPrivileges: {
+          machineId: 'test',
+          user: 'john',
+          commands: ['john       ALL=(ALL) NOPASSWD: /usr/bin/vim'],
+          canSudo: true,
+        },
+      };
+      expect(validateMission(result, createMission({ type: 'sudoPrivileges', user: 'john' }))).toBe(true);
+      expect(validateMission(result, createMission({ type: 'sudoPrivileges', user: 'alice' }))).toBe(false);
+    });
+
+    it('debe validar sudoPrivileges con command específico (substring match)', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        sudoPrivileges: {
+          machineId: 'test',
+          user: 'john',
+          commands: ['john       ALL=(ALL) NOPASSWD: /usr/bin/vim'],
+          canSudo: true,
+        },
+      };
+      expect(validateMission(result, createMission({ type: 'sudoPrivileges', command: 'vim' }))).toBe(true);
+      expect(validateMission(result, createMission({ type: 'sudoPrivileges', command: 'nano' }))).toBe(false);
+    });
+
+    it('debe fallar sudoPrivileges sin metadata en el resultado', () => {
+      const result: CommandResponse = { output: 'test' };
+      const mission = createMission({ type: 'sudoPrivileges' });
+      expect(validateMission(result, mission)).toBe(false);
     });
 
     it('debe validar uidChecked correctamente', () => {

@@ -8,10 +8,10 @@ git clone <repo>
 cd cyberops-v2
 
 # Instalar dependencias
-npm install
+pnpm install
 
 # Iniciar servidor de desarrollo
-npm run dev
+pnpm dev
 
 # Abrir en navegador
 # http://localhost:5173
@@ -21,21 +21,21 @@ npm run dev
 
 ### Desarrollo
 ```bash
-npm run dev              # Inicia servidor con hot-reload
+pnpm dev                 # Inicia servidor con hot-reload
 ```
 
 ### Testing
 ```bash
-npm test                 # Modo watch (re-ejecuta tests al guardar)
-npm run test:run         # Ejecución única de tests
-npm run test:coverage    # Reporte de cobertura
-npm run test:ui          # UI interactiva de Vitest
+pnpm test                # Modo watch (re-ejecuta tests al guardar)
+pnpm test:run            # Ejecución única de tests
+pnpm test:coverage       # Reporte de cobertura
+pnpm test:ui             # UI interactiva de Vitest
 ```
 
 ### Build
 ```bash
-npm run build            # Genera bundle optimizado
-npm run preview          # Preview del build
+pnpm build               # Genera bundle optimizado
+pnpm preview             # Preview del build
 ```
 
 ## Estructura de Directorios
@@ -104,10 +104,10 @@ export const cmd_mi_comando = {
 No usamos ESLint ni Prettier. TypeScript type-checking via `tsconfig.json`:
 
 ```bash
-npx tsc --noEmit
+pnpm exec tsc --noEmit
 ```
 
-Vite maneja la compilación durante `npm run build`.
+Vite maneja la compilación durante `pnpm build`.
 
 ## Troubleshooting
 
@@ -117,13 +117,13 @@ Vite maneja la compilación durante `npm run build`.
 rm -rf node_modules/.vitest
 
 # Reinstalar dependencias
-rm -rf node_modules && npm install
+rm -rf node_modules && pnpm install
 ```
 
 ### Cambios no se reflejan
 ```bash
 # Reiniciar dev server
-# Ctrl+C y luego npm run dev
+# Ctrl+C y luego pnpm dev
 ```
 
 ## Contribuir
