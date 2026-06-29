@@ -1,5 +1,5 @@
 // ── components/AnimatedBrowser.tsx ──────────────────────────────────────
-// Animated Firefox browser mockup showing WordPress login → admin access
+// Animated Chrome browser mockup showing WordPress login → admin access
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
@@ -122,7 +122,7 @@ export function AnimatedBrowser({ url, className = '' }: AnimatedBrowserProps) {
         borderColor: '#a78bfa30',
         boxShadow: '0 0 30px #a78bfa15, 0 20px 60px rgba(0,0,0,0.5)',
       }}>
-        {/* Firefox title bar */}
+        {/* Chrome title bar */}
         <div className="flex items-center gap-2 px-3 py-2" style={{ background: '#1e1e2e' }}>
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -130,7 +130,7 @@ export function AnimatedBrowser({ url, className = '' }: AnimatedBrowserProps) {
             <div className="w-3 h-3 rounded-full bg-green-500/50" />
           </div>
           <div className="flex-1 text-center">
-            <span className="text-xs text-gray-500">Firefox ESR</span>
+            <span className="text-xs text-gray-500">Chrome</span>
           </div>
           <div className="w-16" />
         </div>

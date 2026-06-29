@@ -134,6 +134,11 @@ function validateFoundCredentials(
     return false;
   }
 
+  // Check service
+  if (conditions.service && result.foundCredentials.service !== conditions.service) {
+    return false;
+  }
+
   return true;
 }
 

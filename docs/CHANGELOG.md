@@ -1,5 +1,133 @@
 # Changelog
 
+## [Unreleased] - 2026-06-21
+
+### Fixes `laboratorio05.ts` — Code Review
+
+- ✅ **`REVERSE_SHELL_PAYLOAD` eliminado** de `validationCriteria` — solo existe en lab 4 (`laboratorio05.ts:295`)
+- ✅ **`COMMON_PORTS` corregido a `DISCOVERED_PORTS`** — referenciaba constante inexistente
+- ✅ **`"service"` corregido a `"services"`** — typo en validación de servicio
+- ✅ **`criteria[0]` corregido a `criteria[i]`** — siempre validaba el primer criterio en el bucle
+- ✅ **`targetMachineId` hardcoded reemplazado** por `config.targetMachineId`
+- ✅ **Import `SCENARIO_TEMPLATES` corregido** — era `SCENARIO_TEMPLATE` (inexistente)
+- ✅ **`description` corregido a `descripcion`** — propiedad incorrecta en metadatos del lab
+
+### Pentester: Shortcuts eliminados
+
+- ✅ **`cmd_ssh` v2** — ya no emite `foundCredentials` automáticamente al hacer SSH (era un shortcut que saltaba la validación)
+- ✅ **`cmd_nmap` v2** — `nmap -sn` ya no emite `discoveredHosts` (el escaneo de descubrimiento no debe revelar hosts automáticamente)
+
+### Tests: `AnimatedBrowser.test.tsx` corregido
+
+- ✅ **Mock de `Math.random`** añadido (`mockReturnValue(0)`) para hacer la animación determinista con fake timers
+- ✅ **Timings ajustados** para coincidir con la línea de tiempo real de la animación (1200/1500/1000/1500/2000ms)
+- ✅ **URL personalizada** — `advanceTimersByTime(12000)` → `5000ms` para evitar entrar al segundo ciclo de animación
+
+## [Unreleased] - 2026-06-18
+
+### UX: Ventanas de escritorio más grandes, centradas y con opacidad default 50%
+
+- ✅ **Terminal inicial más grande y centrada** (`useDesktopWindows.ts:46-58`) — `x:40,y:60,w:640,h:400,opacity:0.92` → `x:100,y:80,w:820,h:520,opacity:0.5`. Nuevas terminales (`addTerminal`) usan los mismos defaults.
+- ✅ **Wallpaper picker más grande y centrado** (`useDesktopWindows.ts:119`) — `x:120,y:100,w:520,h:400` → `x:180,y:100,w:660,h:540`. Previews `h-16` → `h-24`, gap `gap-3` → `gap-4`, padding `p-2.5` → `p-3`.
+- ✅ **Text selection en browser y terminal** (`FakeBrowser.tsx:446`, `Terminal.tsx:63`) — El `select-none` del escritorio impedía seleccionar texto en todas las ventanas. Se agregó `select-text` al contenido del browser y la terminal.
+- ✅ **WPIndex responsivo** (`Index.tsx`) — `max-w-4xl` → `max-w-7xl` con padding, sidebar y textos responsivos por breakpoint (`md:`/`lg:`/`xl:`). Layout `flex-col` en mobile, `lg:flex-row` en desktop.
+
+### Refactor: Bajo acoplamiento — correcciones de alta prioridad
+
+- ✅ **ShellSession.ts: import roto reparado** (`frameworks/shells/ShellSession.ts:4`) — El import apuntaba a `'../types'` que resuelve a `src/frameworks/types.ts` (inexistente). Corregido a `'../../types'` que resuelve a `src/types.ts`. Era un bug latente que funcionaba solo por `moduleResolution: "bundler"` de Vite.
+
+- ✅ **FtpSession.ts: dependencia directa del store eliminada** (`frameworks/shells/ftp/FtpSession.ts:4`) — El shell FTP importaba `useScenarioStore` desde `store/scenarioStore`, una violación de capas grave (framework → store). El import no se usaba en el código, solo era un residual. Eliminado.
+
+- ✅ **autocomplete.ts: desacoplado de `frameworks/metasploit`** (`utils/autocomplete.ts:7`) — La capa de utilidades (`utils/`) importaba `MSF_MODULES` desde `frameworks/metasploit/core/msfModules`, creando una dependencia invertida. Se refactorizó para que `autocompleteMsf` y `getAutocompleteSuggestions` reciban los módulos como parámetro opcional. El llamador (`useKeyboardShortcuts.ts`) los importa y pasa. Tests actualizados.
+
+- ✅ **useCommandRunner.ts: eliminada validación duplicada** (`hooks/useCommandRunner.ts`) — El bloque de validación de misiones (`validateMission`) estaba repetido 3 veces (comando normal, sesión FTP, sesión SSH). Se extrajo en el helper `checkMissionCompletion()` y se unificaron las 3 llamadas. También se eliminó la duplicación del manejo de descarga de archivos FTP reutilizando `handleDownloadedFile()`. El archivo pasó de 582 a 540 líneas.
+
+### Refactor: Modularización de DesktopTerminal
+
+- ✅ **DesktopTerminal.tsx reducido de 1011 a 159 líneas** — Se extrajeron 5 módulos:
+  - `src/components/desktopWallpapers.ts`: interfaz `Wallpaper` + 6 wallpapers SVG
+  - `src/hooks/useDesktopWindows.ts`: hook con toda la lógica de ventanas (drag, resize, add, close, minimize, wallpaper, clock)
+  - `src/components/DesktopTopBar.tsx`: barra superior con menú de apps, taskbar, reloj, indicadores de sistema
+  - `src/components/WindowFrame.tsx`: marco de ventana con header, sliders de opacidad/fuente, botones de control, handles de resize
+  - `src/components/WallpaperPicker.tsx`: grilla de selección de wallpaper
+
+- ✅ **Tests de hooks**: `useDesktopWindows.test.ts` (31 tests) y `useCommandRunner.test.ts` (15 tests) nuevos, usando `vi.hoisted()` para evitar TDZ, store ref reseteable, timers fake para comandos streaming, y `waitFor` para operaciones asíncronas.
+
+### Refactor: Metasploit unificado en `src/frameworks/metasploit/`
+
+- ✅ **Movidos `msfTypes.ts`, `msfHelpers.ts`, `msfModules.ts`** de `src/commands/tools/` a `src/frameworks/metasploit/core/`
+- ✅ **Movido `msfCommands/` (orquestadores)** de `src/commands/tools/` a `src/frameworks/metasploit/orchestrators/`
+- ✅ **`msfconsole.ts`** queda como thin wrapper en `src/commands/tools/` con comentario apuntando a `frameworks/metasploit/`
+- ✅ Actualizados imports en 25+ archivos, eliminados archivos duplicados
+
+### Structure final de MSF
+
+```
+src/frameworks/metasploit/
+├── core/              ← tipos, helpers, módulos, context-registry
+├── commands/          ← sub-comandos (use, set, show, search, exit…)
+├── orchestrators/     ← orquestadores (msfBase, msfMeterpreter, msfShell, msfExploits, msfContextHelp)
+├── modules/           ← módulos de exploit/post
+└── index.ts
+```
+
+---
+
+## [Unreleased] - 2026-06-16
+
+### Nuevo: DesktopTerminal — Entorno de escritorio Linux simulado
+
+Se reemplazó la terminal simple por un escritorio Kali virtual completo con ventanas arrastrables, redimensionables, minimizables y maximizables. Todo el estado de las ventanas se maneja localmente en `DesktopTerminal.tsx` con un array de `DesktopWindow`.
+
+- **Gestión de ventanas**: Drag desde el header, resize desde las 4 esquinas, minimizar (−), maximizar/restaurar (□/⧉), cerrar (×).
+- **Barra de tareas (Kali-style)**: Botón de aplicaciones, botones individuales para cada ventana de terminal (1–5), Chrome (1–2) y configuración de fondos. Solo el botón de la ventana superior se resalta.
+- **Comportamiento del botón en barra de tareas**: Si la ventana está minimizada → se restaura y trae al frente. Si está visible (aunque esté detrás de otra) → se minimiza.
+- **Z-index compartido**: Terminales, Chrome y ventana de fondos comparten el mismo stack de z-index; se pueden intercalar.
+- **Aplicación "Change Wallpaper"**: Se abre como una ventana tipo `wallpaper` en el escritorio, con los mismos controles (minimize, maximize, close) y botón en la barra de tareas.
+
+### Chrome como ventana nativa del escritorio
+
+- Chrome se movió de un overlay separado a una `DesktopWindow` con `type: 'browser'`, heredando todas las capacidades de ventana (drag, resize, minimize, maximize, close).
+- Cada instancia de Chrome tiene estado **independiente** (URL actual, historial de navegación, login) manejado con `useState` local en `FakeBrowser`, en lugar del store global.
+- La numeración de Chrome es **monótona creciente** (1, 2, 3…) sin reiniciar al cerrar ventanas.
+- Al cerrar un Chrome y reabrirlo, arranca desde `https://www.google.com`.
+- Límite: máximo 2 ventanas de Chrome.
+- "Firefox" renombrado a "Chrome" en toda la interfaz (etiquetas, menú, icono de escritorio, AnimatedBrowser, pistas de laboratorio). Nuevo icono SVG estilo Chrome.
+
+### Estado aislado por terminal
+
+Cada terminal tiene ahora su propio contexto de ejecución independiente:
+
+- `msfState` — cada terminal puede ejecutar `msfconsole` sin afectar a otras.
+- `currentDir` — cada terminal tiene su propio directorio de trabajo.
+- `blockingCommand` / `listeningPort` — comandos bloqueantes como `nc` son por terminal.
+- `ftpSession` / `sshSession` — sesiones FTP/SSH interactivas por terminal.
+- Nuevo `createIsolatedExecutor()` en `commands/index.ts` que devuelve un ejecutor con `_msfState` capturado en closure.
+- Limpieza del store: eliminados `browserMinimized`, `firefoxOpenCount`, `setBrowserMinimized`, `setFirefoxOpenCount`.
+
+### Botones de ventana reordenados
+
+- Verde (−) = minimizar
+- Amarillo (□/⧉) = maximizar/restaurar
+
+### Limpieza de código
+
+- Eliminado el overlay de Chrome de `App.tsx` en modo desktop.
+- Eliminados `browserClosing`, `browserMaximized`, `browserCustomDims`, resize refs del `App.tsx`.
+- FakeBrowser convertido a estado local (`useState`) para URL, navegación y login.
+
+---
+
+## [Unreleased] - 2026-06-08
+
+### Fixes de Laboratorio / Validación
+
+- ✅ **Lab 5: `cat nota.txt` ahora muestra a `john` en "Possible SSH Users"** — La nota FTP se descarga en la máquina atacante, por lo que el `cat` corría siempre con `machine.id === 'attacker-01'`. El `possibleUsers.machineId` quedaba guardado en el atacante y el `EnumerationPanel` (que filtra máquinas no-atacante) nunca mostraba a `john` como posible usuario SSH. Se restauró la resolución: si el `cat` corre en el atacante y hay `allMachines`, los usuarios descubiertos se asignan al target del lab. Además, se restauró el regex robusto de `extractMentionedUsers` con `matchAll` + filtrado de falsos positivos (`esta`, `equipo`, `seguridad`, `root`) + `length >= 3` + word boundaries, que también se había perdido en la "restauración" del 7 de junio.
+  - `src/commands/builtin/cat.ts`: `extractMentionedUsers` y resolución de `machineId` corregidas.
+  - `src/commands/builtin/__tests__/cat.test.ts`: 5 tests de regresión nuevos (atacante→target, ES/EN, falsos positivos, fallback sin `allMachines`).
+
+---
+
 ## [Unreleased] - 2026-06-06
 
 ### Fixes de Laboratorio / Validación

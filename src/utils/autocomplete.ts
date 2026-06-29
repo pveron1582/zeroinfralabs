@@ -4,7 +4,7 @@
 // Similar al comportamiento de bash/zsh en Linux
 
 import type { Machine } from '../types';
-import { MSF_MODULES } from '../commands/tools/msfModules';
+import type { MsfModule } from '../frameworks/metasploit/core/msfModules';
 
 // Comandos de Metasploit para autocompletar
 const MSF_COMMANDS = [
@@ -131,7 +131,7 @@ export function autocompleteCommand(partial: string): string[] {
 /**
  * Autocompleta dentro de Metasploit
  */
-export function autocompleteMsf(word: string, input: string, isFirstWord: boolean, msfState?: any): string[] {
+export function autocompleteMsf(word: string, input: string, isFirstWord: boolean, msfState?: any, modules?: MsfModule[]): string[] {
   const lowerWord = word.toLowerCase();
   
   if (isFirstWord) {
@@ -142,7 +142,8 @@ export function autocompleteMsf(word: string, input: string, isFirstWord: boolea
   
   if (cmd === 'use') {
     // Autocompleta módulos (auxiliary/, exploit/, etc)
-    return MSF_MODULES.map(m => m.path).filter(p => p.startsWith(lowerWord));
+    if (!modules) return [];
+    return modules.map(m => m.path).filter(p => p.startsWith(lowerWord));
   }
   
   if (cmd === 'set') {
@@ -233,7 +234,8 @@ export function getAutocompleteSuggestions(
   cursorPos: number,
   machine: Machine,
   currentDir: string,
-  msfState?: any
+  msfState?: any,
+  modules?: MsfModule[]
 ): { suggestions: string[]; completedText: string; replaceStart: number; replaceEnd: number } {
   // Extraer la parte del input hasta el cursor
   const textBeforeCursor = input.slice(0, cursorPos);
@@ -254,7 +256,7 @@ export function getAutocompleteSuggestions(
   
   if (msfState) {
     // Autocompletar Metasploit
-    suggestions = autocompleteMsf(wordToComplete, input, isFirstWord, msfState);
+    suggestions = autocompleteMsf(wordToComplete, input, isFirstWord, msfState, modules);
   } else if (isFirstWord) {
     // Autocompletar comando del sistema
     suggestions = autocompleteCommand(wordToComplete);

@@ -31,7 +31,7 @@ Object.defineProperty(window, 'history', {
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
@@ -43,7 +43,7 @@ class MockIntersectionObserver {
   unobserve = vi.fn();
   disconnect = vi.fn();
 }
-global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 // Cleanup after each test
 import { cleanup } from '@testing-library/react';

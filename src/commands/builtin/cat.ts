@@ -1,6 +1,5 @@
 // ── commands/builtin/cat.ts ───────────────────────────────────────
 // Muestra contenido de archivos
-// Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
 // Solo lee archivos y reporta metadata para que el laboratorio valide.
 
 import type { CommandContext, CommandResponse } from '../../types';
@@ -16,25 +15,29 @@ function normalizePath(filePath: string): string {
 
 // Detecta usuarios mencionados en el contenido
 function extractMentionedUsers(content: string): string[] {
-  const users: string[] = [];
+  const users = new Set<string>();
   const patterns = [
-    /(?:Para|To|user|username|login)\s*[:=]?\s*([a-zA-Z0-9_]+)/i,
-    /(?:usuario|credenciales|login)\s*[:=]?\s*([a-zA-Z0-9_]+)/i,
+    // Restringido con límites de palabra para evitar falsos positivos
+    /\b(?:Para|To|user|username|login|usuario|credenciales)\b\s*[:=]?\s*([a-zA-Z0-9_]+)/gi,
   ];
-  
+
   for (const pattern of patterns) {
-    const match = content.match(pattern);
-    if (match && !match[1].toLowerCase().includes('root')) {
-      users.push(match[1]);
+    const matches = content.matchAll(pattern);
+    for (const match of matches) {
+      const user = match[1];
+      // Filtrar palabras comunes que podrían ser falsos positivos y nombres demasiado cortos o largos
+      if (user && user.length >= 3 && !['root', 'esta', 'equipo', 'seguridad', 'equipo'].includes(user.toLowerCase())) {
+        users.add(user);
+      }
     }
   }
-  
-  return users;
+
+  return Array.from(users);
 }
 
 export const cmd_cat = {
   name: 'cat',
-  execute: (args: string[], { machine }: CommandContext): CommandResponse => {
+  execute: (args: string[], { machine, allMachines }: CommandContext): CommandResponse => {
     if (!args[0]) return { output: 'usage: cat <file>', isError: true };
 
     const requestedPath = normalizePath(args[0]);
@@ -78,7 +81,11 @@ export const cmd_cat = {
       // Machine.possible_ssh_users (visible en EnumerationPanel).
       ...(mentionedUsers.length > 0 && {
         possibleUsers: {
-          machineId: machine.id,
+          // Si estamos en el atacante, los usuarios pertenecen a la máquina objetivo del lab
+          // Si estamos en una máquina objetivo, los usuarios pertenecen a ella misma
+          machineId: (machine.id.includes('attacker') && allMachines)
+            ? (allMachines.find(m => !m.id.includes('attacker'))?.id || machine.id)
+            : machine.id,
           users: mentionedUsers,
         }
       }),

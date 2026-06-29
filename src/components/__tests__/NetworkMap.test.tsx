@@ -67,9 +67,9 @@ const mockScenario: Scenario & { machines: Machine[] } = {
   initialMachineId: 'attacker-01',
   machines: [createAttackerMachine(), createMockMachine()],
   missions: [
-    { id: 1, title: 'Descubrir', description: 'Descubrir la máquina objetivo', status: 'active', targetMachineId: 'target-01', discoveryLevel: 1 },
-    { id: 2, title: 'Escanear', description: 'Escanear puertos y servicios', status: 'pending', targetMachineId: 'target-01', discoveryLevel: 2 },
-    { id: 3, title: 'Enumerar', description: 'Enumerar directorios web', status: 'pending', targetMachineId: 'target-01', discoveryLevel: 3 },
+    { id: 1, title: 'Descubrir', description: 'Descubrir la máquina objetivo', status: 'active', targetMachineId: 'target-01', discoveryLevel: 1, hintLevel: 0 },
+    { id: 2, title: 'Escanear', description: 'Escanear puertos y servicios', status: 'pending', targetMachineId: 'target-01', discoveryLevel: 2, hintLevel: 0 },
+    { id: 3, title: 'Enumerar', description: 'Enumerar directorios web', status: 'pending', targetMachineId: 'target-01', discoveryLevel: 3, hintLevel: 0 },
   ],
 };
 

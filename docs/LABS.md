@@ -89,12 +89,13 @@
 
 1. **Host Discovery** — Descubre hosts
 2. **Port Scanning** — Identifica FTP (21) y SSH (22)
-3. **FTP Enumeration** — Conecta como anonymous, descarga nota.txt
-4. **SSH Brute Force** — Usa hydra contra el usuario "john"
-5. **SSH Access** — Conecta con credenciales
-6. **Sudo Enumeration** — Verifica permisos con `sudo -l`
-7. **Privilege Escalation** — Escalada con `sudo vim -c '!bash'`
-8. **Capture Root Flag** — Lee /root/flag2.txt
+3. **FTP Enumeration** — Conecta como anonymous, descarga nota
+4. **Read FTP Note** — Lee la nota para descubrir el usuario "john"
+5. **SSH Brute Force** — Usa hydra contra el usuario "john"
+6. **SSH Access** — Conecta con credenciales
+7. **Sudo Enumeration** — Verifica permisos con `sudo -l`
+8. **Privilege Escalation** — Escalada con `sudo vim -c '!bash'`
+9. **Capture Root Flag** — Lee /root/flag2.txt
 
 **Herramientas:** arp-scan, nmap, ftp, hydra, ssh, sudo
 **Flags:** ZIL{FTP_ANON_ACCESS}, ZIL{SUDO_VIM_PRIVESC_COMPLETE}

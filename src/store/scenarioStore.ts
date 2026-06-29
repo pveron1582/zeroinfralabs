@@ -45,6 +45,7 @@ const initialState = {
   sshSession: null as SshSessionState | null,
   _prevMachinesSnapshot: [] as EnumerationSnapshot[],
   showCompletionOverlay: false,
+  uiMode: 'desktop' as const,
 };
 
 // ── Network change detection ─────────────────────────────────────────
@@ -69,6 +70,8 @@ export const useScenarioStore = create<ScenarioState>()(
       // ── View & Language ───────────────────────────────────────────────
       setLanguage: (lang) => set({ language: lang }),
       setView: (view) => set({ view }),
+      toggleUiMode: () => set(state => ({ uiMode: state.uiMode === 'classic' ? 'desktop' : 'classic' })),
+      setUiMode: (mode) => set({ uiMode: mode }),
 
       // ── Survey ────────────────────────────────────────────────────────
       triggerSurvey: (scenario) => set({ showSurvey: true, pendingSurveyScenario: scenario }),
@@ -450,6 +453,7 @@ export const useScenarioStore = create<ScenarioState>()(
         browserNavIdx: state.browserNavIdx,
         msfState: state.msfState?.active ? state.msfState : null,
         currentDir: state.currentDir,
+        uiMode: state.uiMode,
       }),
     }
   )

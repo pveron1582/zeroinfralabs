@@ -1,16 +1,25 @@
 // ── commands/tools/msfconsole.ts ──────────────────────────────────
 // Simulates a Metasploit Framework msfconsole session.
 // Main orchestrator that delegates to specialized command handlers.
+//
+// Los módulos del framework (tipos, helpers, base de datos de módulos)
+// viven en src/frameworks/metasploit/core/:
+//   msfTypes.ts   — definiciones de MsfState e INITIAL_STATE
+//   msfHelpers.ts — withState, basePrompt, modulePrompt
+//   msfModules.ts — MSF_MODULES, MODULE_DEFAULTS, MsfModule
+//
+// Los sub-comandos (use, set, show, search, etc.) están en
+// src/frameworks/metasploit/commands/.
 
 import type { CommandContext, CommandResponse } from '../../types';
-import type { MsfState } from './msfTypes';
-import { INITIAL_STATE } from './msfTypes';
-import { withState, basePrompt, modulePrompt } from './msfHelpers';
-import { executeBaseCommand } from './msfCommands/msfBase';
-import { executeMeterpreterCommand } from './msfCommands/msfMeterpreter';
-import { executeShellCommand } from './msfCommands/msfShell';
-import { executeExploitCommand } from './msfCommands/msfExploits';
-import { executeContextHelp, getContextPrompt } from './msfCommands/msfContextHelp';
+import type { MsfState } from '../../frameworks/metasploit/core/msfTypes';
+import { INITIAL_STATE } from '../../frameworks/metasploit/core/msfTypes';
+import { withState, basePrompt, modulePrompt } from '../../frameworks/metasploit/core/msfHelpers';
+import { executeBaseCommand } from '../../frameworks/metasploit/orchestrators/msfBase';
+import { executeMeterpreterCommand } from '../../frameworks/metasploit/orchestrators/msfMeterpreter';
+import { executeShellCommand } from '../../frameworks/metasploit/orchestrators/msfShell';
+import { executeExploitCommand } from '../../frameworks/metasploit/orchestrators/msfExploits';
+import { executeContextHelp, getContextPrompt } from '../../frameworks/metasploit/orchestrators/msfContextHelp';
 
 // ── MSF sub-command handler (called when inside MSF session) ──────
 // Orchestrates all command handlers in order of priority
@@ -68,5 +77,5 @@ Metasploit tip: Use sessions -1 to interact with the last opened session
   }
 };
 
-// Re-export types for convenience
-export type { MsfState } from './msfTypes';
+// Re-export types for convenience (consumido por store/)
+export type { MsfState } from '../../frameworks/metasploit/core/msfTypes';

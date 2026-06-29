@@ -87,8 +87,10 @@ describe('SshSession', () => {
       expect(result.closeSession).toBe(true);
       expect(result.sshSessionClosed).toBe(true);
       expect(result.foundCredentials).toBeDefined();
+      expect(result.foundCredentials?.machineId).toBe('target-01');
       expect(result.foundCredentials?.user).toBe('admin');
       expect(result.foundCredentials?.pass).toBe('secret123');
+      expect(result.foundCredentials?.service).toBe('ssh');
       expect(newState.authenticated).toBe(true);
     });
 
@@ -112,6 +114,7 @@ describe('SshSession', () => {
       expect(result.completedMissionId).toBeUndefined();
       expect(result.sshLoginUser).toBe('admin');
       expect(result.foundCredentials).toBeDefined();
+      expect(result.foundCredentials?.user).toBe('admin');
     });
   });
 

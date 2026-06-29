@@ -409,3 +409,61 @@ describe('scenarioStore', () => {
     expect(wpContentDirs?.length).toBe(1);
   });
 });
+
+it('setShowCompletionOverlay debe cambiar el estado del overlay', () => {
+  useScenarioStore.getState().setShowCompletionOverlay(true);
+  expect(useScenarioStore.getState().showCompletionOverlay).toBe(true);
+
+  useScenarioStore.getState().setShowCompletionOverlay(false);
+  expect(useScenarioStore.getState().showCompletionOverlay).toBe(false);
+});
+
+it('revealNextHint debe incrementar hintLevel si hay hints', () => {
+  useScenarioStore.setState({
+    missions: [{
+      id: 999, title: 'Test', description: 'Test',
+      status: 'active', targetMachineId: 'test', discoveryLevel: 1,
+      hintLevel: 0,
+      hints: { hint1: { en: 'test', es: 'test' }, hint2: { en: 'test2', es: 'test2' } },
+    }],
+  });
+  useScenarioStore.getState().revealNextHint(999);
+  expect(useScenarioStore.getState().missions.find(m => m.id === 999)?.hintLevel).toBe(1);
+});
+
+it('revealNextHint no debe exceder hintLevel máximo', () => {
+  useScenarioStore.setState({
+    missions: [{
+      id: 999, title: 'Test', description: 'Test',
+      status: 'active', targetMachineId: 'test', discoveryLevel: 1,
+      hintLevel: 2,
+      hints: { hint1: { en: 'test', es: 'test' }, hint2: { en: 'test2', es: 'test2' } },
+    }],
+  });
+  useScenarioStore.getState().revealNextHint(999);
+  expect(useScenarioStore.getState().missions.find(m => m.id === 999)?.hintLevel).toBe(2);
+});
+
+it('revealNextHint debe retornar si no hay hints', () => {
+  useScenarioStore.setState({
+    missions: [{
+      id: 999, title: 'Test', description: 'Test',
+      status: 'active', targetMachineId: 'test', discoveryLevel: 1,
+      hintLevel: 0,
+    }],
+  });
+  useScenarioStore.getState().revealNextHint(999);
+  expect(useScenarioStore.getState().missions.find(m => m.id === 999)?.hintLevel).toBe(0);
+});
+
+it('goHome con history.state.view workspace debe llamar history.back', () => {
+  const originalBack = window.history.back;
+  const backMock = vi.fn();
+  window.history.back = backMock;
+  Object.defineProperty(window.history, 'state', { value: { view: 'workspace' }, writable: true });
+
+  useScenarioStore.getState().goHome();
+  expect(backMock).toHaveBeenCalled();
+
+  window.history.back = originalBack;
+});

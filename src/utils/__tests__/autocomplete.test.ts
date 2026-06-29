@@ -12,6 +12,7 @@ import {
   autocompleteMsf,
 } from '../autocomplete';
 import type { Machine } from '../../types';
+import { MSF_MODULES } from '../../frameworks/metasploit/core/msfModules';
 
 // Helper para crear una máquina virtual de prueba
 // Permite simular diferentes sistemas de archivos para los tests
@@ -227,7 +228,7 @@ describe('autocompleteMsf', () => {
   });
 
   it('debe autocompletar opciones de use (módulos)', () => {
-    const result = autocompleteMsf('auxiliary/', 'use auxiliary/', false);
+    const result = autocompleteMsf('auxiliary/', 'use auxiliary/', false, undefined, MSF_MODULES);
     expect(result.length).toBeGreaterThan(0);
     expect(result[0]).toContain('auxiliary/');
   });

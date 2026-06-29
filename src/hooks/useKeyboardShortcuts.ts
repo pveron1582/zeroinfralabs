@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import type { Machine } from '../types';
 import type { MsfState } from '../commands';
-import { isMsfActive, resetMsfState } from '../commands';
+import { MSF_MODULES } from '../frameworks/metasploit/core/msfModules';
 import { getAutocompleteSuggestions, findCommonPrefix } from '../utils/autocomplete';
 
 interface UseKeyboardShortcutsOptions {
@@ -98,14 +98,14 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions): UseK
         const nextIdx = (suggestionIdx + 1) % suggestions.length;
         setSuggestionIdx(nextIdx);
 
-        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState);
+        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState, MSF_MODULES);
         if (result.suggestions.length > 0) {
           const selectedSuggestion = result.suggestions[nextIdx];
           const textBeforeCursor = input.slice(0, result.replaceStart);
           setInput(textBeforeCursor + selectedSuggestion);
         }
       } else {
-        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState);
+        const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState, MSF_MODULES);
 
         if (result.suggestions.length === 1) {
           setInput(result.completedText);
@@ -198,8 +198,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions): UseK
           prompt,
           timestamp: Date.now()
         }]);
-      } else if (isMsfActive()) {
-        resetMsfState();
+      } else if (msfState?.active) {
         setMsfState(null);
         setHistIdx(-1);
         setHistory(prev => [...prev, {

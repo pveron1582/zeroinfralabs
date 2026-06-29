@@ -184,7 +184,9 @@ describe('sshSession (shell interactivo)', () => {
     // SSH ya no completa misiones directamente - reporta metadata para labValidator
     expect(result.sshLoginUser).toBe('root');
     expect(result.foundCredentials).toBeDefined();
-    expect(result.foundCredentials?.verified).toBe(true);
+    expect(result.foundCredentials?.user).toBe('root');
+    expect(result.foundCredentials?.pass).toBe('toor');
+    expect(result.foundCredentials?.service).toBe('ssh');
   });
 
   it('no debe reportar completedMissionId (sistema legacy removido)', () => {

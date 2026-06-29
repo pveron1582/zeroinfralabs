@@ -461,8 +461,5 @@ function performNetworkPingScan(
   const totalHosts = Math.pow(2, 32 - parsed.mask);
   output += `\nNmap done: ${totalHosts} IP addresses (${machinesInNetwork.length} host${machinesInNetwork.length !== 1 ? 's' : ''} up) scanned in ${(totalHosts * 0.01).toFixed(2)} seconds\n`;
 
-  return {
-    output,
-    discoveredHosts: hostsFound.length > 0 ? hostsFound : undefined,
-  };
+  return { output };
 }

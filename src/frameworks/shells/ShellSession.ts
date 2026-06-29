@@ -1,7 +1,7 @@
 // ── shells/ShellSession.ts ────────────────────────────────────────
 // Interfaz base para todos los shells modulares
 
-import type { Machine, CommandResponse, BlockingCommand, FileEntry } from '../types';
+import type { Machine, CommandResponse, BlockingCommand, FileEntry } from '../../types';
 
 // ── Contexto que recibe cada shell ────────────────────────────────
 export interface ShellContext {

@@ -1,7 +1,6 @@
 // ── shells/ftp/FtpSession.ts ──────────────────────────────────────
 
 import type { ShellSession, ShellContext, ShellResult } from '../ShellSession';
-import { useScenarioStore } from '../../../store/scenarioStore';
 
 // ── Estado del shell FTP ──────────────────────────────────────────
 export interface FtpState {

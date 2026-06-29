@@ -20,8 +20,12 @@ vi.mock('../../store/scenarioStore', () => ({
       setBrowserNavHistory: vi.fn(),
       refreshBrowser: vi.fn(),
       setActiveApp: vi.fn(),
+      addFileToMachine: vi.fn(),
+      confirmRCE: vi.fn(),
+      listeningPort: null,
+      setBlockingCommand: vi.fn(),
     };
-    return selector(state);
+    return selector(state as any);
   })
 }));
 

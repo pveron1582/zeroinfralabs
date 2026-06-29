@@ -26,6 +26,7 @@ const mockState = {
   sshSession: null,
   setSshSession: vi.fn(),
   missions: [],
+  currentScenario: { initialMachineId: 'attacker-01' } as any,
 };
 
 vi.mock('../../store/scenarioStore', () => ({
@@ -658,5 +659,26 @@ describe('Terminal', () => {
 
     // Verificar que muestra el prompt con información del sistema
     expect(container.textContent).toContain('kali');
+  });
+
+  it('debe mostrar error al ejecutar comando desconocido', () => {
+    const attackerMachine = createMockMachine();
+    const { container } = render(
+      <Terminal
+        scenarioId="scenario-01"
+        machine={attackerMachine}
+        allMachines={[attackerMachine]}
+        currentMissionId={1}
+        onMissionComplete={vi.fn()}
+        onChangeMachine={vi.fn()}
+        onCredentialsFound={vi.fn()}
+      />
+    );
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'comando-inventado' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(container.textContent).toContain('Command not found');
   });
 });

@@ -17,7 +17,7 @@ import {
   cmd_ftp
 } from './tools';
 import { shellManager, type ShellContext as ManagerContext, type ShellResult } from '../frameworks/shells';
-import { getContextPrompt } from './tools/msfCommands/msfContextHelp';
+import { getContextPrompt } from '../frameworks/metasploit/orchestrators/msfContextHelp';
 
 interface Command {
   name: string;
@@ -316,3 +316,102 @@ export type { MsfState } from './tools';
 export const resetShellSessions = () => {
   shellManager.reset();
 };
+
+// ── Isolated Executor ─────────────────────────────────────────────
+// Cada terminal en modo desktop obtiene su propio executor con estado
+// aislado (msfState, etc.) para no contaminar otras terminales.
+export interface IsolatedExecutor {
+  executeCommand: typeof executeCommand;
+  isMsfActive: () => boolean;
+  getMsfPrompt: () => string | null;
+  getMsfState: () => MsfState | null;
+  resetMsfState: () => void;
+  getMsfStateSnapshot: () => MsfState | null;
+}
+
+export function createIsolatedExecutor(): IsolatedExecutor {
+  let _isolatedMsfState: MsfState | null = null;
+
+  const _isolatedCommands: Command[] = COMMANDS.map(cmd => {
+    if (cmd.name === 'msfconsole') {
+      return {
+        name: 'msfconsole',
+        execute: (args: string[], ctx: CommandContext): CommandResponse => {
+          if (_isolatedMsfState?.active) {
+            const line = args.join(' ');
+            const result = executeMsfCommand(line, _isolatedMsfState, ctx);
+            if (result.output.startsWith('MSF_STATE:')) {
+              const nl = result.output.indexOf('\n');
+              try {
+                const parsedState = JSON.parse(result.output.slice('MSF_STATE:'.length, nl));
+                _isolatedMsfState = parsedState.active ? parsedState : null;
+              } catch {}
+              return { ...result, output: result.output.slice(nl + 1) };
+            }
+            return result;
+          }
+          const result = cmd_msfconsole.execute();
+          if (result.output.startsWith('MSF_STATE:')) {
+            const nl = result.output.indexOf('\n');
+            try {
+              _isolatedMsfState = JSON.parse(result.output.slice('MSF_STATE:'.length, nl));
+            } catch {}
+            return { ...result, output: result.output.slice(nl + 1) };
+          }
+          return result;
+        }
+      };
+    }
+    return cmd;
+  });
+
+  const _execute: typeof executeCommand = (
+    line, machine, allMachines, currentMissionId,
+    onMsfStateChange, currentDir = '/', setCurrentDir,
+    ftpSession, language
+  ) => {
+    const parts = line.trim().split(/\s+/);
+    const cmdName = parts[0].toLowerCase();
+    const args = parts.slice(1);
+    const ctx: CommandContext = { machine, allMachines, currentMissionId, currentDir, setCurrentDir, ftpSession, language };
+
+    if (shellManager.isActive()) {
+      const result = executeShellCommand(line, ctx);
+      if (!shellManager.isActive()) {
+        result.ftpSession = { active: false, connected: false };
+      }
+      return result;
+    }
+
+    let result: CommandResponse;
+    if (_isolatedMsfState?.active) {
+      const msfCmd = _isolatedCommands.find(c => c.name === 'msfconsole')!;
+      result = msfCmd.execute([line], ctx);
+    } else {
+      const cmd = _isolatedCommands.find(c => c.name === cmdName);
+      if (!cmd) return {
+        output: `Command not found: ${cmdName}\nEscribe 'help' para ver los comandos disponibles.`,
+        isError: true
+      };
+      result = cmd.execute(args, ctx);
+    }
+
+    if (onMsfStateChange) {
+      onMsfStateChange(_isolatedMsfState);
+    }
+
+    return result;
+  };
+
+  return {
+    executeCommand: _execute,
+    isMsfActive: () => !!_isolatedMsfState?.active,
+    getMsfPrompt: () => {
+      if (!_isolatedMsfState?.active) return null;
+      return getContextPrompt(_isolatedMsfState);
+    },
+    getMsfState: () => _isolatedMsfState ? { ..._isolatedMsfState } : null,
+    resetMsfState: () => { _isolatedMsfState = null; },
+    getMsfStateSnapshot: () => _isolatedMsfState ? { ..._isolatedMsfState } : null,
+  };
+}

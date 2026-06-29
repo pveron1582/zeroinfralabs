@@ -71,6 +71,10 @@ export interface ScenarioState {
   language: 'en' | 'es';
   setLanguage: (lang: 'en' | 'es') => void;
 
+  uiMode: 'classic' | 'desktop';
+  toggleUiMode: () => void;
+  setUiMode: (mode: 'classic' | 'desktop') => void;
+
   showSurvey: boolean;
   pendingSurveyScenario: Scenario | null;
   triggerSurvey: (scenario: Scenario) => void;

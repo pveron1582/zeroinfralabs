@@ -1,7 +1,7 @@
 // ── App.tsx ───────────────────────────────────────────────────────
 // Componente raíz que usa Zustand para el estado global
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, useParams, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useScenarioStore } from './store/scenarioStore';
 import { SCENARIOS, TEST_SCENARIO } from './laboratorios/laboratorios';
@@ -9,6 +9,7 @@ import { resetMsfState, restoreMsfState, getMsfState } from './commands';
 import { LandingPage }  from './components/LandingPage';
 import { LabGrid }      from './components/LabGrid';
 import { Terminal }     from './components/Terminal';
+import { DesktopTerminal } from './components/DesktopTerminal';
 import { FakeBrowser }  from './components/FakeBrowser';
 import { MissionPanel } from './components/MissionPanel';
 import { NetworkMap }   from './components/NetworkMap';
@@ -201,6 +202,9 @@ export function AppContent() {
   const showCompletionOverlay = useScenarioStore(state => state.showCompletionOverlay);
   const setShowCompletionOverlay = useScenarioStore(state => state.setShowCompletionOverlay);
   const language = useScenarioStore(state => state.language);
+  const uiMode = useScenarioStore(state => state.uiMode);
+
+  // ── Actions del Store ───────────────────────────────────────────
 
   // ── Actions del Store ───────────────────────────────────────────
   const setActiveApp = useScenarioStore(state => state.setActiveApp);
@@ -406,69 +410,37 @@ export function AppContent() {
 
   // ── Workspace ───────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4 md:p-6"
+    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center"
       style={{ fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
 
-      {/* ── Top bar ── */}
-      <div className="w-full max-w-6xl mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={handleGoHome}
-            className="flex items-center gap-2 px-2 py-1 rounded-lg transition-colors hover:bg-gray-800 group"
-            title="Volver al menú">
-            <div className="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center group-hover:bg-emerald-400 transition-colors">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5">
+      {/* ── Workspace window ── */}
+      <div className="flex flex-col bg-gray-900 overflow-hidden shadow-2xl border border-gray-800 relative"
+        style={{ height: 'calc(100vh - 2rem)', width: 'calc(100vw - 2rem)', borderRadius: '1rem', margin: '1rem', maxWidth: 'calc(100vw - 2rem)' }}>
+
+        {/* ── Kali Linux taskbar ── */}
+        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-gray-800 flex-shrink-0 select-none"
+          style={{ background: '#0d1117' }}>
+
+          {/* ZI Labs + lab name */}
+          <button onClick={handleGoHome} className="flex items-center gap-1.5 mr-2 group">
+            <div className="w-5 h-5 rounded flex items-center justify-center bg-emerald-500 group-hover:bg-emerald-400 transition-colors">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5">
                 <polyline points="8 10 12 14 8 18"/><rect x="2" y="3" width="20" height="18" rx="2"/>
               </svg>
             </div>
-            <span className="text-sm font-bold text-gray-200 tracking-tight group-hover:text-white transition-colors">ZI Labs</span>
-            <span className="text-xs text-gray-600">v4.5</span>
+            <span className="text-xs font-bold text-gray-400 group-hover:text-white transition-colors">ZI Labs</span>
+            <span className="text-[10px] text-gray-600">v4.5</span>
           </button>
-
-          <div className="h-4 w-px bg-gray-700" />
-
-          <div className="flex items-center gap-2">
+          <div className="w-px h-4 bg-gray-800 mx-1" />
+          <div className="flex items-center gap-1.5 mr-3">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             <span className="text-xs text-gray-400 font-mono">{currentScenario.name}</span>
           </div>
-        </div>
 
-        <div className="flex items-center gap-4 text-xs text-gray-600">
-          <span className="font-mono">{currentScenario.network_range}</span>
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Online</span>
-          </div>
-          <button onClick={handleGoHome}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600"
-            style={{ borderColor: '#374151', color: '#6b7280' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-            </svg>
-            Menú
-          </button>
-        </div>
-      </div>
-
-      {/* ── Workspace window ── */}
-      <div className="w-full max-w-6xl flex flex-col bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-800 relative"
-        style={{ height: 'calc(100vh - 8rem)', minHeight: '520px' }}>
-
-        {/* ── Kali Linux taskbar ── */}
-        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-gray-800 flex-shrink-0 select-none"
-          style={{ background: '#0d1117' }}>
-          <div className="flex items-center gap-1.5 mr-2">
-            <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: '#1a73e8' }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="white">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-              </svg>
-            </div>
-            <span className="text-xs font-bold text-gray-400" style={{ fontFamily: 'sans-serif' }}>Kali</span>
-          </div>
-          <div className="w-px h-4 bg-gray-800 mx-1" />
-
-          {/* Terminal button */}
+          {/* Terminal button — solo en modo Clásico */}
+          {uiMode === 'classic' && (
           <button onClick={() => setActiveApp('terminal')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activeApp === 'terminal' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}`}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -477,24 +449,28 @@ export function AppContent() {
             <span style={{ fontFamily: 'sans-serif' }}>Terminal</span>
             {activeApp === 'terminal' && <div className="w-1 h-1 rounded-full bg-emerald-400 ml-0.5" />}
           </button>
+          )}
 
-          {/* Firefox button — solo en escenarios Web */}
-          {(() => {
-            console.log('Current scenario category:', currentScenario.category);
-            return currentScenario.category === 'Web';
-          })() && (
+          {/* Chrome button — solo en modo Clásico y escenarios Web */}
+          {uiMode === 'classic' && currentScenario.category === 'Web' && (
           <button onClick={() => { refreshBrowser(); setActiveApp('browser'); }}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activeApp === 'browser' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}`}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/>
             </svg>
-            <span style={{ fontFamily: 'sans-serif' }}>Firefox ESR</span>
+            <span style={{ fontFamily: 'sans-serif' }}>Chrome</span>
             {activeApp === 'browser' && <div className="w-1 h-1 rounded-full bg-emerald-400 ml-0.5" />}
           </button>
           )}
 
+          <div className="ml-auto flex items-center gap-1">
+          <div className="w-px h-4 bg-gray-800 mx-2" />
+
+          {/* Network range */}
+          <span className="text-xs text-gray-600 font-mono">{currentScenario.network_range}</span>
+
           {/* Color picker */}
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             {TERM_COLORS.map(c => (
               <button key={c.value} title={c.label}
                 onClick={() => setTermColor(c.value)}
@@ -507,8 +483,16 @@ export function AppContent() {
                 }} />
             ))}
           </div>
-          <div className="ml-3 text-xs text-gray-600 font-mono" style={{ fontFamily: 'sans-serif' }}>
-            {new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+
+          {/* Menú — a la derecha de todo */}
+          <button onClick={handleGoHome}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600"
+            style={{ borderColor: '#374151', color: '#6b7280' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Menú
+          </button>
           </div>
         </div>
 
@@ -516,18 +500,58 @@ export function AppContent() {
         <div className="flex flex-1 min-h-0">
           <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
 
-            {/* Terminal */}
-            <div className={`flex-1 overflow-hidden ${activeApp !== 'terminal' ? 'hidden' : ''}`}>
-              {showMachineLoader && loadingMachine ? (
-                <MachineLoader
-                  machineName={loadingMachine.machine_info.hostname}
-                  machineIp={loadingMachine.machine_info.ip}
-                  machineOs={loadingMachine.machine_info.os}
-                  onComplete={() => {}}
-                  language={language}
+            {uiMode === 'classic' ? (
+              <>
+              {/* Terminal (Classic) */}
+              <div className={`flex-1 overflow-hidden ${activeApp !== 'terminal' ? 'hidden' : ''}`}>
+                {showMachineLoader && loadingMachine ? (
+                  <MachineLoader
+                    machineName={loadingMachine.machine_info.hostname}
+                    machineIp={loadingMachine.machine_info.ip}
+                    machineOs={loadingMachine.machine_info.os}
+                    onComplete={() => {}}
+                    language={language}
+                  />
+                ) : (
+                  <Terminal
+                    scenarioId={currentScenario.id}
+                    machine={activeMachine}
+                    allMachines={machines}
+                    currentMissionId={currentMissionId}
+                    onMissionComplete={completeMission}
+                    onCredentialsFound={findCredentials}
+                    onVerifyCredentials={verifyCredentials}
+                    onChangeMachine={changeMachine}
+                    onFailedUser={addFailedUser}
+                    onSudoPrivileges={setSudoPrivileges}
+                    termColor={termColor}
+                  />
+                )}
+              </div>
+
+              {/* Browser (Classic) */}
+              {currentScenario.category === 'Web' && (
+              <div className={`flex-1 overflow-hidden ${activeApp !== 'browser' ? 'hidden' : ''}`}>
+                <FakeBrowser
+                  key={browserKey}
+                  allMachines={machines}
+                  onClose={() => setActiveApp('terminal')}
+                  onMissionComplete={completeMission}
+                  onCredentialsFound={findCredentials}
+                  onVerifyCredentials={verifyCredentials}
+                  scenarioHasWeb={true}
+                  wpDiscoveryLevel={wpDiscoveryLevel}
+                  mission3Already={mission3Already}
+                  onSetPossibleUsers={setPossibleUsers}
+                  onReportVulnerability={reportVulnerability}
                 />
-              ) : (
-                <Terminal
+              </div>
+              )}
+              </>
+            ) : (
+              /* Desktop mode: DesktopTerminal siempre visible, browser overlay */
+              <div className="flex-1 overflow-hidden relative">
+                <DesktopTerminal
                   scenarioId={currentScenario.id}
                   machine={activeMachine}
                   allMachines={machines}
@@ -540,26 +564,7 @@ export function AppContent() {
                   onSudoPrivileges={setSudoPrivileges}
                   termColor={termColor}
                 />
-              )}
-            </div>
-
-            {/* Browser — solo para escenarios Web */}
-            {currentScenario.category === 'Web' && (
-            <div className={`flex-1 overflow-hidden ${activeApp !== 'browser' ? 'hidden' : ''}`}>
-              <FakeBrowser
-                key={browserKey}
-                allMachines={machines}
-                onClose={() => setActiveApp('terminal')}
-                onMissionComplete={completeMission}
-                onCredentialsFound={findCredentials}
-                onVerifyCredentials={verifyCredentials}
-                scenarioHasWeb={true}
-                wpDiscoveryLevel={wpDiscoveryLevel}
-                mission3Already={mission3Already}
-                onSetPossibleUsers={setPossibleUsers}
-                onReportVulnerability={reportVulnerability}
-              />
-            </div>
+              </div>
             )}
           </div>
 

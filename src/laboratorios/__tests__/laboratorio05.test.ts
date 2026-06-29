@@ -1,6 +1,7 @@
 // ── laboratorios/__tests__/laboratorio05.test.ts ────────────────────
 import { describe, it, expect } from 'vitest';
-import { scenario_05, scenario05Data, SCENARIO_TEMPLATES, COMMON_PORTS } from '../laboratorio05';
+import { scenario_05, scenario05Data, SCENARIO_TEMPLATES } from '../laboratorio05';
+import { COMMON_PORTS } from '../templates';
 
 describe('Laboratorio 05 - FTP Enumeration & Privilege Escalation', () => {
   it('debe exportar datos del escenario', () => {
@@ -56,7 +57,7 @@ describe('Laboratorio 05 - FTP Enumeration & Privilege Escalation', () => {
     const files = scenario05Data.targetMachine.files;
     expect(files.some(f => f.path === '/etc/sudoers')).toBe(true);
     expect(files.some(f => f.path === '/root/flag2.txt')).toBe(true);
-    expect(files.some(f => f.path === '/home/john/user.txt')).toBe(true);
+    expect(files.some(f => f.path === '/home/john/flag1.txt')).toBe(true);
   });
 
   it('debe tener 9 learning steps', () => {

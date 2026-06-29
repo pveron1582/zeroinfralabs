@@ -1,7 +1,7 @@
 // ── commands/tools/__tests__/msfCommands/msfMeterpreter.test.ts ──
 import { describe, it, expect } from 'vitest';
-import { executeMeterpreterCommand } from '../../msfCommands/msfMeterpreter';
-import type { MsfState } from '../../msfTypes';
+import { executeMeterpreterCommand } from '../../../../frameworks/metasploit/orchestrators/msfMeterpreter';
+import type { MsfState } from '../../../../frameworks/metasploit/core/msfTypes';
 import type { Machine, CommandContext } from '../../../../types';
 
 // Create mock context

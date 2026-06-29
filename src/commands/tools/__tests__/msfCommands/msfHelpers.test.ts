@@ -1,7 +1,7 @@
 // ── commands/tools/__tests__/msfCommands/msfHelpers.test.ts ───────
 import { describe, it, expect } from 'vitest';
-import { withState, basePrompt, modulePrompt } from '../../msfHelpers';
-import type { MsfState } from '../../msfTypes';
+import { withState, basePrompt, modulePrompt } from '../../../../frameworks/metasploit/core/msfHelpers';
+import type { MsfState } from '../../../../frameworks/metasploit/core/msfTypes';
 
 describe('msfHelpers', () => {
   const testState: MsfState = {

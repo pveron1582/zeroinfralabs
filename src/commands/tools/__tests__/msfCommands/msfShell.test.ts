@@ -1,7 +1,7 @@
 // ── commands/tools/__tests__/msfCommands/msfShell.test.ts ────────
 import { describe, it, expect } from 'vitest';
-import { executeShellCommand } from '../../msfCommands/msfShell';
-import type { MsfState } from '../../msfTypes';
+import { executeShellCommand } from '../../../../frameworks/metasploit/orchestrators/msfShell';
+import type { MsfState } from '../../../../frameworks/metasploit/core/msfTypes';
 
 describe('executeShellCommand', () => {
   const shellState: MsfState = {

@@ -590,9 +590,7 @@ describe('cmd_nmap', () => {
     expect(result.output).toContain('Nmap scan report for target (192.168.1.10)');
     expect(result.output).toContain('Nmap scan report for target2 (192.168.1.20)');
     expect(result.output).toContain('2 hosts up');
-    expect(result.discoveredHosts).toHaveLength(2);
-    expect(result.discoveredHosts![0].ip).toBe('192.168.1.10');
-    expect(result.discoveredHosts![1].ip).toBe('192.168.1.20');
+    expect(result.discoveredHosts).toBeUndefined();
   });
 
   it('-sn con CIDR sin hosts debe reportar 0 hosts', () => {
@@ -604,7 +602,6 @@ describe('cmd_nmap', () => {
     expect(result.isError).toBeUndefined();
     expect(result.output).toContain('Host seems down');
     expect(result.output).toContain('0 hosts up');
-    expect(result.discoveredHosts).toBeUndefined();
   });
 
   it('-sn -v con CIDR debe mostrar MAC addresses', () => {

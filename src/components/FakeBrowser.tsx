@@ -177,6 +177,8 @@ function DinoGame() {
 interface FakeBrowserProps {
   allMachines: Machine[];
   onClose: () => void;
+  onMinimize?: () => void;
+  onMaximizeToggle?: () => void;
   onMissionComplete: (id: number) => void;
   onCredentialsFound: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
   onVerifyCredentials: (machineId: string, service?: string) => void;
@@ -184,11 +186,11 @@ interface FakeBrowserProps {
   wpDiscoveryLevel: number;
   mission3Already: boolean;
   onSetPossibleUsers: (machineId: string, users: string[]) => void;
-  onReportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
+  onReportVulnerability?: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 }
 
 export function FakeBrowser({
-  allMachines, onClose, onMissionComplete,
+  allMachines, onClose, onMinimize, onMaximizeToggle, onMissionComplete,
   onCredentialsFound, onVerifyCredentials,
   scenarioHasWeb, wpDiscoveryLevel, mission3Already,
   onSetPossibleUsers, onReportVulnerability
@@ -196,21 +198,18 @@ export function FakeBrowser({
 
   const HOME_URL = 'https://www.google.com';
 
-  const browserCurrentUrl = useScenarioStore(state => state.browserCurrentUrl);
-  const browserIsLoggedIn = useScenarioStore(state => state.browserIsLoggedIn);
-  const browserNavHistory = useScenarioStore(state => state.browserNavHistory);
-  const browserNavIdx = useScenarioStore(state => state.browserNavIdx);
-  const setBrowserUrl = useScenarioStore(state => state.setBrowserUrl);
-  const setBrowserLoggedIn = useScenarioStore(state => state.setBrowserLoggedIn);
-  const setBrowserNavHistory = useScenarioStore(state => state.setBrowserNavHistory);
+  const [currentUrl, setCurrentUrl] = useState(HOME_URL);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [navHistory, setNavHistory] = useState([HOME_URL]);
+  const [navIdx, setNavIdx] = useState(0);
+  const [urlInput, setUrlInput] = useState(HOME_URL);
+  const [reloading, setReloading] = useState(false);
+  const rceCompletedRef = useRef(false);
+
   const addFileToMachine = useScenarioStore(state => state.addFileToMachine);
   const confirmRCE = useScenarioStore(state => state.confirmRCE);
   const listeningPort = useScenarioStore(state => state.listeningPort);
   const setBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
-
-  const [urlInput, setUrlInput] = useState(browserCurrentUrl);
-  const [reloading, setReloading] = useState(false);
-  const rceCompletedRef = useRef(false);
 
   const wpMachine = useMemo(() => allMachines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress')), [allMachines]);
   const lfiMachine = useMemo(() => allMachines.find(m => m.id.includes('lfi')), [allMachines]);
@@ -240,10 +239,11 @@ export function FakeBrowser({
       withScheme = isGoogleDomain ? `https://${trimmed}` : `http://${trimmed}`;
     }
     const clean = withScheme.replace(/\/$/, '') || withScheme;
-    const newHistory = [...browserNavHistory.slice(0, browserNavIdx + 1), clean];
+    const newHistory = [...navHistory.slice(0, navIdx + 1), clean];
     const newIdx = newHistory.length - 1;
-    setBrowserUrl(clean);
-    setBrowserNavHistory(newHistory, newIdx);
+    setCurrentUrl(clean);
+    setNavHistory(newHistory);
+    setNavIdx(newIdx);
     setUrlInput(clean);
 
     if (scenarioHasWeb && !mission3Already && wpMachine && wpDiscoveryLevel >= 2 && clean.includes(wpMachine.machine_info.ip)) {
@@ -253,7 +253,7 @@ export function FakeBrowser({
       const fullPath = clean.replace(`http://${lfiMachine.machine_info.ip}`, '');
       if (fullPath.includes('etc/passwd')) {
         onMissionComplete(3);
-        onReportVulnerability(lfiMachine.id, 'LFI', 'detected');
+        onReportVulnerability?.(lfiMachine.id, 'LFI', 'detected');
       }
     }
     if (sshMachine && clean.includes(sshMachine.machine_info.ip)) {
@@ -262,28 +262,28 @@ export function FakeBrowser({
   };
 
   const goBack = () => {
-    if (browserNavIdx > 0) {
-      const i = browserNavIdx - 1;
-      setBrowserNavHistory(browserNavHistory, i);
-      setBrowserUrl(browserNavHistory[i]);
-      setUrlInput(browserNavHistory[i]);
+    if (navIdx > 0) {
+      const i = navIdx - 1;
+      setCurrentUrl(navHistory[i]);
+      setNavIdx(i);
+      setUrlInput(navHistory[i]);
     }
   };
 
   const goForward = () => {
-    if (browserNavIdx < browserNavHistory.length - 1) {
-      const i = browserNavIdx + 1;
-      setBrowserNavHistory(browserNavHistory, i);
-      setBrowserUrl(browserNavHistory[i]);
-      setUrlInput(browserNavHistory[i]);
+    if (navIdx < navHistory.length - 1) {
+      const i = navIdx + 1;
+      setCurrentUrl(navHistory[i]);
+      setNavIdx(i);
+      setUrlInput(navHistory[i]);
     }
   };
 
   useEffect(() => {
     if (!lfiMachine) return;
     if (rceCompletedRef.current) return;
-    if (!browserCurrentUrl.includes(lfiMachine.machine_info.ip)) return;
-    const fullPath = browserCurrentUrl.replace(`http://${lfiMachine.machine_info.ip}`, '');
+    if (!currentUrl.includes(lfiMachine.machine_info.ip)) return;
+    const fullPath = currentUrl.replace(`http://${lfiMachine.machine_info.ip}`, '');
     if ((fullPath.includes('?page=uploads/') || fullPath.includes('?page=files/')) && fullPath.endsWith('.php')) {
       if (!listeningPort) return;
       rceCompletedRef.current = true;
@@ -295,7 +295,7 @@ export function FakeBrowser({
       onMissionComplete(6);
       onVerifyCredentials(lfiMachine.id, 'lfi-rce');
     }
-  }, [browserCurrentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, setBlockingCommand, listeningPort]);
+  }, [currentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, setBlockingCommand, listeningPort]);
 
   useEffect(() => {
     rceCompletedRef.current = false;
@@ -306,7 +306,7 @@ export function FakeBrowser({
       onMissionComplete(5);
       if (lfiMachine) {
         confirmRCE(lfiMachine.id, 'www-data', '/var/www/html/uploads/payload.php');
-        onReportVulnerability(lfiMachine.id, 'LFI', 'confirmed');
+        onReportVulnerability?.(lfiMachine.id, 'LFI', 'confirmed');
       }
       return;
     }
@@ -324,7 +324,6 @@ export function FakeBrowser({
   }, [lfiMachine, allMachines, addFileToMachine, onMissionComplete, confirmRCE, onReportVulnerability]);
 
   const renderPage = () => {
-    const currentUrl = browserCurrentUrl;
 
     if (currentUrl.startsWith('http://') && currentUrl.includes('google.com')) {
       return <HttpSecurityError url={currentUrl} onNavigate={navigate} />;
@@ -349,14 +348,14 @@ export function FakeBrowser({
         <WordPressSite
           machine={wpMachine}
           currentUrl={currentUrl}
-          browserIsLoggedIn={browserIsLoggedIn}
+          browserIsLoggedIn={isLoggedIn}
           onNavigate={navigate}
           onLoginSuccess={(id) => {
-            setBrowserLoggedIn(true);
+            setIsLoggedIn(true);
             onMissionComplete(id);
           }}
           onLogout={() => {
-            setBrowserLoggedIn(false);
+            setIsLoggedIn(false);
             navigate(`http://${wpMachine.machine_info.ip}/wp-admin`);
           }}
           onCredentialsFound={onCredentialsFound}
@@ -391,14 +390,14 @@ export function FakeBrowser({
         <SqlInjectionSite
           machine={sqliMachine}
           currentUrl={currentUrl}
-          browserIsLoggedIn={browserIsLoggedIn}
+          browserIsLoggedIn={isLoggedIn}
           onNavigate={navigate}
           onLoginSuccess={(id) => {
-            setBrowserLoggedIn(true);
+            setIsLoggedIn(true);
             onMissionComplete(id);
           }}
           onLogout={() => {
-            setBrowserLoggedIn(false);
+            setIsLoggedIn(false);
             navigate(`http://${sqliMachine.machine_info.ip}/`);
           }}
           onCredentialsFound={onCredentialsFound}
@@ -419,15 +418,15 @@ export function FakeBrowser({
     <div className="flex flex-col h-full w-full bg-gray-950">
       <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 border-b border-gray-700 flex-shrink-0">
         <div className="flex gap-1.5">
-          <button onClick={onClose} className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors" />
-          <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-          <div className="w-3 h-3 rounded-full bg-green-500/50" />
+          <button onClick={onClose} className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors" title="Cerrar" />
+          <button onClick={onMaximizeToggle} className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors" title="Maximizar" />
+          <button onClick={onMinimize} className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors" title="Minimizar" />
         </div>
         <div className="flex gap-0.5">
-          <button onClick={goBack} disabled={browserNavIdx === 0} className="p-1 rounded text-gray-400 disabled:opacity-30 hover:enabled:bg-gray-700 transition-colors">
+          <button onClick={goBack} disabled={navIdx === 0} className="p-1 rounded text-gray-400 disabled:opacity-30 hover:enabled:bg-gray-700 transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
-          <button onClick={goForward} disabled={browserNavIdx >= browserNavHistory.length - 1} className="p-1 rounded text-gray-400 disabled:opacity-30 hover:enabled:bg-gray-700 transition-colors">
+          <button onClick={goForward} disabled={navIdx >= navHistory.length - 1} className="p-1 rounded text-gray-400 disabled:opacity-30 hover:enabled:bg-gray-700 transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
           <button onClick={reload} className={`p-1 rounded text-gray-400 hover:bg-gray-700 ${reloading ? 'animate-spin' : ''}`}>
@@ -444,7 +443,7 @@ export function FakeBrowser({
           <span>CyberBrowser</span>
         </div>
       </div>
-      <div className="flex-1 overflow-auto bg-white">
+      <div className="flex-1 overflow-auto bg-white select-text">
         {renderPage()}
       </div>
     </div>

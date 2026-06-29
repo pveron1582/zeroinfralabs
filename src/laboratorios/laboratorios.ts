@@ -2,7 +2,7 @@ import { scenario_01 as laboratorio_01, scenario01Data } from './laboratorio01';
 import { scenario_02 as laboratorio_02, scenario02Data } from './laboratorio02';
 import { scenario_03 as laboratorio_03, SCENARIO_TEMPLATES_ETERNAL } from './laboratorio03';
 import { scenario_04 as laboratorio_04, SCENARIO_TEMPLATES_LFI } from './laboratorio04';
-import { scenario_05 as laboratorio_05, scenario05Data } from './laboratorio05';
+import { scenario_05 as laboratorio_05, scenario05Data, SCENARIO_TEMPLATES } from './laboratorio05';
 import { scenario_06 as laboratorio_06, scenario06Data } from './laboratorio06';
 
 export const SCENARIOS = [laboratorio_01, laboratorio_02, laboratorio_03, laboratorio_04, laboratorio_05];

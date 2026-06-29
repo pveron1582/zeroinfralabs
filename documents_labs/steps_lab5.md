@@ -7,7 +7,7 @@
 
 ---
 
-## Steps (8 missions)
+## Steps (9 missions)
 
 ### 01 — Host Discovery
 **Text:** Discover the active host on the network
@@ -35,7 +35,16 @@
 **Validation:** ftpLogin
 **Note Location:** `/srv/ftp/nota.txt` (hints at weak SSH password for user 'john')
 
-### 04 — SSH Brute Force
+### 04 — Read FTP Note
+**Text:** Read the downloaded note to discover the username
+**Text ES:** Leé la nota descargada para descubrir el nombre de usuario
+**Discovery Level:** 2
+**Hint 1 (tool):** Read the note with cat to discover the username mentioned / Leé la nota con cat para descubrir el usuario mencionado
+**Hint 2 (command):** `cat nota.txt` (Spanish) or `cat note.txt` (English) / `cat nota.txt` (español) o `cat note.txt` (inglés)
+**Validation:** fileRead (fileType: note)
+**Note:** Reveals username 'john' for SSH brute force
+
+### 05 — SSH Brute Force
 **Text:** Use the information from the note to brute force SSH and get credentials
 **Text ES:** Usá la información de la nota para hacer fuerza bruta por SSH y obtener credenciales
 **Discovery Level:** 3
@@ -44,7 +53,7 @@
 **Validation:** foundCredentials (service: ssh, user: john)
 **Credentials:** john / ilovelinux
 
-### 05 — SSH Access
+### 06 — SSH Access
 **Text:** Connect via SSH using the found credentials
 **Text ES:** Conectate por SSH usando las credenciales encontradas
 **Discovery Level:** 3
@@ -52,16 +61,16 @@
 **Hint 2 (command):** `ssh john@<ip>`
 **Validation:** sshLogin (user: john)
 
-### 06 — Sudo Enumeration
+### 07 — Sudo Enumeration
 **Text:** Check your sudo permissions on the system
 **Text ES:** Verificá tus permisos de sudo en el sistema
 **Discovery Level:** 3
 **Hint 1 (tool):** Check sudo permissions / Verificá los permisos de sudo
 **Hint 2 (command):** `sudo -l`
-**Validation:** privesc
+**Validation:** sudoPrivileges
 **Expected:** john can run vim as root without password
 
-### 07 — Privilege Escalation
+### 08 — Privilege Escalation
 **Text:** Use vim to escalate and become root
 **Text ES:** Usá vim para escalar y ser root
 **Discovery Level:** 4
@@ -70,7 +79,7 @@
 **Validation:** privesc
 **Method:** sudo vim privilege escalation
 
-### 08 — Capture Root Flag
+### 09 — Capture Root Flag
 **Text:** Read the root flag to complete the lab
 **Text ES:** Leé la flag de root para completar el laboratorio
 **Discovery Level:** 4
