@@ -90,7 +90,7 @@ export function DesktopTopBar({
           const isActive = !tw.minimized && tw.id === topWindowId;
           return (
             <button key={tw.id}
-              onClick={() => { if (tw.minimized) { onRestoreWindow(tw.id); onBringToFront(tw.id); } else { onMinimizeWindow(tw.id); } }}
+              onClick={() => { if (tw.minimized) { onRestoreWindow(tw.id); onBringToFront(tw.id); } else if (tw.id !== topWindowId) { onBringToFront(tw.id); } else { onMinimizeWindow(tw.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-emerald-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-emerald-400'}`}>
               <span className="text-emerald-400 font-mono font-bold text-sm">&gt;_</span>
               <span>Terminal {termNum}</span>
@@ -102,7 +102,7 @@ export function DesktopTopBar({
           const isActive = !bw.minimized && bw.id === topWindowId;
           return (
             <button key={bw.id}
-              onClick={() => { if (bw.minimized) { onRestoreWindow(bw.id); onBringToFront(bw.id); } else { onMinimizeWindow(bw.id); } }}
+              onClick={() => { if (bw.minimized) { onRestoreWindow(bw.id); onBringToFront(bw.id); } else if (bw.id !== topWindowId) { onBringToFront(bw.id); } else { onMinimizeWindow(bw.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-orange-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-orange-400'}`}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
@@ -116,7 +116,7 @@ export function DesktopTopBar({
           const isActive = !ww.minimized && ww.id === topWindowId;
           return (
             <button key={ww.id}
-              onClick={() => { if (ww.minimized) { onRestoreWindow(ww.id); onBringToFront(ww.id); } else { onMinimizeWindow(ww.id); } }}
+              onClick={() => { if (ww.minimized) { onRestoreWindow(ww.id); onBringToFront(ww.id); } else if (ww.id !== topWindowId) { onBringToFront(ww.id); } else { onMinimizeWindow(ww.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-rose-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-rose-400'}`}>
               <span>🖼️</span>
               <span>{ww.title}</span>

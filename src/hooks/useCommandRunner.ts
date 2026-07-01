@@ -58,7 +58,7 @@ export function useCommandRunner({
 
   // ── Per-instance state (local, no compartido entre terminales) ──
   const [msfState, setMsfState] = useState<MsfState | null>(null);
-  const [currentDir, setCurrentDir] = useState('/');
+  const [currentDir, setCurrentDir] = useState('/root');
   const [blockingCommand, setBlockingCommand] = useState<any>(null);
   const [listeningPort, setListeningPort] = useState<number | null>(null);
   const [ftpSession, setFtpSession] = useState<any>(null);
@@ -72,6 +72,8 @@ export function useCommandRunner({
   const language = useScenarioStore(state => state.language);
   const attackerMachineId = useScenarioStore(state => state.currentScenario.initialMachineId);
   const goHome = useScenarioStore(state => state.goHome);
+  const storeBlockingCommand = useScenarioStore(state => state.blockingCommand);
+  const storeSetBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
 
   const { sshUser, isRoot } = useTerminalIdentity(machine);
   const displayPath = getShortPath(currentDir || '/', isRoot);
@@ -146,6 +148,7 @@ export function useCommandRunner({
     setCmdHistory([]); setHistIdx(-1); setInput(''); setBusy(false);
     setBlockingCommand(null);
     setListeningPort(null);
+    setCurrentDir('/root');
     setMsfState(null);
     executor.resetMsfState();
     setFtpSession(null);
@@ -170,7 +173,8 @@ export function useCommandRunner({
 
   // Blocking command connected (reverse shell)
   useEffect(() => {
-    if (blockingCommand?.connected && busy) {
+    const isConnected = blockingCommand?.connected || storeBlockingCommand?.connected;
+    if (isConnected && busy) {
       const victimMachine = allMachines.find(m => m.id !== attackerMachineId);
       setHistory(prev => [...prev, {
         command: null,
@@ -186,12 +190,16 @@ export function useCommandRunner({
       setBlockingCommand(null);
       setBusy(false);
       setListeningPort(null);
+      useScenarioStore.getState().setListeningPort(null);
+      storeSetBlockingCommand(null);
+      onMissionComplete(6);
+      onVerifyCredentials?.(victimMachine?.id || '', 'lfi-rce');
       if (victimMachine) {
         onChangeMachine(victimMachine.id);
         setCurrentDir('/var/www/html/');
       }
     }
-  }, [blockingCommand?.connected, busy, allMachines, listeningPort, prompt, setBlockingCommand, setListeningPort, onChangeMachine, setCurrentDir, attackerMachineId]);
+  }, [blockingCommand?.connected, storeBlockingCommand?.connected, busy, allMachines, listeningPort, prompt, setBlockingCommand, setListeningPort, onChangeMachine, setCurrentDir, attackerMachineId, storeSetBlockingCommand, onMissionComplete, onVerifyCredentials]);
 
   // Auto-refresh for top/htop
   useEffect(() => {
@@ -239,6 +247,7 @@ export function useCommandRunner({
       setBlockingCommand(result.blockingCommand);
       if (result.blockingCommand.listeningPort) {
         setListeningPort(result.blockingCommand.listeningPort);
+        useScenarioStore.getState().setListeningPort(result.blockingCommand.listeningPort);
       }
       if (result.blockingCommand.clearScreen) {
         setHistory([]);
@@ -509,11 +518,17 @@ export function useCommandRunner({
     }, totalDelay);
   };
 
+  // When cancelling nc (Ctrl+C), also clear the store so FakeBrowser knows listener is gone
+  const cancelListening = (port: number | null) => {
+    setListeningPort(port);
+    useScenarioStore.getState().setListeningPort(port);
+  };
+
   const { showSuggestions, suggestions, suggestionIdx, handleKeyDown, setShowSuggestions, setSuggestions, setSuggestionIdx } = useKeyboardShortcuts({
     input, setInput, machine, currentDir, msfState,
     cmdHistory, setCmdHistory, histIdx, setHistIdx,
     busy, setBusy, blockingCommand, setBlockingCommand,
-    setListeningPort, setHistory, prompt, runCommand,
+    setListeningPort: cancelListening, setHistory, prompt, runCommand,
     makeWelcome, allMachines, goHome, setMsfState,
   });
 

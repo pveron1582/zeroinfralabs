@@ -406,9 +406,6 @@ export const useScenarioStore = create<ScenarioState>()(
           showCompletionOverlay: false,
           _prevMachinesSnapshot: [],
         });
-        if (window.history.state?.view === 'workspace') {
-          window.history.back();
-        }
       },
 
       // ── Browser ───────────────────────────────────────────────────────

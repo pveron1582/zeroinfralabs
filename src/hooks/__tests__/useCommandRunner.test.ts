@@ -110,7 +110,7 @@ describe('useCommandRunner', () => {
       expect(result.current.input).toBe('');
       expect(result.current.busy).toBe(false);
       expect(result.current.blockingCommand).toBeNull();
-      expect(result.current.currentDir).toBe('/');
+      expect(result.current.currentDir).toBe('/root');
     });
 
     it('debe tener prompt de root en máquina atacante', () => {

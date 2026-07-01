@@ -7,7 +7,6 @@ interface Props {
   onNavigate: (url: string) => void;
   onFileUpload: (fileName: string) => void; 
   attackerFiles?: Array<{ path: string; name: string }>;
-  listeningPort?: number;
   victimFiles?: Array<{ path: string; content: string; type: string }>;
 }
 
@@ -25,7 +24,7 @@ const SERVER_FILES: Record<string, { content: string; contentType: string }> = {
   'var/log/apache2/error.log': { content: '[Wed Mar 20 10:15:23.456789 2026] [mpm_prefork:notice] [pid 1234] AH00163: Apache/2.4.52 (Debian) configured\n[Wed Mar 20 10:15:45.123456 2026] [php7:warn] [pid 1235] PHP Warning: include(): Filename cannot be empty\n[Wed Mar 20 10:16:01.234567 2026] [php7:warn] [pid 1236] PHP Warning: include(): Failed opening', contentType: 'text/plain' },
 };
 
-export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attackerFiles = [], listeningPort, victimFiles = [] }: Props) {
+export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attackerFiles = [], victimFiles = [] }: Props) {
   const [selectedFile, setSelectedFile] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState('');
@@ -135,17 +134,6 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
   // Enrutamiento
   const isUploadPath = currentUrl && (currentUrl.includes('/upload.php') || currentUrl.endsWith('/upload'));
   const isFilesPath = currentUrl && (currentUrl.includes('/files.php') || (currentUrl.includes('/files') && !currentUrl.includes('?page=')));
-
-  // RCE Detection
-  useEffect(() => {
-    // Only trigger RCE if the user explicitly navigates to the payload
-    // and the listening port is already established. 
-    // We intentionally omit listeningPort from deps to avoid triggering retroactively.
-    if (page && page.includes('payload.php') && listeningPort === 4444) {
-      onFileUpload('CHECKPOINT_RCE');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, onFileUpload]);
 
   const Nav = ({ active }: { active?: string }) => (
     <nav className="bg-slate-800 text-white px-6 py-3 flex items-center gap-6">
@@ -267,6 +255,10 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
           <pre className="text-sm leading-relaxed whitespace-pre-wrap">{serverFile.content}</pre>
         </div>
       );
+    }
+    // Reverse shell execution — blank page (no output, connects back)
+    if (normalized.includes('payload.php')) {
+      return <div className="min-h-full bg-white" />;
     }
     // Fallback if page is not found but was requested via ?page=
     return (

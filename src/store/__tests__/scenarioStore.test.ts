@@ -456,14 +456,7 @@ it('revealNextHint debe retornar si no hay hints', () => {
   expect(useScenarioStore.getState().missions.find(m => m.id === 999)?.hintLevel).toBe(0);
 });
 
-it('goHome con history.state.view workspace debe llamar history.back', () => {
-  const originalBack = window.history.back;
-  const backMock = vi.fn();
-  window.history.back = backMock;
-  Object.defineProperty(window.history, 'state', { value: { view: 'workspace' }, writable: true });
-
+it('goHome debe cambiar vista a landing', () => {
   useScenarioStore.getState().goHome();
-  expect(backMock).toHaveBeenCalled();
-
-  window.history.back = originalBack;
+  expect(useScenarioStore.getState().view).toBe('landing');
 });

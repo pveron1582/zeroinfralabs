@@ -284,18 +284,19 @@ export function FakeBrowser({
     if (rceCompletedRef.current) return;
     if (!currentUrl.includes(lfiMachine.machine_info.ip)) return;
     const fullPath = currentUrl.replace(`http://${lfiMachine.machine_info.ip}`, '');
-    if ((fullPath.includes('?page=uploads/') || fullPath.includes('?page=files/')) && fullPath.endsWith('.php')) {
-      if (!listeningPort) return;
-      rceCompletedRef.current = true;
-      setBlockingCommand({
-        message: '[*] Connection received from ' + lfiMachine.machine_info.ip + ' : shell opened!',
-        listeningPort: 4444,
-        connected: true
-      });
-      onMissionComplete(6);
-      onVerifyCredentials(lfiMachine.id, 'lfi-rce');
-    }
-  }, [currentUrl, lfiMachine, onMissionComplete, onVerifyCredentials, setBlockingCommand, listeningPort]);
+    // Only payload.php triggers RCE; any other file won't consume the listener
+    const isPayloadPage = fullPath.includes('payload.php') && (fullPath.includes('?page=uploads/') || fullPath.includes('?page=files/'));
+    if (!isPayloadPage) return;
+    if (!listeningPort) return;
+    rceCompletedRef.current = true;
+    setBlockingCommand({
+      message: '[*] Connection received from ' + lfiMachine.machine_info.ip + ' : shell opened!',
+      listeningPort: 4444,
+      connected: true
+    });
+    confirmRCE(lfiMachine.id, 'www-data', '/var/www/html/uploads/payload.php');
+    onReportVulnerability?.(lfiMachine.id, 'LFI', 'confirmed');
+  }, [currentUrl, lfiMachine, setBlockingCommand, listeningPort, confirmRCE, onReportVulnerability]);
 
   useEffect(() => {
     rceCompletedRef.current = false;
@@ -379,7 +380,6 @@ export function FakeBrowser({
           onNavigate={navigate}
           onFileUpload={handleLFIUploadSuccess}
           attackerFiles={attackerFiles}
-          listeningPort={listeningPort ?? undefined}
           victimFiles={lfiMachine.files || []}
         />
       );

@@ -215,13 +215,9 @@ describe('DesktopTopBar', () => {
     expect(browserBtn).toBeInTheDocument();
     expect(wallBtn).toBeInTheDocument();
 
-    // Al hacer clic en una ventana activa (Terminal 1 es activa pero no top, espera, topWindowId es wall-1)
-    // Terminal 1 no está minimizada. Al hacer clic, como no es la top (topWindowId="wall-1"), ¿qué hace?
-    // En el código:
-    // onClick={() => { if (tw.minimized) { onRestoreWindow(tw.id); onBringToFront(tw.id); } else { onMinimizeWindow(tw.id); } }}
-    // Si no está minimizada, llama a onMinimizeWindow.
+    // Terminal 1 no está minimizada pero no es la top (topWindowId="wall-1") → traer al frente
     fireEvent.click(termBtn);
-    expect(onMinimizeWindow).toHaveBeenCalledWith('term-1');
+    expect(onBringToFront).toHaveBeenCalledWith('term-1');
 
     // Browser está minimizado, al hacer clic llama a onRestoreWindow y onBringToFront
     fireEvent.click(browserBtn);
