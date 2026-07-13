@@ -1,5 +1,112 @@
 # Changelog
 
+## [Unreleased] - 2026-07-12
+
+### Bug fix — Links del ConsultancySite sacaban del laboratorio
+
+- Los `<a href="#">` y `<a href="#servicios">` en `ConsultancySite.tsx` ahora tienen `onClick` con `e.preventDefault()` para evitar que la navegación real del browser saque al usuario del lab. Los enlaces a `#servicios` y `#equipo` además hacen scroll suave a la sección correspondiente.
+- Se agregó `onNavigate` a las props de `ConsultancySite` y se pasa desde `FakeBrowser.tsx`.
+- *Archivos: `src/components/fakesites/ConsultancySite.tsx`, `src/components/FakeBrowser.tsx`*
+
+### Fake site — zeroinfralabs.vercel.app
+
+- Nueva landing page `ZeroInfraLabs.tsx` con diseño futurista/joke (Cloud Null, Seguridad Imaginaria, Deploy a /dev/null). Accesible desde la URL `https://zeroinfralabs.vercel.app` en el FakeBrowser.
+- Agregado botón `⚡ zeroinfralabs.vercel.app` en Google Home (debajo de las sugerencias de búsqueda).
+- *Archivos: `src/components/fakesites/ZeroInfraLabs.tsx`, `src/components/FakeBrowser.tsx`*
+
+### Chrome button habilitado en labs 3 y 5
+
+- Cambiada categoría de lab 3 (EternalBlue) y lab 5 (FTP + PrivEsc) de `'Network'` a `'Web'` para que muestren el botón de Chrome. Los usuarios pueden abrir el navegador e intentar acceder a los servidores (verán 404).
+- *Archivos: `src/laboratorios/laboratorio03.ts`, `src/laboratorios/laboratorio05.ts`, `src/laboratorios/__tests__/laboratorio05.test.ts`*
+
+## [Unreleased] - 2026-07-10
+
+### Theme toggle (dark/light) — Marketing pages
+
+- **Nuevo estado `theme` en store**: Agregado `theme: 'light' | 'dark'` + `setTheme` a `scenarioStore.ts`. Persistido en localStorage.
+- **`ThemeSync` en `App.tsx`**: Sincroniza `data-theme` en `<html>` al cambiar el tema.
+- **`useColors()` hook**: Creado en `src/components/landing/constants.ts` con 12 tokens por tema (`colorsLight`/`colorsDark`). Todos los componentes marketing lo usan en vez de valores hardcodeados.
+- **SiteHeader**: Adaptado completamente al tema — fondo (`rgba(10,14,20,0.92)` dark / `rgba(255,255,255,0.92)` light), navegación, menú mobile, badges activos. Nuevo `ThemeToggle` (sol/luna) al lado del selector de idioma.
+- **LandingPage**: Features cards (4 cuadros "hecho para principiantes") y step badges (01-04) ahora usan colores del tema. Hover shadows ajustados para modo oscuro (`hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)]`).
+- **LandingLabPreview**: Cards, hover shadows, links de "empezar" y "ver todos" adaptados al tema.
+- **LabGrid**: Cards (`#11161f` dark / `#ffffff` light), modal, close button, badges, tags — todos theme-aware. Imagen placeholder: `#0a0e14` dark / `#f1f5f9` light.
+- **BlogListPage**: ArticleCard, tags, metadata — theme-aware.
+- **BlogArticlePage**: `renderMarkdown()` acepta `isDark`/`colors` y genera HTML con colores del tema. Tags y back link adaptados.
+- *Archivos: `src/store/types.ts`, `src/store/scenarioStore.ts`, `src/App.tsx`, `src/components/landing/constants.ts`, `src/components/landing/SiteHeader.tsx`, `src/components/LandingPage.tsx`, `src/components/landing/LandingLabPreview.tsx`, `src/components/LabGrid.tsx`, `src/components/BlogListPage.tsx`, `src/components/BlogArticlePage.tsx`*
+
+### CTA siempre visible en LandingPage
+
+- Eliminado `showFloatCta` state y scroll listener. CTA en SiteHeader ahora siempre visible (`showCta={true}`). Eliminado el botón CTA flotante fixed-bottom en mobile.
+- *Archivo: `src/components/LandingPage.tsx`*
+
+### Botón "Regresar" en LabGrid
+
+- El botón verde del header en la página de labs ahora dice "Regresar" (ES) / "Back" (EN) y navega al landing (`/${language}`) en vez de "Iniciar" → `/labs`.
+- Nueva clave i18n `backToLanding`.
+- *Archivos: `src/components/LabGrid.tsx`, `src/i18n/translations.ts`*
+
+### Bug fix — Scroll bloqueado al salir del modal de labs
+
+- Agregado `useEffect` cleanup que restaura `document.body.style.overflow` al desmontar `LabGrid`. Esto evita que el scroll quede bloqueado al navegar ("Start Lab" o botón atrás del browser) mientras el modal está abierto.
+- *Archivo: `src/components/LabGrid.tsx`*
+
+## [Unreleased] - 2026-07-09
+
+### 🎨 Rediseño visual completo — Landing, Labs, Blog + tipografía Inter
+
+- **LandingPage**: rediseño completo. Pasó de fondo oscuro `#0b1015` 100% monospace a hero oscuro (`#0f172a` → `#1e293b`) + secciones de contenido con fondo claro (`#ffffff`, `#f8fafc`). Tipografía cambia de monospace a **Inter (sans-serif)**. Se eliminaron 10 cards de features/audience → 4 cards compactas. Nueva sección "How it works" con animaciones alternadas. Nuevos componentes compartidos: `SiteHeader`, `MarketingFooter`, `PageHero`, `LandingLabPreview`. Se eliminaron gradientes verdes en títulos. Nuevo CTA flotante en mobile.
+- **LabGrid**: mismo cambio de fondo oscuro → `#f8fafc` con tipografía Inter. Cards de laboratorios pasaron de fondo `#0d1117` con bordes verdes oscuros a fondo **blanco** con bordes `#e2e8f0` y sombras sutiles. Título con gradiente eliminado, reemplazado por `PageHero`.
+- **BlogListPage**: fondo oscuro → secciones claras. ArticleCard: fondo `#0d1117` borde `#243030` → fondo blanco con borde `#e2e8f0`. Tags pasaron de estilo verde-oscuro a `rounded-full` verde claro. Monospace → Inter.
+- **BlogArticlePage**: mismo cambio de fondo. Markdown renderizado pasó de colores `#10b981`/`#22d3ee`/`text-gray-300` a `text-emerald-800`/`text-slate-600`.
+- **Tipografía**: se agregó Google Fonts **Inter** en `index.html`. Definida en `src/components/landing/constants.ts` como `FONT_SANS`. Monospace queda solo para badges, tags y metadata técnica.
+- **Paleta centralizada**: nuevo archivo `src/components/landing/constants.ts` con objeto `C` conteniendo todos los colores del nuevo diseño, `FONT_SANS`, `FONT_MONO` y demo de nmap.
+- **App.tsx**: nueva ruta `/:lang/admin` con componente `AdminPanel`.
+- *Archivos: `src/components/LandingPage.tsx`, `src/components/LabGrid.tsx`, `src/components/BlogListPage.tsx`, `src/components/BlogArticlePage.tsx`, `src/components/landing/*`, `index.html`, `src/App.tsx`*
+
+## [Unreleased] - 2026-07-08
+
+### Bug fixes — Path relativo sin separador en `mkdir`, `rmdir`, `cd`
+
+- **`mkdir` / `rmdir` / `cd`**: al construir paths relativos, concatenaban `currentDir + dir` sin asegurar que `currentDir` terminara con `/`. Si `currentDir` era `'/root'` (sin trailing slash), `mkdir hola` creaba `/roothola/` en vez de `/root/hola/`. Lo mismo ocurría con `cd hola` y `rmdir hola`.
+- *Archivos: `src/commands/builtin/mkdir.ts`, `src/commands/builtin/rmdir.ts`, `src/commands/builtin/cd.ts`*
+
+## [Unreleased] - 2026-07-05
+
+### Admin Panel (debug)
+- **Nuevo `/:lang/admin` route** con panel debug completo (login `admin/admin`, selector de escenario, debug overlay flotante con pestañas Store/Machines/Missions)
+- **Workspace con DesktopTerminal real** — muestra el escritorio Linux completo (ventanas, wallpaper, taskbar) como en los labs, no solo Terminal aislada
+- *Archivos: `src/components/AdminPanel.tsx`, `src/App.tsx`, `src/components/LandingPage.tsx`*
+
+### Bug fixes — Case sensitivity en comandos
+- **`executeCommand`** ya no baja a mayúsculas el nombre del comando (`parts[0].toLowerCase()` → `parts[0]`). Ahora `NMAP`, `LS`, `CAT`, `CD`, etc. dan `Command not found`
+- **`help` lookup** ya no usa `toLowerCase()` — `help NMAP` ya no muestra la ayuda de `nmap`
+- **Autocomplete de comandos** ya no filtra con `toLowerCase()` — `NM` + Tab ya no sugiere `nmap`
+- *Archivos: `src/commands/index.ts`, `src/commands/builtin/help.ts`, `src/utils/autocomplete.ts`*
+- *Tests: `src/commands/builtin/__tests__/help.test.ts`, `src/utils/__tests__/autocomplete.test.ts`*
+
+### Bug fixes — `ls` sin trailing slash en directorios
+- **Formato simple** (`ls`): directorios ya no muestran `/` al final (`bin/` → `bin`)
+- **Formato largo** (`ls -l`): directorios ya no muestran `/` al final del nombre
+- Comportamiento como Linux real (`ls` sin `-F` no agrega `/`)
+- *Archivo: `src/commands/builtin/ls.ts`*
+- *Tests: `src/commands/builtin/__tests__/ls.test.ts`*
+
+### Bug fixes — `admin` hardcodeado en template de filesystem
+- **`createLinuxFileSystem`** (`fs-linux.ts`): eliminado `/home/admin/.dir`, `.bashrc`, `.profile`, `.bash_history` del template estándar. Cada lab define sus propios usuarios.
+- **`/etc/passwd` y `/etc/shadow`**: eliminada la entrada hardcodeada de `admin`. Solo existe el usuario dinámico `${u}` del config.
+- **`createLinuxFileSystemLegacy`** (`templates.ts`): mismo cambio.
+- **`laboratorio01.ts`**: agregados `.bashrc`, `.profile`, `.bash_history` de admin (es el único lab que lo necesita).
+- *Archivos: `src/fs-models/fs-linux.ts`, `src/laboratorios/templates.ts`, `src/laboratorios/laboratorio01.ts`*
+
+### Bug fixes — `nmap.ts` (sesión anterior)
+- ✅ `-sV` ya no se trata como scan type (era un flag de versión)
+- ✅ Default scan type cambiado a `-sS` (SYN stealth)
+- ✅ `-Pn` solo muestra mensaje en modo verbose (`-v`)
+- ✅ "Not shown" movido antes de la tabla de puertos
+- ✅ `-oG` formato corregido (protocol/state, doble `//` entre service/version)
+- ✅ `getKnownService()` eliminada (código muerto)
+- *Archivo: `src/commands/tools/nmap.ts`*
+
 ## [Unreleased] - 2026-06-21
 
 ### Fixes `laboratorio05.ts` — Code Review

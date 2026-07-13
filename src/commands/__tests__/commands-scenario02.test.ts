@@ -74,8 +74,8 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
     const target = withLevel(sshTarget, 3);
     const result = exec('ssh gonzalo@10.10.10.10', attacker, [attacker, target], 5);
     expectSuccess(result);
-    expect(result.output).toContain('password');
     expect(result.sshSession?.active).toBe(true);
+    expect(result.sshSession?.step).toBe('password');
   });
 
   it('Paso 5b: ssh autentica con contraseña de gonzalo', () => {

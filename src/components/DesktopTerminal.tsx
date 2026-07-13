@@ -126,7 +126,8 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                 }}
               >
                 {w.type === 'terminal' ? (
-                  <Terminal {...props} opacity={w.opacity} fontSize={w.fontSize} isWindowed={true} />
+                  <Terminal {...props} opacity={w.opacity} fontSize={w.fontSize} isWindowed={true}
+                    onExitTerminal={() => closeWindow(w.id)} />
                 ) : w.type === 'browser' ? (
                   <FakeBrowser key={w.id} allMachines={props.allMachines}
                     onClose={() => closeWindow(w.id)}

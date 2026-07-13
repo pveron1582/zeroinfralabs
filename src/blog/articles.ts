@@ -62,7 +62,7 @@ This completely eliminates the initial friction:
 
 And that completely changes the experience.
 
-![Hacking simulator with Linux terminal in the browser](/cap1.png)
+![Hacking simulator with Linux terminal in the browser](/newdesktop.png)
 
 ## What you should practice as a beginner
 
@@ -146,7 +146,7 @@ Esto elimina completamente la fricción inicial:
 
 Y eso cambia completamente la experiencia.
 
-![Simulador de hacking con terminal Linux en el navegador](/cap1.png)
+![Simulador de hacking con terminal Linux en el navegador](/newdesktop.png)
 
 ## Qué deberías practicar como principiante
 

@@ -17,6 +17,7 @@ const DEFAULT_TERM_COLOR = '#10b981';
 // ── Initial state ────────────────────────────────────────────────────
 const initialState = {
   language: 'en' as const,
+  theme: 'light' as const,
   showSurvey: false,
   pendingSurveyScenario: null as ScenarioState['pendingSurveyScenario'],
   view: 'landing' as AppView,
@@ -67,8 +68,9 @@ export const useScenarioStore = create<ScenarioState>()(
     (set, get) => ({
       ...initialState,
 
-      // ── View & Language ───────────────────────────────────────────────
+      // ── View & Language & Theme ───────────────────────────────────────────────
       setLanguage: (lang) => set({ language: lang }),
+      setTheme: (theme) => set({ theme }),
       setView: (view) => set({ view }),
       toggleUiMode: () => set(state => ({ uiMode: state.uiMode === 'classic' ? 'desktop' : 'classic' })),
       setUiMode: (mode) => set({ uiMode: mode }),
@@ -436,6 +438,7 @@ export const useScenarioStore = create<ScenarioState>()(
       partialize: (state) => ({
         view: state.view,
         language: state.language,
+        theme: state.theme,
         currentScenario: state.currentScenario,
         machines: state.machines,
         missions: state.missions,

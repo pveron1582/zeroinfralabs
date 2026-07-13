@@ -6,6 +6,7 @@ import { WordPressSite } from './fakesites/WordPressSite';
 import { InclusionSite } from './fakesites/lfi_lab/InclusionSIte';
 import { ConsultancySite } from './fakesites/ConsultancySite';
 import { SqlInjectionSite } from './fakesites/SqlInjectionSite';
+import { ZeroInfraLabs } from './fakesites/ZeroInfraLabs';
 
 function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
   const [query, setQuery] = useState('');
@@ -56,6 +57,12 @@ function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }) {
             <button key={s} onClick={() => setQuery(s)}
               className="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors">{s}</button>
           ))}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 justify-center border-t border-gray-100 pt-4">
+          <button onClick={() => onNavigate('https://zeroinfralabs.vercel.app')}
+            className="text-xs text-purple-600 bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-full transition-colors font-medium">
+            ⚡ zeroinfralabs.vercel.app
+          </button>
         </div>
       </div>
       <div className="absolute bottom-0 left-0 right-0 bg-gray-100 border-t border-gray-200 px-6 py-3 flex justify-between text-xs text-gray-500">
@@ -342,6 +349,7 @@ export function FakeBrowser({
     if (currentUrl.startsWith('https://www.google.com/search') || currentUrl.startsWith('https://google.com/search')) {
       return <GoogleSearch url={currentUrl} onNavigate={navigate} />;
     }
+    if (currentUrl.includes('zeroinfralabs.vercel.app')) return <ZeroInfraLabs />;
     if (currentUrl === 'chrome://dino') return <DinoGame />;
 
     if (wpMachine && currentUrl.includes(wpMachine.machine_info.ip)) {
@@ -408,7 +416,7 @@ export function FakeBrowser({
     }
 
     if (sshMachine && currentUrl.includes(sshMachine.machine_info.ip)) {
-      return <ConsultancySite onViewTeam={handleViewTeam} />;
+      return <ConsultancySite onNavigate={navigate} onViewTeam={handleViewTeam} />;
     }
 
     return <PageNotFound url={currentUrl} />;

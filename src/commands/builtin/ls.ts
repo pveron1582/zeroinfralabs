@@ -147,10 +147,8 @@ export const cmd_ls = {
         .sort(([a], [b]) => a.localeCompare(b))
         .forEach(([name, info]) => {
           if (info.isDir) {
-            // Es directorio
-            out += `drwxr-xr-x  2 root   root   ${info.size} Jan 01 00:00 ${name}/\n`;
+            out += `drwxr-xr-x  2 root   root   ${info.size} Jan 01 00:00 ${name}\n`;
           } else {
-            // Es archivo
             out += `-rw-r--r--  1 admin  admin  ${info.size} Jan 01 00:00 ${name}\n`;
           }
         });
@@ -159,7 +157,7 @@ export const cmd_ls = {
       // Formato simple: solo nombres
       const names = Array.from(items.entries())
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([name, info]) => info.isDir ? `${name}/` : name);
+        .map(([name, info]) => name);
       return { output: names.join('  ') };
     }
   }

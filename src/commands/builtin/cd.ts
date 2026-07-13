@@ -70,7 +70,8 @@ export const cmd_cd = {
       }
     } else {
       // Path relativo al directorio actual
-      resolvedPath = normalizeDir(currentDir + target);
+      const baseDir = currentDir.endsWith('/') ? currentDir : currentDir + '/';
+      resolvedPath = normalizeDir(baseDir + target);
     }
 
     // Normalizar el path (remover ./ y ../)

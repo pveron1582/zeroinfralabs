@@ -33,7 +33,7 @@ describe('cmd_exit', () => {
     const result = cmd_exit.execute([], createMockContext(machine));
 
     expect(result.output).toContain('logout');
-    expect(result.output).toContain("Usa 'end' para salir del laboratorio");
+    expect(result.output).toContain('Cerrando terminal...');
   });
 
   it('debe retornar un objeto CommandResponse válido', () => {
@@ -56,7 +56,7 @@ describe('cmd_exit', () => {
     const result = cmd_exit.execute(['--force', '-y'], createMockContext(machine));
 
     expect(result.output).toContain('logout');
-    expect(result.output).toContain("Usa 'end' para salir del laboratorio");
+    expect(result.output).toContain('Cerrando terminal...');
   });
 
   it('debe retornar logout y newMachineId cuando no es máquina atacante', () => {

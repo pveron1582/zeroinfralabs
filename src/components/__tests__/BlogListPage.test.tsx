@@ -29,11 +29,12 @@ beforeEach(() => {
 });
 
 describe('BlogListPage en inglés', () => {
-  it('debe renderizar el header con el logo y título del blog', () => {
+  it('debe renderizar el header con el logo y navegación', () => {
     renderWithRoute('/en/blog');
 
-    expect(screen.getByText('ZI Labs')).toBeInTheDocument();
-    expect(screen.getByText('Blog')).toBeInTheDocument();
+    expect(screen.getByAltText('VEGA')).toBeInTheDocument();
+    expect(screen.getAllByText('Blog').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Labs').length).toBeGreaterThanOrEqual(1);
   });
 
   it('debe mostrar el título de la página de blog en inglés', () => {
@@ -77,7 +78,7 @@ describe('BlogListPage en inglés', () => {
   it('debe mostrar el autor y fecha del artículo', () => {
     renderWithRoute('/en/blog');
 
-    expect(screen.getByText(BLOG_ARTICLES[0].author)).toBeInTheDocument();
+    expect(screen.getAllByText(BLOG_ARTICLES[0].author).length).toBeGreaterThanOrEqual(1);
   });
 
   it('debe mostrar el link "Read article →" en cada tarjeta', () => {
@@ -90,19 +91,19 @@ describe('BlogListPage en inglés', () => {
   it('debe mostrar el footer', () => {
     renderWithRoute('/en/blog');
 
-    expect(screen.getByText(/ZI Labs · Cybersecurity Blog/)).toBeInTheDocument();
+    expect(screen.getByText(/ZI Labs · Controlled practice environment/)).toBeInTheDocument();
   });
 
-  it('debe mostrar el link "Back to Labs" en el header', () => {
+  it('debe mostrar el link Labs en el header', () => {
     renderWithRoute('/en/blog');
 
-    expect(screen.getByText('Back to Labs')).toBeInTheDocument();
+    expect(screen.getAllByText('Labs').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('debe mostrar el link de cambio de idioma a ES', () => {
+  it('debe mostrar el selector de idioma', () => {
     renderWithRoute('/en/blog');
 
-    expect(screen.getByText(/🇪🇸 ES/)).toBeInTheDocument();
+    expect(screen.getByText('ES')).toBeInTheDocument();
   });
 });
 
@@ -125,20 +126,20 @@ describe('BlogListPage en español', () => {
     expect(screen.getByText(/Leer artículo →/)).toBeInTheDocument();
   });
 
-  it('debe mostrar "Volver a Labs" en el botón de regreso', () => {
+  it('debe mostrar "Volver a Labs" en la navegación', () => {
     useScenarioStore.setState((state) => ({
       ...state,
       language: 'es',
     }), true);
     renderWithRoute('/es/blog');
 
-    expect(screen.getByText('Volver a Labs')).toBeInTheDocument();
+    expect(screen.getAllByText('Labs').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('debe mostrar el link de cambio de idioma a EN', () => {
+  it('debe mostrar el selector de idioma EN', () => {
     renderWithRoute('/es/blog');
 
-    expect(screen.getByText(/🇺🇸 EN/)).toBeInTheDocument();
+    expect(screen.getByText('EN')).toBeInTheDocument();
   });
 
   it('debe mostrar el título del artículo en español', () => {

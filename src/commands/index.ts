@@ -147,11 +147,13 @@ export const startShellSession = (shellName: string, args: string[], ctx: Comman
   }
 
   // Para SSH, devolver el estado compatible con el store
+  // La línea de password se muestra solo vía el prompt en el Terminal,
+  // no como output, para evitar que aparezca duplicada.
   if (shellName === 'ssh' && current) {
     const state = current.state;
 
     return {
-      output: `${state.username}@${state.targetIp}'s password: `,
+      output: '',
       sshSession: {
         active: true,
         connected: state.connected,
@@ -371,7 +373,7 @@ export function createIsolatedExecutor(): IsolatedExecutor {
     ftpSession, language
   ) => {
     const parts = line.trim().split(/\s+/);
-    const cmdName = parts[0].toLowerCase();
+  const cmdName = parts[0];
     const args = parts.slice(1);
     const ctx: CommandContext = { machine, allMachines, currentMissionId, currentDir, setCurrentDir, ftpSession, language };
 

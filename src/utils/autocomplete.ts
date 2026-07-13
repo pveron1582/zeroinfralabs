@@ -107,8 +107,7 @@ function getItemsInDirectory(machine: Machine, targetDir: string): string[] {
 export function autocompleteCommand(partial: string): string[] {
   if (!partial) return AVAILABLE_COMMANDS;
   
-  const lowerPartial = partial.toLowerCase();
-  return AVAILABLE_COMMANDS.filter(cmd => cmd.startsWith(lowerPartial));
+  return AVAILABLE_COMMANDS.filter(cmd => cmd.startsWith(partial));
 }
 
 /**

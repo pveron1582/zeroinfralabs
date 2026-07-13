@@ -98,13 +98,29 @@ interface Translations {
   ctaTitle: string;
   ctaSubtitle: string;
   ctaButton: string;
+  labsPreviewTitle: string;
+  labsPreviewSubtitle: string;
+  labsPreviewAll: string;
+  labsPreviewScroll: string;
+  featuresMergedTitle: string;
+  introDesktopCaption: string;
   backToHome: string;
   labsPageTitle: string;
   labsPageSubtitle: string;
   backToLabs: string;
+  backToLanding: string;
   // Legal disclaimer
   legalDisclaimerTitle: string;
   legalDisclaimerText: string;
+  // Lab grid modal
+  tools: string;
+  ipRange: string;
+  startLab: string;
+  previous: string;
+  next: string;
+  close: string;
+  category: string;
+  labName: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -156,9 +172,11 @@ const translations: Record<Language, Translations> = {
     badgeSafeEnv: '100% safe & legal',
     badgeNoTimeLimit: '⏱️ No time limits',
     backToLabs: 'Back to Labs',
+    backToLanding: 'Back',
     // Landing sections
     introTitle: 'Never hacked anything? Perfect.',
     introSubtitle: 'Hack your first website in minutes. No setup, no VMs, no prior knowledge. Just open and start.',
+    introDesktopCaption: 'Full Kali desktop in your browser — transparent terminals, Chrome, and guided missions',
     whyTitle: 'Why ZI Labs is different',
     whyInstallTitle: 'No installs · No VMs · No setup',
     whyInstallDesc: 'No VirtualBox, no Kali ISO, no configuration. Just open the page and start.',
@@ -193,11 +211,24 @@ const translations: Record<Language, Translations> = {
     ctaTitle: 'Ready for your first machine?',
     ctaSubtitle: 'Choose a lab and start practicing in less than 5 seconds.',
     ctaButton: 'Start for free now',
+    labsPreviewTitle: 'Pick your first lab',
+    labsPreviewSubtitle: 'Five guided scenarios — from web hacking to Metasploit. Start with Lab 01 if you\'re new.',
+    labsPreviewAll: 'View all labs',
+    labsPreviewScroll: 'Browse labs below',
+    featuresMergedTitle: 'Built for beginners, powered like a real lab',
     backToHome: 'Home',
     labsPageTitle: 'Choose a Lab',
     labsPageSubtitle: 'Each scenario is a complete pentesting simulation. Pick one to get started.',
     legalDisclaimerTitle: 'Ethical hacking, always.',
     legalDisclaimerText: 'ZI Labs is an educational platform. All environments are simulated and controlled. We do not promote or support any illegal activity. Our goal is to help build cybersecurity professionals with ethical judgment and responsibility.',
+    tools: 'Tools',
+    ipRange: 'IP Range',
+    startLab: 'Start Lab',
+    previous: 'Previous',
+    next: 'Next',
+    close: 'Close',
+    category: 'Category',
+    labName: 'Lab',
   },
   es: {
     title: 'ZeroInfra Labs',
@@ -247,9 +278,11 @@ const translations: Record<Language, Translations> = {
     badgeSafeEnv: '100% seguro y legal',
     badgeNoTimeLimit: '⏱️ Sin límite de tiempo',
     backToLabs: 'Volver a Labs',
+    backToLanding: 'Regresar',
     // Landing sections
     introTitle: '¿Nunca hackeaste nada? Perfecto.',
     introSubtitle: 'Hackeá tu primer sitio web en minutos. Sin configuraciones, sin máquinas virtuales, sin conocimientos previos. Solo abrís y empezás.',
+    introDesktopCaption: 'Escritorio Kali completo en el navegador — terminales transparentes, Chrome y misiones guiadas',
     whyTitle: '¿Por qué ZI Labs es diferente?',
     whyInstallTitle: 'Sin instalaciones · Sin VMs · Sin configuración',
     whyInstallDesc: 'Ni VirtualBox, ni ISO de Kali, ni configuración. Solo abrís la página y empezás.',
@@ -284,11 +317,24 @@ const translations: Record<Language, Translations> = {
     ctaTitle: '¿Listo para tu primera máquina?',
     ctaSubtitle: 'Elegí un lab y empezá a practicar en menos de 5 segundos.',
     ctaButton: 'Empezar gratis ahora',
+    labsPreviewTitle: 'Elegí tu primer lab',
+    labsPreviewSubtitle: 'Cinco escenarios guiados — de hacking web a Metasploit. Si sos nuevo, empezá por el Lab 01.',
+    labsPreviewAll: 'Ver todos los labs',
+    labsPreviewScroll: 'Ver labs abajo',
+    featuresMergedTitle: 'Hecho para principiantes, con la potencia de un lab real',
     backToHome: 'Inicio',
     labsPageTitle: 'Elegí un Lab',
     labsPageSubtitle: 'Cada escenario es una simulación completa de pentesting. Elegí uno para empezar.',
     legalDisclaimerTitle: 'Hacking ético, siempre.',
     legalDisclaimerText: 'ZI Labs es una plataforma educativa. Todos los entornos son simulados y controlados. No promovemos ni apoyamos ninguna actividad ilícita. El objetivo es formar profesionales de ciberseguridad con criterio ético y responsabilidad.',
+    tools: 'Herramientas',
+    ipRange: 'Rango IP',
+    startLab: 'Iniciar lab',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    close: 'Cerrar',
+    category: 'Categoría',
+    labName: 'Lab',
   }
 };
 

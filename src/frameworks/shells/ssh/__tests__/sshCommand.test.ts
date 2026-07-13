@@ -66,8 +66,6 @@ describe('cmd_ssh (wrapper)', () => {
     } as any);
 
     expect(result.isError).toBeUndefined();
-    expect(result.output).toContain('root@10.10.10.10');
-    expect(result.output).toContain('password');
     expect(result.sshSession?.active).toBe(true);
     expect(result.sshSession?.step).toBe('password');
   });

@@ -58,9 +58,9 @@ describe('autocompleteCommand', () => {
     expect(result).toEqual([]);
   });
 
-  it('debe ser case-insensitive', () => {
+  it('debe ser case-sensitive (mayúsculas no matchean comandos en minúscula)', () => {
     const result = autocompleteCommand('N');
-    expect(result).toContain('nmap');
+    expect(result).not.toContain('nmap');
   });
 
   it('debe encontrar comandos que empiezan con "s"', () => {

@@ -32,7 +32,7 @@ export function AnimatedCompletion({
         boxShadow: '0 0 40px #10b98120, 0 20px 60px rgba(0,0,0,0.5)',
       }}>
         {/* Confetti overlay */}
-        <div className="relative min-h-[220px] max-h-[220px] overflow-hidden" style={{ background: '#0a0e14' }}>
+        <div className="relative min-h-[300px] max-h-[300px] overflow-hidden" style={{ background: '#0a0e14' }}>
           {/* Confetti dots */}
           {confetti.map((c, i) => (
             <div
@@ -94,6 +94,22 @@ export function AnimatedCompletion({
           </div>
         </div>
       </div>
+      <style>{`
+        @keyframes confettiFall {
+          0% { transform: translateY(-20px) rotate(0deg); opacity: 0.9; }
+          50% { opacity: 0.7; }
+          100% { transform: translateY(320px) rotate(720deg); opacity: 0; }
+        }
+        @keyframes trophyPop {
+          0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+          60% { transform: scale(1.15) rotate(3deg); }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

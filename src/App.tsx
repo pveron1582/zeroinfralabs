@@ -18,6 +18,7 @@ import { SurveyModal }  from './components/SurveyModal';
 import { LabCompletionOverlay } from './components/LabCompletionOverlay';
 import { BlogListPage } from './components/BlogListPage';
 import { BlogArticlePage } from './components/BlogArticlePage';
+import { AdminPanel } from './components/AdminPanel';
 import { trackEvent, recordLabStart }   from './utils/analytics';
 
 // ── Test Lab Component ───────────────────────────────────────────
@@ -141,6 +142,7 @@ const TERM_COLORS = [
 export default function App() {
   return (
     <BrowserRouter>
+      <ThemeSync />
       <Routes>
         <Route path="/" element={<RootRedirect />} />
         <Route path="/:lang" element={<LandingPage />} />
@@ -148,11 +150,21 @@ export default function App() {
         <Route path="/:lang/scenario/:id" element={<ScenarioLauncherWrapper />} />
         <Route path="/:lang/blog" element={<BlogListPage />} />
         <Route path="/:lang/blog/:slug" element={<BlogArticlePage />} />
+        <Route path="/:lang/zildeb" element={<AdminPanel />} />
         <Route path="/test" element={<TestLab />} />
         <Route path="*" element={<AppContent />} />
       </Routes>
     </BrowserRouter>
   );
+}
+
+// ── Sync theme to <html> element ────────────────────────────────
+function ThemeSync() {
+  const theme = useScenarioStore((s) => s.theme);
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+  return null;
 }
 
 // ── Root Redirect — detects browser language or uses stored preference ──

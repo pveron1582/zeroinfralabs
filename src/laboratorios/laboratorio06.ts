@@ -76,7 +76,7 @@ const scenario06Data = {
       discoveryLevel: 2, 
       hints: { 
         hint1: { en: 'Use nmap to scan', es: 'Usá nmap para escanear' }, 
-        hint2: { en: 'nmap -sV -p- 192.168.40.x', es: 'nmap -sV -p- 192.168.40.x' } 
+        hint2: { en: 'nmap -sS -p- --min-rate 5000 192.168.40.x', es: 'nmap -sS -p- --min-rate 5000 192.168.40.x' } 
       } 
     },
     { 

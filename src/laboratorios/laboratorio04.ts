@@ -16,10 +16,10 @@ export const SCENARIO_TEMPLATES_LFI = {
     // Metadata for LandingPage cards
     tagline: 'Exploit LFI to read system files, upload a shell and get RCE.',
     taglineEs: 'Explota LFI para leer archivos del sistema, sube una shell y obtén RCE.',
-    tools: ['arp-scan', 'nmap', 'curl', 'msfconsole'],
+    tools: ['burpsuite', 'curl', 'php-filters'],
     accentColor: '#a78bfa',
-    description: 'Exploit LFI to execute a reverse shell (RCE).',
-    descriptionEs: 'Explota LFI para ejecutar una shell remota (RCE).',
+    description: 'Web application vulnerable to Local File Inclusion. Escalate from LFI to Remote Code Execution through log poisoning and PHP filter chains.',
+    descriptionEs: 'Aplicación web vulnerable a Local File Inclusion. Escalá de LFI a Remote Code Execution mediante log poisoning y PHP filter chains.',
     difficulty: 'Medium' as const,
     category: 'Web' as const,
     networkRange: '192.168.20.0/24',
@@ -56,7 +56,7 @@ export const SCENARIO_TEMPLATES_LFI = {
     },
     learningSteps: [
       { task: 'Reconnaissance', taskEs: 'Reconocimiento', text: 'Discover the host on the network', textEs: 'Descubrí el host en la red', discoveryLevel: 1, hints: { hint1: { en: 'Use arp-scan', es: 'Usá arp-scan' }, hint2: { en: 'arp-scan 192.168.20.0/24', es: 'arp-scan 192.168.20.0/24' } }, validationCriteria: { type: 'discoveredHosts' as const, minHosts: 1 } },
-      { task: 'Scanning', taskEs: 'Escaneo', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, hints: { hint1: { en: 'Use nmap', es: 'Usá nmap' }, hint2: { en: 'nmap -sV 192.168.20.11', es: 'nmap -sV 192.168.20.11' } }, validationCriteria: { type: 'scanResults' as const, port: 80 } },
+      { task: 'Scanning', taskEs: 'Escaneo', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, hints: { hint1: { en: 'Use nmap', es: 'Usá nmap' }, hint2: { en: 'nmap -sS -p- --min-rate 5000 192.168.20.11', es: 'nmap -sS -p- --min-rate 5000 192.168.20.11' } }, validationCriteria: { type: 'scanResults' as const, port: 80 } },
       { task: 'LFI Discovery', taskEs: 'Descubrimiento LFI', text: 'Test for Local File Inclusion vulnerability', textEs: 'Probá la vulnerabilidad de Inclusión Local de Archivos', discoveryLevel: 3, hints: { hint1: { en: 'Use the browser to test LFI', es: 'Usá el navegador para probar LFI' }, hint2: { en: 'Navigate to the About page and test ../../../../etc/passwd', es: 'Navegá a la página About y probá ../../../../etc/passwd' } }, validationCriteria: { type: 'custom' as const } },
       { task: 'Prepare Payload', taskEs: 'Preparar Payload', text: 'Inspect the reverse shell payload file', textEs: 'Inspeccioná el archivo de la reverse shell', discoveryLevel: 3, hints: { hint1: { en: 'View the payload.php file', es: 'Visualizá el archivo payload.php' }, hint2: { en: 'cat /root/payload.php', es: 'cat /root/payload.php' } }, validationCriteria: { type: 'fileRead' as const, fileType: 'payload' as const } },
       { task: 'Setup Listener', taskEs: 'Configurar Listener', text: 'Prepare a listener to receive the reverse shell', textEs: 'Prepará un listener para recibir la reverse shell', discoveryLevel: 3, hints: { hint1: { en: 'Use netcat', es: 'Usá netcat' }, hint2: { en: 'nc -nlvp 4444', es: 'nc -nlvp 4444' } }, validationCriteria: { type: 'ncListener' as const } },

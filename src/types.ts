@@ -244,6 +244,8 @@ export interface CommandResponse {
     directories: Array<{path: string; status: number; size?: number}>;
   };
   possibleUsers?: { machineId: string; users: string[] }; // users discovered from notes/files
+  // Signal to close the terminal window (exit command on attacker machine)
+  exitTerminal?: boolean;
   // SSH session state (returned by ssh command)
   sshSession?: {
     active: boolean;

@@ -85,7 +85,7 @@ describe('Laboratorio 05 - FTP Enumeration & Privilege Escalation', () => {
     
     expect(template.id).toBe('scenario-05');
     expect(template.difficulty).toBe('Medium');
-    expect(template.category).toBe('Network');
+    expect(template.category).toBe('Web');
     expect(template.networkRange).toBe('10.10.20.0/24');
   });
 

@@ -116,13 +116,13 @@ describe('cmd_nmap', () => {
 
   it('-Pn debe saltar el check de discovery', () => {
     const machines = [createMockMachine('target-01', '192.168.1.10', 0)];
-    const result = cmd_nmap.execute(['-Pn', '-sV', '192.168.1.10'], {
+    const result = cmd_nmap.execute(['-Pn', '-sV', '-v', '192.168.1.10'], {
       allMachines: machines,
       currentMissionId: 1
     } as any);
 
     expect(result.isError).toBeUndefined();
-    expect(result.output).toContain('skipping host discovery');
+    expect(result.output).toContain('Skipping host discovery');
     expect(result.output).toContain('22/tcp');
   });
 

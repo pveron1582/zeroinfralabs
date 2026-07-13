@@ -1,8 +1,8 @@
 // ── components/__tests__/LandingPage.test.tsx ──────────────────────
-// Tests for the new marketing LandingPage
+// Tests for the marketing LandingPage
 
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { LandingPage } from '../LandingPage';
@@ -19,12 +19,11 @@ describe('LandingPage (marketing)', () => {
   it('debe renderizar el header con el logo', async () => {
     renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText('ZI Labs')).toBeInTheDocument();
-      expect(screen.getByText('v4.5')).toBeInTheDocument();
+      expect(screen.getAllByAltText('VEGA').length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  it('debe mostrar el subtítulo "Simulador de Laboratorios"', async () => {
+  it('debe mostrar el subtítulo del hero', async () => {
     renderWithRouter(<LandingPage />);
     await waitFor(() => {
       expect(screen.getByText(/LEARN ETHICAL HACKING/i)).toBeInTheDocument();
@@ -38,7 +37,7 @@ describe('LandingPage (marketing)', () => {
     });
   });
 
-  it('debe mostrar los 3 badges de valor', async () => {
+  it('debe mostrar los badges de valor', async () => {
     renderWithRouter(<LandingPage />);
     await waitFor(() => {
       expect(screen.getAllByText('No prior knowledge').length).toBeGreaterThanOrEqual(1);
@@ -55,35 +54,30 @@ describe('LandingPage (marketing)', () => {
     });
   });
 
-  it('debe mostrar la sección "Te presentamos ZI Labs"', async () => {
+  it('debe mostrar la sección intro con terminal', async () => {
     renderWithRouter(<LandingPage />);
     await waitFor(() => {
       expect(screen.getByText(/Never hacked anything\? Perfect/i)).toBeInTheDocument();
+      expect(screen.getByText(/Full Kali desktop in your browser/i)).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar la sección "Por qué ZI Labs es diferente"', async () => {
+  it('debe mostrar preview de labs', async () => {
     renderWithRouter(<LandingPage />);
     await waitFor(() => {
-      expect(screen.getByText('Why ZI Labs is different')).toBeInTheDocument();
+      expect(screen.getByText('Pick your first lab')).toBeInTheDocument();
+      expect(screen.getAllByText('WordPress Vulnerable Lab').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/View all labs \(5\)/)).toBeInTheDocument();
     });
   });
 
-  it('debe mostrar las 6 tarjetas de características', async () => {
+  it('debe mostrar las 4 tarjetas de características unificadas', async () => {
     renderWithRouter(<LandingPage />);
     await waitFor(() => {
+      expect(screen.getByText(/Built for beginners/i)).toBeInTheDocument();
       expect(screen.getAllByText('Realistic terminal').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('100% safe').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('Guided learning').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('No registration').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('No time limits').length).toBeGreaterThanOrEqual(1);
-    });
-  });
-
-  it('debe mostrar la sección "¿Para quién es?"', async () => {
-    renderWithRouter(<LandingPage />);
-    await waitFor(() => {
-      expect(screen.getByText('Who is this for?')).toBeInTheDocument();
+      expect(screen.getAllByText('Cybersecurity students').length).toBeGreaterThanOrEqual(1);
     });
   });
 

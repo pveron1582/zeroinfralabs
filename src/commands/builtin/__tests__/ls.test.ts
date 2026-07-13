@@ -69,14 +69,13 @@ describe('cmd_ls', () => {
     expect(result.output).toContain('config.php');
   });
 
-  // Verifica que ls muestre subdirectorios con / al final
-  it('debe mostrar subdirectorios con /', () => {
+  it('debe mostrar subdirectorios sin /', () => {
     const machine = createMachine([
       { path: '/var/www/html/uploads/file.txt', content: 'test', type: 'text' },
       { path: '/var/www/html/index.php', content: 'test', type: 'text' },
     ]);
     const result = cmd_ls.execute(['/var/www/html'], { machine, currentDir: '/' } as any);
-    expect(result.output).toContain('uploads/');
+    expect(result.output).toContain('uploads');
     expect(result.output).toContain('index.php');
   });
 
@@ -142,9 +141,9 @@ describe('cmd_ls', () => {
         { path: '/home/.dir', content: '', type: 'text' },
       ]);
       const result = cmd_ls.execute([], { machine, currentDir: '/' } as any);
-      expect(result.output).toContain('etc/');
-      expect(result.output).toContain('var/');
-      expect(result.output).toContain('home/');
+      expect(result.output).toContain('etc');
+      expect(result.output).toContain('var');
+      expect(result.output).toContain('home');
     });
 
     // Verifica que ls -l muestre permisos de directorios marcados con .dir
@@ -173,16 +172,16 @@ describe('cmd_ls', () => {
         { path: '/var/.dir', content: '', type: 'text' },
       ]);
       const result = cmd_ls.execute([], { machine, currentDir: '/' } as any);
-      expect(result.output).toContain('bin/');
-      expect(result.output).toContain('boot/');
-      expect(result.output).toContain('dev/');
-      expect(result.output).toContain('etc/');
-      expect(result.output).toContain('home/');
-      expect(result.output).toContain('lib/');
-      expect(result.output).toContain('root/');
-      expect(result.output).toContain('tmp/');
-      expect(result.output).toContain('usr/');
-      expect(result.output).toContain('var/');
+      expect(result.output).toContain('bin');
+      expect(result.output).toContain('boot');
+      expect(result.output).toContain('dev');
+      expect(result.output).toContain('etc');
+      expect(result.output).toContain('home');
+      expect(result.output).toContain('lib');
+      expect(result.output).toContain('root');
+      expect(result.output).toContain('tmp');
+      expect(result.output).toContain('usr');
+      expect(result.output).toContain('var');
     });
 
     // Verifica que ls liste archivos dentro de /etc/
@@ -208,8 +207,8 @@ describe('cmd_ls', () => {
         { path: '/etc/passwd', content: 'test', type: 'text' },
       ]);
       const result = cmd_ls.execute(['/etc'], { machine, currentDir: '/' } as any);
-      expect(result.output).toContain('apache2/');
-      expect(result.output).toContain('ssh/');
+      expect(result.output).toContain('apache2');
+      expect(result.output).toContain('ssh');
       expect(result.output).toContain('passwd');
     });
 
@@ -235,7 +234,7 @@ describe('cmd_ls', () => {
         { path: '/home/admin/user.txt', content: 'FLAG{...}', type: 'text' },
       ]);
       const result = cmd_ls.execute(['/home'], { machine, currentDir: '/' } as any);
-      expect(result.output).toContain('admin/');
+      expect(result.output).toContain('admin');
     });
 
     // Verifica que ls liste archivos ocultos con ls -a

@@ -233,6 +233,18 @@ Meterpreter Commands (when session open)
     return withState(`[*] Valid show options: exploits, auxiliary, payloads, options\n`, state);
   }
 
+  if (cmd === 'options') {
+    if (!state.module) return withState(`[-] No module selected.\n`, state);
+    const opts = { ...MODULE_DEFAULTS[state.module] || {}, ...state.options };
+    let out = `\nModule options (${state.module}):\n\n   Name            Current Setting              Required  Description\n   ----            ---------------              --------  -----------\n`;
+    Object.entries(opts).forEach(([k, v]) => {
+      const req = ['RHOSTS', 'LHOST'].includes(k) ? 'yes' : 'no';
+      const cur = String(v || '').padEnd(29);
+      out += `   ${k.padEnd(15)} ${cur}  ${req.padEnd(10)} ...\n`;
+    });
+    return withState(out, state);
+  }
+
   if (cmd === 'set') {
     if (args.length < 2) return withState(`Usage: set <option> <value>\n`, state);
     const [key, ...rest] = args;

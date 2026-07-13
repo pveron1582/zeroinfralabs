@@ -18,7 +18,7 @@ describe('AnimatedLabSelect', () => {
 
   it('debe mostrar las tarjetas de labs', () => {
     render(<AnimatedLabSelect />);
-    expect(screen.getByText('WordPress')).toBeInTheDocument();
+    expect(screen.getByText('WordPress Vulnerable Lab')).toBeInTheDocument();
   });
 
   it('debe mostrar el botón START', () => {
@@ -41,6 +41,6 @@ describe('AnimatedLabSelect', () => {
 
   it('debe mostrar el conteo de misiones', () => {
     render(<AnimatedLabSelect />);
-    expect(screen.getByText('3 missions')).toBeInTheDocument();
+    expect(screen.getByText('8 missions')).toBeInTheDocument();
   });
 });

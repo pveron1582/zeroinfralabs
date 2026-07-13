@@ -63,7 +63,7 @@ export const cmd_mkdir = {
           fullPath = fullPath.endsWith('/') ? fullPath : fullPath + '/';
         } else {
           // Path relativo al directorio actual
-          const baseDir = currentDir || '/';
+          const baseDir = currentDir ? (currentDir.endsWith('/') ? currentDir : currentDir + '/') : '/';
           fullPath = baseDir + dir;
           fullPath = fullPath.endsWith('/') ? fullPath : fullPath + '/';
         }

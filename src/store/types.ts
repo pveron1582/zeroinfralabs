@@ -71,6 +71,9 @@ export interface ScenarioState {
   language: 'en' | 'es';
   setLanguage: (lang: 'en' | 'es') => void;
 
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+
   uiMode: 'classic' | 'desktop';
   toggleUiMode: () => void;
   setUiMode: (mode: 'classic' | 'desktop') => void;

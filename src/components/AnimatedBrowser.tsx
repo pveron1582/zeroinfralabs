@@ -148,7 +148,7 @@ export function AnimatedBrowser({ url, className = '' }: AnimatedBrowserProps) {
         </div>
 
         {/* Browser content */}
-        <div className="relative min-h-[220px] max-h-[220px] overflow-hidden" style={{ background: '#f0f0f1' }}>
+        <div className="relative min-h-[300px] max-h-[300px] overflow-hidden" style={{ background: '#f0f0f1' }}>
           {/* LOGIN PAGE */}
           {(phase === 'login' || phase === 'typing-user' || phase === 'typing-pass') && (
             <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#f0f0f1' }}>

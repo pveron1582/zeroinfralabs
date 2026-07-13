@@ -16,10 +16,11 @@ const renderWithRouter = (ui: React.ReactElement, initialEntries = ['/en/labs'])
 };
 
 describe('LabGrid', () => {
-  it('debe renderizar el header con botón "Home"', async () => {
+  it('debe renderizar el header con logo y navegación', async () => {
     renderWithRouter(<LabGrid />);
     await waitFor(() => {
-      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.getByAltText('VEGA')).toBeInTheDocument();
+      expect(screen.getAllByText('Labs').length).toBeGreaterThanOrEqual(1);
     });
   });
 

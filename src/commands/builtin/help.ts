@@ -225,7 +225,7 @@ Usage: help <command> for more information about a specific command.`,
       };
     }
 
-    const command = args[0].toLowerCase();
+    const command = args[0];
     const helpText = COMMAND_HELP[command];
 
     if (helpText) {

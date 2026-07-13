@@ -56,10 +56,10 @@ export const cmd_nmap = {
     if (!args.length) return { output: 'Usage: nmap [Scan Type] [Options] <target>\nExample: nmap -sV -p 22,80 192.168.1.10\nFor full help, run: nmap -h or nmap --help', isError: true };
 
     // ── Parse flags ──
-    const scanTypes = ['-sS', '-sT', '-sV', '-sn', '-sP'];
-    const scanType = args.find(a => scanTypes.includes(a)) || '-sT';
+    const scanTypes = ['-sS', '-sT', '-sn', '-sP'];
+    const scanType = args.find(a => scanTypes.includes(a)) || '-sS';
     const isPingScan = scanType === '-sn' || scanType === '-sP';
-    const isVersionScan = scanType === '-sV';
+    const isVersionScan = args.includes('-sV');
     const isSYNScan = scanType === '-sS';
 
     const vLevel = args.includes('-vvv') ? 3 : args.includes('-vv') ? 2 : args.includes('-v') ? 1 : 0;
@@ -118,7 +118,7 @@ export const cmd_nmap = {
     }
 
     // ── Full port scan ──
-    const scanLabel = isSYNScan ? 'SYN Stealth Scan' : isVersionScan ? 'Service scan' : 'Connect Scan';
+    const scanLabel = isSYNScan ? 'SYN Stealth Scan' : 'Connect Scan';
     const scanTime = (ports.length * 0.02 + 0.5).toFixed(2);
     const attackerIp = ctx.machine?.machine_info?.ip || '192.168.1.5';
 
@@ -132,8 +132,8 @@ export const cmd_nmap = {
       output += `Scanning ${target.machine_info.hostname} (${ip}) [1 host] - SYN Stealth Scan\n`;
     }
 
-    if (noPing) {
-      output += `Warning: ${ip} is using a static IP, skipping host discovery (-Pn)\n`;
+    if (noPing && vLevel >= 1) {
+      output += `Skipping host discovery (-Pn)\n`;
     }
 
     output += `Nmap scan report for ${target.machine_info.hostname} (${ip})\n`;
@@ -148,6 +148,13 @@ export const cmd_nmap = {
 
     // Determine if ports were explicitly specified with -p
     const portsExplicit = args.some(a => a === '-p' || a.startsWith('-p'));
+
+    const showFiltered = vLevel >= 1 || args.includes('-p-');
+    const showClosed = portsExplicit && closedPorts.length > 0 && closedPorts.length <= 20;
+    const notShown = ports.length - openPorts.length - (showFiltered ? filteredPorts.length : 0) - (showClosed ? closedPorts.length : 0);
+    if (notShown > 0) {
+      output += `Not shown: ${notShown} closed port${notShown > 1 ? 's' : ''}\n`;
+    }
 
     if (isVersionScan) {
       output += 'PORT      STATE    SERVICE     VERSION\n';
@@ -166,7 +173,7 @@ export const cmd_nmap = {
     });
 
     // Filtered ports: shown with -v OR when -p- is used
-    if ((vLevel >= 1 || args.includes('-p-')) && filteredPorts.length > 0) {
+    if (showFiltered && filteredPorts.length > 0) {
       filteredPorts.forEach(p => {
         const portStr = `${p.port}/${p.protocol}`.padEnd(10);
         const stateStr = p.state.padEnd(9);
@@ -175,21 +182,12 @@ export const cmd_nmap = {
     }
 
     // Closed ports: shown individually when explicitly requested with -p
-    if (portsExplicit && closedPorts.length > 0 && closedPorts.length <= 20) {
+    if (showClosed) {
       closedPorts.forEach(p => {
         const portStr = `${p.port}/${p.protocol}`.padEnd(10);
         const stateStr = p.state.padEnd(9);
         output += `${portStr}${stateStr}${p.service}\n`;
       });
-    }
-
-    // Not shown line
-    const shownCount = openPorts.length +
-      ((vLevel >= 1 || args.includes('-p-')) ? filteredPorts.length : 0) +
-      (portsExplicit && closedPorts.length > 0 && closedPorts.length <= 20 ? closedPorts.length : 0);
-    const notShown = ports.length - shownCount;
-    if (notShown > 0) {
-      output += `\nNot shown: ${notShown} closed port${notShown > 1 ? 's' : ''}\n`;
     }
 
     // ── OS Detection (-O) ──
@@ -247,7 +245,7 @@ export const cmd_nmap = {
     if (outputFileGrep) {
       let grepOutput = `# Nmap ${new Date().toLocaleString()} scan initiated with ${args.join(' ')}\n`;
       openPorts.forEach(p => {
-        grepOutput += `Host: ${ip} (${target.machine_info.hostname})\tPorts: ${p.port}/${p.protocol}/${p.state}//${p.service}/${isVersionScan ? p.version : ''}\n`;
+        grepOutput += `Host: ${ip} (${target.machine_info.hostname})\tPorts: ${p.port}/${p.state}/${p.protocol}//${p.service}//${isVersionScan ? p.version : ''}\n`;
       });
       // Ensure filename has proper path (relative to current directory)
       const filePath = outputFileGrep.startsWith('/') ? outputFileGrep : `${currentDir}/${outputFileGrep}`;
@@ -339,18 +337,6 @@ function parsePorts(args: string[], target: any): any[] {
   }
 
   return matched.sort((a: any, b: any) => a.port - b.port);
-}
-
-function getKnownService(port: number): string {
-  const wellKnown: Record<number, string> = {
-    21: 'ftp', 22: 'ssh', 23: 'telnet', 25: 'smtp', 53: 'domain',
-    80: 'http', 110: 'pop3', 111: 'rpcbind', 135: 'msrpc', 139: 'netbios-ssn',
-    143: 'imap', 443: 'https', 445: 'microsoft-ds', 993: 'imaps', 995: 'pop3s',
-    1433: 'ms-sql-s', 1521: 'oracle', 2049: 'nfs', 3306: 'mysql', 3389: 'ms-wbt-server',
-    5432: 'postgresql', 5900: 'vnc', 6379: 'redis', 8080: 'http-proxy', 8443: 'https-alt',
-    27017: 'mongod',
-  };
-  return wellKnown[port] || 'unknown';
 }
 
 function getVendor(mac: string): string {

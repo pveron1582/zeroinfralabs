@@ -25,6 +25,7 @@ export interface CommandRunnerProps {
   onVerifyCredentials?: (machineId: string, service?: string) => void;
   onFailedUser?: (machineId: string, user: string) => void;
   onSudoPrivileges?: (machineId: string, user: string, commands: string[], canSudo: boolean) => void;
+  onExitTerminal?: () => void;
   termColor?: string;
 }
 
@@ -52,7 +53,7 @@ export function useCommandRunner({
   scenarioId, machine, allMachines, currentMissionId,
   onMissionComplete, onChangeMachine, onCredentialsFound,
   onVerifyCredentials, onFailedUser, onSudoPrivileges,
-  termColor = '#10b981'
+  onExitTerminal, termColor = '#10b981'
 }: CommandRunnerProps) {
   const color = termColor;
 
@@ -489,6 +490,11 @@ export function useCommandRunner({
       return;
     }
 
+    if (result.exitTerminal) {
+      onExitTerminal?.();
+      return;
+    }
+
     const cmdName = trimmed.split(/\s+/)[0].toLowerCase();
     const cfg = CMD_DELAYS[cmdName] || CMD_DELAYS['default'];
     const customDelays = result.streamingLineDelays;
@@ -524,12 +530,20 @@ export function useCommandRunner({
     useScenarioStore.getState().setListeningPort(port);
   };
 
+  // ── Wrapper: when Ctrl+C clears MSF, also reset executor's internal state ──
+  const handleSetMsfState = (state: MsfState | null) => {
+    setMsfState(state);
+    if (state === null) {
+      executor.resetMsfState();
+    }
+  };
+
   const { showSuggestions, suggestions, suggestionIdx, handleKeyDown, setShowSuggestions, setSuggestions, setSuggestionIdx } = useKeyboardShortcuts({
     input, setInput, machine, currentDir, msfState,
     cmdHistory, setCmdHistory, histIdx, setHistIdx,
     busy, setBusy, blockingCommand, setBlockingCommand,
     setListeningPort: cancelListening, setHistory, prompt, runCommand,
-    makeWelcome, allMachines, goHome, setMsfState,
+    makeWelcome, allMachines, goHome, setMsfState: handleSetMsfState,
   });
 
   return {

@@ -12,7 +12,7 @@ interface ConsultancySiteProps {
   onViewTeam?: (users: string[]) => void;
 }
 
-export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) => {
+export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onNavigate, onViewTeam }) => {
   const team: TeamMember[] = [
     { name: 'Pedro Sánchez', role: 'Senior Web Developer', email: 'psanchez@devconsultancy.com', avatar: 'P' },
     { name: 'Gonzalo Ruiz', role: 'Systems Administrator', email: 'gruiz@devconsultancy.com', avatar: 'G' },
@@ -41,10 +41,10 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
           <span className="text-xl font-bold tracking-tight text-slate-800">DevConsultancy</span>
         </div>
         <div className="hidden md:flex gap-8 text-sm font-medium text-slate-600 uppercase tracking-wider">
-          <a href="#" className="hover:text-indigo-600 transition-colors">Home</a>
-          <a href="#servicios" className="hover:text-indigo-600 transition-colors">Services</a>
-          <a href="#equipo" className="hover:text-indigo-600 transition-colors">Team</a>
-          <a href="#" className="hover:text-indigo-600 transition-colors">Contact</a>
+          <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-indigo-600 transition-colors">Home</a>
+          <a href="#servicios" onClick={(e) => { e.preventDefault(); document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-indigo-600 transition-colors">Services</a>
+          <a href="#equipo" onClick={(e) => { e.preventDefault(); document.getElementById('equipo')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-indigo-600 transition-colors">Team</a>
+          <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-indigo-600 transition-colors">Contact</a>
         </div>
         <button className="bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100">
           Hire Us
@@ -61,8 +61,8 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
           <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">Premium <span className="text-indigo-400">Web Solutions</span> for Your Business</h1>
           <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto leading-relaxed">We transform ideas into powerful, secure, and scalable digital experiences. Over 10 years empowering local businesses.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="#servicios" className="bg-indigo-500 hover:bg-indigo-400 px-8 py-4 rounded-xl font-bold transition-all transform hover:-translate-y-1">Our Services</a>
-            <a href="#equipo" className="bg-white/10 hover:bg-white/20 px-8 py-4 rounded-xl font-bold backdrop-blur-sm transition-all border border-white/20">Meet the Team</a>
+            <a href="#servicios" onClick={(e) => { e.preventDefault(); document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' }); }} className="bg-indigo-500 hover:bg-indigo-400 px-8 py-4 rounded-xl font-bold transition-all transform hover:-translate-y-1">Our Services</a>
+            <a href="#equipo" onClick={(e) => { e.preventDefault(); document.getElementById('equipo')?.scrollIntoView({ behavior: 'smooth' }); }} className="bg-white/10 hover:bg-white/20 px-8 py-4 rounded-xl font-bold backdrop-blur-sm transition-all border border-white/20">Meet the Team</a>
           </div>
         </div>
       </header>
@@ -141,9 +141,9 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onViewTeam }) 
             <span className="text-lg font-bold text-white">DevConsultancy</span>
           </div>
           <div className="text-sm flex gap-6">
-            <a href="#" className="hover:text-white transition-colors">Legal Notice</a>
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Legal Notice</a>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition-colors">Contact</a>
           </div>
           <p className="text-xs">© 2024 DevConsultancy. All rights reserved.</p>
         </div>

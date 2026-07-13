@@ -124,10 +124,10 @@ describe('cmd_help', () => {
     expect(result.isError).toBe(true);
   });
 
-  it('debe ser case insensitive', () => {
+  it('debe ser case sensitive (comandos en mayúsculas no existen)', () => {
     const result = cmd_help.execute(['MKDIR'], mockContext);
-    expect(result.output).toContain('mkdir - Create directories');
-    expect(result.isError).toBe(false);
+    expect(result.output).toContain('No help available for command: MKDIR');
+    expect(result.isError).toBe(true);
   });
 
   it('debe manejar comandos con espacios', () => {

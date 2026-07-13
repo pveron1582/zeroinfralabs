@@ -97,8 +97,8 @@ describe('Happy Path: Scenario 05 - FTP Enumeration & Privilege Escalation', () 
     const target = withLevel(ftpTarget, 3);
     const result = exec('ssh john@192.168.30.11', attacker, [attacker, target], 7);
     expectSuccess(result);
-    expect(result.output).toContain('password');
     expect(result.sshSession?.active).toBe(true);
+    expect(result.sshSession?.step).toBe('password');
   });
 
   it('Paso 5b: ssh — autentica con contraseña correcta', () => {

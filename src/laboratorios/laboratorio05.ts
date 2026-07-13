@@ -81,9 +81,9 @@ const scenario05Data = {
   // Metadata for LandingPage cards
   tagline: 'Enumerate via anonymous FTP, brute force SSH and escalate to root via sudo vim.',
   taglineEs: 'Enumerá vía FTP anónimo, fuerza bruta SSH y escalá a root con sudo vim.',
-  description: 'Enumeration via anonymous FTP, SSH brute force with Hydra and privilege escalation to root.',
-  descriptionEs: 'Enumeración mediante FTP anónimo, fuerza bruta SSH con Hydra y escalada de privilegios a root.',
-  tools: ['arp-scan', 'nmap', 'ftp', 'hydra', 'ssh', 'sudo'],
+  description: 'Misconfigured FTP service with anonymous access. Discover credentials and privilege escalation vectors to gain root access on the target Linux system.',
+  descriptionEs: 'Servicio FTP mal configurado con acceso anónimo. Descubrí credenciales y vectores de escalamiento de privilegios para acceder como root al sistema Linux.',
+  tools: ['hydra', 'ftp', 'sudo'],
   accentColor: '#34d399',
   networkRange: '10.10.20.0/24',
   credentials: {
@@ -97,7 +97,7 @@ const scenario05Data = {
   targetMachine,
   learningSteps: [
     { id: 1, task: 'Host Discovery', taskEs: 'Descubrimiento de host', text: 'Discover the active host on the network', textEs: 'Descubrí el host activo en la red', discoveryLevel: 1, targetMachineId: targetMachine.id, hints: { hint1: { en: 'Use arp-scan to discover hosts', es: 'Usá arp-scan para descubrir hosts' }, hint2: { en: 'arp-scan 10.10.20.0/24', es: 'arp-scan 10.10.20.0/24' } }, validationCriteria: { type: 'discoveredHosts' as const, minHosts: 1 } },
-    { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, targetMachineId: targetMachine.id, hints: { hint1: { en: 'Use nmap for port scanning', es: 'Usá nmap para escanear puertos' }, hint2: { en: 'nmap -sV <target-ip>', es: 'nmap -sV <ip-objetivo>' } }, validationCriteria: { type: 'scanResults' as const, port: 21 } },
+    { id: 2, task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, targetMachineId: targetMachine.id, hints: { hint1: { en: 'Use nmap for port scanning', es: 'Usá nmap para escanear puertos' }, hint2: { en: 'nmap -sS -p- --min-rate 5000 <target-ip>', es: 'nmap -sS -p- --min-rate 5000 <ip-objetivo>' } }, validationCriteria: { type: 'scanResults' as const, port: 21 } },
     { id: 3, task: 'FTP Enumeration', taskEs: 'Enumeración FTP', text: 'Connect to the FTP server anonymously and download the note', textEs: 'Conectate al servidor FTP anónimamente y descargá la nota', discoveryLevel: 2, targetMachineId: targetMachine.id, hints: { hint1: { en: 'Connect via FTP as anonymous and download the note', es: 'Conectate por FTP como anonymous y descargá la nota' }, hint2: { en: 'ftp <ip> → anonymous → ls → get nota.txt → exit → cat nota.txt', es: 'ftp <ip> → anonymous → ls → get nota.txt → exit → cat nota.txt' } }, validationCriteria: { type: 'ftpLogin' as const } },
     { id: 4, task: 'Read FTP Note', taskEs: 'Leer nota FTP', text: 'Read the downloaded note to discover the username', textEs: 'Leé la nota descargada para descubrir el nombre de usuario', discoveryLevel: 2, targetMachineId: targetMachine.id, hints: { hint1: { en: 'Read the note with cat to discover the username mentioned', es: 'Leé la nota con cat para descubrir el usuario mencionado' }, hint2: { en: 'cat nota.txt (Spanish) or cat note.txt (English)', es: 'cat nota.txt (español) o cat note.txt (inglés)' } }, validationCriteria: { type: 'fileRead' as const, fileType: 'note' as const } },
     { id: 5, task: 'SSH Brute Force', taskEs: 'Fuerza bruta SSH', text: 'Use the information from the note to brute force SSH and get credentials', textEs: 'Usá la información de la nota para hacer fuerza bruta por SSH y obtener credenciales', discoveryLevel: 3, targetMachineId: targetMachine.id, hints: { hint1: { en: 'Use hydra for brute force attack', es: 'Usá hydra para el ataque de fuerza bruta' }, hint2: { en: 'hydra -l john -P /usr/share/wordlists/rockyou.txt <ip> ssh', es: 'hydra -l john -P /usr/share/wordlists/rockyou.txt <ip> ssh' } }, validationCriteria: { type: 'foundCredentials' as const, service: 'ssh' as const, user: 'john' } },
@@ -115,7 +115,7 @@ export const SCENARIO_TEMPLATES = {
     name: scenario05Data.name,
     description: scenario05Data.descriptionEs,
     difficulty: 'Medium' as const,
-    category: 'Network' as const,
+    category: 'Web' as const,
     networkRange: scenario05Data.networkRange,
     targetMachine: {
       id: scenario05Data.targetMachine.id,

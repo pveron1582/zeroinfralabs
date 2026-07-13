@@ -12,9 +12,9 @@ const scenario01Data = {
   // Metadata for LandingPage cards
   tagline: 'Enumerate hidden paths, extract credentials and take control of a vulnerable WordPress.',
   taglineEs: 'Enumera rutas ocultas, extrae credenciales y toma control de un WordPress vulnerable.',
-  description: 'Web enumeration, directory discovery and WordPress compromise.',
-  descriptionEs: 'Enumeración web, descubrimiento de directorios y compromiso de WordPress.',
-  tools: ['arp-scan', 'nmap', 'gobuster', 'ssh'],
+  description: 'Realistic WordPress environment with vulnerable plugins and themes. Identify and exploit common CMS vulnerabilities to gain server access, escalate privileges, and extract sensitive database information.',
+  descriptionEs: 'Entorno WordPress realista con plugins y temas vulnerables. Identificá y explotá vulnerabilidades comunes en CMS para acceder al servidor, escalar privilegios y extraer información sensible de la base de datos.',
+  tools: ['gobuster', 'wpscan', 'hydra'],
   accentColor: '#22d3ee',
   networkRange: '192.168.1.0/24',
   wpVersion: '6.0',
@@ -54,7 +54,7 @@ const scenario01Data = {
   },
   learningSteps: [
     { task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover the active hosts on the network', textEs: 'Descubrí los hosts activos en la red', discoveryLevel: 1, hints: { hint1: { en: 'Use arp-scan', es: 'Usá arp-scan' }, hint2: { en: 'arp-scan <network_range>', es: 'arp-scan <rango-de-red>' } }, validationCriteria: { type: 'discoveredHosts' as const, minHosts: 1 } },
-    { task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, hints: { hint1: { en: 'Use nmap', es: 'Usá nmap' }, hint2: { en: 'nmap -sV <target-ip>', es: 'nmap -sV <ip-objetivo>' } }, validationCriteria: { type: 'scanResults' as const, port: 80 } },
+    { task: 'Port Scanning', taskEs: 'Escaneo de puertos', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, hints: { hint1: { en: 'Use nmap', es: 'Usá nmap' }, hint2: { en: 'nmap -sS -p- --min-rate 5000 <target-ip>', es: 'nmap -sS -p- --min-rate 5000 <ip-objetivo>' } }, validationCriteria: { type: 'scanResults' as const, port: 80 } },
     { task: 'Web Enumeration', taskEs: 'Enumeración Web', text: 'Access the website to enumerate its content', textEs: 'Accedé al sitio web para enumerar su contenido', discoveryLevel: 2, hints: { hint1: { en: 'Open the Chrome browser', es: 'Abrí el navegador Chrome' }, hint2: { en: 'Click the Chrome button in the taskbar and navigate to http://<ip>', es: 'Hacé clic en el botón Chrome en la barra de tareas y navega a http://<ip>' } }, validationCriteria: { type: 'custom' as const } },
     { task: 'Directory Discovery', taskEs: 'Descubrimiento de directorios', text: 'Enumerate hidden directories on the web server', textEs: 'Enumerá los directorios ocultos del servidor web', discoveryLevel: 3, hints: { hint1: { en: 'Use gobuster', es: 'Usá gobuster' }, hint2: { en: 'gobuster dir -u http://<ip> -w <common-wordlist>', es: 'gobuster dir -u http://<ip> -w <wordlist-común>' } }, validationCriteria: { type: 'foundDirectories' as const, directories: ['/uploads'] } },
     { task: 'Find Credentials', taskEs: 'Encontrar credenciales', text: 'Find credentials hidden in the web server', textEs: 'Encontrá credenciales ocultas en el servidor web', discoveryLevel: 3, hints: { hint1: { en: 'Check the /uploads directory in the browser', es: 'Revisá el directorio /uploads en el navegador' }, hint2: { en: 'Navigate to http://<ip>/uploads and look for backup or config files', es: 'Navegá a http://<ip>/uploads y buscá archivos de backup o configuración' } }, validationCriteria: { type: 'custom' as const } },
@@ -95,6 +95,9 @@ export const scenario_01: Scenario = buildScenario({
     },
     files: [
       ...createLinuxFileSystem({ username: 'admin' }),
+      createFile('/home/admin/.bashrc', '# ~/.bashrc: executed by bash(1) for non-login shells.\n\ncase $- in\n    *i*) ;;\n      *) return;;\nesac\nHISTCONTROL=ignoreboth\nshopt -s histappend\nHISTSIZE=1000\nHISTFILESIZE=2000\nshopt -s checkwinsize\nalias ll=\'ls -l\'\nalias la=\'ls -la\'\nexport PATH="$HOME/bin:$HOME/.local/bin:$PATH"\nexport EDITOR=nano', 'text'),
+      createFile('/home/admin/.profile', '# ~/.profile: executed by the command interpreter for login shells.\nif [ -n "$BASH_VERSION" ]; then\n    if [ -f "$HOME/.bashrc" ]; then\n\t. "$HOME/.bashrc"\n    fi\nfi', 'text'),
+      createFile('/home/admin/.bash_history', 'ls -la\npwd\ncat /etc/passwd\nsudo su\nwhoami\nifconfig\nnmap 192.168.1.0/24\ncd /var/www/html\nls -la\ncat config.php\nmysql -u root -p\nexit', 'text'),
       createFile('/home/admin/user.txt', scenario01Data.flags.user),
       createFile('/root/flag.txt', scenario01Data.flags.root),
       createFile('/uploads/config.bak', `

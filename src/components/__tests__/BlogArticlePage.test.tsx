@@ -38,7 +38,7 @@ describe('BlogArticlePage en inglés', () => {
   it('debe mostrar la fecha y el autor', () => {
     renderWithRoute('en', BLOG_ARTICLES[0].slug);
 
-    expect(screen.getByText(BLOG_ARTICLES[0].author)).toBeInTheDocument();
+    expect(screen.getAllByText(BLOG_ARTICLES[0].author).length).toBeGreaterThanOrEqual(1);
   });
 
   it('debe mostrar los tags del artículo', () => {
@@ -55,10 +55,10 @@ describe('BlogArticlePage en inglés', () => {
     expect(screen.getByText('Back to blog')).toBeInTheDocument();
   });
 
-  it('debe mostrar el CTA "Go to ZI Labs"', () => {
+  it('debe mostrar el CTA para empezar', () => {
     renderWithRoute('en', BLOG_ARTICLES[0].slug);
 
-    expect(screen.getByText('Go to ZI Labs')).toBeInTheDocument();
+    expect(screen.getByText('Start for free')).toBeInTheDocument();
   });
 
   it('debe mostrar el contenido del artículo con secciones', () => {
@@ -84,10 +84,10 @@ describe('BlogArticlePage en inglés', () => {
     expect(screen.getByText('Blog List')).toBeInTheDocument();
   });
 
-  it('debe mostrar el link de cambio de idioma a ES', () => {
+  it('debe mostrar el selector de idioma ES', () => {
     renderWithRoute('en', BLOG_ARTICLES[0].slug);
 
-    expect(screen.getByText(/🇪🇸 ES/)).toBeInTheDocument();
+    expect(screen.getByText('ES')).toBeInTheDocument();
   });
 });
 
@@ -104,16 +104,16 @@ describe('BlogArticlePage en español', () => {
     expect(screen.getByText('Volver al blog')).toBeInTheDocument();
   });
 
-  it('debe mostrar "Volver a Labs"', () => {
+  it('debe mostrar Labs en la navegación', () => {
     renderWithRoute('es', BLOG_ARTICLES[0].slugEs!);
 
-    expect(screen.getByText('Volver a Labs')).toBeInTheDocument();
+    expect(screen.getAllByText('Labs').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('debe mostrar el link de cambio de idioma a EN', () => {
+  it('debe mostrar el selector de idioma EN', () => {
     renderWithRoute('es', BLOG_ARTICLES[0].slugEs!);
 
-    expect(screen.getByText(/🇺🇸 EN/)).toBeInTheDocument();
+    expect(screen.getByText('EN')).toBeInTheDocument();
   });
 
   it('debe mostrar el contenido en español', () => {
