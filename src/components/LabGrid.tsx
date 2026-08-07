@@ -1,7 +1,7 @@
 // ── components/LabGrid.tsx ──────────────────────────────────────
 // Lab selection page with modal detail view
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Scenario } from '../types';
 import { SCENARIOS } from '../laboratorios/laboratorios';
@@ -28,6 +28,7 @@ const LAB_IMAGES: Record<string, string> = {
   'scenario-03': '/lab_images/lab03.png',
   'scenario-04': '/lab_images/Lab04.png',
   'scenario-05': '/lab_images/Lab05.png',
+  'scenario-06': '/lab_images/Lab06.png',
 };
 
 function ScenarioCard({
@@ -69,6 +70,11 @@ function ScenarioCard({
           alt={scenario.name}
           className="w-full h-full object-cover"
           loading="lazy"
+          style={{
+            transform: hovered ? 'scale(1.28)' : 'scale(1)',
+            transformOrigin: 'center center',
+            transition: 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          }}
         />
         <div className="absolute top-3 left-3 font-mono text-xs font-bold px-2 py-0.5 rounded"
           style={{ background: '#000000aa', color: accent, border: `1px solid ${accent}48`, zIndex: 2 }}>
@@ -127,6 +133,8 @@ export function LabGrid() {
   const [modalIndex, setModalIndex] = useState<number | null>(null);
   const [openAnim, setOpenAnim] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [prevHover, setPrevHover] = useState(false);
+  const [nextHover, setNextHover] = useState(false);
 
   useEffect(() => {
     if (lang && (lang === 'en' || lang === 'es')) {
@@ -242,14 +250,14 @@ export function LabGrid() {
             className="absolute top-1/2 -translate-y-1/2 left-2 md:left-6 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-colors"
             style={{
               background: 'rgba(15,23,42,0.8)',
-              border: '1px solid #334155',
-              color: modalIndex === 0 ? 'transparent' : '#94a3b8',
+              border: `1px solid ${modalIndex === 0 ? '#334155' : prevHover ? '#10b98160' : '#334155'}`,
+              color: modalIndex === 0 ? 'transparent' : prevHover ? '#10b981' : '#94a3b8',
               pointerEvents: modalIndex === 0 ? 'none' : 'auto',
               cursor: modalIndex === 0 ? 'default' : 'pointer',
               backdropFilter: 'blur(6px)',
             }}
-            onMouseEnter={(e) => { if (modalIndex > 0) { e.currentTarget.style.color = '#10b981'; e.currentTarget.style.borderColor = '#10b98160'; }}}
-            onMouseLeave={(e) => { e.currentTarget.style.color = modalIndex === 0 ? 'transparent' : '#94a3b8'; e.currentTarget.style.borderColor = '#334155'; }}
+            onMouseEnter={() => setPrevHover(true)}
+            onMouseLeave={() => setPrevHover(false)}
             aria-label={t('previous')}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -261,14 +269,14 @@ export function LabGrid() {
             className="absolute top-1/2 -translate-y-1/2 right-2 md:right-6 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-colors"
             style={{
               background: 'rgba(15,23,42,0.8)',
-              border: '1px solid #334155',
-              color: modalIndex === SCENARIOS.length - 1 ? 'transparent' : '#94a3b8',
+              border: `1px solid ${modalIndex === SCENARIOS.length - 1 ? '#334155' : nextHover ? '#10b98160' : '#334155'}`,
+              color: modalIndex === SCENARIOS.length - 1 ? 'transparent' : nextHover ? '#10b981' : '#94a3b8',
               pointerEvents: modalIndex === SCENARIOS.length - 1 ? 'none' : 'auto',
               cursor: modalIndex === SCENARIOS.length - 1 ? 'default' : 'pointer',
               backdropFilter: 'blur(6px)',
             }}
-            onMouseEnter={(e) => { if (modalIndex < SCENARIOS.length - 1) { e.currentTarget.style.color = '#10b981'; e.currentTarget.style.borderColor = '#10b98160'; }}}
-            onMouseLeave={(e) => { e.currentTarget.style.color = modalIndex === SCENARIOS.length - 1 ? 'transparent' : '#94a3b8'; e.currentTarget.style.borderColor = '#334155'; }}
+            onMouseEnter={() => setNextHover(true)}
+            onMouseLeave={() => setNextHover(false)}
             aria-label={t('next')}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -299,10 +307,6 @@ export function LabGrid() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
-      `}</style>
     </div>
   );
 }
@@ -319,6 +323,7 @@ function ModalContent({
   const tools = meta?.tools?.join(', ') ?? '';
   const colors = useColors();
   const isDark = useScenarioStore((s) => s.theme) === 'dark';
+  const [closeHover, setCloseHover] = useState(false);
 
   return (
     <>
@@ -331,9 +336,13 @@ function ModalContent({
       <button
         onClick={onClose}
         className="absolute top-3 right-3 z-10 w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors"
-        style={{ background: isDark ? '#1e293b' : '#f8fafc', border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, color: colors.textMuted }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#ef444460'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+        style={{
+          background: isDark ? '#1e293b' : '#f8fafc',
+          border: `1px solid ${closeHover ? '#ef444460' : isDark ? '#334155' : '#e2e8f0'}`,
+          color: closeHover ? '#ef4444' : colors.textMuted,
+        }}
+        onMouseEnter={() => setCloseHover(true)}
+        onMouseLeave={() => setCloseHover(false)}
         aria-label={t('close')}
       >
         ✕

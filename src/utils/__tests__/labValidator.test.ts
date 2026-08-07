@@ -108,6 +108,33 @@ describe('labValidator', () => {
       expect(validateMission(result, mission)).toBe(true);
     });
 
+    it('debe validar vulnerabilityFound solo por vulnId sin status', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        foundVulnerability: { machineId: 'test', vulnId: 'SQLi', status: 'detected' },
+      };
+      const mission = createMission({ type: 'vulnerabilityFound', vulnId: 'SQLi' });
+      expect(validateMission(result, mission)).toBe(true);
+    });
+
+    it('debe validar vulnerabilityFound que coincide con status pedido', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        foundVulnerability: { machineId: 'test', vulnId: 'SQLi', status: 'confirmed' },
+      };
+      const mission = createMission({ type: 'vulnerabilityFound', vulnId: 'SQLi', status: 'confirmed' });
+      expect(validateMission(result, mission)).toBe(true);
+    });
+
+    it('debe fallar vulnerabilityFound si el status no coincide', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        foundVulnerability: { machineId: 'test', vulnId: 'SQLi', status: 'detected' },
+      };
+      const mission = createMission({ type: 'vulnerabilityFound', vulnId: 'SQLi', status: 'confirmed' });
+      expect(validateMission(result, mission)).toBe(false);
+    });
+
     it('debe validar ftpLogin correctamente', () => {
       const result: CommandResponse = {
         output: 'test',
@@ -218,9 +245,9 @@ describe('labValidator', () => {
       expect(validateMission(result, mission)).toBe(true);
     });
 
-    it('debe retornar false para custom criteria', () => {
+    it('debe retornar false para browserAction criteria', () => {
       const result: CommandResponse = { output: 'test' };
-      const mission = createMission({ type: 'custom' });
+      const mission = createMission({ type: 'browserAction' });
       expect(validateMission(result, mission)).toBe(false);
     });
 

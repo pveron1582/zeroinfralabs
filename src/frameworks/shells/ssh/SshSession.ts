@@ -2,6 +2,7 @@
 // Implementación modular del shell SSH con flujo interactivo real
 
 import type { ShellSession, ShellContext, ShellResult } from '../ShellSession';
+import { getKnownPassword } from '../../../utils/credentials';
 
 // ── Estado del shell SSH ──────────────────────────────────────────
 export interface SshState {
@@ -136,8 +137,11 @@ export const sshSession: ShellSession<SshState> = {
       }
 
       const password = input.trim();
+      const portCredOk =
+        sshPort.credentials?.user === state.username && sshPort.credentials?.pass === password;
+      const knownPass = getKnownPassword(target, state.username ?? '');
 
-      if (sshPort.credentials?.user === state.username && sshPort.credentials?.pass === password) {
+      if (portCredOk || (knownPass !== undefined && knownPass === password)) {
         const atkIp = ctx.allMachines.find(m => m.id.includes('attacker'))?.machine_info.ip || '10.0.0.1';
         const osName = target.machine_info.os.includes('Windows')
           ? target.machine_info.os

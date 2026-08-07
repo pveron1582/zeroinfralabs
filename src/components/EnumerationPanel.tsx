@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Machine } from '../types';
 
 interface EnumerationPanelProps {
@@ -8,9 +7,8 @@ interface EnumerationPanelProps {
   inline?: boolean;
 }
 
-export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onClose, msfState, inline }) => {
+export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onClose, inline }) => {
   const discoveryLevel = machine.discovery_level ?? 0;
-  const isScenario04 = machine.id.includes('lfi');
 
   // Función interna para parsear credenciales si existen
   const getDynamicCredentials = (m: Machine) => {

@@ -1,5 +1,5 @@
 // ── components/fakesites/wordpress/wp01/Login.tsx ─────────────────
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface Props {
   ip: string;

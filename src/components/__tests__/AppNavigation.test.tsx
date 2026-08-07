@@ -1,9 +1,9 @@
 // ── __tests__/AppNavigation.test.tsx ───────────────────────────────────
 // Integration tests for App navigation flows: landing → labs → scenario → exit
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
-import React from 'react';
+import { useEffect } from 'react';
 import { MemoryRouter, Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useScenarioStore } from '../../store/scenarioStore';
 import { SCENARIOS } from '../../laboratorios/laboratorios';
@@ -13,7 +13,7 @@ import { SCENARIOS } from '../../laboratorios/laboratorios';
 // Location tracker for capturing navigation
 function LocationTracker({ onLocationChange }: { onLocationChange: (path: string) => void }) {
   const location = useLocation();
-  React.useEffect(() => { onLocationChange(location.pathname); }, [location.pathname, onLocationChange]);
+  useEffect(() => { onLocationChange(location.pathname); }, [location.pathname, onLocationChange]);
   return null;
 }
 

@@ -5,7 +5,7 @@ import { beforeEach, expect } from 'vitest';
 import { executeCommand, resetMsfState } from '../index';
 import { resetFtpSessions } from '../tools';
 import { shellManager } from '../../frameworks/shells';
-import type { Machine } from '../../types';
+import type { CommandResponse, Machine } from '../../types';
 
 export function setupBeforeEach() {
   beforeEach(() => {
@@ -48,40 +48,47 @@ export const withLevel = (machine: Machine, level: number): Machine => ({
 
 export const evolveState = (
   machines: Machine[],
-  result: ReturnType<typeof exec>
+  result: CommandResponse
 ): Machine[] => {
   // Free commands: update discovery level based on metadata
   return machines.map(machine => {
     let newLevel = machine.discovery_level;
 
     // arp-scan discovered hosts
-    if (result.discoveredHosts && result.discoveredHosts.length > 0) {
+    const hosts = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    if (hosts && hosts.length > 0) {
       newLevel = Math.max(newLevel, 1);
     }
 
     // nmap discovered ports for this machine
-    if (result.scanResults && result.scanResults.targetId === machine.id) {
+    const scanRes = 'scanResults' in result ? result.scanResults : undefined;
+    if (scanRes && scanRes.targetId === machine.id) {
       newLevel = Math.max(newLevel, 2);
     }
-    if (result.discoveredPorts === machine.id) {
+    const ports = 'discoveredPorts' in result ? result.discoveredPorts : undefined;
+    if (ports === machine.id) {
       newLevel = Math.max(newLevel, 2);
     }
 
     // gobuster found directories for this machine's web server
-    if (result.foundDirectories?.targetId === machine.id) {
+    const foundDirs = 'foundDirectories' in result ? result.foundDirectories : undefined;
+    if (foundDirs?.targetId === machine.id) {
       newLevel = Math.max(newLevel, 3);
     }
 
     // hydra found credentials for this machine
-    if (result.foundCredentials?.machineId === machine.id) {
+    const foundCreds = 'foundCredentials' in result ? result.foundCredentials : undefined;
+    if (foundCreds?.machineId === machine.id) {
       newLevel = Math.max(newLevel, 3);
     }
 
     // SSH/FTP login achieved
-    if (result.sshSession?.targetId === machine.id && result.sshSession.authenticated) {
+    const ssh = 'sshSession' in result ? result.sshSession : undefined;
+    if (ssh?.targetId === machine.id && ssh.authenticated) {
       newLevel = Math.max(newLevel, 4);
     }
-    if (result.ftpSession?.targetId === machine.id && result.ftpSession.loggedIn) {
+    const ftp = 'ftpSession' in result ? result.ftpSession : undefined;
+    if (ftp?.targetId === machine.id && ftp.loggedIn) {
       newLevel = Math.max(newLevel, 3);
     }
 
@@ -92,6 +99,6 @@ export const evolveState = (
   });
 };
 
-export const expectSuccess = (result: ReturnType<typeof exec>) => {
+export const expectSuccess = (result: CommandResponse) => {
   expect(result.isError).not.toBe(true);
 };

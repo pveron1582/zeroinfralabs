@@ -18,16 +18,16 @@ describe('cmd_mkdir', () => {
       web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
       learning_steps: [],
       files: [
-        { path: '/.dir', content: '', type: 'text' },
-        { path: '/home/.dir', content: '', type: 'text' },
-        { path: '/home/kali/.dir', content: '', type: 'text' },
-        { path: '/tmp/.dir', content: '', type: 'text' },
-        { path: '/var/.dir', content: '', type: 'text' },
-        { path: '/var/www/.dir', content: '', type: 'text' },
-        { path: '/var/www/html/.dir', content: '', type: 'text' },
-        { path: '/bin/.dir', content: '', type: 'text' },
+        { path: '/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/home/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/home/kali/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+        { path: '/tmp/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o777 },
+        { path: '/var/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/var/www/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/var/www/html/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/bin/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
       ],
-      found_credentials: { file: '', user: 'kali', pass: 'kali', verified: false }
+      found_credentials: [{ file: '', user: 'kali', pass: 'kali', verified: true }]
     };
 
     mockContext = {
@@ -45,95 +45,55 @@ describe('cmd_mkdir', () => {
     expect(result.isError).toBe(true);
   });
 
+  function expectDirCreated(files: any[], path: string) {
+    expect(files.some(f => f.path === path && f.content === '' && f.type === 'text')).toBe(true);
+  }
+
   it('debe crear directorio simple en directorio actual', () => {
     const result = cmd_mkdir.execute(['micarpeta'], mockContext);
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/kali/micarpeta/.dir',
-      content: '',
-      type: 'text'
-    });
+    expectDirCreated(mockContext.machine.files, '/home/kali/micarpeta/.dir');
   });
 
   it('debe crear múltiples directorios en directorio actual', () => {
     const result = cmd_mkdir.execute(['dir1', 'dir2'], mockContext);
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/kali/dir1/.dir',
-      content: '',
-      type: 'text'
-    });
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/kali/dir2/.dir',
-      content: '',
-      type: 'text'
-    });
+    expectDirCreated(mockContext.machine.files, '/home/kali/dir1/.dir');
+    expectDirCreated(mockContext.machine.files, '/home/kali/dir2/.dir');
   });
 
   it('debe crear directorio en ruta absoluta con -p', () => {
     const result = cmd_mkdir.execute(['-p', '/tmp/newdir'], mockContext);
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/tmp/newdir/.dir',
-      content: '',
-      type: 'text'
-    });
+    expectDirCreated(mockContext.machine.files, '/tmp/newdir/.dir');
   });
 
   it('debe crear estructura completa con -p', () => {
     const result = cmd_mkdir.execute(['-p', '/tmp/deep/structure/test'], mockContext);
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/tmp/deep/.dir',
-      content: '',
-      type: 'text'
-    });
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/tmp/deep/structure/.dir',
-      content: '',
-      type: 'text'
-    });
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/tmp/deep/structure/test/.dir',
-      content: '',
-      type: 'text'
-    });
+    expectDirCreated(mockContext.machine.files, '/tmp/deep/.dir');
+    expectDirCreated(mockContext.machine.files, '/tmp/deep/structure/.dir');
+    expectDirCreated(mockContext.machine.files, '/tmp/deep/structure/test/.dir');
   });
 
   it('debe crear estructura relativa con -p', () => {
     const result = cmd_mkdir.execute(['-p', 'projects/web/app'], mockContext);
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/kali/projects/.dir',
-      content: '',
-      type: 'text'
-    });
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/kali/projects/web/.dir',
-      content: '',
-      type: 'text'
-    });
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/kali/projects/web/app/.dir',
-      content: '',
-      type: 'text'
-    });
+    expectDirCreated(mockContext.machine.files, '/home/kali/projects/.dir');
+    expectDirCreated(mockContext.machine.files, '/home/kali/projects/web/.dir');
+    expectDirCreated(mockContext.machine.files, '/home/kali/projects/web/app/.dir');
   });
 
   it('debe crear directorio en ruta absoluta sin -p si padres existen', () => {
     const result = cmd_mkdir.execute(['/tmp/newdir'], mockContext);
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/tmp/newdir/.dir',
-      content: '',
-      type: 'text'
-    });
+    expectDirCreated(mockContext.machine.files, '/tmp/newdir/.dir');
   });
 
   it('debe fallar si padres no existen sin -p', () => {
@@ -166,18 +126,8 @@ describe('cmd_mkdir', () => {
 
   it('debe manejar paths relativos con ..', () => {
     const result = cmd_mkdir.execute(['-p', '../outside/test'], mockContext);
-    expect(result.output).toBe('');
-    expect(result.isError).toBe(false);
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/outside/.dir',
-      content: '',
-      type: 'text'
-    });
-    expect(mockContext.machine.files).toContainEqual({
-      path: '/home/outside/test/.dir',
-      content: '',
-      type: 'text'
-    });
+    expect(result.output).toContain('Permission denied');
+    expect(result.isError).toBe(true);
   });
 
   it('debe denegar permisos en directorios del sistema para usuario no-root', () => {
@@ -185,7 +135,7 @@ describe('cmd_mkdir', () => {
       ...mockContext,
       machine: {
         ...mockContext.machine,
-        found_credentials: { file: '', user: 'regularuser', pass: 'pass', verified: false }
+        found_credentials: [{ file: '', user: 'regularuser', pass: 'pass', verified: false }]
       }
     };
     
@@ -207,10 +157,6 @@ describe('cmd_mkdir', () => {
     const result = cmd_mkdir.execute(['/bin/test'], rootContext);
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
-    expect(rootContext.machine.files).toContainEqual({
-      path: '/bin/test/.dir',
-      content: '',
-      type: 'text'
-    });
+    expect(rootContext.machine.files.some(f => f.path === '/bin/test/.dir' && f.content === '' && f.type === 'text')).toBe(true);
   });
 });

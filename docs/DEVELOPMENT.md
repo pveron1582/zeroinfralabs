@@ -126,14 +126,6 @@ rm -rf node_modules && pnpm install
 # Ctrl+C y luego pnpm dev
 ```
 
-## Contribuir
-
-1. Fork el repositorio
-2. Crea una rama: `git checkout -b feature/nueva-feature`
-3. Commit con mensaje claro: `git commit -am 'Add: nueva feature'`
-4. Push: `git push origin feature/nueva-feature`
-5. Abre un Pull Request
-
 ## Recursos
 
 - [Testing Strategy](TESTING.md)

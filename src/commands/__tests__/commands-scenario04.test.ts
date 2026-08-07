@@ -54,8 +54,9 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
     expectSuccess(result);
     expect(result.output).toContain('192.168.20.11');
     // arp-scan ya no completa misiones - es un comando libre
-    expect(result.discoveredHosts).toBeDefined();
-    expect(result.discoveredHosts?.some(h => h.ip === '192.168.20.11')).toBe(true);
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toBeDefined();
+    expect(dh?.some(h => h.ip === '192.168.20.11')).toBe(true);
   });
 
   it('Paso 2: nmap detecta HTTP en puerto 80', () => {
@@ -64,36 +65,41 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
     expectSuccess(result);
     expect(result.output).toContain('80/tcp');
     // nmap ya no completa misiones - es un comando libre
-    expect(result.scanResults).toBeDefined();
-    expect(result.scanResults?.ports.some(p => p.port === 80)).toBe(true);
+    const sr = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr).toBeDefined();
+    expect(sr?.ports.some(p => p.port === 80)).toBe(true);
   });
 
   it('Paso 4: nc -nlvp activa listener — valida propiedades de blockingCommand', () => {
     const result = exec('nc -nlvp 4444', attacker, allMachines, 4);
     expectSuccess(result);
     // nc ya no completa misiones - es un comando libre
-    expect(result.blockingCommand).toBeDefined();
-    expect(result.blockingCommand?.listeningPort).toBe(4444);
+    const bc = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc).toBeDefined();
+    expect(bc?.listeningPort).toBe(4444);
   });
 
   it('nc fuera del contexto LFI no completa ninguna misión', () => {
     const result = exec('nc -nlvp 9999', attacker, [attacker], 1);
     expectSuccess(result);
     // nc es un comando libre - no completa misiones
-    expect(result.blockingCommand).toBeDefined();
+    const bc2 = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc2).toBeDefined();
   });
 
   it('nc sin puerto debe fallar', () => {
     const result = exec('nc -nlvp', attacker, allMachines, 4);
     expect(result.isError).toBe(true);
-    expect(result.blockingCommand).toBeUndefined();
+    const bc3 = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc3).toBeUndefined();
   });
 
   it('nmap funciona sin reconocimiento previo (comando libre)', () => {
     // nmap ya no valida discovery_level - es un comando libre
     const result = exec('nmap -sV 192.168.20.11', attacker, allMachines, 2);
     expectSuccess(result);
-    expect(result.scanResults).toBeDefined();
+    const sr2 = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr2).toBeDefined();
   });
 
   it('Golden path: arp-scan → nmap → nc listener (estado evoluciona naturalmente)', () => {
@@ -101,16 +107,19 @@ describe('Happy Path: Scenario 04 - LFI to RCE', () => {
 
     let result = exec('arp-scan 192.168.20.0/24', attacker, machines, 1);
     // arp-scan ya no completa misiones
-    expect(result.discoveredHosts).toBeDefined();
+    const dh2 = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh2).toBeDefined();
     machines = evolveState(machines, result);
 
     result = exec('nmap -sV 192.168.20.11', attacker, machines, 2);
     // nmap ya no completa misiones
-    expect(result.scanResults?.ports.some(p => p.port === 80)).toBe(true);
+    const sr3 = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr3?.ports.some(p => p.port === 80)).toBe(true);
     machines = evolveState(machines, result);
 
     result = exec('nc -nlvp 4444', attacker, machines, 4);
     // nc ya no completa misiones
-    expect(result.blockingCommand?.listeningPort).toBe(4444);
+    const bc4 = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc4?.listeningPort).toBe(4444);
   });
 });

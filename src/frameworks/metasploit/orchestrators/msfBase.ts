@@ -4,7 +4,7 @@
 import type { CommandResponse, CommandContext } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { MSF_MODULES, MODULE_DEFAULTS } from '../core/msfModules';
-import { withState, basePrompt } from '../core/msfHelpers';
+import { withState } from '../core/msfHelpers';
 
 export const executeBaseCommand = (
   cmd: string,
@@ -14,7 +14,8 @@ export const executeBaseCommand = (
 ): CommandResponse | null => {
   if (cmd === 'exit' || cmd === 'quit') {
     return {
-      output: `MSF_STATE:${JSON.stringify({ ...state, active: false })}\n\n[*] Exiting Metasploit...`,
+      output: '\n[*] Exiting Metasploit...',
+      msfStateUpdate: { ...state, active: false },
     };
   }
 

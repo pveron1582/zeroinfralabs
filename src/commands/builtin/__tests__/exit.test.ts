@@ -79,6 +79,7 @@ describe('cmd_exit', () => {
 
     expect(result.output).toContain('logout');
     expect(result.output).toContain('Connection to target closed');
-    expect(result.newMachineId).toBe('attacker-01');
+    const nmId = 'newMachineId' in result ? result.newMachineId : undefined;
+    expect(nmId).toBe('attacker-01');
   });
 });

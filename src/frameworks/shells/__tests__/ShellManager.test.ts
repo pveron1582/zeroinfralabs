@@ -194,28 +194,4 @@ describe('ShellManager', () => {
       expect(result.isError).toBe(true);
     });
   });
-
-  describe('Serialización', () => {
-    it('debe serializar el stack', () => {
-      manager.startSession('mock', [], mockCtx);
-      manager.startSession('nested', [], mockCtx);
-
-      const serialized = manager.serialize();
-      expect(serialized).toHaveLength(2);
-      expect(serialized[0].shellName).toBe('mock');
-      expect(serialized[1].shellName).toBe('nested');
-    });
-
-    it('debe restaurar el stack', () => {
-      const data = [
-        { shellName: 'mock', state: { active: true, commandCount: 5 } },
-        { shellName: 'nested', state: { active: true, commandCount: 3 } },
-      ];
-
-      const success = manager.deserialize(data, mockCtx);
-      expect(success).toBe(true);
-      expect(manager.getDepth()).toBe(2);
-      expect(manager.getShellPath()).toEqual(['mock', 'nested']);
-    });
-  });
 });

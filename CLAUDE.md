@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ZeroInfra Labs** — a browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 progressive labs that teach offensive security through simulated Linux/Windows machines, a functional terminal, and a fake browser. No VMs, no real exploits — everything runs in the browser with deterministic, scripted responses.
 
-> All hashes and credentials in this repo are fictitious and for educational use only. See `SECURITY.md`.
+> All hashes and credentials in this repo are fictitious and for educational use only. See `docs/SECURITY.md`.
 
 ## Commands
 
@@ -118,11 +118,11 @@ To add a lab:
 - **Error handling:** return `{ output, isError?: true }` — **never throw**. Spanish messages.
 - **Test names:** Spanish, e.g. `it('debe listar archivos', ...)`
 - **Test pattern:** call `command.execute(args, context)`, assert `result.output` and metadata fields
-- TypeScript `strict: false` is intentional — don't tighten without coordination.
+- TypeScript `strict: true` is enabled (with `noUnusedLocals` and `noUnusedParameters`). Enforced cleanly with 0 errors via `tsc --noEmit`.
 
 ## Known Issues
 
-See `AGENTS.md` for the active bug list (currently: SSH credentials not confirmed in topology, PrivEsc prompt doesn't switch to root). When investigating, check git log for in-flight fixes.
+No active open bugs (Bug #3 and Bug #6 verified resolved).
 
 ## Documentation
 
@@ -131,8 +131,9 @@ See `AGENTS.md` for the active bug list (currently: SSH credentials not confirme
 - `docs/DEVELOPMENT.md` — Dev setup and contribution guide
 - `docs/TESTING.md` — Test strategy, naming, helpers (`happyPathHelpers.ts`)
 - `docs/CHANGELOG.md` — Change history
-- `AGENTS.md` — Quick reference (commands, code style, known issues)
-- `MODELO_NEGOCIO.md`, `GUIA_SIIMULADOR_PDF.md` — Business/product docs (Spanish)
+- `docs/archive/` — Historical improvement plans and completion reports (`MEJORAS.md`, etc.)
+- `AGENTS.md` — Quick reference (commands, code style, architecture summary)
+- `docs/MODELO_NEGOCIO.md`, `docs/GUIA_SIMULADOR_PDF.md` — Business/product docs (Spanish)
 
 ## Deployment
 

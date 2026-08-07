@@ -69,7 +69,8 @@ describe('cmd_hydra', () => {
     expect(result.output).toContain('login: gonzalo');
     expect(result.output).toContain('password: Quier0unaunment0');
     expect(result.output).toContain('1 valid password found');
-    expect(result.foundCredentials).toEqual({
+    const fc = 'foundCredentials' in result ? result.foundCredentials : undefined;
+    expect(fc).toEqual({
       machineId: 'target-01',
       user: 'gonzalo',
       pass: 'Quier0unaunment0',

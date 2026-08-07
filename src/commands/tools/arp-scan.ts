@@ -43,8 +43,11 @@ export const cmd_arpScan = {
     
     output += `\n${count} packets received, 0 dropped\n${count} hosts responded`;
 
+    const outputLines = output.split('\n');
     return {
       output,
+      type: 'discovery',
+      streamingLineDelays: outputLines.map(() => 40 + Math.random() * 60),
       // Metadata para que el laboratorio valide
       discoveredHosts: discoveredHosts.length > 0 ? discoveredHosts : undefined,
       networkScanned: baseIp,

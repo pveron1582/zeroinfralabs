@@ -43,9 +43,10 @@ describe('cmd_top', () => {
       currentMissionId: 1
     } as any);
 
-    expect(result.blockingCommand).toBeDefined();
-    expect(result.blockingCommand?.cancelKey).toBe('q');
-    expect(result.blockingCommand?.message).toBe('top running...');
+    const bc = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc).toBeDefined();
+    expect(bc?.cancelKey).toBe('q');
+    expect(bc?.message).toBe('top running...');
   });
 
   it('debe mostrar procesos de Linux', () => {

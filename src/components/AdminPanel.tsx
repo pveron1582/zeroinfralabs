@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../store/scenarioStore';
 import { SCENARIOS } from '../laboratorios/laboratorios';
 import { DesktopTerminal } from './DesktopTerminal';
@@ -12,8 +13,13 @@ export function AdminPanel() {
   const { lang } = useParams<{ lang: string }>();
   const navigate = useNavigate();
   const validLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
-  const language = useScenarioStore(s => s.language);
-  const setLanguage = useScenarioStore(s => s.setLanguage);
+  const {
+    language,
+    setLanguage,
+  } = useScenarioStore(useShallow(s => ({
+    language: s.language,
+    setLanguage: s.setLanguage,
+  })));
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState('');
@@ -25,26 +31,49 @@ export function AdminPanel() {
   const [showDebug, setShowDebug] = useState(true);
   const [debugTab, setDebugTab] = useState<DebugTab>('store');
 
-  const currentScenario = useScenarioStore(s => s.currentScenario);
-  const machines = useScenarioStore(s => s.machines);
-  const missions = useScenarioStore(s => s.missions);
-  const activeMachineId = useScenarioStore(s => s.activeMachineId);
-  const showNetworkMap = useScenarioStore(s => s.showNetworkMap);
-  const termColor = useScenarioStore(s => s.termColor);
-  const msfState = useScenarioStore(s => s.msfState);
-  const ftpSession = useScenarioStore(s => s.ftpSession);
-  const currentDir = useScenarioStore(s => s.currentDir);
+  const {
+    currentScenario,
+    machines,
+    missions,
+    activeMachineId,
+    showNetworkMap,
+    termColor,
+    msfState,
+    ftpSession,
+    currentDir,
+    currentMissionId,
+  } = useScenarioStore(useShallow(s => ({
+    currentScenario: s.currentScenario,
+    machines: s.machines,
+    missions: s.missions,
+    activeMachineId: s.activeMachineId,
+    showNetworkMap: s.showNetworkMap,
+    termColor: s.termColor,
+    msfState: s.msfState,
+    ftpSession: s.ftpSession,
+    currentDir: s.currentDir,
+    currentMissionId: s.currentMissionId,
+  })));
 
-  const completeMission = useScenarioStore(s => s.completeMission);
-  const findCredentials = useScenarioStore(s => s.findCredentials);
-  const verifyCredentials = useScenarioStore(s => s.verifyCredentials);
-  const changeMachine = useScenarioStore(s => s.changeMachine);
-  const toggleNetworkMap = useScenarioStore(s => s.toggleNetworkMap);
-  const addFailedUser = useScenarioStore(s => s.addFailedUser);
-  const setSudoPrivileges = useScenarioStore(s => s.setSudoPrivileges);
+  const {
+    completeMission,
+    findCredentials,
+    verifyCredentials,
+    changeMachine,
+    toggleNetworkMap,
+    addFailedUser,
+    setSudoPrivileges,
+  } = useScenarioStore(useShallow(s => ({
+    completeMission: s.completeMission,
+    findCredentials: s.findCredentials,
+    verifyCredentials: s.verifyCredentials,
+    changeMachine: s.changeMachine,
+    toggleNetworkMap: s.toggleNetworkMap,
+    addFailedUser: s.addFailedUser,
+    setSudoPrivileges: s.setSudoPrivileges,
+  })));
 
   const activeMachine = machines.find(m => m.id === activeMachineId) || machines[0];
-  const currentMissionId = useScenarioStore(s => s.currentMissionId);
 
   useEffect(() => {
     if (validLang) setLanguage(validLang);
@@ -233,6 +262,7 @@ export function AdminPanel() {
           networkRange={currentScenario?.network_range || ''}
           onOpenBrowser={() => {}}
           onOpenNetworkMap={() => toggleNetworkMap(true)}
+          onExit={() => useScenarioStore.getState().goHome()}
         />
       </div>
 

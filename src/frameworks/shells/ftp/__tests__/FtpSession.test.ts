@@ -1,12 +1,11 @@
 // ── shells/ftp/__tests__/FtpSession.test.ts ───────────────────────
 // Tests para la implementación modular del shell FTP
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ftpSession, type FtpState } from '../FtpSession';
 import type { ShellContext } from '../../ShellSession';
 
 // ── Mock de máquinas ──────────────────────────────────────────────
-import type { Machine } from '../../../../types';
 
 const createMockMachines = () => [
   {
@@ -24,7 +23,7 @@ const createMockMachines = () => [
     discovery_level: 0,
     scan_results: {
       ports: [
-        { port: 21, protocol: 'tcp', state: 'open', service: 'ftp', version: 'vsFTPd 3.0.3' },
+        { port: 21, protocol: 'tcp', state: 'open', service: 'ftp', version: 'vsFTPd 3.0.3', credentials: { user: 'ftpuser', pass: 'ftp_dump_2024' } },
       ],
     },
     web_enumeration: { web_server: '', cms: '', directories: [] },
@@ -103,13 +102,24 @@ describe('FtpSession', () => {
       expect(newState.username).toBe('anonymous');
     });
 
-    it('debe rechazar usuarios no anonymous', () => {
+    it('debe pedir password para el usuario configurado ftpuser', () => {
+      const ctx = createMockContext();
+      const initialState: FtpState = { connected: true, targetIp: '10.0.0.10', targetId: 'target-01', loggedIn: false, step: 'username' };
+
+      const { result, newState } = ftpSession.executeCommand('ftpuser', initialState, ctx);
+
+      expect(result.output).toContain('331 Please specify the password');
+      expect(newState.step).toBe('password');
+      expect(newState.username).toBe('ftpuser');
+    });
+
+    it('debe rechazar usuarios que no son anonymous ni el configurado', () => {
       const ctx = createMockContext();
       const initialState: FtpState = { connected: true, targetIp: '10.0.0.10', targetId: 'target-01', loggedIn: false, step: 'username' };
 
       const { result, newState } = ftpSession.executeCommand('otheruser', initialState, ctx);
 
-      expect(result.output).toContain('Permission denied');
+      expect(result.output).toContain('Login incorrect');
       expect(result.isError).toBe(true);
       expect(newState.connected).toBe(false);
     });
@@ -123,6 +133,28 @@ describe('FtpSession', () => {
       expect(result.output).toContain('230 Login successful');
       expect(newState.loggedIn).toBe(true);
       expect(newState.step).toBe('connected');
+    });
+
+    it('debe completar login de ftpuser con la contraseña correcta', () => {
+      const ctx = createMockContext();
+      const initialState: FtpState = { connected: true, targetIp: '10.0.0.10', targetId: 'target-01', username: 'ftpuser', loggedIn: false, step: 'password' };
+
+      const { result, newState } = ftpSession.executeCommand('ftp_dump_2024', initialState, ctx);
+
+      expect(result.output).toContain('230 Login successful');
+      expect(newState.loggedIn).toBe(true);
+      expect(newState.step).toBe('connected');
+    });
+
+    it('debe rechazar password incorrecta de ftpuser', () => {
+      const ctx = createMockContext();
+      const initialState: FtpState = { connected: true, targetIp: '10.0.0.10', targetId: 'target-01', username: 'ftpuser', loggedIn: false, step: 'password' };
+
+      const { result, newState } = ftpSession.executeCommand('wrongpass', initialState, ctx);
+
+      expect(result.output).toContain('Login incorrect');
+      expect(result.isError).toBe(true);
+      expect(newState.connected).toBe(false);
     });
   });
 

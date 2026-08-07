@@ -57,12 +57,14 @@ describe('cmd_cat', () => {
 
     expect(result.output).toContain('john');
     // cat ya no completa misiones - es un comando libre
-    expect(result.fileRead).toBeDefined();
-    expect(result.fileRead?.isNote).toBe(true);
+    const fr = 'fileRead' in result ? result.fileRead : undefined;
+    expect(fr).toBeDefined();
+    expect(fr?.isNote).toBe(true);
     // possibleUsers es lo que Terminal.tsx escucha y vuelca en
     // Machine.possible_ssh_users (visible en EnumerationPanel)
-    expect(result.possibleUsers).toBeDefined();
-    expect(result.possibleUsers?.users).toContain('john');
+    const pu = 'fileRead' in result ? result.possibleUsers : undefined;
+    expect(pu).toBeDefined();
+    expect(pu?.users).toContain('john');
   });
 });
 
@@ -123,10 +125,11 @@ Note: This note is left here on anonymous FTP temporarily until we configure a m
 
     const result = cmd_cat.execute(['nota.txt'], { machine: attacker, allMachines } as any);
 
-    expect(result.possibleUsers).toBeDefined();
-    expect(result.possibleUsers?.machineId).toBe('lab-scenario-05-target');
-    expect(result.possibleUsers?.machineId).not.toBe('attacker-01');
-    expect(result.possibleUsers?.users).toContain('john');
+    const pu = 'fileRead' in result ? result.possibleUsers : undefined;
+    expect(pu).toBeDefined();
+    expect(pu?.machineId).toBe('lab-scenario-05-target');
+    expect(pu?.machineId).not.toBe('attacker-01');
+    expect(pu?.users).toContain('john');
   });
 
   it('cuando cat corre en el atacante con la nota en inglés, debe capturar john', () => {
@@ -136,9 +139,10 @@ Note: This note is left here on anonymous FTP temporarily until we configure a m
 
     const result = cmd_cat.execute(['note.txt'], { machine: attacker, allMachines } as any);
 
-    expect(result.possibleUsers).toBeDefined();
-    expect(result.possibleUsers?.machineId).toBe('lab-scenario-05-target');
-    expect(result.possibleUsers?.users).toContain('john');
+    const pu = 'fileRead' in result ? result.possibleUsers : undefined;
+    expect(pu).toBeDefined();
+    expect(pu?.machineId).toBe('lab-scenario-05-target');
+    expect(pu?.users).toContain('john');
   });
 
   it('no-regresión: cuando cat corre en el target, machineId sigue siendo el target', () => {
@@ -148,9 +152,10 @@ Note: This note is left here on anonymous FTP temporarily until we configure a m
 
     const result = cmd_cat.execute(['nota.txt'], { machine: target, allMachines } as any);
 
-    expect(result.possibleUsers).toBeDefined();
-    expect(result.possibleUsers?.machineId).toBe('lab-scenario-05-target');
-    expect(result.possibleUsers?.users).toContain('john');
+    const pu = 'fileRead' in result ? result.possibleUsers : undefined;
+    expect(pu).toBeDefined();
+    expect(pu?.machineId).toBe('lab-scenario-05-target');
+    expect(pu?.users).toContain('john');
   });
 
   it('el regex robusto debe filtrar falsos positivos (equipo, seguridad, esta, root)', () => {
@@ -161,8 +166,9 @@ Note: This note is left here on anonymous FTP temporarily until we configure a m
     // — ninguno debe aparecer como usuario SSH.
     const result = cmd_cat.execute(['nota.txt'], { machine: target, allMachines } as any);
 
-    expect(result.possibleUsers).toBeDefined();
-    const users = result.possibleUsers?.users || [];
+    const pu = 'fileRead' in result ? result.possibleUsers : undefined;
+    expect(pu).toBeDefined();
+    const users = pu?.users || [];
     expect(users).toContain('john');
     expect(users).not.toContain('equipo');
     expect(users).not.toContain('seguridad');
@@ -175,9 +181,10 @@ Note: This note is left here on anonymous FTP temporarily until we configure a m
     // Simulamos el caso edge donde el contexto no provee allMachines
     const result = cmd_cat.execute(['nota.txt'], { machine: attacker } as any);
 
-    expect(result.possibleUsers).toBeDefined();
+    const pu = 'fileRead' in result ? result.possibleUsers : undefined;
+    expect(pu).toBeDefined();
     // Fallback: machine.id del atacante, no se rompe
-    expect(result.possibleUsers?.machineId).toBe('attacker-01');
-    expect(result.possibleUsers?.users).toContain('john');
+    expect(pu?.machineId).toBe('attacker-01');
+    expect(pu?.users).toContain('john');
   });
 });

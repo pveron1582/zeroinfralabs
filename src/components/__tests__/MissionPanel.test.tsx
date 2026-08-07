@@ -1,7 +1,6 @@
 // ── components/__tests__/MissionPanel.test.tsx ─────────────────────
 // Tests para el componente MissionPanel con carrusel (siempre visible, auto-advance)
 
-import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MissionPanel } from '../MissionPanel';
@@ -73,6 +72,7 @@ describe('MissionPanel', () => {
         networkRange="192.168.1.0/24"
         onOpenBrowser={vi.fn()}
         onOpenNetworkMap={vi.fn()}
+        onExit={vi.fn()}
       />
     );
 
@@ -93,6 +93,7 @@ describe('MissionPanel', () => {
         networkRange="192.168.1.0/24"
         onOpenBrowser={vi.fn()}
         onOpenNetworkMap={vi.fn()}
+        onExit={vi.fn()}
       />
     );
 
@@ -111,6 +112,7 @@ describe('MissionPanel', () => {
         networkRange="192.168.1.0/24"
         onOpenBrowser={vi.fn()}
         onOpenNetworkMap={onOpenNetworkMap}
+        onExit={vi.fn()}
       />
     );
 
@@ -130,9 +132,30 @@ describe('MissionPanel', () => {
         networkRange="192.168.1.0/24"
         onOpenBrowser={vi.fn()}
         onOpenNetworkMap={vi.fn()}
+        onExit={vi.fn()}
       />
     );
 
     expect(screen.getByText('● COMPROMISED')).toBeInTheDocument();
+  });
+
+  it('debe llamar onExit al hacer clic en el botón Salir', () => {
+    const onExit = vi.fn();
+
+    render(
+      <MissionPanel
+        missions={mockMissions}
+        allMachines={mockMachines}
+        networkRange="192.168.1.0/24"
+        onOpenBrowser={vi.fn()}
+        onOpenNetworkMap={vi.fn()}
+        onExit={onExit}
+      />
+    );
+
+    const exitButton = screen.getByText('Exit Simulator');
+    fireEvent.click(exitButton);
+
+    expect(onExit).toHaveBeenCalled();
   });
 });

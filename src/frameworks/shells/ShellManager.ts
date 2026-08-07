@@ -111,37 +111,6 @@ export class ShellManager {
     }
   }
 
-  // ── Serialización (para persistencia en Zustand) ────────────────
-
-  /** Serializar el stack para persistencia */
-  serialize(): Array<{ shellName: string; state: any }> {
-    return this.stack.map(frame => ({
-      shellName: frame.shell.name,
-      state: frame.state,
-    }));
-  }
-
-  /** Restaurar el stack desde persistencia */
-  deserialize(data: Array<{ shellName: string; state: any }>, ctx: ShellContext): boolean {
-    this.stack = [];
-
-    for (const item of data) {
-      const shell = this.registry.get(item.shellName);
-      if (!shell) {
-        console.warn(`Cannot restore shell: ${item.shellName}`);
-        return false;
-      }
-
-      this.stack.push({
-        shell,
-        state: item.state,
-        prompt: shell.getPrompt(item.state),
-      });
-    }
-
-    return true;
-  }
-
   // ── Reset completo ──────────────────────────────────────────────
   reset(): void {
     // Destruir todos los shells activos

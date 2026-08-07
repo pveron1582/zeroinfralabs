@@ -104,7 +104,7 @@ describe('cmd_ls', () => {
     ]);
     const result = cmd_ls.execute(['-l'], { machine, currentDir: '/root/' } as any);
     expect(result.output).toContain('-rw-r--r--');
-    expect(result.output).toContain('admin');
+    expect(result.output).toContain('root');
   });
 
   // Verifica que ls muestre permisos de directorio con -l

@@ -31,11 +31,12 @@ Object.defineProperty(window, 'history', {
 });
 
 // Mock ResizeObserver
-globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+class MockResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+globalThis.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
 
 // Mock IntersectionObserver
 class MockIntersectionObserver {
@@ -47,7 +48,7 @@ globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof 
 
 // Cleanup after each test
 import { cleanup } from '@testing-library/react';
-import { afterEach, beforeEach, afterAll } from 'vitest';
+import { afterEach, beforeEach } from 'vitest';
 import { useScenarioStore } from '../store/scenarioStore';
 
 beforeEach(() => {

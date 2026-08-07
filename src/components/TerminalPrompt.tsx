@@ -1,5 +1,4 @@
 // ── components/TerminalPrompt.tsx ───────────────────────────────────────
-import React from 'react';
 import { isMsfActive } from '../commands';
 
 interface PromptColors {

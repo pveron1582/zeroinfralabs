@@ -2,8 +2,15 @@
 // Comando ls: Lista archivos y directorios en el directorio actual
 // Soporta flags -l (formato largo) y -a (archivos ocultos)
 // Reconoce directorios marcados con archivos .dir
+// Respeta permisos Unix: para listar nombres se necesita `r` en el dir (read);
+// para resolver inodes y mostrar metadata se necesita `x` (execute). Sin `x`
+// en el directorio listado se devuelve "Permission denied" como hace Unix real.
 
-import type { CommandContext, CommandResponse } from '../../types';
+import type { CommandContext, CommandResponse, FileEntry } from '../../types';
+import { ensureTrailingSlash } from '../../utils/path';
+import { canExecute, canRead, formatModeFromFile } from '../../utils/permissions';
+import { getCurrentUser } from '../../utils/users';
+import { findDirEntry } from '../../utils/fs';
 
 // Genera tamaños de archivo determinísticos (no aleatorios)
 // Usa un hash simple del path para generar un tamaño consistente
@@ -17,122 +24,132 @@ function stableSize(path: string): number {
   return FILE_SIZE_SEED[path];
 }
 
-// Helper para extraer el directorio actual
-// Normaliza el path para que siempre termine con /
-function getCurrentDir(path: string | undefined): string {
-  if (!path) return '/';
-  if (path === '/') return '/';
-  // Asegurarse de que termine con /
-  return path.endsWith('/') ? path : path + '/';
-}
-
-// Helper para extraer el nombre del archivo desde un path
-// Retorna solo el nombre del archivo sin la ruta
 function getBaseName(path: string): string {
   return path.split('/').filter(Boolean).pop() || path;
 }
 
-// Helper para verificar si un path es un directorio
-// Verifica si existe un archivo .dir para este path o si contiene subdirectorios
-function isDirectory(filePath: string, allFiles: { path: string }[]): boolean {
-  // Verificar si existe un archivo .dir para este path
-  const hasDirMarker = allFiles.some(f => f.path === filePath + '/.dir' || f.path === filePath + '.dir');
-  if (hasDirMarker) return true;
-  
-  // Verificar si algún archivo está dentro de este directorio
-  const normalizedPath = filePath.endsWith('/') ? filePath : filePath + '/';
-  return allFiles.some(f => f.path.startsWith(normalizedPath) && f.path !== filePath);
+interface LsItem {
+  isDir: boolean;
+  size: number;
+  entry?: FileEntry;
+  isLink?: boolean;
+  linkTarget?: string;
+}
+
+function getOwner(info: LsItem): string {
+  return info.entry?.owner || 'root';
+}
+
+function getGroup(info: LsItem): string {
+  return info.entry?.group || 'root';
+}
+
+function getModeStr(info: LsItem): string {
+  if (info.entry) {
+    if (info.isLink) return 'lrwxrwxrwx';
+    return formatModeFromFile(info.entry);
+  }
+  return info.isDir ? 'drwxr-xr-x' : '-rw-r--r--';
 }
 
 export const cmd_ls = {
   name: 'ls',
   execute: (args: string[], { machine, currentDir }: CommandContext): CommandResponse => {
     if (!machine.files) machine.files = [];
-    
-    // Separar flags y directorio
+
     let showAll = false;
     let showLong = false;
-    let targetDir = getCurrentDir(currentDir || '/');
-    
-    // Parsear argumentos correctamente
-    args.forEach(arg => {
+    let targetDir = ensureTrailingSlash(currentDir || '/');
+
+    for (const arg of args) {
       if (arg.startsWith('-')) {
-        // Es un flag - puede ser -l, -a, -la, -al, etc.
         if (arg.includes('a')) showAll = true;
         if (arg.includes('l')) showLong = true;
       } else {
-        // Es un directorio
-        targetDir = getCurrentDir(arg);
+        targetDir = ensureTrailingSlash(arg);
       }
-    });
-    
-    // Si no se pasa argumento, usar el directorio actual
-    if (!args[0]) {
-      targetDir = getCurrentDir(currentDir || '/');
     }
 
-    // Filtrar archivos en el directorio
-    const items = new Map<string, { isDir: boolean; size: number }>();
+    // Permiso de directorio: listar requiere `x` sobre el directorio target
+    // (en Unix `r` lista nombres, `x` resuelve inodes; sin `x` no podés
+    // acceder al contenido). Root bypass.
+    const targetDirPath = targetDir.endsWith('/') && targetDir.length > 1 ? targetDir.slice(0, -1) : targetDir;
+    const targetDirEntry = findDirEntry(machine, targetDirPath);
+    const user = getCurrentUser(machine);
+    if (targetDirEntry && !canExecute(machine, targetDirEntry, user)) {
+      return { output: `ls: cannot open directory '${targetDir}': Permission denied`, isError: true };
+    }
+
+    const items = new Map<string, LsItem>();
     
-    // Procesar los paths de los archivos para extraer directorios y archivos
+    // First pass: collect actual FileEntry data for .dir markers and regular files
     machine.files.forEach(file => {
       const filePath = file.path;
       
-      // Si el archivo está en el directorio solicitado
       if (filePath.startsWith(targetDir)) {
-        // Obtener la ruta relativa
         const relativePath = filePath.slice(targetDir.length);
         
-        // Si contiene /, es un subdirectorio
         if (relativePath.includes('/')) {
           const dir = relativePath.split('/')[0];
           if (dir && dir !== '.dir') {
-            // Filtrar archivos ocultos si no se usa -a
             if (!showAll && dir.startsWith('.')) return;
-            const fullPath = targetDir + dir;
-            if (!items.has(dir)) {
-              items.set(dir, { isDir: true, size: 4096 });
-            }
+            if (!items.has(dir)) items.set(dir, { isDir: true, size: 4096 });
           }
         } else if (relativePath && relativePath !== '.dir') {
-          // Es un archivo directo en este directorio
-          // Verificar si es un marcador de directorio
+          if (!showAll && relativePath.startsWith('.')) return;
           if (relativePath.endsWith('.dir')) {
             const dirName = relativePath.slice(0, -4);
-            // Filtrar archivos ocultos si no se usa -a
             if (!showAll && dirName.startsWith('.')) return;
-            if (!items.has(dirName)) {
-              items.set(dirName, { isDir: true, size: 4096 });
-            }
+            items.set(dirName, { isDir: true, size: 4096, entry: file });
           } else {
-            // Filtrar archivos ocultos si no se usa -a
-            if (!showAll && relativePath.startsWith('.')) return;
-            items.set(relativePath, { isDir: false, size: stableSize(targetDir + relativePath) });
+            const isLink = file.type === 'symlink';
+            items.set(relativePath, {
+              isDir: false,
+              size: isLink ? 4096 : stableSize(targetDir + relativePath),
+              entry: file,
+              isLink,
+              linkTarget: isLink ? file.linkTarget : undefined,
+            });
           }
         }
       }
-    });
-    
-    // Verificar directorios por marcadores .dir en el directorio actual
-    machine.files.forEach(file => {
-      const filePath = file.path;
-      // Buscar archivos .dir que indiquen directorios
+      
+      // Also catch /.dir markers whose parent is targetDir
       if (filePath.endsWith('/.dir')) {
-        const dirPath = filePath.slice(0, -5); // Quitar /.dir (5 chars, incluyendo la barra)
+        const dirPath = filePath.slice(0, -5);
         const dirName = getBaseName(dirPath);
         const parentDir = dirPath.slice(0, dirPath.lastIndexOf('/') + 1);
-        
-        // Si el directorio padre coincide con el directorio objetivo
         if (parentDir === targetDir && dirName) {
-          // Filtrar archivos ocultos si no se usa -a
           if (!showAll && dirName.startsWith('.')) return;
-          if (!items.has(dirName)) {
-            items.set(dirName, { isDir: true, size: 4096 });
-          }
+          if (!items.has(dirName)) items.set(dirName, { isDir: true, size: 4096, entry: file });
         }
       }
     });
     
+    // ── Add . and .. entries for -a in long format ────────────────
+    if (showAll && showLong) {
+      // Find the parent dir entry for ".."
+      const parentDir = targetDir === '/' ? '/' : targetDir.slice(0, -1).substring(0, targetDir.slice(0, -1).lastIndexOf('/') + 1) || '/';
+      const parentDirEntry = machine.files.find(f => f.path === parentDir + '.dir');
+      const currentDirEntry = machine.files.find(f => f.path === targetDir + '.dir');
+
+      // "." — current directory
+      const dotEntry: LsItem = {
+        isDir: true,
+        size: 4096,
+        entry: currentDirEntry || undefined,
+      };
+      items.set('.', dotEntry);
+
+      // ".." — parent directory
+      const dotDotEntry: LsItem = {
+        isDir: true,
+        size: 4096,
+        entry: parentDirEntry || undefined,
+      };
+      items.set('..', dotDotEntry);
+    }
+
     // Si no hay archivos en este directorio, devolver vacío o "total 0" según el modo
     if (items.size === 0) {
       if (showLong) return { output: 'total 0' };
@@ -141,23 +158,28 @@ export const cmd_ls = {
     
     // Construir output según el modo
     if (showLong) {
-      // Formato largo con permisos, propietario, tamaño, fecha
       let out = `total ${items.size * 4}\n`;
       Array.from(items.entries())
         .sort(([a], [b]) => a.localeCompare(b))
         .forEach(([name, info]) => {
-          if (info.isDir) {
-            out += `drwxr-xr-x  2 root   root   ${info.size} Jan 01 00:00 ${name}\n`;
-          } else {
-            out += `-rw-r--r--  1 admin  admin  ${info.size} Jan 01 00:00 ${name}\n`;
-          }
+          const perms = getModeStr(info);
+          const owner = getOwner(info);
+          const group = getGroup(info);
+          const linkCount = info.isDir ? '2' : '1';
+          const suffix = info.linkTarget ? ` -> ${info.linkTarget}` : '';
+          out += `${perms}  ${linkCount} ${owner.padEnd(8)} ${group.padEnd(8)} ${String(info.size).padStart(5)} Jan 01 00:00 ${name}${suffix}\n`;
         });
       return { output: out };
     } else {
-      // Formato simple: solo nombres
+      // Formato simple: solo nombres. Filtrar entries sin `r` en el dir target
+      // (Unix: sin `r` no podés obtener nombres, solo verificar existencia).
       const names = Array.from(items.entries())
+        .filter(([, info]) => {
+          if (!info.entry) return true;
+          return canRead(machine, info.entry, user);
+        })
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([name, info]) => name);
+        .map(([name]) => name);
       return { output: names.join('  ') };
     }
   }

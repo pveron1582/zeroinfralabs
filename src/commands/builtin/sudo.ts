@@ -1,13 +1,24 @@
-// ── commands/builtin/sudo.ts ──────────────────────────────────────
-// Simula el comando sudo con soporte para:
-//   sudo -l              → lista permisos del sudoers
-//   sudo <cmd>           → ejecuta comando como root (si autorizado)
-// Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
-// La validación de privesc debe hacerse en el laboratorio correspondiente.
-
 import type { CommandContext, CommandResponse } from '../../types';
+import { getCurrentUser, getGroups } from '../../utils/users';
+import { cmd_nano } from './nano';
 
-// Parsea el archivo /etc/sudoers de la máquina y extrae las reglas del usuario actual
+// Editores soportados: `sudo nano/vi/vim <file>` abre el editor como root.
+// `vim -c "!bash"` NO entra acá — se detecta como escalada de shell antes.
+const EDITOR_COMMANDS = ['nano', 'vi', 'vim'];
+
+// Abre el editor con identidad root (elevatedEdit): puede leer y modificar
+// archivos restringidos que el usuario solo puede leer.
+function openEditorElevated(editorArgs: string[], context: CommandContext): CommandResponse {
+  const editorResult = cmd_nano.execute(editorArgs, { ...context, elevatedEdit: true });
+  if ('nanoFile' in editorResult && editorResult.nanoFile) {
+    return {
+      ...editorResult,
+      nanoFile: { ...editorResult.nanoFile, readOnly: false, elevated: true },
+    };
+  }
+  return editorResult;
+}
+
 function parseSudoers(sudoersContent: string, username: string): string[] {
   const lines = sudoersContent.split('\n');
   const rules: string[] = [];
@@ -16,7 +27,7 @@ function parseSudoers(sudoersContent: string, username: string): string[] {
     const trimmed = line.trim();
     if (trimmed.startsWith('#') || trimmed === '') continue;
     if (trimmed.startsWith('Defaults') || trimmed.startsWith('root')) continue;
-    if (trimmed.startsWith(username)) {
+    if (trimmed.startsWith(username + ' ') || trimmed.startsWith(username + '\t')) {
       rules.push(trimmed);
     }
   }
@@ -24,43 +35,44 @@ function parseSudoers(sudoersContent: string, username: string): string[] {
   return rules;
 }
 
-// Extrae el primer usuario no-root del sudoers
-function getUsernameFromSudoers(sudoersContent: string): string {
-  const lines = sudoersContent.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('Defaults') && !trimmed.startsWith('root')) {
-      const match = trimmed.match(/^([a-zA-Z0-9_]+)\s+/);
-      if (match) {
-        return match[1];
-      }
-    }
-  }
-  return 'root';
+// Extrae la lista de comandos permitidos de una regla sudoers.
+// `ALL=(ALL:ALL)` y `ALL=` son hosts/run-as — NO otorgan todos los comandos.
+// Solo un `ALL` en la lista de comandos (p.ej. "(ALL:ALL) ALL" o
+// "NOPASSWD: ALL") significa permiso total.
+function parseAllowedCommands(rule: string): string[] {
+  const stripped = rule.replace(/\([^)]*\)/g, '').trim();
+  const colonIdx = stripped.indexOf(':');
+  let cmdsPart = colonIdx === -1 ? stripped : stripped.slice(colonIdx + 1);
+  cmdsPart = cmdsPart.replace(/NOPASSWD:/gi, '').replace(/PASSWD:/gi, '').trim();
+  const eqIdx = cmdsPart.indexOf('=');
+  if (eqIdx !== -1) cmdsPart = cmdsPart.slice(eqIdx + 1).trim();
+  return cmdsPart.split(',').map(c => c.trim()).filter(Boolean);
 }
 
-// Verifica si un comando tiene permiso NOPASSWD en sudoers
-function hasNopasswd(sudoersContent: string, username: string, cmd: string): boolean {
-  const rules = parseSudoers(sudoersContent, username);
-  return rules.some(r => {
-    const lower = r.toLowerCase();
-    // NOPASSWD:ALL o NOPASSWD:/path/to/cmd
-    return lower.includes('nopasswd') && (lower.includes('all') || lower.includes(cmd.toLowerCase()));
+function hasPermission(rules: string[], cmd: string): boolean {
+  const cmdBase = cmd.toLowerCase().replace(/^\/usr\/(s?bin)\//, '');
+  return rules.some(rule => {
+    const allowed = parseAllowedCommands(rule).map(c => c.toLowerCase());
+    if (allowed.includes('all')) return true;
+    return allowed.some(a =>
+      a === cmd.toLowerCase() || a === cmdBase || a.endsWith('/' + cmdBase),
+    );
   });
 }
 
-// Verifica si tiene permiso para ejecutar un comando (con o sin password)
-function hasPermission(sudoersContent: string, username: string, cmd: string): boolean {
-  const rules = parseSudoers(sudoersContent, username);
-  return rules.some(r =>
-    r.includes('ALL') || r.toLowerCase().includes(cmd.toLowerCase())
-  );
+// ¿El comando está concedido por una regla NOPASSWD? Solo así sudo no pedirá
+// la password del usuario invocante al escalar.
+function hasNopasswd(rules: string[], cmd: string): boolean {
+  return rules.some(rule => {
+    if (!hasPermission([rule], cmd)) return false;
+    return /NOPASSWD/i.test(rule);
+  });
 }
 
 export const cmd_sudo = {
   name: 'sudo',
-  execute: (args: string[], { machine }: CommandContext): CommandResponse => {
-    // Sin argumentos
+  execute: (args: string[], context: CommandContext): CommandResponse => {
+    const { machine } = context;
     if (args.length === 0) {
       return {
         output: `usage: sudo [-AbEHnPS] [-C num] [-D directory] [-g group] [-h host] [-p prompt]
@@ -70,9 +82,41 @@ export const cmd_sudo = {
       };
     }
 
+    const currentUser = getCurrentUser(machine);
+    const username = currentUser.username;
+    const isRoot = currentUser.uid === 0;
     const hostname = machine.machine_info.hostname;
-    const sudoersFile = machine.files?.find(f => f.path === '/etc/sudoers');
 
+    // Root doesn't need sudo
+    if (isRoot) {
+      if (args[0] === '-i' || args[0] === '-s') {
+        return { output: 'sudo: already root', isError: false };
+      }
+      // Root también puede consultar sus privilegios con sudo -l.
+      if (args[0] === '-l') {
+        return {
+          output: `Matching Defaults entries for root on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser root may run the following commands on ${hostname}:\n    (ALL : ALL) ALL`,
+          type: 'sudo',
+          isError: false,
+          sudoPrivileges: {
+            machineId: machine.id,
+            user: 'root',
+            commands: ['(ALL : ALL) ALL'],
+            canSudo: true,
+          },
+        };
+      }
+      // Root ejecutando un editor: `sudo nano <file>` abre el editor igualmente.
+      if (EDITOR_COMMANDS.includes(args[0])) {
+        return openEditorElevated(args.slice(1), context);
+      }
+      return {
+        output: `root@${hostname}# ${args.join(' ')}`,
+        isError: false,
+      };
+    }
+
+    const sudoersFile = machine.files?.find(f => f.path === '/etc/sudoers');
     if (!sudoersFile) {
       return {
         output: `sudo: unable to open /etc/sudoers: No such file or directory`,
@@ -80,12 +124,25 @@ export const cmd_sudo = {
       };
     }
 
-    const username = getUsernameFromSudoers(sudoersFile.content);
+    const rules = parseSudoers(sudoersFile.content, username);
+
+    // Sudo grants access either via a user-specific rule OR via membership
+    // in a privileged group (sudo/wheel). Check the explicit rule first so
+    // users granted a single command via sudoers don't need to be in %sudo.
+    const groups = getGroups(machine);
+    const inSudoGroup = groups.some(g =>
+      (g.name === 'sudo' || g.name === 'wheel') &&
+      (g.members.includes(username) || g.gid === currentUser.gid)
+    );
+    if (rules.length === 0 && !inSudoGroup) {
+      return {
+        output: `${username} is not in the sudoers file.  This incident will be reported.`,
+        isError: true,
+      };
+    }
 
     // ── sudo -l ────────────────────────────────────────────────────
     if (args[0] === '-l') {
-      const rules = parseSudoers(sudoersFile.content, username);
-
       if (rules.length === 0) {
         return {
           output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may not run sudo on ${hostname}.`,
@@ -110,6 +167,7 @@ export const cmd_sudo = {
 
       return {
         output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may run the following commands on ${hostname}:\n${rulesFormatted}`,
+        type: 'sudo',
         isError: false,
         sudoPrivileges: {
           machineId: machine.id,
@@ -120,20 +178,33 @@ export const cmd_sudo = {
       };
     }
 
+    // ── sudo -i / sudo -s ───────────────────────────────────────────
+    // Abren una shell root pidiendo SIEMPRE la password de root, sin
+    // importar el usuario ni el sudoers. Al validarla, el CommandRunner
+    // aplica el privesc y el prompt pasa a root@...# sin output extra.
+    // `-s` deja la shell en /root; `-i` mantiene el directorio actual.
+    if (args[0] === '-i' || args[0] === '-s') {
+      return {
+        output: '',
+        isError: false,
+        requiresPassword: true,
+        suTarget: 'root',
+        sudoEscalation: true,
+        sudoCwd: args[0] === '-s' ? '/root' : undefined,
+      };
+    }
+
     // ── sudo <cmd> ────────────────────────────────────────────────────
     const requestedCmd = args[0];
     
     // Verificar permisos
-    if (!hasPermission(sudoersFile.content, username, requestedCmd)) {
+    if (!hasPermission(rules, requestedCmd)) {
       return {
         output: `Sorry, user ${username} is not allowed to execute '${args.join(' ')}' as root on ${hostname}.\nThis incident will be reported.`,
         isError: true,
       };
     }
 
-    // Verificar si requiere password (NOPASSWD)
-    const cmdRequiresPassword = !hasNopasswd(sudoersFile.content, username, requestedCmd);
-    
     // Comandos que abren shell como root (vim con !bash, su, bash)
     const joinedArgs = args.join(' ').toLowerCase();
     const isShellEscalation = (
@@ -144,6 +215,20 @@ export const cmd_sudo = {
     );
 
     if (isShellEscalation) {
+      // Salvo que la regla sudoers sea NOPASSWD, sudo pide la password del
+      // usuario INVOCANTE (como el `su` corregido) antes de abrir la shell
+      // root. El CommandRunner la valida contra known_passwords y, si es
+      // correcta, aplica el privesc (setPrivescCompleted + setSuUser('root')).
+      if (!hasNopasswd(rules, requestedCmd)) {
+        return {
+          output: `[sudo] password for ${username}: `,
+          isError: false,
+          requiresPassword: true,
+          suTarget: username,
+          sudoEscalation: true,
+        };
+      }
+
       // Simulamos que el comando ejecuta y abre shell como root
       return {
         output: `\n# ${requestedCmd} abriendo shell como root...
@@ -151,6 +236,7 @@ root@${hostname}:/home/${username}# id
 uid=0(root) gid=0(root) groups=0(root)
 root@${hostname}:/home/${username}# whoami
 root`,
+        type: 'sudo',
         isError: false,
         // Estos campos son para que el laboratorio pueda detectar el privesc
         privescAttempted: true,
@@ -162,6 +248,14 @@ root`,
         // pasa de john@...$ a root@...#.
         privescCompleted: machine.id,
       };
+    }
+
+    // ── sudo <editor> (nano/vi/vim) ──────────────────────────────────
+    // Corre el editor como root: puede abrir y modificar archivos restringidos
+    // (p.ej. /etc/passwd) que el usuario solo puede leer. El save se hace con
+    // identidad root (elevated). `vim -c "!bash"` ya fue manejado arriba.
+    if (EDITOR_COMMANDS.includes(requestedCmd)) {
+      return openEditorElevated(args.slice(1), context);
     }
 
     // Comando genérico ejecutado como root

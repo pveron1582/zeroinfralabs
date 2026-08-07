@@ -1,9 +1,9 @@
-import React from 'react';
 import { Terminal } from './Terminal';
 import { FakeBrowser } from './FakeBrowser';
 import { DesktopTopBar } from './DesktopTopBar';
 import { WindowFrame } from './WindowFrame';
 import { WallpaperPicker } from './WallpaperPicker';
+import { PdfReader } from './PdfReader';
 import { useScenarioStore } from '../store/scenarioStore';
 import { useDesktopWindows } from '../hooks/useDesktopWindows';
 import { type CommandRunnerProps } from '../hooks/useCommandRunner';
@@ -11,14 +11,13 @@ import { type CommandRunnerProps } from '../hooks/useCommandRunner';
 export function DesktopTerminal(props: CommandRunnerProps) {
   const setPossibleUsers = useScenarioStore(state => state.setPossibleUsers);
   const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
-  const goHome = useScenarioStore(state => state.goHome);
+  const setTermColor = useScenarioStore(state => state.setTermColor);
 
   const {
     time, windows, setWindows, closingWindowIds, activeWallpaper, setActiveWallpaper,
-    selectedWallpaper, activeOpacitySliderId, setActiveOpacitySliderId,
-    activeFontSliderId, setActiveFontSliderId, showAppMenu, setShowAppMenu,
-    showSysMenu, setShowSysMenu, termWindows, browserWindows, wallpaperWindows,
-    topWindowId, addTerminal, addBrowser, openWallpaperPicker, closeWindow,
+    selectedWallpaper, activeSettingsId, setActiveSettingsId, showAppMenu, setShowAppMenu,
+    termWindows, browserWindows, wallpaperWindows, guideWindows,
+    topWindowId, addTerminal, addBrowser, addGuide, openWallpaperPicker, closeWindow,
     minimizeWindow, restoreWindow, toggleMaximize, bringToFront,
     startDrag, startResize, desktopRef, isEs, currentScenario, missions, showNotification,
   } = useDesktopWindows();
@@ -31,9 +30,9 @@ export function DesktopTerminal(props: CommandRunnerProps) {
 
   return (
     <div className="relative w-full h-full flex flex-col overflow-hidden bg-slate-950 select-none"
-      onClick={() => { setShowAppMenu(false); setShowSysMenu(false); }}
+      onClick={() => { setShowAppMenu(false); }}
     >
-      <div className="absolute inset-0 z-0 transition-all duration-700 pointer-events-none"
+      <div className="absolute inset-0 z-0 transition-opacity duration-700 pointer-events-none"
         style={selectedWallpaper.style}>
         <div className="absolute inset-0 transition-opacity duration-500"
           style={{
@@ -50,37 +49,39 @@ export function DesktopTerminal(props: CommandRunnerProps) {
 
       <DesktopTopBar
         windows={windows} termWindows={termWindows} browserWindows={browserWindows}
-        wallpaperWindows={wallpaperWindows} topWindowId={topWindowId}
-        showAppMenu={showAppMenu} showSysMenu={showSysMenu} time={time}
+        wallpaperWindows={wallpaperWindows} guideWindows={guideWindows} topWindowId={topWindowId}
+        showAppMenu={showAppMenu} time={time}
         isEs={isEs} currentScenarioCategory={currentScenario?.category || ''}
-        onToggleAppMenu={() => { setShowAppMenu(!showAppMenu); setShowSysMenu(false); }}
-        onToggleSysMenu={() => { setShowSysMenu(!showSysMenu); setShowAppMenu(false); }}
+        onToggleAppMenu={() => { setShowAppMenu(!showAppMenu); }}
         onCloseAppMenu={() => setShowAppMenu(false)}
-        onCloseSysMenu={() => setShowSysMenu(false)}
-        onAddTerminal={addTerminal} onAddBrowser={addBrowser}
+        onAddTerminal={addTerminal} onAddBrowser={addBrowser} onOpenGuide={addGuide}
         onOpenWallpaperPicker={openWallpaperPicker}
         onMinimizeWindow={minimizeWindow} onRestoreWindow={restoreWindow}
         onBringToFront={bringToFront}
-        onGoHome={goHome}
+        onRequestExit={props.onRequestExit}
+        onOpenTour={props.onOpenTour}
         onShowAbout={() => showNotification(
           isEs ? "ZeroInfra Kali Desktop v1.1. Desarrollado para simulación." : "ZeroInfra Kali Desktop v1.1. Built for simulation purposes."
         )}
       />
 
       <div ref={desktopRef} className="relative flex-1 z-10 w-full h-full overflow-hidden">
-        <div className="absolute top-6 left-6 flex flex-col gap-6 select-none z-10">
+        <div className="absolute top-6 left-6 flex flex-col gap-6 select-none z-0" data-tour="desktop-icons">
           <div onDoubleClick={addTerminal} onClick={addTerminal}
+            data-tour="desktop-icon-terminal"
             className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-emerald-400/10 border border-transparent hover:border-emerald-500/10 cursor-pointer group transition-all duration-200">
             <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 font-mono font-bold text-sm shadow-md group-hover:scale-105 transition-transform duration-200">&gt;_</div>
             <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">{isEs ? 'Terminal' : 'Terminal'}</span>
           </div>
           <div onDoubleClick={openWallpaperPicker} onClick={openWallpaperPicker}
+            data-tour="desktop-icon-wallpaper"
             className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-emerald-400/10 border border-transparent hover:border-emerald-500/10 cursor-pointer group transition-all duration-200">
             <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-rose-400 text-sm shadow-md group-hover:scale-105 transition-transform duration-200">🖼️</div>
             <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">{isEs ? 'Fondos' : 'Wallpapers'}</span>
           </div>
           {currentScenario?.category === 'Web' && (
             <div onDoubleClick={addBrowser} onClick={addBrowser}
+              data-tour="desktop-icon-browser"
               className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-orange-400/10 border border-transparent hover:border-orange-500/10 cursor-pointer group transition-all duration-200">
               <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-orange-400 shadow-md group-hover:scale-105 transition-transform duration-200">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -90,6 +91,31 @@ export function DesktopTerminal(props: CommandRunnerProps) {
               <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">Chrome</span>
             </div>
           )}
+          <div onDoubleClick={addGuide} onClick={addGuide}
+            data-tour="desktop-icon-guide"
+            className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-red-400/10 border border-transparent hover:border-red-500/10 cursor-pointer group transition-all duration-200">
+            <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-red-400 shadow-md group-hover:scale-105 transition-transform duration-200">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor"/>
+                <path d="M14 2v6h6" fill="none" stroke="currentColor"/>
+                <path d="M8 13h8M8 17h5" fill="none" stroke="currentColor" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">{isEs ? 'Manual' : 'Manual'}</span>
+          </div>
+          <div onClick={props.onOpenTour}
+            data-tour="desktop-icon-foxy"
+            className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-amber-400/10 border border-transparent hover:border-amber-500/10 cursor-pointer group transition-all duration-200">
+            <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform duration-200">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor"/>
+                <path d="M9 10a1.2 1.2 0 0 0-2 0M17 10a1.2 1.2 0 0 0-2 0" strokeLinecap="round"/>
+                <path d="M12 13.5a2.8 2.8 0 0 1 2.5 1.5 3 3 0 0 1-5 0 2.8 2.8 0 0 1 2.5-1.5z" fill="currentColor"/>
+                <path d="M5.5 8.5c.8-.6 1.6-.9 2.5-.9M18.5 8.5c-.8-.6-1.6-.9-2.5-.9" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">{isEs ? 'Guía' : 'Guide'}</span>
+          </div>
         </div>
 
         {windows.length === 0 && (
@@ -107,23 +133,23 @@ export function DesktopTerminal(props: CommandRunnerProps) {
               <WindowFrame
                 window={w}
                 isClosing={closingWindowIds.includes(w.id)}
-                activeOpacitySliderId={activeOpacitySliderId}
-                activeFontSliderId={activeFontSliderId}
+                activeSettingsId={activeSettingsId}
                 isEs={isEs}
+                termColor={props.termColor ?? '#10b981'}
                 onBringToFront={bringToFront}
                 onStartDrag={startDrag}
                 onStartResize={startResize}
                 onMinimize={minimizeWindow}
                 onMaximize={toggleMaximize}
                 onClose={closeWindow}
-                onSetOpacitySlider={setActiveOpacitySliderId}
-                onSetFontSlider={setActiveFontSliderId}
+                onToggleSettings={setActiveSettingsId}
                 onChangeOpacity={(id, val) => {
                   setWindows(prev => prev.map(win => win.id === id ? { ...win, opacity: val / 100 } : win));
                 }}
                 onChangeFontSize={(id, val) => {
                   setWindows(prev => prev.map(win => win.id === id ? { ...win, fontSize: val } : win));
                 }}
+                onChangeTermColor={setTermColor}
               >
                 {w.type === 'terminal' ? (
                   <Terminal {...props} opacity={w.opacity} fontSize={w.fontSize} isWindowed={true}
@@ -135,13 +161,15 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                     onMaximizeToggle={() => toggleMaximize(w.id)}
                     onMissionComplete={props.onMissionComplete}
                     onCredentialsFound={props.onCredentialsFound}
-                    onVerifyCredentials={props.onVerifyCredentials}
+                    onVerifyCredentials={props.onVerifyCredentials ?? (() => {})}
                     scenarioHasWeb={currentScenario?.category === 'Web'}
                     wpDiscoveryLevel={wpDiscoveryLevel}
                     mission3Already={mission3Already}
                     onSetPossibleUsers={setPossibleUsers}
                     onReportVulnerability={reportVulnerability}
                   />
+                ) : w.type === 'guide' ? (
+                  <PdfReader key={w.id} isEs={isEs} />
                 ) : (
                   <WallpaperPicker activeWallpaper={activeWallpaper} isEs={isEs} onSelectWallpaper={setActiveWallpaper} />
                 )}

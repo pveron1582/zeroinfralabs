@@ -1,5 +1,4 @@
 // ── components/fakesites/wordpress/wp01/__tests__/Index.test.tsx ──
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
@@ -41,8 +40,8 @@ describe('WPIndex', () => {
   it('debe mostrar artículos del blog', () => {
     render(<WPIndex {...defaultProps} />);
     
-    // Verificar que los 3 artículos están presentes (Claude 4 aparece en título y contenido)
-    expect(screen.getAllByText(/Claude 4/i).length).toBeGreaterThanOrEqual(1);
+    // Verificar que los 3 artículos están presentes (DeepSeek Flash aparece en título y contenido)
+    expect(screen.getAllByText(/DeepSeek Flash/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Cybersecurity and AI/i)).toBeInTheDocument();
     expect(screen.getByText(/critical vulnerability reported in WordPress/i)).toBeInTheDocument();
   });
@@ -83,7 +82,7 @@ describe('WPIndex', () => {
     render(<WPIndex {...defaultProps} />);
     
     // Verificar que hay contenido en los artículos
-    expect(screen.getByText(/Anthropic has launched Claude 4/i)).toBeInTheDocument();
+    expect(screen.getByText(/DeepSeek has launched DeepSeek Flash/i)).toBeInTheDocument();
     expect(screen.getByText(/integration of artificial intelligence in cybersecurity/i)).toBeInTheDocument();
     expect(screen.getByText(/remote code execution/i)).toBeInTheDocument();
   });

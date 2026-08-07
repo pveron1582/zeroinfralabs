@@ -48,8 +48,9 @@ describe('Happy Path: Scenario 03 - EternalBlue', () => {
     const result = exec('arp-scan 172.16.0.0/24', attacker, [attacker, win7Target], 1);
     expectSuccess(result);
     // arp-scan ya no completa misiones - es un comando libre
-    expect(result.discoveredHosts).toBeDefined();
-    expect(result.discoveredHosts?.some(h => h.ip === '172.16.0.11')).toBe(true);
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toBeDefined();
+    expect(dh?.some(h => h.ip === '172.16.0.11')).toBe(true);
     expect(result.output).toContain('172.16.0.11');
   });
 
@@ -58,8 +59,9 @@ describe('Happy Path: Scenario 03 - EternalBlue', () => {
     const result = exec('nmap -sV 172.16.0.11', attacker, [attacker, target], 2);
     expectSuccess(result);
     // nmap ya no completa misiones - es un comando libre
-    expect(result.scanResults).toBeDefined();
-    expect(result.scanResults?.ports.some(p => p.port === 445)).toBe(true);
+    const sr = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr).toBeDefined();
+    expect(sr?.ports.some(p => p.port === 445)).toBe(true);
     expect(result.output).toContain('445/tcp');
   });
 
@@ -68,12 +70,14 @@ describe('Happy Path: Scenario 03 - EternalBlue', () => {
 
     let result = exec('arp-scan 172.16.0.0/24', attacker, machines, 1);
     // arp-scan ya no completa misiones
-    expect(result.discoveredHosts).toBeDefined();
+    const dh2 = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh2).toBeDefined();
     machines = evolveState(machines, result);
 
     result = exec('nmap -sV 172.16.0.11', attacker, machines, 2);
     // nmap ya no completa misiones
-    expect(result.scanResults?.ports.some(p => p.port === 445)).toBe(true);
+    const sr2 = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr2?.ports.some(p => p.port === 445)).toBe(true);
     machines = evolveState(machines, result);
 
     exec('msfconsole', attacker, machines, 3);
@@ -87,7 +91,8 @@ describe('Happy Path: Scenario 03 - EternalBlue', () => {
     result = exec('run', attacker, machines, 3);
     expect(result.output).toContain('VULNERABLE');
     // MSF ya no completa misiones directamente - verificar vulnerabilidad encontrada
-    expect(result.foundVulnerability?.vulnId).toBe('MS17-010');
+    const fv = 'foundVulnerability' in result ? result.foundVulnerability : undefined;
+    expect(fv?.vulnId).toBe('MS17-010');
     machines = evolveState(machines, result);
 
     exec('back', attacker, machines, 4);
@@ -102,14 +107,17 @@ describe('Happy Path: Scenario 03 - EternalBlue', () => {
     result = exec('exploit', attacker, machines, 4);
     expect(result.output).toContain('Meterpreter session');
     // exploit ya no completa misiones - verificar sesión abierta
-    expect(result.newMachineId).toBe('win7-target');
+    const nmid = 'newMachineId' in result ? result.newMachineId : undefined;
+    expect(nmid).toBe('win7-target');
     machines = evolveState(machines, result);
 
     result = exec('getuid', attacker, machines, 5);
     expect(result.output).toContain('NT AUTHORITY');
     expect(result.output).toContain('SYSTEM');
     // getuid ya no completa misiones - verificar usuario SYSTEM
-    expect(result.uidChecked).toBe(true);
-    expect(result.isSystem).toBe(true);
+    const uc = 'uidChecked' in result ? result.uidChecked : undefined;
+    expect(uc).toBe(true);
+    const sys = 'isSystem' in result ? result.isSystem : undefined;
+    expect(sys).toBe(true);
   });
 });

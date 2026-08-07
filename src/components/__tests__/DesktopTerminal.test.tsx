@@ -1,9 +1,7 @@
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { DesktopTerminal } from '../DesktopTerminal';
-import { useScenarioStore } from '../../store/scenarioStore';
 import type { Machine } from '../../types';
 
 // Mock del store
@@ -22,6 +20,12 @@ const mockState = {
   setFtpSession: vi.fn(),
   sshSession: null,
   setSshSession: vi.fn(),
+  // Identity slice (necesario para useIdentityStack)
+  identityStack: [],
+  pushIdentity: vi.fn(),
+  popIdentity: vi.fn(),
+  resetIdentity: vi.fn(),
+  applyIdentity: vi.fn(),
   missions: [],
   currentScenario: { id: 'scenario-01', initialMachineId: 'attacker-01', category: 'General' } as any,
   language: 'es',
@@ -30,6 +34,8 @@ const mockState = {
   setActiveApp: vi.fn(),
   refreshBrowser: vi.fn(),
   toggleUiMode: vi.fn(),
+  setTermColor: vi.fn(),
+  termColor: '#10b981',
 };
 
 vi.mock('../../store/scenarioStore', () => ({
@@ -61,8 +67,9 @@ describe('DesktopTerminal', () => {
     vi.clearAllMocks();
   });
 
-  it('debe renderizar el escritorio y mostrar el reloj', () => {
+  function renderDesktop() {
     const machine = createMockMachine();
+    const onOpenTour = vi.fn();
     render(
       <DesktopTerminal
         scenarioId="scenario-01"
@@ -72,56 +79,94 @@ describe('DesktopTerminal', () => {
         onMissionComplete={vi.fn()}
         onChangeMachine={vi.fn()}
         onCredentialsFound={vi.fn()}
+        onOpenTour={onOpenTour}
       />
     );
+    return { machine, onOpenTour };
+  }
+
+  it('debe renderizar el escritorio, el reloj y los iconos sin ventanas abiertas', () => {
+    renderDesktop();
 
     // Debe contener el botón de aplicaciones
     expect(screen.getByText('Aplicaciones')).toBeInTheDocument();
-    
-    // Al menos una terminal inicial debe estar renderizada
+
+    // Sin ventanas iniciales: solo los iconos del escritorio
+    expect(screen.queryByText('Terminal 1 - root@kali')).not.toBeInTheDocument();
+    expect(screen.queryByText('Manual de uso - manual.pdf')).not.toBeInTheDocument();
+    expect(screen.getByText('Terminal', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.getByText('Fondos')).toBeInTheDocument();
+    expect(screen.getByText('Manual', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.getByText('Guía', { selector: 'span' })).toBeInTheDocument();
+  });
+
+  it('debe abrir el tour al hacer clic en el icono de Foxy', () => {
+    const { onOpenTour } = renderDesktop();
+
+    fireEvent.click(screen.getByText('Guía', { selector: 'span' }));
+
+    expect(onOpenTour).toHaveBeenCalledTimes(1);
+  });
+
+  it('debe renderizar las ventanas por encima de los iconos del escritorio', () => {
+    renderDesktop();
+
+    // Abrir una terminal para comparar z-index con los iconos
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
+
+    const icons = document.querySelector('[data-tour="desktop-icons"]');
+    const termWin = document.querySelector('[data-tour="terminal-window"]');
+
+    expect(icons).not.toBeNull();
+    expect(termWin).not.toBeNull();
+
+    // Los iconos deben quedar por debajo de cualquier ventana: z-0 vs zIndex >= 1
+    expect(icons?.className).toContain('z-0');
+    expect(icons?.className).not.toContain('z-10');
+    expect(parseInt((termWin as HTMLElement).style.zIndex, 10)).toBeGreaterThan(0);
+  });
+
+  it('debe abrir el manual PDF al hacer clic en su icono del escritorio', () => {
+    renderDesktop();
+
+    // Hacer clic en el icono Manual del escritorio
+    fireEvent.click(screen.getByText('Manual', { selector: 'span' }));
+
+    expect(screen.getByText('Manual de uso - manual.pdf')).toBeInTheDocument();
+    expect(screen.getByTestId('pdf-reader')).toBeInTheDocument();
+  });
+
+  it('debe abrir una terminal al hacer clic en su icono del escritorio', () => {
+    renderDesktop();
+
+    // Click en el icono Terminal del escritorio
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
+
     expect(screen.getByText('Terminal 1 - root@kali')).toBeInTheDocument();
   });
 
   it('debe abrir una nueva terminal y asignarle un título incremental', async () => {
-    const machine = createMockMachine();
-    render(
-      <DesktopTerminal
-        scenarioId="scenario-01"
-        machine={machine}
-        allMachines={[machine]}
-        currentMissionId={1}
-        onMissionComplete={vi.fn()}
-        onChangeMachine={vi.fn()}
-        onCredentialsFound={vi.fn()}
-      />
-    );
+    renderDesktop();
 
     // Click en botón agregar terminal (el de icono +)
     const addButton = screen.getByTitle('Nueva Terminal');
     fireEvent.click(addButton);
 
-    // Debería aparecer "Terminal 2"
+    // Debería aparecer "Terminal 1" (primera terminal)
+    expect(screen.getByText('Terminal 1 - root@kali')).toBeInTheDocument();
+
+    fireEvent.click(addButton);
     expect(screen.getByText('Terminal 2 - root@kali')).toBeInTheDocument();
   });
 
   it('debe poder cerrar una terminal', async () => {
-    const machine = createMockMachine();
-    render(
-      <DesktopTerminal
-        scenarioId="scenario-01"
-        machine={machine}
-        allMachines={[machine]}
-        currentMissionId={1}
-        onMissionComplete={vi.fn()}
-        onChangeMachine={vi.fn()}
-        onCredentialsFound={vi.fn()}
-      />
-    );
+    renderDesktop();
 
-    // Terminal 1 inicialmente presente
+    // Abrir la primera terminal
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
     expect(screen.getByText('Terminal 1 - root@kali')).toBeInTheDocument();
 
-    const closeButton = screen.getByTitle('Cerrar');
+    const closeButton = screen.getAllByTitle('Cerrar')[0];
     fireEvent.click(closeButton);
 
     // Esperar a que la animación de cierre termine (300ms timeout en closeWindow)
@@ -130,87 +175,80 @@ describe('DesktopTerminal', () => {
     });
   });
 
-  it('debe alternar la transparencia de la terminal usando la barra deslizante', async () => {
-    const machine = createMockMachine();
-    render(
-      <DesktopTerminal
-        scenarioId="scenario-01"
-        machine={machine}
-        allMachines={[machine]}
-        currentMissionId={1}
-        onMissionComplete={vi.fn()}
-        onChangeMachine={vi.fn()}
-        onCredentialsFound={vi.fn()}
-      />
-    );
+  it('debe alternar la transparencia de la terminal desde el panel de configuración', async () => {
+    renderDesktop();
 
-    // El botón de opacidad debe iniciar en 50%
-    const opacityBtn = screen.getByRole('button', { name: '50%' });
-    expect(opacityBtn).toBeInTheDocument();
+    // Abrir la primera terminal para poder usar sus ajustes
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
 
-    // Al hacer click, debe abrir el slider
-    fireEvent.click(opacityBtn);
-    
+    // Abrir el panel de configuración de terminal
+    fireEvent.click(screen.getByTitle('Configuración de terminal'));
+
     await waitFor(() => {
-      expect(screen.getByRole('slider')).toBeInTheDocument();
+      expect(screen.getAllByRole('slider')).toHaveLength(2);
     });
 
-    const slider = screen.getByRole('slider') as HTMLInputElement;
-    expect(slider.value).toBe('50');
+    const [, opacitySlider] = screen.getAllByRole('slider') as HTMLInputElement[];
+    expect(opacitySlider.value).toBe('50');
 
-    fireEvent.change(slider, { target: { value: '75' } });
-    expect(slider.value).toBe('75');
+    fireEvent.change(opacitySlider, { target: { value: '75' } });
+    expect(opacitySlider.value).toBe('75');
+    expect(screen.getByText('75%')).toBeInTheDocument();
+  });
 
-    // Click en ✓ para confirmar
+  it('debe ajustar el tamaño de fuente desde el panel de configuración', async () => {
+    renderDesktop();
+
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
+
+    // Abrir el panel de configuración de terminal
+    fireEvent.click(screen.getByTitle('Configuración de terminal'));
+
     await waitFor(() => {
-      expect(screen.getByText('✓')).toBeInTheDocument();
+      expect(screen.getAllByRole('slider')).toHaveLength(2);
     });
-    fireEvent.click(screen.getByText('✓'));
 
-    // El control vuelve a ser un botón con el nuevo porcentaje
+    const [fontSlider] = screen.getAllByRole('slider') as HTMLInputElement[];
+    expect(fontSlider.value).toBe('13');
+
+    fireEvent.change(fontSlider, { target: { value: '16' } });
+    expect(fontSlider.value).toBe('16');
+    expect(screen.getByText('16px')).toBeInTheDocument();
+  });
+
+  it('debe cerrar el panel de configuración al hacer click fuera', async () => {
+    renderDesktop();
+
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
+
+    // Abrir el panel de configuración de terminal
+    fireEvent.click(screen.getByTitle('Configuración de terminal'));
+
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: '75%' })).toBeInTheDocument();
+      expect(screen.getAllByRole('slider')).toHaveLength(2);
+    });
+
+    // Click fuera del panel (sobre el documento)
+    fireEvent.pointerDown(document.body);
+
+    await waitFor(() => {
+      expect(screen.queryAllByRole('slider')).toHaveLength(0);
     });
   });
 
-  it('debe ajustar el tamaño de fuente usando la barra deslizante', async () => {
-    const machine = createMockMachine();
-    render(
-      <DesktopTerminal
-        scenarioId="scenario-01"
-        machine={machine}
-        allMachines={[machine]}
-        currentMissionId={1}
-        onMissionComplete={vi.fn()}
-        onChangeMachine={vi.fn()}
-        onCredentialsFound={vi.fn()}
-      />
-    );
+  it('debe cambiar el color del texto desde el panel de configuración', async () => {
+    renderDesktop();
 
-    // El botón de fuente debe iniciar en 13px
-    const fontBtn = screen.getByRole('button', { name: '13px' });
-    expect(fontBtn).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
 
-    // Al hacer click, debe abrir el slider
-    fireEvent.click(fontBtn);
+    // Abrir el panel de configuración de terminal
+    fireEvent.click(screen.getByTitle('Configuración de terminal'));
 
     await waitFor(() => {
-      expect(screen.getByRole('slider')).toBeInTheDocument();
+      expect(screen.getByTitle('Naranja')).toBeInTheDocument();
     });
 
-    const slider = screen.getByRole('slider') as HTMLInputElement;
-    expect(slider.value).toBe('13');
-
-    fireEvent.change(slider, { target: { value: '16' } });
-    expect(slider.value).toBe('16');
-
-    await waitFor(() => {
-      expect(screen.getByText('✓')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText('✓'));
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: '16px' })).toBeInTheDocument();
-    });
+    fireEvent.click(screen.getByTitle('Naranja'));
+    expect(mockState.setTermColor).toHaveBeenCalledWith('#f97316');
   });
 });

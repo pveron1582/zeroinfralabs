@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, useRef, type FC } from 'react';
 
 interface TeamMember {
   name: string;
@@ -12,7 +12,7 @@ interface ConsultancySiteProps {
   onViewTeam?: (users: string[]) => void;
 }
 
-export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onNavigate, onViewTeam }) => {
+export const ConsultancySite: FC<ConsultancySiteProps> = ({onViewTeam }) => {
   const team: TeamMember[] = [
     { name: 'Pedro Sánchez', role: 'Senior Web Developer', email: 'psanchez@devconsultancy.com', avatar: 'P' },
     { name: 'Gonzalo Ruiz', role: 'Systems Administrator', email: 'gruiz@devconsultancy.com', avatar: 'G' },
@@ -22,7 +22,7 @@ export const ConsultancySite: React.FC<ConsultancySiteProps> = ({ onNavigate, on
 
   // Extract usernames from emails (pedro, gonzalo, arturo, lucia)
   const usernames = ['pedro', 'gonzalo', 'arturo', 'lucia'];
-  const informedRef = React.useRef(false);
+  const informedRef = useRef(false);
 
   useEffect(() => {
     // Inform store about possible users found (only once)

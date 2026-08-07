@@ -2,7 +2,7 @@
 // Animated lab selection screen showing mouse cursor clicking START
 // Styled to match the real LabGrid component
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { FONT_MONO } from './landing/constants';
 
 interface AnimatedLabSelectProps {

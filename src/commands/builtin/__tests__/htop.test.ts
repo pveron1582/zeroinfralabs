@@ -52,10 +52,11 @@ describe('cmd_htop', () => {
       currentMissionId: 1
     } as any);
 
-    expect(result.blockingCommand).toBeDefined();
-    expect(result.blockingCommand?.cancelKey).toBe('q');
-    expect(result.blockingCommand?.clearScreen).toBe(true);
-    expect(result.blockingCommand?.message).toContain('htop');
+    const bc = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc).toBeDefined();
+    expect(bc?.cancelKey).toBe('q');
+    expect(bc?.clearScreen).toBe(true);
+    expect(bc?.message).toContain('htop');
   });
 
   it('debe mostrar proceso htop resaltado', () => {

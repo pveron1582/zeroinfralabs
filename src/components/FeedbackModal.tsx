@@ -1,7 +1,7 @@
 // ── components/FeedbackModal.tsx ─────────────────────────────────────
 // Modal para enviar feedback general del sitio
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useLanguage } from '../i18n/translations';
 import { trackEvent } from '../utils/analytics';
 

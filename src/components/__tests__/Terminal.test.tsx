@@ -1,12 +1,10 @@
 // ── components/__tests__/Terminal.test.tsx ─────────────────────────
 // Tests para el componente Terminal
 
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Terminal } from '../Terminal';
-import { useScenarioStore } from '../../store/scenarioStore';
 import type { Machine } from '../../types';
 
 // Mock dinámico del store para simular el comportamiento global
@@ -25,6 +23,15 @@ const mockState = {
   setFtpSession: vi.fn(),
   sshSession: null,
   setSshSession: vi.fn(),
+  setSuUser: vi.fn(),
+  setPrivescCompleted: vi.fn(),
+  resetPrivescCompleted: vi.fn(),
+  // Identity slice (necesario para useIdentityStack)
+  identityStack: [],
+  pushIdentity: vi.fn(),
+  popIdentity: vi.fn(),
+  resetIdentity: vi.fn(),
+  applyIdentity: vi.fn(),
   missions: [],
   currentScenario: { initialMachineId: 'attacker-01' } as any,
 };
@@ -159,6 +166,53 @@ describe('Terminal', () => {
     expect((input as HTMLInputElement).value).toBe('help');
   });
 
+  it('debe aceptar la password de su root tipeada carácter a carácter (regresión hideValue)', () => {
+    // El attacker arranca como root; tras `su kali` (sin password, root authority)
+    // vuelve a `su root` desde kali: ahí SÍ se tipea la password de root.
+    const attackerMachine = createMockMachine({
+      su_user: 'kali',
+      known_passwords: { kali: 'zilabs', root: 'zilabs' },
+      files: [
+        { path: '/etc/passwd', content: 'root:x:0:0:root:/root:/bin/bash\nkali:x:1000:1000:kali:/home/kali:/bin/bash\n', type: 'text' },
+      ],
+    });
+    const { container } = render(
+      <Terminal
+        scenarioId="scenario-01"
+        machine={attackerMachine}
+        allMachines={[attackerMachine]}
+        currentMissionId={1}
+        onMissionComplete={vi.fn()}
+        onChangeMachine={vi.fn()}
+        onCredentialsFound={vi.fn()}
+      />
+    );
+
+    // Simula un usuario real: cada tecla agrega un char al valor ACTUAL del DOM
+    // (no seteamos el valor completo de una vez). Regresión: el input oculto de
+    // password forzaba value='', con lo que React descartaba los caracteres
+    // previos y solo sobrevivía la última tecla → "su: Authentication failure".
+    const typeAndEnter = (text: string) => {
+      let input = container.querySelector('input')!;
+      for (const ch of text) {
+        fireEvent.change(input, { target: { value: input.value + ch } });
+        input = container.querySelector('input')!;
+      }
+      fireEvent.keyDown(input, { key: 'Enter' });
+    };
+
+    typeAndEnter('su root');
+
+    // El prompt de password debe aparecer
+    expect(screen.getAllByText(/password:/i).length).toBeGreaterThan(0);
+
+    typeAndEnter('zilabs');
+
+    // No debe haber Authentication failure y el switch debe aplicarse
+    expect(screen.queryByText(/Authentication failure/i)).toBeNull();
+    expect(mockState.setSuUser).toHaveBeenCalledWith('attacker-01', 'root');
+  });
+
   it('debe limpiar el input al ejecutar un comando', () => {
     const attackerMachine = createMockMachine();
     render(
@@ -291,7 +345,7 @@ describe('Terminal', () => {
       />
     );
 
-    expect(screen.getByText((content, element) => {
+    expect(screen.getByText((content, _element) => {
       return content.includes('ready');
     })).toBeInTheDocument();
   });

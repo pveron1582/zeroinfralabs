@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import React from 'react';
 import { useScenarioStore } from '../store/scenarioStore';
-import { WALLPAPERS, type Wallpaper } from '../components/desktopWallpapers';
+import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type Wallpaper } from '../components/desktopWallpapers';
 
 export interface DesktopWindow {
   id: string;
-  type: 'terminal' | 'wallpaper' | 'browser';
+  type: 'terminal' | 'wallpaper' | 'browser' | 'guide';
   title: string;
   x: number;
   y: number;
@@ -33,7 +33,7 @@ export function useDesktopWindows() {
   }, []);
 
   const [activeWallpaper, setActiveWallpaper] = useState<string>(() => {
-    return localStorage.getItem('cyberops-desktop-wallpaper') || 'neon-kali';
+    return localStorage.getItem('cyberops-desktop-wallpaper') || DEFAULT_WALLPAPER_ID;
   });
 
   useEffect(() => {
@@ -42,24 +42,9 @@ export function useDesktopWindows() {
 
   const selectedWallpaper: Wallpaper = WALLPAPERS.find(wp => wp.id === activeWallpaper) || WALLPAPERS[0];
 
-  const [windows, setWindows] = useState<DesktopWindow[]>([
-    {
-      id: 'term-initial',
-      type: 'terminal',
-      title: 'Terminal 1 - root@kali',
-      x: 100,
-      y: 80,
-      w: 820,
-      h: 520,
-      opacity: 0.5,
-      fontSize: 13,
-      zIndex: 10,
-      minimized: false,
-    }
-  ]);
+  const [windows, setWindows] = useState<DesktopWindow[]>([]);
 
-  const [activeOpacitySliderId, setActiveOpacitySliderId] = useState<string | null>(null);
-  const [activeFontSliderId, setActiveFontSliderId] = useState<string | null>(null);
+  const [activeSettingsId, setActiveSettingsId] = useState<string | null>(null);
   const [showAppMenu, setShowAppMenu] = useState(false);
   const [showSysMenu, setShowSysMenu] = useState(false);
   const [closingWindowIds, setClosingWindowIds] = useState<string[]>([]);
@@ -74,6 +59,12 @@ export function useDesktopWindows() {
     }
     return maxNum + 1;
   };
+
+  // Cascada prolija: cada ventana nueva se desplaza en diagonal desde una base
+  // común, y al llegar a CASCADE_MAX pasos vuelve a la posición inicial.
+  const CASCADE_STEP = 30;
+  const CASCADE_MAX = 6;
+  const cascadeOffset = (count: number) => (count % CASCADE_MAX) * CASCADE_STEP;
 
   const addTerminal = () => {
     setWindows(prev => {
@@ -90,8 +81,8 @@ export function useDesktopWindows() {
         }
       }
       const id = `term-${Date.now()}`;
-      const offset = (prev.length % 10) * 25;
-      return [...prev, { id, type: 'terminal' as const, title: `Terminal ${maxNum + 1} - root@kali`, x: 100 + offset, y: 80 + offset, w: 820, h: 520, opacity: 0.5, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
+      const offset = cascadeOffset(prev.length);
+      return [...prev, { id, type: 'terminal' as const, title: `Terminal ${maxNum + 1} - root@kali`, x: 90 + offset, y: 60 + offset, w: 820, h: 520, opacity: 0.5, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
     });
   };
 
@@ -104,8 +95,8 @@ export function useDesktopWindows() {
       }
       const id = `browser-${Date.now()}`;
       const nextNum = getNextBrowserNum();
-      const offset = (prev.length % 10) * 25;
-      return [...prev, { id, type: 'browser' as const, title: `Chrome ${nextNum}`, x: 280 + offset, y: 80 + offset, w: 800, h: 520, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
+      const offset = cascadeOffset(prev.length);
+      return [...prev, { id, type: 'browser' as const, title: `Chrome ${nextNum}`, x: 240 + offset, y: 60 + offset, w: 800, h: 520, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
     });
   };
 
@@ -116,7 +107,21 @@ export function useDesktopWindows() {
         return prev;
       }
       const id = `wallpaper-${Date.now()}`;
-      return [...prev, { id, type: 'wallpaper' as const, title: isEs ? 'Configuración de Fondo' : 'Wallpaper Settings', x: 180, y: 100, w: 660, h: 540, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
+      const offset = cascadeOffset(prev.length);
+      return [...prev, { id, type: 'wallpaper' as const, title: isEs ? 'Configuración de Fondo' : 'Wallpaper Settings', x: 150 + offset, y: 90 + offset, w: 660, h: 540, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
+    });
+  };
+
+  const addGuide = () => {
+    setWindows(prev => {
+      if (prev.some(w => w.type === 'guide')) {
+        const win = prev.find(w => w.type === 'guide');
+        if (win?.minimized) restoreWindow(win.id);
+        return prev;
+      }
+      const id = `guide-${Date.now()}`;
+      const offset = cascadeOffset(prev.length);
+      return [...prev, { id, type: 'guide' as const, title: isEs ? 'Manual de uso - manual.pdf' : 'User Manual - manual-en.pdf', x: 390 + offset, y: 60 + offset, w: 640, h: 520, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
     });
   };
 
@@ -146,6 +151,21 @@ export function useDesktopWindows() {
   };
 
   const desktopRef = useRef<HTMLDivElement>(null);
+
+  // Mantiene las ventanas dentro del área del escritorio: nunca pueden subir
+  // por encima de la barra de tareas (y = 0) y siempre queda visible una parte
+  // de la ventana para poder volver a agarrarla si se arrastra hacia los bordes.
+  const clampToDesktop = (w: DesktopWindow): DesktopWindow => {
+    const container = desktopRef.current;
+    const cw = container?.clientWidth ?? window.innerWidth;
+    const ch = container?.clientHeight ?? window.innerHeight;
+    const MIN_VISIBLE = 80;
+    return {
+      ...w,
+      x: Math.min(Math.max(w.x, -w.w + MIN_VISIBLE), cw - MIN_VISIBLE),
+      y: Math.min(Math.max(w.y, 0), ch - MIN_VISIBLE),
+    };
+  };
 
   const toggleMaximize = (id: string) => {
     setWindows(prev => prev.map(w => {
@@ -179,7 +199,9 @@ export function useDesktopWindows() {
     const handlePointerMove = (moveEvent: PointerEvent) => {
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
-      setWindows(prev => prev.map(w => w.id === id ? { ...w, x: initialX + deltaX, y: initialY + deltaY } : w));
+      setWindows(prev => prev.map(w => w.id === id
+        ? clampToDesktop({ ...w, x: initialX + deltaX, y: initialY + deltaY })
+        : w));
     };
     const handlePointerUp = () => {
       window.removeEventListener('pointermove', handlePointerMove);
@@ -189,7 +211,7 @@ export function useDesktopWindows() {
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  const startResize = (id: string, e: React.PointerEvent, corner: 'nw' | 'ne' | 'sw' | 'se' = 'se') => {
+  const startResize = (id: string, e: React.PointerEvent, corner: 'nw' | 'n' | 'ne' | 'w' | 'e' | 'sw' | 's' | 'se' = 'se') => {
     e.preventDefault();
     e.stopPropagation();
     bringToFront(id);
@@ -213,7 +235,7 @@ export function useDesktopWindows() {
         if (corner.includes('w')) { const potentialW = Math.max(minW, initialW - deltaX); newX = initialX + initialW - potentialW; newW = potentialW; }
         if (corner.includes('s')) newH = Math.max(minH, initialH + deltaY);
         if (corner.includes('n')) { const potentialH = Math.max(minH, initialH - deltaY); newY = initialY + initialH - potentialH; newH = potentialH; }
-        return { ...w, x: newX, y: newY, w: newW, h: newH };
+        return clampToDesktop({ ...w, x: newX, y: newY, w: newW, h: newH });
       }));
     };
     const handlePointerUp = () => {
@@ -227,16 +249,16 @@ export function useDesktopWindows() {
   const termWindows = windows.filter(w => w.type === 'terminal');
   const browserWindows = windows.filter(w => w.type === 'browser');
   const wallpaperWindows = windows.filter(w => w.type === 'wallpaper');
+  const guideWindows = windows.filter(w => w.type === 'guide');
   const topWindow = windows.reduce<DesktopWindow | null>((best, w) =>
     !w.minimized && (!best || w.zIndex > best.zIndex) ? w : best, null);
   const topWindowId = topWindow?.id;
 
   return {
     time, windows, setWindows, closingWindowIds, activeWallpaper, setActiveWallpaper,
-    selectedWallpaper, activeOpacitySliderId, setActiveOpacitySliderId,
-    activeFontSliderId, setActiveFontSliderId, showAppMenu, setShowAppMenu,
-    showSysMenu, setShowSysMenu, termWindows, browserWindows, wallpaperWindows,
-    topWindowId, addTerminal, addBrowser, openWallpaperPicker, closeWindow,
+    selectedWallpaper, activeSettingsId, setActiveSettingsId, showAppMenu, setShowAppMenu,
+    showSysMenu, setShowSysMenu, termWindows, browserWindows, wallpaperWindows, guideWindows,
+    topWindowId, addTerminal, addBrowser, addGuide, openWallpaperPicker, closeWindow,
     minimizeWindow, restoreWindow, toggleMaximize, bringToFront, changeFontSize,
     startDrag, startResize, desktopRef, isEs, currentScenario, missions, showNotification,
   };

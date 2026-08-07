@@ -72,7 +72,7 @@ describe('Laboratorio 02 - Web OSINT & SSH Compromise', () => {
     expect(types).toEqual([
       'discoveredHosts',
       'scanResults',
-      'custom',
+      'browserAction',
       'foundCredentials',
       'sshLogin',
       'fileRead',

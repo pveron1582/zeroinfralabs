@@ -5,8 +5,6 @@ import type { CommandResponse } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { withState } from '../core/msfHelpers';
 import {
-  contextRegistry,
-  formatContextHelp,
   type MsfContextType,
 } from '../core/ContextRegistry';
 
@@ -165,7 +163,7 @@ export function getContextPrompt(state: MsfState): string {
 
 export const executeContextHelp = (
   cmd: string,
-  args: string[],
+  _args: string[],
   state: MsfState
 ): CommandResponse | null => {
   if (cmd !== 'help' && cmd !== '?') {

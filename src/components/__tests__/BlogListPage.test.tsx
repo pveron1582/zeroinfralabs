@@ -1,9 +1,8 @@
 // ── components/__tests__/BlogListPage.test.tsx ─────────────────────
 // Tests para el componente BlogListPage
 
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { BlogListPage } from '../BlogListPage';
 import { BLOG_ARTICLES } from '../../blog/articles';

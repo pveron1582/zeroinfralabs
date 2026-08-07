@@ -9,21 +9,11 @@ const createMockContext = (machines: Machine[] = []): CommandContext => ({
   machine: machines[0] || { id: 'target-01', machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '00:00:00:00:00:00', os: 'Windows 7', status: 'up', type: 'server' }, discovery_level: 2, scan_results: { ports: [{ port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' }] }, web_enumeration: { web_server: 'none', cms: 'none', directories: [] }, learning_steps: [], files: [] },
   allMachines: machines,
   currentMissionId: 4,
-});
-
-// Create mock machine for testing
-const createMockMachine = (ip: string): Machine => ({
-  id: 'target-01',
-  machine_info: { hostname: 'WIN7-TARGET', ip, mac: '00:00:00:00:00:00', os: 'Windows 7', status: 'up', type: 'server' },
-  discovery_level: 2,
-  scan_results: { ports: [{ port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' }] },
-  web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-  learning_steps: [],
-  files: [],
+  currentDir: '/root',
 });
 
 describe('executeBaseCommand - help', () => {
-  const initialState: MsfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false };
+  const initialState: MsfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false };
 
   it('debe mostrar ayuda general', () => {
     const result = executeBaseCommand('help', [], initialState, createMockContext());
@@ -42,7 +32,7 @@ describe('executeBaseCommand - help', () => {
 });
 
 describe('executeBaseCommand - search', () => {
-  const initialState: MsfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false };
+  const initialState: MsfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false };
 
   it('debe buscar módulos por nombre', () => {
     const result = executeBaseCommand('search', ['ms17_010'], initialState, createMockContext());
@@ -73,12 +63,8 @@ describe('executeBaseCommand - search', () => {
     const result = executeBaseCommand('search', ['ms17'], initialState, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('Use \'use <number>\' to select');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.lastSearchResults).toBeDefined();
-      expect(state.lastSearchResults?.length).toBeGreaterThan(0);
-    }
+    expect(result!.msfStateUpdate?.lastSearchResults).toBeDefined();
+    expect(result!.msfStateUpdate?.lastSearchResults?.length).toBeGreaterThan(0);
   });
 });
 
@@ -89,6 +75,7 @@ describe('executeBaseCommand - use (con búsqueda previa)', () => {
     sessionOpen: false,
     shellMode: false,
     auxChecked: false,
+    uidChecked: false,
     lastSearchResults: [
       'auxiliary/scanner/smb/smb_ms17_010',
       'exploit/windows/smb/ms17_010_eternalblue'
@@ -98,23 +85,15 @@ describe('executeBaseCommand - use (con búsqueda previa)', () => {
   it('debe seleccionar auxiliary por número 0', () => {
     const result = executeBaseCommand('use', ['0'], stateWithSearchResults, createMockContext());
     expect(result).not.toBeNull();
-    expect(result!.output).toContain('auxiliary/scanner/smb/smb_ms17_010');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.moduleType).toBe('auxiliary');
-    }
+    expect(result!.msfStateUpdate?.module).toContain('smb_ms17_010');
+    expect(result!.msfStateUpdate?.moduleType).toBe('auxiliary');
   });
 
   it('debe seleccionar exploit por número 1', () => {
     const result = executeBaseCommand('use', ['1'], stateWithSearchResults, createMockContext());
     expect(result).not.toBeNull();
-    expect(result!.output).toContain('ms17_010_eternalblue');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.moduleType).toBe('exploit');
-    }
+    expect(result!.msfStateUpdate?.module).toContain('ms17_010_eternalblue');
+    expect(result!.msfStateUpdate?.moduleType).toBe('exploit');
   });
 
   it('debe mostrar error con número inválido', () => {
@@ -125,52 +104,34 @@ describe('executeBaseCommand - use (con búsqueda previa)', () => {
 });
 
 describe('executeBaseCommand - use (con path)', () => {
-  const initialState: MsfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false };
+  const initialState: MsfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false };
 
   it('debe cargar auxiliary con path completo', () => {
     const result = executeBaseCommand('use', ['auxiliary/scanner/smb/smb_ms17_010'], initialState, createMockContext());
     expect(result).not.toBeNull();
-    expect(result!.output).toContain('auxiliary');
-    expect(result!.output).toContain('smb_ms17_010');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.module).toContain('smb_ms17_010');
-      expect(state.moduleType).toBe('auxiliary');
-    }
+    expect(result!.msfStateUpdate?.module).toContain('auxiliary');
+    expect(result!.msfStateUpdate?.module).toContain('smb_ms17_010');
+    expect(result!.msfStateUpdate?.moduleType).toBe('auxiliary');
   });
 
   it('debe cargar exploit con path completo', () => {
     const result = executeBaseCommand('use', ['exploit/windows/smb/ms17_010_eternalblue'], initialState, createMockContext());
     expect(result).not.toBeNull();
-    expect(result!.output).toContain('exploit');
-    expect(result!.output).toContain('eternalblue');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.module).toContain('eternalblue');
-      expect(state.moduleType).toBe('exploit');
-    }
+    expect(result!.msfStateUpdate?.module).toContain('exploit');
+    expect(result!.msfStateUpdate?.module).toContain('eternalblue');
+    expect(result!.msfStateUpdate?.moduleType).toBe('exploit');
   });
 
   it('debe cargar auxiliary con nombre parcial que incluye auxiliary', () => {
     const result = executeBaseCommand('use', ['auxiliary', 'smb_ms17_010'], initialState, createMockContext());
     expect(result).not.toBeNull();
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.moduleType).toBe('auxiliary');
-    }
+    expect(result!.msfStateUpdate?.moduleType).toBe('auxiliary');
   });
 
   it('debe cargar exploit con nombre parcial que incluye exploit', () => {
     const result = executeBaseCommand('use', ['exploit', 'ms17_010'], initialState, createMockContext());
     expect(result).not.toBeNull();
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.moduleType).toBe('exploit');
-    }
+    expect(result!.msfStateUpdate?.moduleType).toBe('exploit');
   });
 
   it('debe mostrar error con módulo inexistente', () => {
@@ -188,6 +149,7 @@ describe('executeBaseCommand - show options', () => {
     options: { RHOSTS: '192.168.1.10', RPORT: '445', THREADS: '1' },
     sessionOpen: false,
     shellMode: false,
+    uidChecked: false,
     auxChecked: false
   };
 
@@ -200,7 +162,7 @@ describe('executeBaseCommand - show options', () => {
   });
 
   it('debe mostrar error si no hay módulo seleccionado', () => {
-    const result = executeBaseCommand('show', ['options'], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false }, createMockContext());
+    const result = executeBaseCommand('show', ['options'], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false }, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('No module selected');
   });
@@ -214,6 +176,7 @@ describe('executeBaseCommand - set', () => {
     options: { RHOSTS: '', RPORT: '445', LHOST: '', LPORT: '4444' },
     sessionOpen: false,
     shellMode: false,
+    uidChecked: false,
     auxChecked: false
   };
 
@@ -221,11 +184,7 @@ describe('executeBaseCommand - set', () => {
     const result = executeBaseCommand('set', ['RHOSTS', '192.168.1.10'], stateWithModule, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('RHOSTS => 192.168.1.10');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.options.RHOSTS).toBe('192.168.1.10');
-    }
+    expect(result!.msfStateUpdate?.options.RHOSTS).toBe('192.168.1.10');
   });
 
   it('debe establecer opción LHOST', () => {
@@ -249,29 +208,26 @@ describe('executeBaseCommand - back', () => {
     options: { RHOSTS: '192.168.1.10' },
     sessionOpen: false,
     shellMode: false,
+    uidChecked: false,
     auxChecked: false
   };
 
   it('debe salir del módulo y volver al prompt base', () => {
     const result = executeBaseCommand('back', [], stateWithModule, createMockContext());
     expect(result).not.toBeNull();
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.module).toBeUndefined();
-    }
+    expect(result!.msfStateUpdate?.options).toEqual({});
   });
-});
+  });
 
-describe('executeBaseCommand - exit/quit', () => {
+  describe('executeBaseCommand - exit/quit', () => {
   it('debe retornar null (no es manejado por baseCommand)', () => {
-    const result = executeBaseCommand('exit', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false }, createMockContext());
+    const result = executeBaseCommand('exit', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false }, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('Exiting Metasploit');
   });
 
   it('debe funcionar con quit', () => {
-    const result = executeBaseCommand('quit', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false }, createMockContext());
+    const result = executeBaseCommand('quit', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false }, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('Exiting Metasploit');
   });
@@ -279,7 +235,7 @@ describe('executeBaseCommand - exit/quit', () => {
 
 describe('executeBaseCommand - clear', () => {
   it('debe limpiar la pantalla', () => {
-    const result = executeBaseCommand('clear', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false }, createMockContext());
+    const result = executeBaseCommand('clear', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false }, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('CLEAR_TERMINAL');
   });
@@ -292,6 +248,7 @@ describe('executeBaseCommand - sessions', () => {
       options: { RHOSTS: '192.168.1.10' },
       sessionOpen: true,
       shellMode: false,
+      uidChecked: false,
       auxChecked: false
     };
     const result = executeBaseCommand('sessions', [], state, createMockContext());
@@ -301,7 +258,7 @@ describe('executeBaseCommand - sessions', () => {
   });
 
   it('debe mostrar mensaje si no hay sesiones', () => {
-    const result = executeBaseCommand('sessions', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false }, createMockContext());
+    const result = executeBaseCommand('sessions', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false }, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('No active sessions');
   });
@@ -309,7 +266,7 @@ describe('executeBaseCommand - sessions', () => {
 
 describe('executeBaseCommand - comando desconocido', () => {
   it('debe retornar null para comando desconocido', () => {
-    const result = executeBaseCommand('comando_inexistente', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false }, createMockContext());
+    const result = executeBaseCommand('comando_inexistente', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false }, createMockContext());
     expect(result).toBeNull();
   });
 });

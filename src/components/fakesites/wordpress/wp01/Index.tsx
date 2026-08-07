@@ -1,4 +1,3 @@
-import React from 'react';
 // ── components/fakesites/wordpress/wp01/Index.tsx ─────────────────
 export function WPIndex({ ip, onNavigate }: { ip: string; onNavigate: (url: string) => void }) {
   const today = Date.now();
@@ -22,9 +21,9 @@ export function WPIndex({ ip, onNavigate }: { ip: string; onNavigate: (url: stri
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 xl:gap-10 p-4 md:p-6 lg:p-8 xl:p-10 w-full max-w-7xl mx-auto">
         <main className="flex-1 min-w-0 space-y-6 md:space-y-8">
           <article className="border border-gray-200 rounded p-4 md:p-5 lg:p-6">
-            <h2 className="font-bold text-lg md:text-xl lg:text-2xl text-blue-600 mb-1">Claude 4: Anthropic&apos;s new AI generation revolutionizes the market</h2>
+            <h2 className="font-bold text-lg md:text-xl lg:text-2xl text-blue-600 mb-1">DeepSeek Flash: the new open model that rivals frontier AI</h2>
             <p className="text-xs md:text-sm text-gray-400 mb-2">Published on {new Date(today - 0 * 86400000).toLocaleDateString()}</p>
-            <p className="text-sm md:text-base lg:text-lg text-gray-600 leading-relaxed">Anthropic has launched Claude 4, its most advanced artificial intelligence model to date. With improved reasoning capabilities, code analysis, and extended context processing, Claude 4 sets a new standard in AI assistants. The model stands out for its ability to handle complex programming tasks, security analysis, and technical content generation with greater precision and coherence than its predecessors.</p>
+            <p className="text-sm md:text-base lg:text-lg text-gray-600 leading-relaxed">DeepSeek has launched DeepSeek Flash, a new generation of artificial intelligence models that is already shaking up the industry. With impressive performance at a fraction of the cost of proprietary systems, DeepSeek Flash stands at the level of frontier models, offering advanced reasoning, code generation, and natural language understanding. Its open architecture is driving innovation in startups, security research, and enterprise applications around the world.</p>
           </article>
           <article className="border border-gray-200 rounded p-4 md:p-5 lg:p-6">
             <h2 className="font-bold text-lg md:text-xl lg:text-2xl text-blue-600 mb-1">Cybersecurity and AI: How artificial intelligence is transforming digital defense</h2>

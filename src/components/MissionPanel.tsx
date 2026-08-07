@@ -1,5 +1,5 @@
 // ── components/MissionPanel.tsx ───────────────────────────────────
-import React, { useState, useEffect, useCallback, useRef } from "react"
+import _React, { useState, useEffect, useCallback, useRef } from "react"
 import type { Mission, Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
 import { useT, useLanguage } from '../i18n/translations';
@@ -10,6 +10,7 @@ interface Props {
   networkRange: string;
   onOpenBrowser: () => void;
   onOpenNetworkMap: () => void;
+  onExit: () => void;
 }
 
 function HintButton({ mission }: { mission: Mission }) {
@@ -76,7 +77,7 @@ function HintButton({ mission }: { mission: Mission }) {
   );
 }
 
-function StepCard({ mission, fullText, titleText, done, active }: { mission: Mission, fullText: string, titleText: string, done: boolean, active: boolean }) {
+function StepCard({fullText, titleText, done, active }: { fullText: string, titleText: string, done: boolean, active: boolean }) {
   return (
     <div 
       className={`rounded-lg border p-5 transition-colors h-full ${
@@ -251,7 +252,6 @@ function StepCarousel({ missions, resolve, language }: { missions: Mission[], re
           className={`animate-${cardAnimation}`}
         >
           <StepCard
-            mission={currentMission}
             fullText={resolve(missionDesc, currentMission.targetMachineId)}
             titleText={missionTitle}
             done={currentMission.status === 'completed'}
@@ -261,7 +261,8 @@ function StepCarousel({ missions, resolve, language }: { missions: Mission[], re
       </div>
       
       {/* Hints debajo del card */}
-      <div className="px-4 pb-2">
+      <div className="px-4 pt-2 pb-1">
+        <div className="h-px bg-gradient-to-r from-transparent via-gray-700/50 to-transparent mb-3" />
         <HintButton mission={currentMission} />
       </div>
       
@@ -288,7 +289,38 @@ function StepCarousel({ missions, resolve, language }: { missions: Mission[], re
   );
 }
 
-export function MissionPanel({ missions, allMachines, networkRange, onOpenBrowser, onOpenNetworkMap }: Props) {
+function AttackerCredentials({ allMachines }: { allMachines: Machine[] }) {
+  const language = useLanguage();
+  const attacker = allMachines.find(m => m.id.includes('attacker'));
+  const creds = attacker?.known_passwords ?? {};
+  const entries = Object.entries(creds);
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="px-4 pt-3 border-b border-gray-800" data-tour="attacker-creds">
+      <div className="rounded-lg border border-gray-700/60 bg-gray-800/40 p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-violet-400">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+          </svg>
+          <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+            {language === 'es' ? 'Credenciales atacante' : 'Attacker credentials'}
+          </span>
+        </div>
+        <div className="space-y-1">
+          {entries.map(([user, pass]) => (
+            <div key={user} className="flex items-center justify-between font-mono text-xs">
+              <span className="text-gray-400">{user}</span>
+              <span className="text-emerald-300">{pass}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function MissionPanel({ missions, allMachines, networkRange, onOpenNetworkMap, onExit }: Props) {
   const hasNewNetworkInfo = useScenarioStore(s => s.hasNewNetworkInfo);
   const t = useT();
   const language = useLanguage();
@@ -307,34 +339,55 @@ export function MissionPanel({ missions, allMachines, networkRange, onOpenBrowse
     return resolved;
   };
 
-  const visibleMissions = missions.filter(m => m.status !== 'pending');
-
   return (
-    <div className="flex flex-col w-72 flex-shrink-0 bg-gray-900 border-l border-gray-800">
+    <div className="flex flex-col w-72 flex-shrink-0 bg-gray-900 border-l border-gray-800" data-tour="mission-panel">
       {/* Header - solo botón de red, más grande */}
-      <div className="px-4 py-3 border-b border-gray-800 flex justify-center">
-        <button onClick={onOpenNetworkMap} className={`flex items-center justify-center gap-3 px-6 py-3 rounded-lg text-sm font-medium border transition-all w-full max-w-xs ${hasNewNetworkInfo ? 'animate-pulse border-violet-400 text-violet-400 bg-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.3)]' : 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600'}`} title="Network Map">
+      <div className="px-4 py-3 border-b border-gray-800 flex flex-col items-center gap-3">
+        <button onClick={onOpenNetworkMap} data-tour="network-map-btn" className={`flex items-center justify-center gap-3 px-6 py-3 rounded-lg text-sm font-medium border transition-all w-full max-w-xs ${hasNewNetworkInfo ? 'animate-pulse border-violet-400 text-violet-400 bg-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.3)]' : 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600'}`} title="Network Map">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="2" width="6" height="6"/><rect x="2" y="16" width="6" height="6"/><rect x="16" y="16" width="6" height="6"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="5" y1="14" x2="12" y2="14"/><line x1="19" y1="14" x2="12" y2="14"/></svg>
           <span>{t('viewNetwork')}</span>
         </button>
+        <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/60 border border-gray-700/50 w-full max-w-xs">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span className="text-xs font-mono text-emerald-300 font-semibold">{networkRange}</span>
+        </div>
       </div>
 
       {/* Progress bar */}
       <div className="px-5 py-3 border-b border-gray-800">
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs text-gray-600 uppercase tracking-wider">{t('progress')}</span>
-          <span className={`text-xs font-bold font-mono ${pct === 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
+          <span className="text-xs text-gray-500 uppercase tracking-wider">{t('progress')}</span>
+          <span className={`text-xs font-bold font-mono ${pct === 100 ? 'text-emerald-400' : 'text-emerald-400'}`}>
             {pct === 100 ? t('compromised') : `${pct}%`}
           </span>
         </div>
-        <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: pct === 100 ? '#10b981' : '#f59e0b' }} />
+        <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: '#10b981' }} />
         </div>
-        <div className="mt-1 text-xs text-gray-700">{completed}/{total} completed</div>
+        <div className="mt-1 text-xs text-gray-600">{completed}/{total} completed</div>
       </div>
+
+      {/* Credenciales de la máquina atacante */}
+      <AttackerCredentials allMachines={allMachines} />
 
       {/* Mission carousel - siempre visible */}
       <StepCarousel missions={missions} resolve={resolve} language={language} />
+
+      {/* Botón de salir — siempre visible en el panel */}
+      <div className="px-4 py-4 border-t border-gray-800 mt-auto">
+        <button
+          onClick={onExit}
+          title={language === 'es' ? 'Salir del simulador' : 'Exit simulator'}
+          className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-red-600/90 hover:bg-red-500 active:scale-95 text-white font-bold text-sm tracking-wide shadow-lg shadow-red-950/40 border border-red-400/30 transition-all hover:scale-[1.02]"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/>
+          </svg>
+          {language === 'es' ? 'Salir del Simulador' : 'Exit Simulator'}
+        </button>
+      </div>
 
       {/* Styles for animations */}
       <style>{`

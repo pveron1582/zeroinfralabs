@@ -17,45 +17,33 @@ Examples:
   ping -c 3 192.168.1.10
   ping -c 5 -i 2 10.0.0.5`;
 
+const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$/;
+
 export const cmd_ping = {
   name: 'ping',
   execute: (args: string[], ctx: CommandContext): CommandResponse => {
-    // Help flag
     if (args.includes('-h') || args.includes('--help')) {
       return { output: PING_HELP };
     }
 
-    // Parse flags
-    const countIdx = args.indexOf('-c');
-    const count = countIdx >= 0 ? parseInt(args[countIdx + 1], 10) : 4;
-    
-    const intervalIdx = args.indexOf('-i');
-    const interval = intervalIdx >= 0 ? parseInt(args[intervalIdx + 1], 10) : 1;
-    
-    const timeoutIdx = args.indexOf('-W');
-    const timeout = timeoutIdx >= 0 ? parseInt(args[timeoutIdx + 1], 10) : 3;
-    
-    const sizeIdx = args.indexOf('-s');
-    const packetSize = sizeIdx >= 0 ? parseInt(args[sizeIdx + 1], 10) : 56;
+    let count = 4, interval = 1, packetSize = 56;
+    let target: string | undefined;
 
-    // Find target (first non-flag argument)
-    const target = args.find((arg, idx) => {
-      if (arg.startsWith('-')) return false;
-      // Check if this arg is a value for a flag
-      if (idx > 0 && args[idx - 1].startsWith('-')) {
-        const prevFlag = args[idx - 1];
-        if (['-c', '-i', '-W', '-s'].includes(prevFlag)) return false;
+    for (let i = 0; i < args.length; i++) {
+      switch (args[i]) {
+        case '-c': count = parseInt(args[++i], 10); break;
+        case '-i': interval = parseInt(args[++i], 10); break;
+        case '-s': packetSize = parseInt(args[++i], 10); break;
+        default:
+          if (!target && !args[i].startsWith('-')) target = args[i];
       }
-      return true;
-    });
+    }
 
     if (!target) {
       return { output: 'ping: usage error: Destination address required\n\n' + PING_HELP, isError: true };
     }
 
-    // Validate IP format
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    if (!ipRegex.test(target)) {
+    if (!IP_REGEX.test(target)) {
       return { output: `ping: ${target}: Name or service not known`, isError: true };
     }
 

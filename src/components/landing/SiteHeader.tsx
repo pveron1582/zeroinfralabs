@@ -1,6 +1,6 @@
 // Shared sticky header for landing, labs, and blog
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage, useSetLanguage } from '../../i18n/translations';
 import { useColors, FONT_MONO, FONT_SANS } from './constants';

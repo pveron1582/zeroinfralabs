@@ -4,6 +4,12 @@
 // Solo reporta resultados del escaneo para que el laboratorio valide.
 
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
+import { normalizePath, resolvePath } from '../../utils/path';
+import { getCurrentUser } from '../../utils/users';
+import { canCreateInDir, canEditFile } from '../../utils/permissions';
+import { findFile, findParentDir, defaultOwnership } from '../../utils/fs';
+import { applyUmask } from '../builtin/umask';
+import { effectivePortState } from '../../frameworks/network/networkState';
 
 const NMAP_HELP = `Nmap 7.92 ( https://nmap.org ) — Simulated Help
 
@@ -104,16 +110,24 @@ export const cmd_nmap = {
       if (vLevel >= 2) output += `Device type: ${target.machine_info.type === 'workstation' ? 'general purpose' : 'server'}\nRunning: ${target.machine_info.os.split(' ')[0]}\n`;
       output += `Nmap done: 1 IP address (1 host up) scanned in 0.42 seconds\n`;
 
+      const lines = output.split('\n');
       return { 
         output, 
+        type: 'scan',
+        streamingLineDelays: lines.map(() => 30 + Math.random() * 50),
         scanResults: {
           targetId: target.id,
-          targetIp: ip,
+          targetIp: ip || '',
           targetHostname: target.machine_info.hostname,
           ports: [], // Ping scan doesn't scan ports
           osDetected: undefined,
         },
-        discoveredPorts: target.id 
+        discoveredPorts: target.id,
+        discoveredHosts: [{
+          ip: target.machine_info.ip,
+          mac: target.machine_info.mac,
+          hostname: target.machine_info.hostname,
+        }],
       };
     }
 
@@ -233,13 +247,47 @@ export const cmd_nmap = {
 
     // ── Build output files ──
     const createdFiles: FileEntry[] = [];
+    const createdFileErrors: string[] = [];
     // Use current directory from context (defaults to /root if not set)
     const currentDir = ctx.currentDir || '/root';
+    // Si la máquina del atacante está disponible, validamos permisos y asignamos
+    // owner/group/mode. Si no (tests legacy, contextos sin máquina), mantenemos
+    // el comportamiento previo: archivo sin metadatos, sin validación.
+    const localMachine = ctx.machine;
+    const hasLocalMachine = !!localMachine;
+    const nmapUser = hasLocalMachine ? getCurrentUser(localMachine) : null;
+    const nmapHome = nmapUser?.home ?? '/root';
+
+    const tryAddCreatedFile = (rawPath: string, content: string) => {
+      if (!hasLocalMachine) {
+        const fullPath = rawPath.startsWith('/') ? rawPath : `${currentDir}/${rawPath}`;
+        const cleanPath = fullPath.endsWith('/') && fullPath.length > 1 ? fullPath.slice(0, -1) : fullPath;
+        createdFiles.push({ path: cleanPath, content, type: 'text' });
+        return;
+      }
+      const fullPath = normalizePath(resolvePath(rawPath, currentDir, nmapHome));
+      const cleanPath = fullPath.endsWith('/') && fullPath.length > 1 ? fullPath.slice(0, -1) : fullPath;
+      const parentDir = findParentDir(localMachine, cleanPath);
+      const existing = findFile(localMachine, cleanPath);
+      if (existing) {
+        if (!canEditFile(localMachine, existing, nmapUser)) {
+          createdFileErrors.push(`nmap: cannot write to '${rawPath}': Permission denied`);
+          return;
+        }
+      } else {
+        if (!canCreateInDir(localMachine, parentDir, nmapUser)) {
+          createdFileErrors.push(`nmap: cannot create '${rawPath}': Permission denied`);
+          return;
+        }
+      }
+      const ownership = existing
+        ? { owner: existing.owner ?? 'root', group: existing.group ?? 'root', mode: existing.mode ?? applyUmask(0o644, ctx.umask ?? 0o022) }
+        : defaultOwnership(localMachine, nmapUser!, applyUmask(0o644, ctx.umask ?? 0o022));
+      createdFiles.push({ path: cleanPath, content, type: 'text', owner: ownership.owner, group: ownership.group, mode: ownership.mode });
+    };
 
     if (outputFileNormal) {
-      // Ensure filename has proper path (relative to current directory)
-      const filePath = outputFileNormal.startsWith('/') ? outputFileNormal : `${currentDir}/${outputFileNormal}`;
-      createdFiles.push({ path: filePath, content: output, type: 'text' });
+      tryAddCreatedFile(outputFileNormal, output);
     }
 
     if (outputFileGrep) {
@@ -247,20 +295,33 @@ export const cmd_nmap = {
       openPorts.forEach(p => {
         grepOutput += `Host: ${ip} (${target.machine_info.hostname})\tPorts: ${p.port}/${p.state}/${p.protocol}//${p.service}//${isVersionScan ? p.version : ''}\n`;
       });
-      // Ensure filename has proper path (relative to current directory)
-      const filePath = outputFileGrep.startsWith('/') ? outputFileGrep : `${currentDir}/${outputFileGrep}`;
-      createdFiles.push({ path: filePath, content: grepOutput, type: 'text' });
+      tryAddCreatedFile(outputFileGrep, grepOutput);
     }
 
     // ── Update discovery level ──
     target.discovery_level = Math.max(target.discovery_level ?? 0, 2);
 
+    if (createdFileErrors.length > 0) {
+      output += '\n' + createdFileErrors.join('\n') + '\n';
+    }
+
+    const outputLines = output.split('\n');
     const response: CommandResponse = {
       output,
+      type: 'scan',
+      streamingLineDelays: outputLines.map((line, idx) => {
+        if (line.startsWith('Starting') || line.startsWith('Nmap done')) return 30 + Math.random() * 30;
+        if (line.startsWith('Initiating') || line.startsWith('Scanning') || line.startsWith('Skipping')) return 80 + Math.random() * 60;
+        if (line.startsWith('SENT') || line.startsWith('RCVD')) return 150 + Math.random() * 100;
+        if (line.startsWith('|_')) return 60 + Math.random() * 40;
+        if (line.match(/^\d+\/\w+\s+(open|filtered|closed)/)) return 50 + Math.random() * 60;
+        if (idx === outputLines.length - 1) return 40 + Math.random() * 40;
+        return 40 + Math.random() * 50;
+      }),
       // Metadata para que el laboratorio valide
       scanResults: {
         targetId: target.id,
-        targetIp: ip,
+        targetIp: ip || '',
         targetHostname: target.machine_info.hostname,
         ports: openPorts.map(p => ({
           port: p.port,
@@ -301,16 +362,16 @@ function parsePorts(args: string[], target: any): any[] {
     }
   }
 
-  let portsToScan: number[] = [];
+  let result: any[];
 
   if (portSpec === null) {
-    // Default: scan well-known ports 1-1024
-    portsToScan = Array.from({ length: 1024 }, (_, i) => i + 1);
+    // Default: scan well-known ports 1-1024 — filter by range, no array allocation
+    result = allPorts.filter((p: any) => p.port >= 1 && p.port <= 1024);
   } else if (portSpec === '-') {
-    // -p- : all 65535 ports
-    portsToScan = Array.from({ length: 65535 }, (_, i) => i + 1);
+    // -p- : all 65535 ports — return all ports directly
+    result = [...allPorts];
   } else {
-    // Parse specific ports/ranges
+    // Parse specific ports/ranges into a Set for O(1) lookup
     const requestedPorts = new Set<number>();
     portSpec.split(',').forEach(part => {
       if (part.includes('-')) {
@@ -325,18 +386,18 @@ function parsePorts(args: string[], target: any): any[] {
         if (!isNaN(n)) requestedPorts.add(n);
       }
     });
-    portsToScan = Array.from(requestedPorts);
+    result = allPorts.filter((p: any) => requestedPorts.has(p.port));
   }
 
-  // Match against target's actual ports
-  const matched = allPorts.filter((p: any) => portsToScan.includes(p.port));
+  // Estado efectivo: el firewall puede filtrar puertos (DROP/REJECT ufw
+  // default-deny) y un servicio detenido marca el puerto como cerrado.
+  result = result.map((p: any) => ({ ...p, state: effectivePortState(target, p) }));
 
-  // Filter only open ports if --open flag is used
   if (openOnly) {
-    return matched.filter((p: any) => p.state === 'open');
+    result = result.filter((p: any) => p.state === 'open');
   }
 
-  return matched.sort((a: any, b: any) => a.port - b.port);
+  return result.sort((a: any, b: any) => a.port - b.port);
 }
 
 function getVendor(mac: string): string {
@@ -447,5 +508,10 @@ function performNetworkPingScan(
   const totalHosts = Math.pow(2, 32 - parsed.mask);
   output += `\nNmap done: ${totalHosts} IP addresses (${machinesInNetwork.length} host${machinesInNetwork.length !== 1 ? 's' : ''} up) scanned in ${(totalHosts * 0.01).toFixed(2)} seconds\n`;
 
-  return { output };
+  const outLines = output.split('\n');
+  return {
+    output,
+    streamingLineDelays: outLines.map(() => 40 + Math.random() * 60),
+    discoveredHosts: hostsFound.length > 0 ? hostsFound : undefined,
+  };
 }

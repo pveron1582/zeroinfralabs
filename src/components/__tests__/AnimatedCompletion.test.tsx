@@ -1,7 +1,6 @@
 // ── components/__tests__/AnimatedCompletion.test.tsx ──────────────────────
 // Tests for the AnimatedCompletion mockup component
 
-import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AnimatedCompletion } from '../AnimatedCompletion';

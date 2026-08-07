@@ -1,7 +1,7 @@
 // ── components/SurveyModal.tsx ─────────────────────────────────────
 // Post-lab survey modal — collects rating, difficulty, recommendation and comments
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Scenario } from '../types';
 import { useT } from '../i18n/translations';
 import { trackEvent } from '../utils/analytics';

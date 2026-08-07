@@ -1,7 +1,10 @@
 // ── components/FakeBrowser.tsx ──────────────────────────────────────
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
+import { logger } from '../utils/logger';
+import { findDirEntry, defaultOwnership, buildNewFile } from '../utils/fs';
+import { getUser } from '../utils/users';
 import { WordPressSite } from './fakesites/WordPressSite';
 import { InclusionSite } from './fakesites/lfi_lab/InclusionSIte';
 import { ConsultancySite } from './fakesites/ConsultancySite';
@@ -222,7 +225,7 @@ export function FakeBrowser({
   const lfiMachine = useMemo(() => allMachines.find(m => m.id.includes('lfi')), [allMachines]);
   const sshMachine = useMemo(() => allMachines.find(m => m.id === 'lab-scenario-02-ssh'), [allMachines]);
   const sqliMachine = useMemo(() => {
-    console.log('Available machines:', allMachines.map(m => ({ id: m.id, ip: m.machine_info.ip })));
+    logger.debug('Available machines:', allMachines.map(m => ({ id: m.id, ip: m.machine_info.ip })));
     return allMachines.find(m => m.id.includes('sqli'));
   }, [allMachines]);
 
@@ -322,11 +325,12 @@ export function FakeBrowser({
       const attackerMachine = allMachines.find(m => m.machine_info?.type === 'workstation' && m.machine_info?.os?.includes('Kali'));
       const originalFile = attackerMachine?.files?.find(f => f.path.endsWith('/' + fileName) || f.path === fileName);
       if (originalFile) {
-        addFileToMachine(lfiMachine.id, {
-          path: `/var/www/html/uploads/${fileName}`,
-          content: originalFile.content,
-          type: originalFile.type
-        });
+        const uploadsDirPath = '/var/www/html/uploads';
+        const wwwDataUser = getUser(lfiMachine, 'www-data') ?? { username: 'www-data', uid: 33, gid: 33, home: '/var/www', shell: '/usr/sbin/nologin', groups: [33] };
+        if (!findDirEntry(lfiMachine, uploadsDirPath)) {
+          addFileToMachine(lfiMachine.id, buildNewFile(uploadsDirPath + '/.dir', '', 'text', defaultOwnership(lfiMachine, wwwDataUser, 0o755)));
+        }
+        addFileToMachine(lfiMachine.id, buildNewFile(`/var/www/html/uploads/${fileName}`, originalFile.content, originalFile.type as 'text' | 'binary' | 'hash' | 'symlink', defaultOwnership(lfiMachine, wwwDataUser, 0o644)));
       }
     }
   }, [lfiMachine, allMachines, addFileToMachine, onMissionComplete, confirmRCE, onReportVulnerability]);

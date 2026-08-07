@@ -1,7 +1,8 @@
-// ── commands/builtin/rmdir.ts ───────────────────────────────────────
-// Comando rmdir - Eliminar directorios vacíos
-
-import type { CommandContext, CommandResponse } from '../../types';
+import type { CommandContext, CommandResponse, FileEntry } from '../../types';
+import { normalizePath, resolvePath } from '../../utils/path';
+import { getCurrentUser } from '../../utils/users';
+import { canCreateInDir, canDeleteInDir } from '../../utils/permissions';
+import { findDirEntry, findParentDir, resolveParentDirPath } from '../../utils/fs';
 
 export const cmd_rmdir = {
   name: 'rmdir',
@@ -17,11 +18,9 @@ export const cmd_rmdir = {
     }
 
     let removeParents = false;
-    let directories: string[] = [];
+    const directories: string[] = [];
 
-    // Parsear argumentos
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
+    for (const arg of args) {
       if (arg === '-p') {
         removeParents = true;
       } else if (arg.startsWith('-')) {
@@ -41,116 +40,75 @@ export const cmd_rmdir = {
       };
     }
 
-    // Verificar permisos (solo root puede eliminar en /var, /etc, etc.)
-    const sshUser = (machine.found_credentials as any)?.user || 'user';
-    const isRoot = sshUser === 'root' || machine.id === 'attacker-01';
+    const currentUser = getCurrentUser(machine);
+    const homeDir = currentUser.home;
 
     const results: string[] = [];
+    const newFiles: FileEntry[] = [...machine.files];
 
     for (const dir of directories) {
       try {
-        // Determinar la ruta completa
-        let fullPath: string;
-        
         if (dir === '/') {
           results.push(`rmdir: failed to remove '${dir}': Invalid argument`);
           continue;
-        } else if (dir.startsWith('/')) {
-          // Path absoluto
-          fullPath = dir.endsWith('/') ? dir : dir + '/';
-        } else if (dir.startsWith('~')) {
-          // Path relativo a home
-          fullPath = '/home/' + sshUser + '/' + dir.slice(2).replace(/^\//, '');
-          fullPath = fullPath.endsWith('/') ? fullPath : fullPath + '/';
-        } else {
-          // Path relativo al directorio actual
-          const baseDir = currentDir ? (currentDir.endsWith('/') ? currentDir : currentDir + '/') : '/';
-          fullPath = baseDir + dir;
-          fullPath = fullPath.endsWith('/') ? fullPath : fullPath + '/';
         }
 
-        // Normalizar el path (remover ./ y ../)
-        const parts = fullPath.split('/').filter(Boolean);
-        const normalized: string[] = [];
-        for (const part of parts) {
-          if (part === '..') {
-            if (normalized.length > 0) {
-              normalized.pop();
-            }
-          } else if (part !== '.') {
-            normalized.push(part);
-          }
-        }
-        fullPath = normalized.length === 0 ? '/' : '/' + normalized.join('/') + '/';
+        const fullPath = normalizePath(resolvePath(dir, currentDir || '/', homeDir));
 
-        // Verificar si el directorio existe
-        const dirExists = machine.files.some(f => f.path === fullPath + '.dir');
-        if (!dirExists) {
+        const target = findDirEntry({ files: newFiles }, fullPath);
+        if (!target) {
           results.push(`rmdir: failed to remove '${dir}': No such file or directory`);
           continue;
         }
 
-        // Verificar permisos para directorios del sistema
-        if (!isRoot) {
-          const systemDirs = ['/bin', '/boot', '/dev', '/etc', '/lib', '/lib64', '/proc', '/root', '/sbin', '/srv', '/sys', '/usr', '/var'];
-          const isSystemDir = systemDirs.some(sysDir => fullPath.startsWith(sysDir));
-          if (isSystemDir && !fullPath.startsWith('/home') && !fullPath.startsWith('/tmp')) {
-            results.push(`rmdir: failed to remove '${dir}': Permission denied`);
-            continue;
-          }
+        const parentEntry = findParentDir({ files: newFiles }, fullPath);
+        if (!canCreateInDir(machine, parentEntry, currentUser)) {
+          results.push(`rmdir: failed to remove '${dir}': Permission denied`);
+          continue;
         }
 
-        // Verificar si el directorio está vacío
-        const filesInDir = machine.files.filter(f => 
+        const parentPath = resolveParentDirPath(fullPath);
+        const parentDirEntry = findDirEntry({ files: newFiles }, parentPath);
+        if (!canDeleteInDir(machine, parentDirEntry, target, currentUser)) {
+          results.push(`rmdir: failed to remove '${dir}': Operation not permitted`);
+          continue;
+        }
+
+        const filesInDir = newFiles.filter(f =>
           f.path.startsWith(fullPath) && f.path !== fullPath + '.dir'
         );
-        
+
         if (filesInDir.length > 0) {
           results.push(`rmdir: failed to remove '${dir}': Directory not empty`);
           continue;
         }
 
-        // Eliminar directorio(s)
         if (removeParents) {
-          // Con -p: eliminar directorios padres si quedan vacíos
           const parts = fullPath.split('/').filter(p => p);
-          const pathsToCheck: string[] = [];
-
-          // Construir lista de paths a verificar (del más profundo al más superficial)
           for (let i = parts.length; i > 0; i--) {
-            const currentPath = '/' + parts.slice(0, i).join('/') + '/';
-            pathsToCheck.push(currentPath);
-          }
+            const pathToRemove = '/' + parts.slice(0, i).join('/') + '/';
+            const dirIndex = newFiles.findIndex(f => f.path === pathToRemove + '.dir');
+            if (dirIndex === -1) continue;
 
-          // Eliminar directorios en orden (del más profundo al más superficial)
-          for (const pathToRemove of pathsToCheck) {
-            // Verificar si este directorio existe y está vacío
-            const dirIndex = machine.files.findIndex(f => f.path === pathToRemove + '.dir');
-            if (dirIndex === -1) continue; // No existe, saltar
+            const hasFiles = newFiles.some(f =>
+              f.path.startsWith(pathToRemove) && f.path !== pathToRemove + '.dir'
+            );
 
-            // Verificar si hay archivos en este directorio (excluyendo el .dir del directorio mismo)
-            // Buscar archivos que empiecen con este path pero que no sean el .dir del directorio
-            const filesInDir = machine.files.filter(f => {
-              // Es un archivo/directorio dentro de este directorio
-              if (!f.path.startsWith(pathToRemove)) return false;
-              // No contar el propio .dir del directorio
-              if (f.path === pathToRemove + '.dir') return false;
-              return true;
-            });
-
-            if (filesInDir.length === 0) {
-              // El directorio está vacío, eliminarlo
-              machine.files.splice(dirIndex, 1);
+            if (!hasFiles) {
+              const parentForRemoval = findParentDir({ files: newFiles }, pathToRemove);
+              if (canCreateInDir(machine, parentForRemoval, currentUser)) {
+                newFiles.splice(dirIndex, 1);
+              } else {
+                break;
+              }
             } else {
-              // Hay archivos, no podemos eliminar más padres
               break;
             }
           }
         } else {
-          // Sin -p: solo eliminar el directorio especificado
-          const index = machine.files.findIndex(f => f.path === fullPath + '.dir');
+          const index = newFiles.findIndex(f => f.path === fullPath + '.dir');
           if (index !== -1) {
-            machine.files.splice(index, 1);
+            newFiles.splice(index, 1);
           }
         }
 
@@ -159,9 +117,11 @@ export const cmd_rmdir = {
       }
     }
 
+    machine.files = newFiles;
     return {
       output: results.length > 0 ? results.join('\n') : '',
       isError: results.length > 0,
+      filesChanged: newFiles,
     };
   },
 };

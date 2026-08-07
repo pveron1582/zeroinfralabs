@@ -9,7 +9,7 @@ import type { Machine, CommandContext } from '../../../types';
 const createMockContext = (machines: Machine[] = []): CommandContext => ({
   machine: machines[0] || { id: 'target-01', machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '00:00:00:00:00:00', os: 'Windows 7', status: 'up', type: 'server' }, discovery_level: 2, scan_results: { ports: [{ port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' }] }, web_enumeration: { web_server: 'none', cms: 'none', directories: [] }, learning_steps: [], files: [] },
   allMachines: machines,
-  currentMissionId: 4,
+  currentMissionId: 4, currentDir: '/root',
 });
 
 // Create mock machine for testing
@@ -31,15 +31,15 @@ describe('cmd_msfconsole - initialization', () => {
     expect(promptMatches?.length || 0).toBe(0);
   });
 
-  it('debe contener el estado activo en el output', () => {
+  it('debe contener el estado activo en msfStateUpdate', () => {
     const result = cmd_msfconsole.execute();
-    expect(result.output).toContain('MSF_STATE:');
-    expect(result.output).toContain('"active":true');
+    expect(result.msfStateUpdate?.active).toBe(true);
+    expect(result.output).not.toContain('MSF_STATE:');
   });
 });
 
 describe('executeMsfCommand - integration tests', () => {
-  const initialState: MsfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false };
+  const initialState: MsfState = { active: true, uidChecked: false, options: {}, sessionOpen: false, shellMode: false, auxChecked: false };
 
   describe('Command handler priority (BUG-A & BUG-B fix)', () => {
     it('debe usar meterpreter help en sesión (no MSF help)', () => {
@@ -50,6 +50,7 @@ describe('executeMsfCommand - integration tests', () => {
         options: { RHOSTS: '192.168.1.10', LHOST: '192.168.1.5' },
         sessionOpen: true,
         shellMode: false,
+        uidChecked: false,
         auxChecked: true
       };
       const result = executeMsfCommand('help', meterpreterState, createMockContext());
@@ -66,6 +67,7 @@ describe('executeMsfCommand - integration tests', () => {
         options: { RHOSTS: '192.168.1.10' },
         sessionOpen: true,
         shellMode: true,
+        uidChecked: false,
         auxChecked: true
       };
       const result = executeMsfCommand('whoami', shellState, createMockContext());
@@ -81,29 +83,25 @@ describe('executeMsfCommand - integration tests', () => {
       // 1. Search
       let result = executeMsfCommand('search ms17', initialState, ctx);
       expect(result.output).toContain('Matching Modules');
-      const searchStateMatch = result.output.match(/MSF_STATE:(\{[^\n]*\})/);
-      let state = JSON.parse(searchStateMatch![1]);
+      let state = result.msfStateUpdate!;
       expect(state.lastSearchResults?.length).toBeGreaterThan(0);
 
       // 2. Use auxiliary by number
       result = executeMsfCommand('use 0', state, ctx);
-      expect(result.output).toContain('auxiliary');
-      const useStateMatch = result.output.match(/MSF_STATE:(\{[^\n]*\})/);
-      state = JSON.parse(useStateMatch![1]);
+      state = result.msfStateUpdate!;
+      expect(state.module).toContain('auxiliary');
       expect(state.module).toContain('smb_ms17_010');
 
       // 3. Set RHOSTS
       result = executeMsfCommand('set RHOSTS 192.168.1.10', state, ctx);
       expect(result.output).toContain('RHOSTS => 192.168.1.10');
-      const setStateMatch = result.output.match(/MSF_STATE:(\{[^\n]*\})/);
-      state = JSON.parse(setStateMatch![1]);
+      state = result.msfStateUpdate!;
       expect(state.options.RHOSTS).toBe('192.168.1.10');
 
       // 4. Run auxiliary
       result = executeMsfCommand('run', state, ctx);
       expect(result.output).toContain('VULNERABLE');
-      const auxStateMatch = result.output.match(/MSF_STATE:(\{[^\n]*\})/);
-      state = JSON.parse(auxStateMatch![1]);
+      state = result.msfStateUpdate!;
       expect(state.auxChecked).toBe(true);
     });
   });
@@ -117,15 +115,14 @@ describe('executeMsfCommand - integration tests', () => {
         options: { RHOSTS: '192.168.1.10' },
         sessionOpen: true,
         shellMode: false,
+        uidChecked: false,
         auxChecked: true
       };
 
       // Execute shell command
       let result = executeMsfCommand('shell', meterpreterState, createMockContext());
       expect(result.output).toContain('Microsoft Windows');
-
-      const shellStateMatch = result.output.match(/MSF_STATE:(\{[^\n]*\})/);
-      let state = JSON.parse(shellStateMatch![1]);
+      let state = result.msfStateUpdate!;
       expect(state.shellMode).toBe(true);
 
       // Now execute a shell command
@@ -134,8 +131,7 @@ describe('executeMsfCommand - integration tests', () => {
 
       // Exit shell
       result = executeMsfCommand('exit', state, createMockContext());
-      const exitStateMatch = result.output.match(/MSF_STATE:(\{[^\n]*\})/);
-      state = JSON.parse(exitStateMatch![1]);
+      state = result.msfStateUpdate!;
       expect(state.shellMode).toBe(false);
     });
   });
@@ -161,6 +157,7 @@ describe('executeMsfCommand - integration tests', () => {
         options: {},
         sessionOpen: true,
         shellMode: false,
+        uidChecked: false,
         auxChecked: false
       };
       const result = executeMsfCommand('help', meterpreterState, createMockContext());

@@ -1,12 +1,13 @@
 // ── components/Terminal.tsx ───────────────────────────────────────
 // Terminal UI component — solo render, lógica delegada a useCommandRunner
 
-import React from 'react';
 import { useCommandRunner, type CommandRunnerProps } from '../hooks/useCommandRunner';
 import { getAutocompleteSuggestions } from '../utils/autocomplete';
 import { renderKaliPrompt, renderKaliPromptSymbol } from './TerminalPrompt';
 import { AutocompletePanel } from './AutocompletePanel';
 import { StreamingOutput } from './StreamingOutput';
+import { EditorModal } from './EditorModal';
+
 
 const promptColors = {
   user: '#7fffd4',
@@ -19,14 +20,45 @@ const promptColors = {
   line: '#0000ff',
 };
 
+function TerminalInput({
+  inputRef, value, onChange, onKeyDown, color, className = '', hideValue = false,
+}: {
+  inputRef: React.Ref<HTMLInputElement>;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  color: string;
+  className?: string;
+  hideValue?: boolean;
+}) {
+  return (
+    <input
+      ref={inputRef}
+      type={hideValue ? 'password' : 'text'}
+      value={value}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      className={`flex-1 bg-transparent border-none outline-none text-sm ${className}`}
+      style={{ color, caretColor: color, minWidth: '50px' }}
+      autoFocus
+      spellCheck={false}
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="off"
+    />
+  );
+}
+
 export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacity?: number; isWindowed?: boolean }) {
   const { fontSize, opacity = 1, isWindowed = false } = props;
   const {
     history, input, setInput, busy, prompt, color, isRoot,
     scrollRef, inputRef, ftpSession, sshSession, isMsfActive: isMsfActiveFn,
-    blockingCommand, msfState, machine, currentDir,
+    blockingCommand, msfState, machine, currentDir, nanoFile,
     handleKeyDown, showSuggestions, suggestions, suggestionIdx,
     setShowSuggestions, setSuggestions, setSuggestionIdx,
+    setNanoFile, setBusy, handleNanoSave,
+    pendingSu,
   } = useCommandRunner(props);
 
   return (
@@ -58,159 +90,179 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
         </div>
       )}
 
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-5 space-y-3 cursor-text select-text"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#374151 transparent' }}
-        onClick={() => inputRef.current?.focus()}
-      >
-        {history.map((entry, i) => (
-          <div key={entry.timestamp + i} className="space-y-0.5" style={{ animation: 'fadeInEntry 0.12s ease-out' }}>
-            {entry.command !== null && (
-              <div className="flex flex-col gap-0.5">
-                {entry.prompt?.includes('ftp') || entry.prompt?.includes('Name') || entry.prompt?.includes('Password') || entry.prompt?.includes("'s password") ? (
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
-                      {entry.prompt?.trim() === 'ftp>' ? 'ftp> ' : entry.prompt}
-                    </span>
-                    <span className="text-sm" style={{ color }}>{entry.command}</span>
-                  </div>
-                ) : (
-                  <>
-                    <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt, promptColors)}</span>
+      {nanoFile ? (
+        <EditorModal
+          isOpen={true}
+          filePath={nanoFile.path}
+          initialContent={nanoFile.content}
+          readOnly={nanoFile.readOnly}
+          onSave={handleNanoSave}
+          onClose={() => {
+            setNanoFile(null);
+            setBusy(false);
+          }}
+        />
+      ) : (
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-5 space-y-3 cursor-text select-text"
+          style={{ scrollbarWidth: 'thin', scrollbarColor: '#374151 transparent' }}
+          onClick={() => inputRef.current?.focus()}
+        >
+          {history.map((entry, i) => (
+            <div key={entry.timestamp + i} className="space-y-0.5" style={{ animation: 'fadeInEntry 0.12s ease-out' }}>
+              {entry.command !== null && (
+                <div className="flex flex-col gap-0.5">
+                  {entry.prompt?.includes('ftp') || entry.prompt?.includes('Name') || entry.prompt?.includes('Password') || entry.prompt?.includes("'s password") ? (
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt, isRoot, promptColors)}</span>
+                      <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
+                        {entry.prompt?.trim() === 'ftp>' ? 'ftp> ' : entry.prompt}
+                      </span>
                       <span className="text-sm" style={{ color }}>{entry.command}</span>
                     </div>
-                  </>
-                )}
-              </div>
-            )}
-            {entry.streaming && entry.lines
-              ? <StreamingOutput lines={entry.lines} color={color} delays={entry.lineDelays} />
-              : <pre className="whitespace-pre-wrap text-xs leading-relaxed" style={{ color: entry.command === null ? color + '99' : color }}>
-                  {entry.output}
-                </pre>
-            }
-          </div>
-        ))}
+                  ) : (
+                    <>
+                      <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt, promptColors)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt, isRoot, promptColors)}</span>
+                        <span className="text-sm" style={{ color }}>{entry.command}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+              {entry.streaming && entry.lines
+                ? <StreamingOutput lines={entry.lines} color={color} delays={entry.lineDelays} />
+                : <pre className="whitespace-pre-wrap text-xs leading-relaxed" style={{ color: entry.command === null ? color + '99' : color }}>
+                    {entry.output}
+                  </pre>
+              }
+            </div>
+          ))}
 
-        {!busy && !blockingCommand && (
-          <div className="relative">
-            {ftpSession?.active ? (
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
-                  {prompt?.trim() === 'ftp>' ? 'ftp> ' : prompt}
-                </span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="flex-1 bg-transparent border-none outline-none text-sm min-w-[100px]"
-                  style={{ color, caretColor: color, minWidth: '50px' }}
-                  autoFocus
-                  spellCheck={false}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
+          {!busy && !blockingCommand && (
+            <div className="relative">
+              {pendingSu ? (
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-xs flex-shrink-0" style={{ color }}>{prompt}</span>
+                  <TerminalInput
+                    inputRef={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    color={color}
+                    hideValue
+                  />
+                </div>
+              ) : ftpSession?.active ? (
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
+                    {prompt?.trim() === 'ftp>' ? 'ftp> ' : prompt}
+                  </span>
+                  <TerminalInput
+                    inputRef={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    color={color}
+                    hideValue={!!pendingSu}
+                  />
+                </div>
+              ) : sshSession?.active ? (
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
+                    {prompt}
+                  </span>
+                  <TerminalInput
+                    inputRef={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    color={color}
+                    hideValue={!!pendingSu}
+                  />
+                </div>
+              ) : isMsfActiveFn() ? (
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
+                  <TerminalInput
+                    inputRef={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    color={color}
+                    hideValue={!!pendingSu}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(undefined, isRoot, promptColors)}</span>
+                    <TerminalInput
+                      inputRef={inputRef}
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      color={color}
+                      hideValue={!!pendingSu}
+                    />
+                  </div>
+                </div>
+              )}
+              {showSuggestions && suggestions.length > 0 && (
+                <AutocompletePanel
+                  suggestions={suggestions}
+                  selectedIndex={suggestionIdx}
+                  onSelect={(suggestion) => {
+                    const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState);
+                    const textBeforeCursor = input.slice(0, result.replaceStart);
+                    setInput(textBeforeCursor + suggestion);
+                    setShowSuggestions(false);
+                    setSuggestions([]);
+                    setSuggestionIdx(-1);
+                    inputRef.current?.focus();
+                  }}
+                  termColor={color}
                 />
+              )}
+            </div>
+          )}
+          {busy && blockingCommand && (
+            <>
+              <div className="flex items-center gap-2 bg-blue-900/20 py-1 px-2 rounded -ml-2 border-l-2 border-blue-500">
+                <span className="font-bold text-xs flex-shrink-0" style={{ color }}>⏳ </span>
+                <span className="text-xs font-mono" style={{ color }}>{blockingCommand.message}</span>
               </div>
-            ) : sshSession?.active ? (
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-xs flex-shrink-0" style={{ color }}>
-                  {prompt}
-                </span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="flex-1 bg-transparent border-none outline-none text-sm min-w-[100px]"
-                  style={{ color, caretColor: color, minWidth: '50px' }}
-                  autoFocus
-                  spellCheck={false}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                />
-              </div>
-            ) : isMsfActiveFn() ? (
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
-                <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="flex-1 bg-transparent border-none outline-none text-sm"
-                  style={{ color, caretColor: color }}
-                  autoFocus spellCheck={false} autoComplete="off" autoCorrect="off" autoCapitalize="off" />
-              </div>
-            ) : (
-              <div className="flex flex-col gap-0.5">
+              <input ref={inputRef} type="text" value={''} onChange={() => {}}
+                onKeyDown={handleKeyDown}
+                className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
+                autoFocus spellCheck={false} autoComplete="off" />
+            </>
+          )}
+          {busy && !blockingCommand && (
+            <>
+              <div className="flex flex-col gap-0.5 opacity-40">
                 <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(undefined, isRoot, promptColors)}</span>
-                  <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="flex-1 bg-transparent border-none outline-none text-sm"
-                    style={{ color, caretColor: color }}
-                    autoFocus spellCheck={false} autoComplete="off" autoCorrect="off" autoCapitalize="off" />
+                  <span className="text-sm animate-pulse">_</span>
                 </div>
               </div>
-            )}
-            {showSuggestions && suggestions.length > 0 && (
-              <AutocompletePanel
-                suggestions={suggestions}
-                selectedIndex={suggestionIdx}
-                onSelect={(suggestion) => {
-                  const result = getAutocompleteSuggestions(input, input.length, machine, currentDir, msfState);
-                  const textBeforeCursor = input.slice(0, result.replaceStart);
-                  setInput(textBeforeCursor + suggestion);
-                  setShowSuggestions(false);
-                  setSuggestions([]);
-                  setSuggestionIdx(-1);
-                  inputRef.current?.focus();
-                }}
-                termColor={color}
-              />
-            )}
-          </div>
-        )}
-        {busy && blockingCommand && (
-          <>
-            <div className="flex items-center gap-2 bg-blue-900/20 py-1 px-2 rounded -ml-2 border-l-2 border-blue-500">
-              <span className="font-bold text-xs flex-shrink-0" style={{ color }}>⏳ </span>
-              <span className="text-xs font-mono" style={{ color }}>{blockingCommand.message}</span>
-            </div>
-            <input ref={inputRef} type="text" value={''} onChange={() => {}}
-              onKeyDown={handleKeyDown}
-              className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
-              autoFocus spellCheck={false} autoComplete="off" />
-          </>
-        )}
-        {busy && !blockingCommand && (
-          <>
-            <div className="flex flex-col gap-0.5 opacity-40">
-              <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(prompt, promptColors)}</span>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(undefined, isRoot, promptColors)}</span>
-                <span className="text-sm animate-pulse">_</span>
-              </div>
-            </div>
-            <input ref={inputRef} type="text" value={''} onChange={() => {}}
-              onKeyDown={handleKeyDown}
-              className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
-              autoFocus spellCheck={false} autoComplete="off" />
-          </>
-        )}
-      </div>
+              <input ref={inputRef} type="text" value={''} onChange={() => {}}
+                onKeyDown={handleKeyDown}
+                className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
+                autoFocus spellCheck={false} autoComplete="off" />
+            </>
+          )}
+        </div>
+      )}
       <style>{`
-        @keyframes fadeInEntry{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
         .custom-term .text-xs,
         .custom-term .text-sm,
         .custom-term pre,
         .custom-term input,
+        .custom-term textarea,
         .custom-term span {
           font-size: var(--term-font-size, inherit) !important;
         }

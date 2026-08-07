@@ -1,5 +1,5 @@
 // ── components/fakesites/sql_lab/VulnerableLogin.tsx ─────────────────
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface VulnerableLoginProps {
   ip: string;
@@ -7,7 +7,7 @@ interface VulnerableLoginProps {
   onMissionComplete: (id: number) => void;
 }
 
-export function VulnerableLogin({ ip, onLoginSuccess, onMissionComplete }: VulnerableLoginProps) {
+export function VulnerableLogin({ onLoginSuccess, onMissionComplete }: VulnerableLoginProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -48,8 +48,6 @@ export function VulnerableLogin({ ip, onLoginSuccess, onMissionComplete }: Vulne
             </div>
             <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
               <strong>Next Step:</strong> Use UNION-based SQL injection to extract database information.
-              <br />
-              <code className="text-sm">curl -X POST http://{ip}/login -d "username=' UNION SELECT table_name FROM information_schema.tables--&password=x"</code>
             </div>
             <button
               onClick={() => {

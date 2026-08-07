@@ -1,6 +1,12 @@
+export interface MsfSession {
+  id: number;
+  type: 'meterpreter' | 'shell';
+  targetInfo?: { os?: string };
+}
+
 export interface MsfState {
   active: boolean;
-  module?: string | unknown;
+  module?: string;
   moduleType?: string;
   options: Record<string, string>;
   moduleOptions?: Record<string, string>;
@@ -10,7 +16,7 @@ export interface MsfState {
   uidChecked: boolean;
   hashdumpExecuted?: boolean;
   lastSearchResults?: string[];
-  sessions?: unknown[];
+  sessions?: MsfSession[];
   currentSessionId?: number;
 }
 

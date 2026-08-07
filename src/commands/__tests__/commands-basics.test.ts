@@ -38,8 +38,29 @@ describe('Comandos básicos funcionan en todos los contextos', () => {
     expect(result.output).toBe('CLEAR_TERMINAL');
   });
 
+  it('echo con comillas simples elimina las comillas (bash)', () => {
+    const result = exec("echo 'hola mundo'", attacker, [attacker], 1);
+    expect(result.output).toBe('hola mundo');
+  });
+
+  it('echo con comillas dobles elimina las comillas', () => {
+    const result = exec('echo "hola mundo"', attacker, [attacker], 1);
+    expect(result.output).toBe('hola mundo');
+  });
+
+  it('echo con comillas simples anidadas en dobles las conserva', () => {
+    const result = exec(`echo "'or' '1'='1"`, attacker, [attacker], 1);
+    expect(result.output).toBe("'or' '1'='1");
+  });
+
   it('comando desconocido retorna isError true', () => {
     const result = exec('fakecommand', attacker, [attacker], 1);
+    expect(result.isError).toBe(true);
+    expect(result.output).toContain('Command not found');
+  });
+
+  it('comandos son case-sensitive como en Linux (LS ≠ ls)', () => {
+    const result = exec('LS', attacker, [attacker], 1);
     expect(result.isError).toBe(true);
     expect(result.output).toContain('Command not found');
   });

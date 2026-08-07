@@ -75,15 +75,41 @@ const COMMAND_PATHS: Record<string, string> = {
   'vim': '/usr/bin/vim',
   'vi': '/usr/bin/vi',
   'nano': '/usr/bin/nano',
+  'kill': '/bin/kill',
+  'systemctl': '/bin/systemctl',
+  'service': '/usr/sbin/service',
+  'journalctl': '/usr/bin/journalctl',
+  'iptables': '/usr/sbin/iptables',
+  'ufw': '/usr/sbin/ufw',
+  'ss': '/usr/sbin/ss',
+  'netstat': '/usr/bin/netstat',
   'apache2': '/usr/sbin/apache2',
   'nginx': '/usr/sbin/nginx',
   'mysql': '/usr/bin/mysql',
   'psql': '/usr/bin/psql',
+  'apt': '/usr/bin/apt',
+  'apt-get': '/usr/bin/apt-get',
+  'dpkg': '/usr/bin/dpkg',
+  'env': '/usr/bin/env',
+  'export': '/bin/export',
+  'unset': '/bin/unset',
+  'crontab': '/usr/bin/crontab',
+  'date': '/bin/date',
+  'sleep': '/bin/sleep',
+  'mount': '/usr/bin/mount',
+  'umount': '/usr/bin/umount',
+  'df': '/usr/bin/df',
+  'du': '/usr/bin/du',
+  'ln': '/bin/ln',
+  'find': '/usr/bin/find',
+  'nproc': '/usr/bin/nproc',
+  'seq': '/usr/bin/seq',
+  'tee': '/usr/bin/tee',
 };
 
 export const cmd_which = {
   name: 'which',
-  execute: (args: string[], ctx: CommandContext): CommandResponse => {
+  execute: (args: string[], _ctx: CommandContext): CommandResponse => {
     if (args.length === 0) {
       return { output: '', isError: false };
     }

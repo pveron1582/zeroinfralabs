@@ -16,7 +16,7 @@ export function resetFtpSessions() {
 export const cmd_ftp = {
   name: 'ftp',
   execute: (args: string[], ctx: CommandContext): CommandResponse => {
-    const { allMachines, machine } = ctx;
+    const { allMachines } = ctx;
 
     // Sin argumentos - mostrar uso
     if (!args[0]) {

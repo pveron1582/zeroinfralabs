@@ -1,10 +1,10 @@
 // Shared footer for marketing pages (landing, labs, blog)
 
-import { useLanguage, useT } from '../../i18n/translations';
+import { useT } from '../../i18n/translations';
 import { useColors, FONT_SANS } from './constants';
 
 export function MarketingFooter() {
-  const colors = useColors();  const language = useLanguage();
+  const colors = useColors();
   const t = useT();
 
   return (

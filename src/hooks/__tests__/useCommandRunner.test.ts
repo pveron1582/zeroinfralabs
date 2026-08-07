@@ -11,7 +11,7 @@ const makeMachine = (overrides = {}) => ({
   learning_steps: [],
   files: [],
   ...overrides,
-});
+} as any);
 
 const defaultProps: CommandRunnerProps = {
   scenarioId: 'scenario-01',
@@ -31,7 +31,6 @@ interface MockExecutor {
   isMsfActive: ReturnType<typeof vi.fn>;
   getMsfPrompt: ReturnType<typeof vi.fn>;
   executeCommand: ReturnType<typeof vi.fn>;
-  restoreMsfState: ReturnType<typeof vi.fn>;
   resetMsfState: ReturnType<typeof vi.fn>;
 }
 
@@ -40,6 +39,7 @@ const storeRef = vi.hoisted(() => ({ current: {} as Record<string, any> }));
 const baseStoreState = vi.hoisted(() => ({
   showNotification: vi.fn(),
   goHome: vi.fn(),
+  resetWorkspace: vi.fn(),
   language: 'es',
   reportVulnerability: vi.fn(),
   attackerMachineId: 'attacker-01',
@@ -47,7 +47,22 @@ const baseStoreState = vi.hoisted(() => ({
   missions: [{ id: 1, status: 'active', validationCriteria: { command: 'ls', outputContains: ['file'] } }],
   setPossibleUsers: vi.fn(),
   addFileToMachine: vi.fn(),
+  setMachineFiles: vi.fn(),
+  setListeningPort: vi.fn(),
+  setSuUser: vi.fn(),
+  setPrivescCompleted: vi.fn(),
+  resetPrivescCompleted: vi.fn(),
   triggerSurvey: vi.fn(),
+  // Identity slice (necesario para useIdentityStack)
+  identityStack: [] as Array<{ machineId: string; suUser?: string; cwd: string }>,
+  pushIdentity: vi.fn(),
+  popIdentity: vi.fn(),
+  resetIdentity: vi.fn(),
+  applyIdentity: vi.fn(),
+  setFtpSession: vi.fn(),
+  setSshSession: vi.fn(),
+  setCurrentDir: vi.fn(),
+  changeMachine: vi.fn(),
 }));
 
 vi.mock('../../store/scenarioStore', () => ({
@@ -74,7 +89,6 @@ vi.mock('../../commands', () => ({
       isMsfActive: vi.fn(() => false),
       getMsfPrompt: vi.fn(() => null),
       executeCommand: vi.fn(() => ({ output: 'comando no encontrado', isError: true })),
-      restoreMsfState: vi.fn(),
       resetMsfState: vi.fn(),
     };
     mockExecutorRef.current = ex;
@@ -309,10 +323,228 @@ describe('useCommandRunner', () => {
   describe('makeWelcome', () => {
     it('debe generar un mensaje de bienvenida', () => {
       const { result } = renderHook(() => useCommandRunner(defaultProps));
-      const welcome = result.current.makeWelcome();
+      const welcome = result.current.makeWelcome([]);
       expect(welcome).toHaveProperty('command', null);
       expect(welcome).toHaveProperty('streaming', false);
       expect(welcome).toHaveProperty('timestamp');
+    });
+  });
+
+  describe('runCommand - su (prompt de password)', () => {
+    it('debe pedir password y solo aplicar su_user si la password es correcta', () => {
+      // Máquina no-atacante con known_passwords: el usuario NO es root → su pide password.
+      const target = makeMachine({
+        id: 'victim-01',
+        known_passwords: { root: 'rootpass' },
+      });
+      const props = {
+        ...defaultProps,
+        machine: target,
+        allMachines: [target, makeMachine()],
+      };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      // 1. Ejecutar `su root` → el comando real devuelve requiresPassword.
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false, requiresPassword: true, suTarget: 'root',
+      }));
+      act(() => { result.current.runCommand('su root'); });
+
+      // El hook NO debe aplicar el switch todavía.
+      expect(target.su_user).toBeUndefined();
+      expect(result.current.pendingSu).toEqual({ targetUser: 'root', promptToken: '' });
+      // La línea que pide la password es estilo ssh: "user@host's password: ".
+      expect(result.current.prompt).toBe("root@kali's password: ");
+
+      // 2. Password correcta → se aplica vía store (setSuUser).
+      act(() => { result.current.runCommand('rootpass'); });
+      expect(getStore().setSuUser).toHaveBeenCalledWith('victim-01', 'root');
+      expect(result.current.pendingSu).toBeNull();
+
+      // La password no debe quedar en el historial ni en cmdHistory.
+      const typed = result.current.history.filter(e => e.command?.includes('rootpass'));
+      expect(typed).toHaveLength(0);
+    });
+
+    it('debe rechazar la password incorrecta sin cambiar de usuario', () => {
+      const target = makeMachine({
+        id: 'victim-02',
+        known_passwords: { root: 'rootpass' },
+      });
+      const props = {
+        ...defaultProps,
+        machine: target,
+        allMachines: [target, makeMachine()],
+      };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false, requiresPassword: true, suTarget: 'root',
+      }));
+      act(() => { result.current.runCommand('su root'); });
+
+      act(() => { result.current.runCommand('WRONG'); });
+      expect(target.su_user).toBeUndefined();
+      expect(result.current.pendingSu).toBeNull();
+      const lastEntry = result.current.history[result.current.history.length - 1];
+      expect(lastEntry.output).toContain('Authentication failure');
+    });
+
+    it('debe aplicar el switch inmediato cuando su viene desde root (suUserApplied)', () => {
+      const target = makeMachine({
+        id: 'victim-01',
+        su_user: 'root',
+        known_passwords: { root: 'rootpass', developer: 'devpass' },
+      });
+      const props = {
+        ...defaultProps,
+        machine: target,
+        allMachines: [target, makeMachine()],
+      };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      // `su developer` desde root → el comando real devuelve suUserApplied.
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false, suUserApplied: 'developer',
+      }));
+      act(() => { result.current.runCommand('su developer'); });
+
+      // Switch aplicado al instante, sin prompt de password.
+      expect(getStore().setSuUser).toHaveBeenCalledWith('victim-01', 'developer');
+      expect(result.current.pendingSu).toBeNull();
+    });
+  });
+
+  describe('runCommand - sudo -i/-s (prompt de password de root + privesc)', () => {
+    it('debe validar la password de root y aplicar privesc (sudo -s → /root)', () => {
+      const target = makeMachine({
+        id: 'victim-01',
+        known_passwords: { root: 'rootpass' },
+      });
+      const props = {
+        ...defaultProps,
+        machine: target,
+        allMachines: [target, makeMachine()],
+      };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      // `sudo -s` → pide password de root y marca sudoEscalation + sudoCwd.
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false,
+        requiresPassword: true, suTarget: 'root', sudoEscalation: true, sudoCwd: '/root',
+      }));
+      act(() => { result.current.runCommand('sudo -s'); });
+
+      expect(result.current.pendingSu).toEqual({
+        targetUser: 'root',
+        promptToken: '',
+        sudoEscalation: true,
+        sudoCwd: '/root',
+      });
+
+      // Password correcta de ROOT → privesc a root (setPrivescCompleted).
+      act(() => { result.current.runCommand('rootpass'); });
+      expect(getStore().setPrivescCompleted).toHaveBeenCalledWith('victim-01');
+      expect(getStore().setSuUser).toHaveBeenCalledWith('victim-01', 'root');
+      expect(result.current.pendingSu).toBeNull();
+    });
+
+    it('sudo -i mantiene el directorio actual (sudoCwd undefined)', () => {
+      const target = makeMachine({
+        id: 'victim-02',
+        known_passwords: { root: 'rootpass' },
+      });
+      const props = {
+        ...defaultProps,
+        machine: target,
+        allMachines: [target, makeMachine()],
+      };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false,
+        requiresPassword: true, suTarget: 'root', sudoEscalation: true,
+      }));
+      act(() => { result.current.runCommand('sudo -i'); });
+
+      expect(result.current.pendingSu?.sudoCwd).toBeUndefined();
+      act(() => { result.current.runCommand('rootpass'); });
+      expect(getStore().setPrivescCompleted).toHaveBeenCalledWith('victim-02');
+      expect(getStore().setSuUser).toHaveBeenCalledWith('victim-02', 'root');
+    });
+
+    it('debe rechazar la password incorrecta sin escalar', () => {
+      const target = makeMachine({
+        id: 'victim-03',
+        known_passwords: { root: 'rootpass' },
+      });
+      const props = {
+        ...defaultProps,
+        machine: target,
+        allMachines: [target, makeMachine()],
+      };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false,
+        requiresPassword: true, suTarget: 'root', sudoEscalation: true, sudoCwd: '/root',
+      }));
+      act(() => { result.current.runCommand('sudo -s'); });
+
+      act(() => { result.current.runCommand('WRONG'); });
+      expect(getStore().setPrivescCompleted).not.toHaveBeenCalled();
+      expect(getStore().setSuUser).not.toHaveBeenCalled();
+      expect(result.current.pendingSu).toBeNull();
+      const lastEntry = result.current.history[result.current.history.length - 1];
+      expect(lastEntry.output).toContain('Authentication failure');
+    });
+  });
+
+  describe('handleNanoSave - guardado con sudo (elevated)', () => {
+    const restrictedMachine = () => makeMachine({
+      id: 'victim-01',
+      su_user: 'developer',
+      files: [
+        { path: '/etc/passwd', content: 'root:x:0:0:root:/root:/bin/bash\ndeveloper:x:1001:1001:Developer:/home/developer:/bin/bash\n', type: 'text' },
+        { path: '/etc/hosts', content: '127.0.0.1 localhost\n', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
+      ],
+    });
+
+    it('debe rechazar editar un archivo root como usuario sin privilegios', () => {
+      const target = restrictedMachine();
+      const props = { ...defaultProps, machine: target, allMachines: [target, makeMachine()] };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      act(() => {
+        result.current.setNanoFile({
+          path: '/etc/hosts', content: '127.0.0.1 localhost\n',
+          readOnly: true, elevated: false,
+          existingSnapshot: { owner: 'root', group: 'root', mode: 0o644 },
+        });
+      });
+      const res = result.current.handleNanoSave('127.0.0.1 localhost\n127.0.0.2 test');
+      expect(res).toEqual({ success: false, error: "nano: '/etc/hosts': Permission denied" });
+      expect(getStore().addFileToMachine).not.toHaveBeenCalled();
+    });
+
+    it('debe permitir guardar con sudo nano (elevated) aunque el usuario no pueda editar', () => {
+      const target = restrictedMachine();
+      const props = { ...defaultProps, machine: target, allMachines: [target, makeMachine()] };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      act(() => {
+        result.current.setNanoFile({
+          path: '/etc/hosts', content: '127.0.0.1 localhost\n',
+          readOnly: false, elevated: true,
+          existingSnapshot: { owner: 'root', group: 'root', mode: 0o644 },
+        });
+      });
+      const res = result.current.handleNanoSave('127.0.0.1 localhost\n127.0.0.2 test');
+      expect(res.success).toBe(true);
+      expect(getStore().addFileToMachine).toHaveBeenCalledWith(
+        'victim-01',
+        expect.objectContaining({ path: '/etc/hosts', content: '127.0.0.1 localhost\n127.0.0.2 test' }),
+      );
     });
   });
 });

@@ -66,7 +66,6 @@ root            ALL=(ALL:ALL) ALL
 # Allow john to run vim como root sin password
 john       ALL=(ALL) NOPASSWD: /usr/bin/vim`, type: 'text' },
     { path: '/root/flag2.txt', content: 'ZIL{SUDO_VIM_PRIVESC_COMPLETE}', type: 'text' },
-    { path: '/home/john/flag1.txt', content: 'ZIL{FTP_ANON_ACCESS}', type: 'text' },
     { path: '/home/john/.bash_history', content: `sudo -l
 cat /etc/sudoers
 whoami`, type: 'text' },
@@ -138,7 +137,7 @@ export const SCENARIO_TEMPLATES = {
         directories: [],
       },
       files: [
-        ...createLinuxFileSystem({ username: scenario05Data.credentials.user }),
+        ...createLinuxFileSystem({ username: scenario05Data.credentials.user, extraUsers: [{ username: 'marta', gecos: 'Marta Suárez' }, { username: 'pablo', gecos: 'Pablo Vidal' }] }),
         createFile('/srv/ftp/nota.txt', scenario05Data.targetMachine.ftpNoteEs, 'text'),
         createFile('/srv/ftp/note.txt', scenario05Data.targetMachine.ftpNoteEn, 'text'),
         createFile('/etc/sudoers', `# /etc/sudoers
@@ -153,12 +152,20 @@ root            ALL=(ALL:ALL) ALL
 # Allow ${scenario05Data.credentials.user} to run vim como root sin password
 ${scenario05Data.credentials.user}       ALL=(ALL) NOPASSWD: /usr/bin/vim`, 'text'),
         createFile('/root/flag2.txt', scenario05Data.flags.root),
-        createFile(`/home/${scenario05Data.credentials.user}/flag1.txt`, scenario05Data.flags.user),
         createFile(`/home/${scenario05Data.credentials.user}/.bash_history`, `sudo -l
 cat /etc/sudoers
 whoami`, 'text'),
         createFile(`/home/${scenario05Data.credentials.user}/.ssh/id_rsa`, '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA2x5z9k8vL...', 'text'),
       ],
+      // `su` validation table for this machine. Only present on targets; the
+      // attacker is root and never needs to call `su`. john can `su root` if
+      // he knows the root password, or any user with known creds can pivot.
+      known_passwords: {
+        [scenario05Data.credentials.user]: scenario05Data.credentials.pass,
+        root: 'R00t@D3bi@n#2024',
+        marta: 'password1',
+        pablo: 'starwars',
+      },
     },
     learningSteps: scenario05Data.learningSteps.map(({ id: _id, targetMachineId: _t, ...rest }) => rest),
   }),

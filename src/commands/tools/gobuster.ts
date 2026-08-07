@@ -44,9 +44,11 @@ export const cmd_gobuster = {
     
     output += `===============================================================\n${new Date().toLocaleString()} Finished\n===============================================================`;
 
-    // Comando libre: reporta directorios encontrados para que el lab valide
+    const outputLines = output.split('\n');
     return {
       output,
+      type: 'dirEnum',
+      streamingLineDelays: outputLines.map(() => 30 + Math.random() * 50),
       foundDirectories: foundDirectories.length > 0 ? {
         targetId: target.id,
         targetUrl: url,

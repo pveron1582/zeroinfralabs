@@ -346,6 +346,34 @@ describe('scenarioStore', () => {
     expect(file?.content).toBe('new content');
   });
 
+  it('addFileToMachine al editar un archivo existente reemplaza sus propiedades si se pasan nuevas', () => {
+    const machineId = 'lab-scenario-01-wp';
+    useScenarioStore.getState().addFileToMachine(machineId, {
+      path: '/tmp/owned.txt',
+      content: 'primera versión',
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o600,
+    });
+
+    useScenarioStore.getState().addFileToMachine(machineId, {
+      path: '/tmp/owned.txt',
+      content: 'segunda versión',
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o600,
+    });
+
+    const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
+    const file = machine?.files.find(f => f.path === '/tmp/owned.txt');
+    expect(file?.content).toBe('segunda versión');
+    expect(file?.owner).toBe('kali');
+    expect(file?.group).toBe('kali');
+    expect(file?.mode).toBe(0o600);
+  });
+
   it('setPrivescCompleted debe marcar privesc como completado', () => {
     const machineId = 'lab-scenario-01-wp';
     useScenarioStore.getState().setPrivescCompleted(machineId);

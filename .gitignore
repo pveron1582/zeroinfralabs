@@ -5,3 +5,7 @@ dist/
 *.local
 coverage/
 *.zip
+.venv/
+.kilo/
+.continue/
+*.mcp.json

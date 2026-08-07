@@ -7,7 +7,7 @@ import { withState } from '../core/msfHelpers';
 
 export const executeMeterpreterCommand = (
   cmd: string,
-  args: string[],
+  _args: string[],
   state: MsfState,
   ctx: CommandContext
 ): CommandResponse | null => {
@@ -15,7 +15,7 @@ export const executeMeterpreterCommand = (
 
   if (cmd === 'exit' || cmd === 'quit') {
     const newState: MsfState = { ...state, sessionOpen: false };
-    return { ...withState(`[*] Shutting down Meterpreter...\n`, newState), newMachineId: 'attacker-01' };
+    return { ...withState(`[*] Shutting down Meterpreter...\n`, newState), type: 'meterpreter', newMachineId: 'attacker-01' };
   }
 
   if (cmd === 'help' || cmd === '?') {
@@ -96,6 +96,7 @@ Priv: Elevate Commands
     const res = withState(`Server username: NT AUTHORITY\\SYSTEM\n`, newState);
     return {
       ...res,
+      type: 'meterpreter',
       uidChecked: true,
       currentUser: 'NT AUTHORITY\\SYSTEM',
       isSystem: true,
@@ -117,7 +118,7 @@ Priv: Elevate Commands
 
   if (cmd === 'background' || cmd === 'bg') {
     const newState: MsfState = { ...state, sessionOpen: false };
-    return { ...withState(`[*] Backgrounding session 1...\n`, newState), newMachineId: 'attacker-01' };
+    return { ...withState(`[*] Backgrounding session 1...\n`, newState), type: 'meterpreter', newMachineId: 'attacker-01' };
   }
 
   if (cmd === 'sessions') {

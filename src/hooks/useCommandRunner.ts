@@ -1,18 +1,30 @@
 // ── hooks/useCommandRunner.ts ──────────────────────────────────────
-// Hook que encapsula toda la lógica de la terminal (estado, comandos, sesiones)
-// Separado del render para poder reutilizarlo con diferentes UIs
+// Orquestador delgado: compone los hooks especializados y expone la API
+// que el componente Terminal espera.
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import type { Machine, FileEntry } from '../types';
+import type { Machine, BlockingCommand } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
-import {
-  isShellSessionActive, getShellPrompt, resetShellManager,
-  startShellSession, createIsolatedExecutor, type IsolatedExecutor, type MsfState
-} from '../commands';
-import { getAutocompleteSuggestions } from '../utils/autocomplete';
-import { validateMission } from '../utils/labValidator';
+import { createIsolatedExecutor, resetShellManager, type MsfState } from '../commands';
+import { resetProcessManager } from '../frameworks/process/processManager';
+import { resetNetworkState } from '../frameworks/network/networkState';
+import { resetPackageManager } from '../frameworks/packages/packageManager';
+import { resetCron } from '../frameworks/cron/cronRunner';
+import { resetMounts } from '../frameworks/fs/mounts';
+import { useMissionCompletion } from './useMissionCompletion';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { useTerminalIdentity, getShortPath } from './useTerminalIdentity';
+import { useIdentityStack } from './useIdentityStack';
+import { useNanoSave } from './useNanoSave';
+import { useTerminalEffects } from './useTerminalEffects';
+import { useAutoRefresh } from './useAutoRefresh';
+import { useReverseShell } from './useReverseShell';
+import { usePendingSu } from './usePendingSu';
+import { useFtpSession, getFtpPromptFor, type SessionRunnerDeps } from './useFtpSession';
+import { useSshSession, getSshPromptFor } from './useSshSession';
+import { useDownloadedFile } from './useDownloadedFile';
+import { processCommandResult, type ProcessDeps, type HistoryEntry } from './processCommandResult';
+import { getStreamingConfig, computeTotalDelay, shouldStream } from './streamingConfig';
 
 export interface CommandRunnerProps {
   scenarioId: string;
@@ -21,33 +33,17 @@ export interface CommandRunnerProps {
   currentMissionId: number;
   onMissionComplete: (id: number) => void;
   onChangeMachine: (id: string) => void;
-  onCredentialsFound: (machineId: string, user: string, pass: string, file: string, service?: string) => void;
+  onCredentialsFound: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
   onVerifyCredentials?: (machineId: string, service?: string) => void;
   onFailedUser?: (machineId: string, user: string) => void;
   onSudoPrivileges?: (machineId: string, user: string, commands: string[], canSudo: boolean) => void;
   onExitTerminal?: () => void;
+  onRequestExit?: () => void;
+  onOpenTour?: () => void;
   termColor?: string;
 }
 
-interface HistoryEntry {
-  command: string | null;
-  output?: string;
-  lines?: string[];
-  streaming: boolean;
-  prompt?: string;
-  timestamp: number;
-  result?: any;
-  lineDelays?: number[];
-}
-
-const CMD_DELAYS: Record<string, { lineDelay: number; minTotal: number }> = {
-  'arp-scan': { lineDelay: 55, minTotal: 800  },
-  'nmap':     { lineDelay: 70, minTotal: 1200 },
-  'gobuster': { lineDelay: 40, minTotal: 1500 },
-  'hydra':    { lineDelay: 50, minTotal: 2000 },
-  'ssh':      { lineDelay: 0,  minTotal: 500  },
-  'default':  { lineDelay: 0,  minTotal: 0    },
-};
+type NanoFileState = { path: string; content: string; readOnly?: boolean; elevated?: boolean; existingSnapshot?: { owner: string; group: string; mode: number } };
 
 export function useCommandRunner({
   scenarioId, machine, allMachines, currentMissionId,
@@ -60,56 +56,51 @@ export function useCommandRunner({
   // ── Per-instance state (local, no compartido entre terminales) ──
   const [msfState, setMsfState] = useState<MsfState | null>(null);
   const [currentDir, setCurrentDir] = useState('/root');
-  const [blockingCommand, setBlockingCommand] = useState<any>(null);
+  const [blockingCommand, setBlockingCommand] = useState<BlockingCommand | null>(null);
   const [listeningPort, setListeningPort] = useState<number | null>(null);
-  const [ftpSession, setFtpSession] = useState<any>(null);
-  const [sshSession, setSshSession] = useState<any>(null);
+  const [nanoFile, setNanoFile] = useState<NanoFileState | null>(null);
+  const [umask, setUmask] = useState(0o022);
+  const [env, setEnv] = useState<Record<string, string> | undefined>(undefined);
 
-  // ── Executor aislado (msfState propio, no contamina otras terminales) ──
-  const executor = useMemo(() => createIsolatedExecutor(), []);
+  // ── Stack de identidades ─────────────────────────────────────────
+  const { pushIdentity, popIdentity } = useIdentityStack({
+    initialMachine: machine,
+    onChangeMachine,
+  });
 
-  // ── Estado compartido (game-logic, config) ──
-  const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
+  // ── Store (lectura) ──────────────────────────────────────────────
+  const reportVulnerability = useScenarioStore(state => state.reportVulnerability) as ProcessDeps['reportVulnerability'];
   const language = useScenarioStore(state => state.language);
   const attackerMachineId = useScenarioStore(state => state.currentScenario.initialMachineId);
   const goHome = useScenarioStore(state => state.goHome);
-  const storeBlockingCommand = useScenarioStore(state => state.blockingCommand);
-  const storeSetBlockingCommand = useScenarioStore(state => state.setBlockingCommand);
 
+  // ── Executor aislado ─────────────────────────────────────────────
+  const executor = useMemo(() => createIsolatedExecutor(), []);
+
+  // ── Identidad actual / prompt base ───────────────────────────────
   const { sshUser, isRoot } = useTerminalIdentity(machine);
   const displayPath = getShortPath(currentDir || '/', isRoot);
+  const basePrompt = `${sshUser}@${machine.machine_info.hostname}:${displayPath}${isRoot ? '#' : '$'}`;
 
-  const basePrompt = machine.id === attackerMachineId
-    ? `root@${machine.machine_info.hostname}:${displayPath}#`
-    : `${sshUser}@${machine.machine_info.hostname}:${displayPath}${isRoot ? '#' : '$'}`;
+  // ── Sesiones interactivas ────────────────────────────────────────
+  const { ftpSession, setFtpSession, runFtpCommand, startFtpSession } = useFtpSession();
+  const { sshSession, setSshSession, runSshPassword, startSshSession } = useSshSession();
+  const { pendingSu, setPendingSu, handleSuPassword } = usePendingSu({
+    machine, currentDir, setCurrentDir, pushIdentity,
+  });
 
-  const getFtpPrompt = (): string => {
-    if (!ftpSession?.active) return '';
-    switch (ftpSession.step) {
-      case 'username': return `Name (${ftpSession.targetIp}:root): `;
-      case 'password': return 'Password: ';
-      case 'connected':
-      default: return 'ftp> ';
-    }
-  };
+  const prompt = pendingSu
+    ? `${pendingSu.targetUser}@${machine.machine_info.hostname}'s password: `
+    : executor.isMsfActive()
+      ? (executor.getMsfPrompt() || 'msf6 >')
+      : ftpSession?.active
+        ? (getFtpPromptFor(ftpSession) || 'ftp> ')
+        : sshSession?.active
+          ? (getSshPromptFor(sshSession) || '')
+          : basePrompt;
 
-  const getSshPrompt = (): string => {
-    if (!sshSession?.active) return '';
-    if (sshSession.step === 'password') {
-      return `${sshSession.username}@${sshSession.targetIp}'s password: `;
-    }
-    return '';
-  };
-
-  const prompt = executor.isMsfActive()
-    ? (executor.getMsfPrompt() || 'msf6 >')
-    : ftpSession?.active
-      ? (getFtpPrompt() || 'ftp> ')
-      : sshSession?.active
-        ? (getSshPrompt() || '')
-        : basePrompt;
-
-  const makeWelcome = (machines: Machine[]): HistoryEntry => ({
+  // ── Historial ────────────────────────────────────────────────────
+  const makeWelcome = (_machines: Machine[]): HistoryEntry => ({
     command: null, streaming: false,
     output: '',
     timestamp: Date.now()
@@ -123,27 +114,13 @@ export function useCommandRunner({
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
-  const ftpSessionRef = useRef(ftpSession);
-  useEffect(() => {
-    ftpSessionRef.current = ftpSession;
-  }, [ftpSession]);
+  // ── Efectos de UI (scroll, focus) ────────────────────────────────
+  useTerminalEffects({
+    scrollRef, inputRef, busy, blockingCommand,
+    scrollDeps: [history, busy, input],
+  });
 
-  // Auto-focus when not busy
-  useEffect(() => {
-    if (!busy || (busy && blockingCommand)) {
-      const timer = setTimeout(() => inputRef.current?.focus(), 10);
-      return () => clearTimeout(timer);
-    }
-  }, [busy, blockingCommand]);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [history, busy, input]);
-
-  // Reset state when scenario changes
+  // ── Reset al cambiar de escenario ────────────────────────────────
   useEffect(() => {
     setHistory([makeWelcome(allMachines)]);
     setCmdHistory([]); setHistIdx(-1); setInput(''); setBusy(false);
@@ -152,192 +129,91 @@ export function useCommandRunner({
     setCurrentDir('/root');
     setMsfState(null);
     executor.resetMsfState();
-    setFtpSession(null);
-    setSshSession(null);
+    useScenarioStore.getState().setFtpSession(null);
+    useScenarioStore.getState().setSshSession(null);
     resetShellManager();
+    resetProcessManager();
+    resetNetworkState();
+    resetPackageManager();
+    resetCron();
+    resetMounts();
+    setUmask(0o022);
+    setEnv(undefined);
+    useScenarioStore.getState().resetIdentity({
+      machineId: machine.id,
+      suUser: machine.su_user,
+      cwd: '/root',
+    });
     const timer = setTimeout(() => inputRef.current?.focus(), 150);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioId, allMachines.length]);
 
-  // Window focus handler
-  useEffect(() => {
-    const focusTimer = setTimeout(() => inputRef.current?.focus(), 50);
-    const handleWindowFocus = () => {
-      setTimeout(() => inputRef.current?.focus(), 50);
-    };
-    window.addEventListener('focus', handleWindowFocus);
-    return () => {
-      clearTimeout(focusTimer);
-      window.removeEventListener('focus', handleWindowFocus);
-    };
-  }, [busy, blockingCommand, scenarioId]);
-
-  // Blocking command connected (reverse shell)
-  useEffect(() => {
-    const isConnected = blockingCommand?.connected || storeBlockingCommand?.connected;
-    if (isConnected && busy) {
-      const victimMachine = allMachines.find(m => m.id !== attackerMachineId);
-      setHistory(prev => [...prev, {
-        command: null,
-        output: [
-          `connect to [${allMachines.find(m => m.id === attackerMachineId)?.machine_info.ip || '...'}] from (UNKNOWN) [${victimMachine?.machine_info.ip || '...'}] ${listeningPort}`,
-          `/bin/sh: 0: can't access tty; job control turned off`,
-          `${victimMachine?.id.includes('lfi') ? 'www-data' : 'admin'}@${victimMachine?.machine_info.hostname || 'target'}:/var/www/html$ `,
-        ].join('\n'),
-        streaming: false,
-        prompt,
-        timestamp: Date.now()
-      }]);
-      setBlockingCommand(null);
-      setBusy(false);
-      setListeningPort(null);
-      useScenarioStore.getState().setListeningPort(null);
-      storeSetBlockingCommand(null);
-      onMissionComplete(6);
-      onVerifyCredentials?.(victimMachine?.id || '', 'lfi-rce');
-      if (victimMachine) {
-        onChangeMachine(victimMachine.id);
-        setCurrentDir('/var/www/html/');
-      }
-    }
-  }, [blockingCommand?.connected, storeBlockingCommand?.connected, busy, allMachines, listeningPort, prompt, setBlockingCommand, setListeningPort, onChangeMachine, setCurrentDir, attackerMachineId, storeSetBlockingCommand, onMissionComplete, onVerifyCredentials]);
-
-  // Auto-refresh for top/htop
-  useEffect(() => {
-    if (busy && blockingCommand?.cancelKey === 'q' && blockingCommand?.clearScreen) {
-      const cmdName = blockingCommand?.message?.includes('htop') ? 'htop' : 'top';
-      const refreshInterval = setInterval(() => {
-        const result = executor.executeCommand(cmdName, machine, allMachines, currentMissionId, undefined, currentDir);
-        if (!result.isError && result.output) {
-          setHistory(prev => {
-            const lastEntry = prev[prev.length - 1];
-            const isTopHtopEntry = lastEntry && 
-              lastEntry.command === null && 
-              (lastEntry.output?.includes('top -') || lastEntry.output?.includes('CPU0 ['));
-            if (isTopHtopEntry) {
-              return [...prev.slice(0, -1), {
-                command: null,
-                output: result.output,
-                streaming: false,
-                prompt,
-                timestamp: Date.now()
-              }];
-            }
-            return [...prev, {
-              command: null,
-              output: result.output,
-              streaming: false,
-              prompt,
-              timestamp: Date.now()
-            }];
-          });
-        }
-      }, 1000);
-      return () => clearInterval(refreshInterval);
-    }
-  }, [busy, blockingCommand, machine, allMachines, currentMissionId, currentDir, prompt]);
-
-  const processCommandResult = (result: any, trimmed: string, currentPrompt: string, isStreaming: boolean) => {
-    if (result.completedMissionId) {
-      onMissionComplete(result.completedMissionId);
-    }
-
-    checkMissionCompletion(result);
-
-    if (result.blockingCommand) {
-      setBlockingCommand(result.blockingCommand);
-      if (result.blockingCommand.listeningPort) {
-        setListeningPort(result.blockingCommand.listeningPort);
-        useScenarioStore.getState().setListeningPort(result.blockingCommand.listeningPort);
-      }
-      if (result.blockingCommand.clearScreen) {
-        setHistory([]);
-      }
-      if (!isStreaming) setBusy(true);
-    }
-    if (result.foundCredentials) onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
-    if (result.newMachineId) onChangeMachine(result.newMachineId);
-    if (result.sshLoginUser) setCurrentDir(`/home/${result.sshLoginUser}`);
-    if (result.privescCompleted) useScenarioStore.getState().setPrivescCompleted(result.privescCompleted);
-    if (result.failedUser && onFailedUser) onFailedUser(result.failedUser.machineId, result.failedUser.user);
-    if (result.sudoPrivileges && onSudoPrivileges) {
-      onSudoPrivileges(result.sudoPrivileges.machineId, result.sudoPrivileges.user, result.sudoPrivileges.commands, result.sudoPrivileges.canSudo);
-    }
-    if (result.foundVulnerability) reportVulnerability(result.foundVulnerability.machineId, result.foundVulnerability.vulnId, result.foundVulnerability.status);
-    if (result.newMachineId && result.foundCredentials && onVerifyCredentials) {
-      onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
-    }
-    if (result.sshSessionClosed) {
-      setCurrentDir('/root/');
-    }
-    if (result.possibleUsers) {
-      const target = allMachines.find(m => m.id === result.possibleUsers.machineId);
-      if (target) {
-        useScenarioStore.getState().setPossibleUsers(target.id, result.possibleUsers.users);
-      }
-    }
-    if (result.createdFiles && result.createdFiles.length > 0) {
-      const attacker = allMachines.find(m => m.machine_info.type === 'workstation' || m.machine_info.hostname?.toLowerCase().includes('kali'));
-      if (attacker) {
-        const { addFileToMachine } = useScenarioStore.getState();
-        result.createdFiles.forEach((f: FileEntry) => addFileToMachine(attacker.id, f));
-      }
-    }
+  // ── Deps compartidas para ejecutar comandos ──────────────────────
+  const sessionDeps: SessionRunnerDeps = {
+    executor, machine, allMachines, currentMissionId, currentDir,
+    setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState,
   };
 
-  const checkMissionCompletion = (result: any) => {
-    const { missions } = useScenarioStore.getState();
-    const activeMission = missions.find(m => m.status === 'active');
-    if (activeMission?.validationCriteria && validateMission(result, activeMission)) {
-      onMissionComplete(activeMission.id);
-    }
+  const { checkMissionCompletion } = useMissionCompletion(onMissionComplete);
+  const { handleDownloadedFile } = useDownloadedFile({ attackerMachineId, allMachines, language, setHistory });
+
+  const processDeps: ProcessDeps = {
+    machine, allMachines, currentDir, setCurrentDir,
+    pushIdentity, popIdentity, checkMissionCompletion,
+    onMissionComplete, onChangeMachine, onCredentialsFound,
+    onVerifyCredentials, onFailedUser, onSudoPrivileges,
+    setBlockingCommand, setListeningPort, setNanoFile, setBusy,
+    setHistory, setFtpSession, setSshSession, setPendingSu,
+    reportVulnerability,
   };
 
-  const handleDownloadedFile = (result: any, currentPrompt: string, sourceFtpSession?: typeof ftpSession) => {
-    if (!result.downloadedFile) return;
-    const attacker = allMachines.find(m => m.id === attackerMachineId);
-    if (!attacker) return;
-    const { addFileToMachine } = useScenarioStore.getState();
-    let filePath = result.downloadedFile.path;
-    if (filePath.includes('nota.txt') || filePath.includes('note.txt')) {
-      const fileName = filePath.split('/').pop() || '';
-      filePath = `/root/${fileName}`;
-    }
-    addFileToMachine(attackerMachineId, {
-      path: filePath,
-      content: result.downloadedFile.content || '',
-      type: result.downloadedFile.type || 'text'
-    });
-    const fileName = filePath.split('/').pop();
-    setHistory(prev => [...prev, {
-      command: null,
-      output: language === 'es' ? `Archivo descargado: ${fileName}` : `File downloaded: ${fileName}`,
-      streaming: false,
-      prompt: sourceFtpSession?.active ? getFtpPrompt() : (getShellPrompt() || 'ftp> '),
-      timestamp: Date.now()
-    }]);
-  };
+  // ── Reverse shell (listener nc) ──────────────────────────────────
+  const appendOutput = (output: string) => setHistory(prev => [...prev, {
+    command: null, output, streaming: false, prompt, timestamp: Date.now(),
+  }]);
+  useReverseShell({
+    blockingCommand, busy, allMachines, attackerMachineId, listeningPort,
+    setBlockingCommand, setBusy, setListeningPort, setCurrentDir,
+    pushIdentity, onChangeMachine, onMissionComplete, onVerifyCredentials,
+    appendOutput,
+  });
 
+  // ── Auto-refresh top/htop ────────────────────────────────────────
+  useAutoRefresh({
+    busy, blockingCommand, executor, machine, allMachines,
+    currentMissionId, currentDir, umask, setUmask, env, setEnv, prompt, setHistory,
+  });
+
+  // ── Ejecutor principal ───────────────────────────────────────────
   const runCommand = (cmd: string) => {
     const trimmed = cmd.trim();
+
+    // `su` esperando password del usuario destino.
+    if (pendingSu) {
+      const suResult = handleSuPassword(trimmed);
+      if (suResult) {
+        setHistory(prev => [...prev, {
+          command: null,
+          output: suResult.output,
+          streaming: false,
+          prompt,
+          timestamp: Date.now()
+        }]);
+      }
+      setInput('');
+      setHistIdx(-1);
+      return;
+    }
+
     if ((!trimmed && !ftpSession?.active && !sshSession?.active) || busy) return;
     setCmdHistory(prev => [trimmed, ...prev]);
     setInput(''); setHistIdx(-1);
     const currentPrompt = prompt;
 
-    // FTP session active
+    // ── FTP session activa ─────────────────────────────────────────
     if (ftpSession?.active) {
-      const result = executor.executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir, undefined, language);
-      if (result.ftpSession) {
-        setFtpSession(result.ftpSession.active ? {
-          active: result.ftpSession.active,
-          targetIp: result.ftpSession.targetIp,
-          targetId: result.ftpSession.targetId,
-          username: result.ftpSession.username,
-          loggedIn: result.ftpSession.loggedIn,
-          step: result.ftpSession.step || 'connected'
-        } : null);
-      }
+      const { result, updatedSession } = runFtpCommand(trimmed, sessionDeps);
       setHistory(prev => [...prev, {
         command: trimmed,
         output: result.output,
@@ -346,23 +222,13 @@ export function useCommandRunner({
         timestamp: Date.now()
       }]);
       checkMissionCompletion(result);
-      handleDownloadedFile(result, currentPrompt, ftpSession);
+      handleDownloadedFile(result, () => getFtpPromptFor(updatedSession) || 'ftp> ');
       return;
     }
 
-    // SSH session active (waiting for password)
+    // ── SSH session esperando password ─────────────────────────────
     if (sshSession?.active && sshSession.step === 'password') {
-      const result = executor.executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir, undefined, language);
-      if (result.sshSession) {
-        setSshSession(result.sshSession.active ? {
-          active: result.sshSession.active,
-          targetIp: result.sshSession.targetIp,
-          targetId: result.sshSession.targetId,
-          username: result.sshSession.username,
-          authenticated: result.sshSession.authenticated,
-          step: result.sshSession.step || 'password'
-        } : null);
-      }
+      const { result } = runSshPassword(trimmed, sessionDeps);
       setHistory(prev => [...prev, {
         command: trimmed,
         output: result.output,
@@ -372,47 +238,32 @@ export function useCommandRunner({
       }]);
       checkMissionCompletion(result);
 
-      if (result.foundCredentials) {
+      if ('foundCredentials' in result && result.foundCredentials) {
         onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
-        onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
+        onVerifyCredentials?.(result.foundCredentials.machineId, result.foundCredentials.service);
       }
-      if (result.newMachineId) onChangeMachine(result.newMachineId);
-      if (result.sshLoginUser) {
+      if ('newMachineId' in result && result.newMachineId) {
+        onChangeMachine(result.newMachineId);
+        const sshUser = 'sshLoginUser' in result && result.sshLoginUser ? result.sshLoginUser : undefined;
+        const sshCwd = sshUser === 'root' ? '/root' : (sshUser ? `/home/${sshUser}` : '/');
+        pushIdentity({ machineId: result.newMachineId, suUser: sshUser, cwd: sshCwd });
+      }
+      if ('sshLoginUser' in result && result.sshLoginUser) {
         setCurrentDir(result.sshLoginUser === 'root' ? '/root' : `/home/${result.sshLoginUser}`);
       }
-      if (result.sshSessionClosed || !result.sshSession?.active) {
-        setSshSession(null);
-      }
       return;
     }
 
-    if (!isRoot && (trimmed === 'cd /root' || trimmed.includes('/root/'))) {
-      setHistory(prev => [...prev, { command: trimmed, output: 'Permission denied: you do not have access to /root.\nTry escalating privileges first.', streaming: false, prompt: currentPrompt, timestamp: Date.now() }]);
-      return;
-    }
+    // ── Comando normal ─────────────────────────────────────────────
+    const result = executor.executeCommand(
+      trimmed, machine as any, allMachines as any, currentMissionId,
+      setMsfState, currentDir, setCurrentDir, undefined, language,
+      umask, setUmask, env, setEnv,
+    );
 
-    const result = executor.executeCommand(trimmed, machine as any, allMachines as any, currentMissionId, setMsfState, currentDir, setCurrentDir, undefined, language);
-
-    if (result.ftpSession?.connected && !ftpSession?.active) {
-      const targetIp = result.ftpSession.targetIp;
-      if (targetIp && !isShellSessionActive()) {
-        startShellSession('ftp', [targetIp], {
-          machine,
-          allMachines,
-          currentMissionId,
-          currentDir,
-          setCurrentDir,
-          language
-        });
-      }
-      setFtpSession({
-        active: true,
-        targetIp: result.ftpSession.targetIp,
-        targetId: result.ftpSession.targetId,
-        username: undefined,
-        loggedIn: false,
-        step: 'username'
-      });
+    // Inicio de sesión FTP nuevo
+    if ('ftpSession' in result && result.ftpSession?.connected && !ftpSession?.active) {
+      startFtpSession(result.ftpSession, sessionDeps);
       setHistory(prev => [...prev, {
         command: trimmed,
         output: result.output,
@@ -420,39 +271,13 @@ export function useCommandRunner({
         prompt: currentPrompt,
         timestamp: Date.now()
       }]);
-      if (result.downloadedFile) {
-        const { addFileToMachine } = useScenarioStore.getState();
-        addFileToMachine(attackerMachineId, {
-          path: result.downloadedFile.path,
-          content: result.downloadedFile.content || '',
-          type: 'text'
-        });
-        setHistory(prev => [...prev, {
-          command: null,
-          output: `Archivo descargado: ${result.downloadedFile?.path}`,
-          streaming: false,
-          prompt: currentPrompt,
-          timestamp: Date.now()
-        }]);
-      }
-      if (result.completedMissionId) onMissionComplete(result.completedMissionId);
+      if ('completedMissionId' in result && result.completedMissionId) onMissionComplete(result.completedMissionId);
       return;
     }
 
-    if (result.downloadedFile) {
-      handleDownloadedFile(result, currentPrompt, ftpSession);
-    }
-
-    // SSH session started
-    if (result.sshSession?.active && !sshSession?.active) {
-      setSshSession({
-        active: true,
-        targetIp: result.sshSession.targetIp,
-        targetId: result.sshSession.targetId,
-        username: result.sshSession.username,
-        authenticated: result.sshSession.authenticated,
-        step: result.sshSession.step || 'password'
-      });
+    // Inicio de sesión SSH nuevo
+    if ('sshSession' in result && result.sshSession?.active && !sshSession?.active) {
+      startSshSession(result.sshSession);
       setHistory(prev => [...prev, {
         command: trimmed,
         output: result.output,
@@ -462,6 +287,8 @@ export function useCommandRunner({
       }]);
       return;
     }
+
+    handleDownloadedFile(result, () => currentPrompt);
 
     if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
     if (result.output === 'EXIT_TO_LANDING') {
@@ -470,53 +297,35 @@ export function useCommandRunner({
       if (allComplete) {
         state.triggerSurvey(state.currentScenario);
       } else {
-        useScenarioStore.setState({
-          view: 'landing',
-          showNetworkMap: false,
-          hasNewNetworkInfo: false,
-          notification: null,
-          browserCurrentUrl: 'https://www.google.com',
-          browserIsLoggedIn: false,
-          browserNavHistory: ['https://www.google.com'],
-          browserNavIdx: 0,
-          listeningPort: null,
-          msfState: null,
-          showSurvey: false,
-          pendingSurveyScenario: null,
-          showCompletionOverlay: false,
-          _prevMachinesSnapshot: [],
-        });
+        useScenarioStore.getState().resetWorkspace();
       }
       return;
     }
-
-    if (result.exitTerminal) {
+    if ('exitTerminal' in result && result.exitTerminal) {
       onExitTerminal?.();
       return;
     }
 
     const cmdName = trimmed.split(/\s+/)[0].toLowerCase();
-    const cfg = CMD_DELAYS[cmdName] || CMD_DELAYS['default'];
-    const customDelays = result.streamingLineDelays;
-    const useStreaming = cfg.minTotal > 0 || (customDelays && customDelays.length > 0);
+    const cfg = getStreamingConfig(cmdName);
+    const customDelays = 'streamingLineDelays' in result ? result.streamingLineDelays : undefined;
 
-    if (!useStreaming) {
+    if (!shouldStream(cfg, customDelays)) {
       setHistory(prev => [...prev, { command: trimmed, output: result.output, streaming: false, prompt: currentPrompt, timestamp: Date.now() }]);
-      processCommandResult(result, trimmed, currentPrompt, false);
+      processCommandResult(processDeps, result, false);
       return;
     }
 
+    // ── Streaming línea por línea ──────────────────────────────────
     const entryTs = Date.now();
     setBusy(true);
     const lines = (result.output as string).split('\n');
-    const totalDelay = customDelays
-      ? customDelays.reduce((a, b) => a + b, 0)
-      : Math.max(cfg.minTotal, lines.length * 42 + 200);
+    const totalDelay = computeTotalDelay(lines, cfg, customDelays);
     setHistory(prev => [...prev, { command: trimmed, streaming: true, lines, prompt: currentPrompt, timestamp: entryTs, result, lineDelays: customDelays }]);
 
     setTimeout(() => {
       setBusy(false);
-      processCommandResult(result, trimmed, currentPrompt, true);
+      processCommandResult(processDeps, result, true);
       setHistory(prev => prev.map(e =>
         e.timestamp === entryTs ? { ...e, streaming: false, output: result.output } : e
       ));
@@ -524,13 +333,13 @@ export function useCommandRunner({
     }, totalDelay);
   };
 
-  // When cancelling nc (Ctrl+C), also clear the store so FakeBrowser knows listener is gone
+  // ── Ctrl+C sobre un listener: limpiar también el store ───────────
   const cancelListening = (port: number | null) => {
     setListeningPort(port);
     useScenarioStore.getState().setListeningPort(port);
   };
 
-  // ── Wrapper: when Ctrl+C clears MSF, also reset executor's internal state ──
+  // ── Wrapper: resetear también el executor al salir de MSF ────────
   const handleSetMsfState = (state: MsfState | null) => {
     setMsfState(state);
     if (state === null) {
@@ -538,6 +347,12 @@ export function useCommandRunner({
     }
   };
 
+  // ── Nano save ────────────────────────────────────────────────────
+  const { handleNanoSave: nanoSave } = useNanoSave({ machine, currentDir });
+  const handleNanoSave = (content: string, filenameToSave?: string) =>
+    nanoSave(nanoFile, content, filenameToSave);
+
+  // ── Keyboard shortcuts ───────────────────────────────────────────
   const { showSuggestions, suggestions, suggestionIdx, handleKeyDown, setShowSuggestions, setSuggestions, setSuggestionIdx } = useKeyboardShortcuts({
     input, setInput, machine, currentDir, msfState,
     cmdHistory, setCmdHistory, histIdx, setHistIdx,
@@ -556,14 +371,16 @@ export function useCommandRunner({
     color, prompt, isRoot, sshUser,
     // Store connections
     ftpSession, sshSession, isMsfActive: executor.isMsfActive,
-    blockingCommand, msfState,
+    blockingCommand, msfState, nanoFile,
     // Props passthrough (needed by Terminal render)
     machine, currentDir,
     // Actions
     handleKeyDown, runCommand, setHistory,
-    makeWelcome,
-    // Autocomplete  
+    makeWelcome, setNanoFile, handleNanoSave,
+    // Autocomplete
     showSuggestions, suggestions, suggestionIdx,
     setShowSuggestions, setSuggestions, setSuggestionIdx,
+    // `su` password prompt (hides input value in Terminal while waiting)
+    pendingSu,
   };
 }

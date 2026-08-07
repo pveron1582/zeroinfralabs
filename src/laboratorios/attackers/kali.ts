@@ -188,6 +188,39 @@ export function createKaliFilesystem(username: string = 'kali', extraFiles: File
     createFile('/usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', COMMON_TXT_CONTENT, 'text'),
     createFile('/usr/share/wordlists/SecLists/Passwords/common-passwords.txt', PASSWORDS_LIST_CONTENT, 'text'),
 
+    // sudo: el usuario kali tiene sudo sin password (como Kali real). Así,
+    // estando como kali, `sudo su` vuelve a root. `su root` a secas NO sirve
+    // porque root no tiene password registrada (el atacante es root por diseño).
+    createFile('/etc/sudoers', `# /etc/sudoers
+# This file MUST be edited with the 'visudo' command as root.
+Defaults        env_reset
+Defaults        mail_badpass
+Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# User privilege specification
+root            ALL=(ALL:ALL) ALL
+
+# Kali user: full sudo without password
+kali    ALL=(ALL:ALL) NOPASSWD: ALL`, 'text', 'root', 'root', 0o440),
+
+    // Home de kali (usuario no-root por defecto)
+    createFile('/home/kali/.dir', '', 'text', 'kali', 'kali', 0o755),
+    createFile('/home/kali/.bashrc', `# ~/.bashrc: executed by bash(1) for non-login shells.
+export PS1='\\u@\\h:\\w\\$ '
+export PATH=$PATH:/usr/local/bin:/usr/sbin
+
+# Aliases comunes de pentesting
+alias ll='ls -l'
+alias la='ls -la'
+`, 'text', 'kali', 'kali', 0o644),
+    createFile('/home/kali/.profile', `# ~/.profile: executed by the command interpreter for login shells.
+if [ -n "$BASH_VERSION" ]; then
+    if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+    fi
+fi
+`, 'text', 'kali', 'kali', 0o644),
+
     // Herramientas de Kali pre-configuradas
     createFile('/root/.bashrc', `# ~/.bashrc: executed by bash(1) for non-login shells.
 export PS1='\\u@\\h:\\w\\$ '
@@ -202,21 +235,26 @@ alias hydra-ssh='hydra -l root -P /usr/share/wordlists/rockyou.txt'
 # Historial de comandos
 export HISTSIZE=10000
 export HISTFILESIZE=20000
-`, 'text'),
+`, 'text', 'root', 'root', 0o600),
 
-    createFile('/root/.ssh/known_hosts', '# SSH known hosts (empty)', 'text'),
+    createFile('/root/.ssh/known_hosts', '# SSH known hosts (empty)', 'text', 'root', 'root', 0o600),
 
     // Herramientas instaladas (marcadores)
-    createFile('/usr/bin/nmap', '#!/bin/bash\n# nmap placeholder', 'text'),
-    createFile('/usr/bin/gobuster', '#!/bin/bash\n# gobuster placeholder', 'text'),
-    createFile('/usr/bin/hydra', '#!/bin/bash\n# hydra placeholder', 'text'),
-    createFile('/usr/bin/msfconsole', '#!/bin/bash\n# metasploit placeholder', 'text'),
-    createFile('/usr/bin/nc', '#!/bin/bash\n# netcat placeholder', 'text'),
-    createFile('/usr/bin/ssh', '#!/bin/bash\n# ssh placeholder', 'text'),
-    createFile('/usr/bin/arp-scan', '#!/bin/bash\n# arp-scan placeholder', 'text'),
+    createFile('/usr/bin/nmap', '#!/bin/bash\n# nmap placeholder', 'text', 'root', 'root', 0o755),
+    createFile('/usr/bin/gobuster', '#!/bin/bash\n# gobuster placeholder', 'text', 'root', 'root', 0o755),
+    createFile('/usr/bin/hydra', '#!/bin/bash\n# hydra placeholder', 'text', 'root', 'root', 0o755),
+    createFile('/usr/bin/msfconsole', '#!/bin/bash\n# metasploit placeholder', 'text', 'root', 'root', 0o755),
+    createFile('/usr/bin/nc', '#!/bin/bash\n# netcat placeholder', 'text', 'root', 'root', 0o755),
+    createFile('/usr/bin/ssh', '#!/bin/bash\n# ssh placeholder', 'text', 'root', 'root', 0o755),
+    createFile('/usr/bin/arp-scan', '#!/bin/bash\n# arp-scan placeholder', 'text', 'root', 'root', 0o755),
   ];
 
-  return [...baseFs, ...kaliSpecific, ...extraFiles];
+  // Dedupe por path (último gana): el /etc/sudoers específico de Kali debe
+  // reemplazar al estándar que genera createLinuxFileSystem.
+  const allFiles = [...baseFs, ...kaliSpecific, ...extraFiles];
+  const deduped = [...new Map(allFiles.map(f => [f.path, f])).values()];
+
+  return deduped;
 }
 
 // ── Factory de máquina Kali ─────────────────────────────────────────
@@ -255,6 +293,10 @@ export function createKaliMachine(options: KaliMachineOptions = {}): Machine {
     scan_results: { ports: [] },
     web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
     learning_steps: [],
+    // Credenciales del usuario común `kali` y del superusuario `root`.
+    // El atacante arranca como root por diseño, pero con estas passwords
+    // puede `su kali` / `su root` (también se muestran en el panel de misión).
+    known_passwords: { kali: 'zilabs', root: 'zilabs' },
     files: createKaliFilesystem(username, extraFiles),
   };
 }

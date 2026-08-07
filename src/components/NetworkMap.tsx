@@ -1,7 +1,6 @@
 // ── components/NetworkMap.tsx ─────────────────────────────────────
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useScenarioStore } from '../store/scenarioStore';
-import { useT } from '../i18n/translations';
 import { EnumerationPanel } from './EnumerationPanel';
 import type { Machine, Scenario } from '../types';
 import type { MsfState } from '../commands';
@@ -22,7 +21,6 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
     // Default select first non-attacker target machine for the side panel
     return scenario.machines.find(m => !m.id.includes('attacker') && (m.discovery_level ?? 0) > 0) || null;
   });
-  const t = useT();
   const language = useScenarioStore(state => state.language);
   
   const LEVEL_LABELS = language === 'es'
@@ -32,7 +30,7 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
   const unknownTargetLabel = language === 'es' ? 'Objetivo Desconocido' : 'Unknown Target';
 
   return (
-    <div className="absolute inset-0 z-50 bg-gray-950/95 backdrop-blur-sm flex flex-col" style={{ animation: 'fadeInMap 0.2s' }}>
+    <div className="absolute inset-0 z-50 bg-gray-950/95 backdrop-blur-sm flex flex-col" style={{ animation: 'fadeInMap 0.2s' }} data-tour="network-map">
       {/* Header */}
       <div className="flex items-center justify-between px-7 py-5 border-b border-gray-800">
         <div>
@@ -42,7 +40,7 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
           </h2>
           <p className="text-xs text-gray-600 font-mono mt-0.5">{scenario.network_range}</p>
         </div>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-200 transition-colors">
+        <button onClick={onClose} data-tour="network-map-close" className="p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-200 transition-colors">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -50,7 +48,7 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
       <div className="flex-1 flex overflow-hidden">
         {/* Lado izquierdo: Topología */}
         <div className="flex-1 flex flex-col relative h-full">
-          <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+          <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto" data-tour="network-map-topology">
             <div className="flex flex-wrap gap-6 justify-center items-center">
               {scenario.machines.map(machine => {
                 const level        = machine.discovery_level ?? 0;
@@ -177,7 +175,7 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
 
         {/* Lado derecho: EnumerationPanel en línea */}
         {selected && !selected.id.includes('attacker') && (
-          <div className="w-[380px] border-l border-gray-800 bg-gray-900 flex flex-col h-full flex-shrink-0 relative overflow-hidden">
+          <div className="w-[380px] border-l border-gray-800 bg-gray-900 flex flex-col h-full flex-shrink-0 relative overflow-hidden" data-tour="network-map-enum">
             <EnumerationPanel 
               machine={scenario.machines.find(m => m.id === selected.id) || selected} 
               onClose={() => setSelected(null)} 

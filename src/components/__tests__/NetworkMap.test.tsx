@@ -1,7 +1,6 @@
 // ── components/__tests__/NetworkMap.test.tsx ──────────────────────
 // Tests para el componente NetworkMap
 
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NetworkMap } from '../NetworkMap';

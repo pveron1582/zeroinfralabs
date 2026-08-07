@@ -1,5 +1,4 @@
 // ── components/AutocompletePanel.tsx ────────────────────────────────
-import React from 'react';
 
 interface AutocompletePanelProps {
   suggestions: string[];

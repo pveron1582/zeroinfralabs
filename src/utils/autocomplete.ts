@@ -5,41 +5,11 @@
 
 import type { Machine } from '../types';
 import type { MsfModule } from '../frameworks/metasploit/core/msfModules';
+import { AVAILABLE_COMMAND_NAMES } from '../commands';
 
 // Comandos de Metasploit para autocompletar
 const MSF_COMMANDS = [
   'use', 'show', 'set', 'back', 'run', 'exploit', 'check', 'exit', 'help', 'search', 'options', 'info'
-];
-// Se usa para autocompletar cuando el usuario escribe el primer argumento
-const AVAILABLE_COMMANDS = [
-  'help',
-  'clear',
-  'whoami',
-  'ifconfig',
-  'ls',
-  'cat',
-  'cd',
-  'mkdir',
-  'rmdir',
-  'sudo',
-  'exit',
-  'end',
-  'hashcat',
-  'arp-scan',
-  'netdiscover',
-  'nmap',
-  'gobuster',
-  'hydra',
-  'ssh',
-  'nc',
-  'ftp',
-  'msfconsole',
-  'ping',
-  'traceroute',
-  'ps',
-  'top',
-  'htop',
-  'which',
 ];
 
 /**
@@ -105,9 +75,9 @@ function getItemsInDirectory(machine: Machine, targetDir: string): string[] {
  * - autocompleteCommand('xyz') → [] (sin coincidencias)
  */
 export function autocompleteCommand(partial: string): string[] {
-  if (!partial) return AVAILABLE_COMMANDS;
-  
-  return AVAILABLE_COMMANDS.filter(cmd => cmd.startsWith(partial));
+  if (!partial) return [...AVAILABLE_COMMAND_NAMES];
+
+  return AVAILABLE_COMMAND_NAMES.filter(cmd => cmd.startsWith(partial));
 }
 
 /**

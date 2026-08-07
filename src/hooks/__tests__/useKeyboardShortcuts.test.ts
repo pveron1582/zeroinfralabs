@@ -1,6 +1,6 @@
 // ── hooks/__tests__/useKeyboardShortcuts.test.ts ───────────────────
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, fireEvent } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useKeyboardShortcuts } from '../useKeyboardShortcuts';
 
 const createDefaults = () => {
@@ -42,6 +42,7 @@ const createDefaults = () => {
 vi.mock('../../commands', () => ({
   isMsfActive: () => false,
   resetMsfState: vi.fn(),
+  AVAILABLE_COMMAND_NAMES: ['help', 'ls', 'cat', 'cd', 'clear', 'sudo', 'ssh', 'nc', 'nmap', 'gobuster', 'hydra', 'msfconsole', 'chmod', 'chown', 'chgrp', 'umask', 'id', 'groups', 'nano', 'echo', 'touch', 'rm', 'cp', 'mv', 'rmdir', 'mkdir', 'find', 'grep'],
 }));
 
 describe('useKeyboardShortcuts', () => {
@@ -81,6 +82,31 @@ describe('useKeyboardShortcuts', () => {
     result.current.handleKeyDown({ key: 'Escape', preventDefault: vi.fn() } as unknown as React.KeyboardEvent);
     rerender();
     expect(result.current.showSuggestions).toBe(false);
+  });
+
+  it('debe autocompletar comandos MSF con Tab cuando msfState está activo', () => {
+    const defaults = createDefaults();
+    defaults.msfState = { active: true } as any;
+    defaults.input = 'us';
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(defaults));
+
+    result.current.handleKeyDown({ key: 'Tab', preventDefault: vi.fn() } as unknown as React.KeyboardEvent);
+    rerender();
+
+    // Una sola coincidencia (use) → completar al instante.
+    expect(defaults.setInput).toHaveBeenCalledWith('use');
+    expect(result.current.showSuggestions).toBe(false);
+  });
+
+  it('debe autocompletar msfconsole como comando del sistema', () => {
+    const defaults = createDefaults();
+    defaults.input = 'msf';
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(defaults));
+
+    result.current.handleKeyDown({ key: 'Tab', preventDefault: vi.fn() } as unknown as React.KeyboardEvent);
+    rerender();
+
+    expect(defaults.setInput).toHaveBeenCalledWith('msfconsole');
   });
 
   it('debe ejecutar comando con Enter', () => {

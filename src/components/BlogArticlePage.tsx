@@ -10,7 +10,7 @@ import { useScenarioStore } from '../store/scenarioStore';
 import { SiteHeader } from './landing/SiteHeader';
 import { MarketingFooter } from './landing/MarketingFooter';
 
-function renderMarkdown(text: string, isDark: boolean, colors: ReturnType<typeof useColors>): string {
+function renderMarkdown(text: string, isDark: boolean, _colors: ReturnType<typeof useColors>): string {
   const h2Color = isDark ? '#34d399' : '#065f46';
   const strongColor = isDark ? '#34d399' : '#047857';
   const bodyColor = isDark ? '#cbd5e1' : '#475569';

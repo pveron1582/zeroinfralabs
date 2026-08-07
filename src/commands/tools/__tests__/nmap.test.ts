@@ -367,8 +367,9 @@ describe('cmd_nmap', () => {
     // Aggressive mode muestra script results
     expect(result.output).toContain('Host script results');
     // Verifica creación de archivo
-    expect(result.createdFiles).toBeDefined();
-    expect(result.createdFiles?.[0]?.path).toBe('/root/scan.txt');
+    const cf = 'createdFiles' in result ? result.createdFiles : undefined;
+    expect(cf).toBeDefined();
+    expect(cf?.[0]?.path).toBe('/root/scan.txt');
   });
 
   // ── Output files ──
@@ -381,11 +382,12 @@ describe('cmd_nmap', () => {
       currentDir: '/root'
     } as any);
 
-    expect(result.createdFiles).toBeDefined();
-    expect(result.createdFiles?.length).toBe(1);
+    const cf = 'createdFiles' in result ? result.createdFiles : undefined;
+    expect(cf).toBeDefined();
+    expect(cf?.length).toBe(1);
     // Debe guardar en /root/basic (sin extensión .txt por defecto)
-    expect(result.createdFiles?.[0].path).toBe('/root/basic');
-    expect(result.createdFiles?.[0].content).toContain('Nmap scan report');
+    expect(cf?.[0].path).toBe('/root/basic');
+    expect(cf?.[0].content).toContain('Nmap scan report');
   });
 
   it('-oN con nombre de archivo con extension debe guardar correctamente', () => {
@@ -396,9 +398,10 @@ describe('cmd_nmap', () => {
       currentDir: '/home/user'
     } as any);
 
-    expect(result.createdFiles).toBeDefined();
+    const cf = 'createdFiles' in result ? result.createdFiles : undefined;
+    expect(cf).toBeDefined();
     // Debe guardar en /home/user/salida.txt
-    expect(result.createdFiles?.[0].path).toBe('/home/user/salida.txt');
+    expect(cf?.[0].path).toBe('/home/user/salida.txt');
   });
 
   it('-oN con path absoluto debe respetar el path', () => {
@@ -409,9 +412,10 @@ describe('cmd_nmap', () => {
       currentDir: '/root'
     } as any);
 
-    expect(result.createdFiles).toBeDefined();
+    const cf = 'createdFiles' in result ? result.createdFiles : undefined;
+    expect(cf).toBeDefined();
     // Path absoluto debe respetarse
-    expect(result.createdFiles?.[0].path).toBe('/tmp/scan.txt');
+    expect(cf?.[0].path).toBe('/tmp/scan.txt');
   });
 
   it('-oG debe crear archivo grepable en directorio actual', () => {
@@ -422,13 +426,14 @@ describe('cmd_nmap', () => {
       currentDir: '/home/user'
     } as any);
 
-    expect(result.createdFiles).toBeDefined();
-    expect(result.createdFiles?.length).toBe(1);
+    const cf = 'createdFiles' in result ? result.createdFiles : undefined;
+    expect(cf).toBeDefined();
+    expect(cf?.length).toBe(1);
     // Debe guardar en /home/user/scan.gnmap
-    expect(result.createdFiles?.[0].path).toBe('/home/user/scan.gnmap');
+    expect(cf?.[0].path).toBe('/home/user/scan.gnmap');
     // Contenido debe ser formato grepable
-    expect(result.createdFiles?.[0].content).toContain('Host:');
-    expect(result.createdFiles?.[0].content).toContain('Ports:');
+    expect(cf?.[0].content).toContain('Host:');
+    expect(cf?.[0].content).toContain('Ports:');
   });
 
   it('-oG sin extension debe guardar con nombre exacto', () => {
@@ -439,8 +444,9 @@ describe('cmd_nmap', () => {
       currentDir: '/tmp'
     } as any);
 
-    expect(result.createdFiles).toBeDefined();
-    expect(result.createdFiles?.[0].path).toBe('/tmp/resultado');
+    const cf = 'createdFiles' in result ? result.createdFiles : undefined;
+    expect(cf).toBeDefined();
+    expect(cf?.[0].path).toBe('/tmp/resultado');
   });
 
   it('-oN y -oG juntos deben crear ambos archivos', () => {
@@ -451,10 +457,11 @@ describe('cmd_nmap', () => {
       currentDir: '/root'
     } as any);
 
-    expect(result.createdFiles).toBeDefined();
-    expect(result.createdFiles?.length).toBe(2);
-    expect(result.createdFiles?.[0].path).toBe('/root/normal.txt');
-    expect(result.createdFiles?.[1].path).toBe('/root/grepable.txt');
+    const cf = 'createdFiles' in result ? result.createdFiles : undefined;
+    expect(cf).toBeDefined();
+    expect(cf?.length).toBe(2);
+    expect(cf?.[0].path).toBe('/root/normal.txt');
+    expect(cf?.[1].path).toBe('/root/grepable.txt');
   });
 
   it('-oN debe crear archivo con output normal', () => {
@@ -590,7 +597,9 @@ describe('cmd_nmap', () => {
     expect(result.output).toContain('Nmap scan report for target (192.168.1.10)');
     expect(result.output).toContain('Nmap scan report for target2 (192.168.1.20)');
     expect(result.output).toContain('2 hosts up');
-    expect(result.discoveredHosts).toBeUndefined();
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toBeDefined();
+    expect(dh?.length).toBe(2);
   });
 
   it('-sn con CIDR sin hosts debe reportar 0 hosts', () => {

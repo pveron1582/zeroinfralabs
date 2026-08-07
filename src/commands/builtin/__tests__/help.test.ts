@@ -1,33 +1,13 @@
 // ── commands/builtin/__tests__/help.test.ts ───────────────────────────────
 // Tests para el comando help
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { cmd_help } from '../help';
-import type { CommandContext } from '../../../types';
 
 describe('cmd_help', () => {
-  let mockContext: CommandContext;
-
-  beforeEach(() => {
-    mockContext = {
-      machine: {
-        id: 'test-machine',
-        machine_info: { hostname: 'test', ip: '192.168.1.100', mac: '00:11:22:33:44:55', os: 'Linux', status: 'up', type: 'workstation' },
-        discovery_level: 0,
-        scan_results: { ports: [] },
-        web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-        learning_steps: [],
-        files: [],
-        found_credentials: { file: '', user: 'kali', pass: 'kali', verified: false }
-      },
-      allMachines: [],
-      currentMissionId: 1,
-      currentDir: '/home/kali/'
-    };
-  });
 
   it('debe mostrar lista completa de comandos sin argumentos', () => {
-    const result = cmd_help.execute([], mockContext);
+    const result = cmd_help.execute([]);
     expect(result.output).toContain('Available commands:');
     expect(result.output).toContain('help');
     expect(result.output).toContain('clear');
@@ -49,7 +29,7 @@ describe('cmd_help', () => {
   });
 
   it('debe mostrar ayuda específica de mkdir', () => {
-    const result = cmd_help.execute(['mkdir'], mockContext);
+    const result = cmd_help.execute(['mkdir']);
     expect(result.output).toContain('mkdir - Create directories');
     expect(result.output).toContain('Usage:');
     expect(result.output).toContain('mkdir [-p] directory...');
@@ -63,7 +43,7 @@ describe('cmd_help', () => {
   });
 
   it('debe mostrar ayuda específica de rmdir', () => {
-    const result = cmd_help.execute(['rmdir'], mockContext);
+    const result = cmd_help.execute(['rmdir']);
     expect(result.output).toContain('rmdir - Remove empty directories');
     expect(result.output).toContain('Usage:');
     expect(result.output).toContain('rmdir [-p] directory...');
@@ -77,7 +57,7 @@ describe('cmd_help', () => {
   });
 
   it('debe mostrar ayuda específica de ls', () => {
-    const result = cmd_help.execute(['ls'], mockContext);
+    const result = cmd_help.execute(['ls']);
     expect(result.output).toContain('ls - List files and directories');
     expect(result.output).toContain('Usage:');
     expect(result.output).toContain('ls [options] [directory]');
@@ -93,7 +73,7 @@ describe('cmd_help', () => {
   });
 
   it('debe mostrar ayuda específica de cd', () => {
-    const result = cmd_help.execute(['cd'], mockContext);
+    const result = cmd_help.execute(['cd']);
     expect(result.output).toContain('cd - Change directory');
     expect(result.output).toContain('Usage:');
     expect(result.output).toContain('cd [directory]');
@@ -106,7 +86,7 @@ describe('cmd_help', () => {
   });
 
   it('debe mostrar ayuda específica de cat', () => {
-    const result = cmd_help.execute(['cat'], mockContext);
+    const result = cmd_help.execute(['cat']);
     expect(result.output).toContain('cat - Display file contents');
     expect(result.output).toContain('Usage:');
     expect(result.output).toContain('cat file...');
@@ -118,20 +98,20 @@ describe('cmd_help', () => {
   });
 
   it('debe mostrar error para comando no existente', () => {
-    const result = cmd_help.execute(['comando_inexistente'], mockContext);
+    const result = cmd_help.execute(['comando_inexistente']);
     expect(result.output).toContain('No help available for command: comando_inexistente');
     expect(result.output).toContain("Type 'help' without arguments");
     expect(result.isError).toBe(true);
   });
 
   it('debe ser case sensitive (comandos en mayúsculas no existen)', () => {
-    const result = cmd_help.execute(['MKDIR'], mockContext);
+    const result = cmd_help.execute(['MKDIR']);
     expect(result.output).toContain('No help available for command: MKDIR');
     expect(result.isError).toBe(true);
   });
 
   it('debe manejar comandos con espacios', () => {
-    const result = cmd_help.execute(['ls', '-l'], mockContext);
+    const result = cmd_help.execute(['ls', '-l']);
     expect(result.output).toContain('ls - List files and directories');
     expect(result.output).toContain('Usage:');
     expect(result.output).toContain('ls [options] [directory]');

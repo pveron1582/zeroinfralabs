@@ -1,4 +1,3 @@
-import React from 'react';
 // ── components/fakesites/wordpress/wp01/ConfigBak.tsx ────────────
 // Simulates the raw file view of /uploads/config.bak
 // This file is intentionally left exposed on the vulnerable server.

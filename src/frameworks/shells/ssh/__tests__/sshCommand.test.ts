@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cmd_ssh } from '../sshCommand';
 import { sshSession } from '../SshSession';
 import { shellManager } from '../../../shells';
-import { startShellSession, executeShellCommand } from '../../../../commands';
 import type { Machine } from '../../../../types';
 
 describe('cmd_ssh (wrapper)', () => {
@@ -55,7 +54,8 @@ describe('cmd_ssh (wrapper)', () => {
     } as any);
 
     expect(result.isError).toBeUndefined();
-    expect(result.sshSession?.active).toBe(true);
+    const ss = 'sshSession' in result ? result.sshSession : undefined;
+    expect(ss?.active).toBe(true);
   });
 
   it('debe iniciar sesión SSH interactiva y pedir contraseña', () => {
@@ -66,8 +66,9 @@ describe('cmd_ssh (wrapper)', () => {
     } as any);
 
     expect(result.isError).toBeUndefined();
-    expect(result.sshSession?.active).toBe(true);
-    expect(result.sshSession?.step).toBe('password');
+    const ss = 'sshSession' in result ? result.sshSession : undefined;
+    expect(ss?.active).toBe(true);
+    expect(ss?.step).toBe('password');
   });
 
   it('debe fallar si no hay puerto SSH abierto', () => {

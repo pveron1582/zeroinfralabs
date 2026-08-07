@@ -46,7 +46,7 @@ function parseListenerMode(args: string[]): { isListener: boolean; port?: string
 
 export const cmd_nc = {
   name: 'nc',
-  execute: (args: string[], context: CommandContext): CommandResponse => {
+  execute: (args: string[], _context: CommandContext): CommandResponse => {
     // Validar argumentos mínimos
     if (args.length === 0) {
       return {
@@ -85,6 +85,7 @@ Examples:
       // El labValidator detectará el blockingCommand y validará la misión
       return {
         output: `listening on [any] ${port} ...`,
+        type: 'blocking',
         isError: false,
         blockingCommand: {
           message: `⏳ Escuchando en puerto ${port}... Presiona Ctrl+C para cancelar`,

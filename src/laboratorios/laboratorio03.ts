@@ -2,7 +2,7 @@
 // Scenario 3 — EternalBlue / MS17-010 Windows 7
 // Datos y configuración específicos para este escenario
 
-import { buildScenario, COMMON_PORTS, createFile, createWebDirs } from './templates';
+import { buildScenario, COMMON_PORTS, createFile } from './templates';
 import type { Scenario } from '../types';
 
 // Re-exportar resetAttackerCounter desde templates para compatibilidad

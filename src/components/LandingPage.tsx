@@ -1,7 +1,7 @@
 // ── components/LandingPage.tsx ──────────────────────────────────────
 // Marketing landing — hybrid dark hero + light content sections
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
 import { FeedbackModal } from './FeedbackModal';

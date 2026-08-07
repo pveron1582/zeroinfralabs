@@ -1,7 +1,6 @@
 // ── components/AnimatedCompletion.tsx ──────────────────────────────────────
 // Animated lab completion screen with trophy + confetti
 
-import React from 'react';
 
 interface AnimatedCompletionProps {
   labName?: string;
@@ -17,7 +16,7 @@ export function AnimatedCompletion({
   className = '',
 }: AnimatedCompletionProps) {
   // Confetti dots
-  const confetti = Array.from({ length: 40 }, (_, i) => ({
+  const confetti = Array.from({ length: 40 }, (_, _i) => ({
     x: Math.random() * 100,
     y: Math.random() * 100,
     size: 3 + Math.random() * 5,

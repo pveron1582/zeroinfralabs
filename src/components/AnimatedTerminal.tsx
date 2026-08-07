@@ -2,14 +2,7 @@
 // Animated terminal mockup for landing page — CSS-only with typewriter effect
 // Simulates a Kali Linux terminal with realistic command + output animation
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-
-interface TerminalPhase {
-  type: 'typing' | 'output';
-  text: string;
-  lines?: string[];
-  delay?: number[];
-}
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface AnimatedTerminalProps {
   title?: string;
@@ -23,17 +16,16 @@ interface AnimatedTerminalProps {
 
 export function AnimatedTerminal({
   title,
-  prompt,
   command,
   outputLines,
   outputDelays,
   accentColor = '#10b981',
   className = '',
 }: AnimatedTerminalProps) {
-  const [visible, setVisible] = useState(false);
+  const [, setVisible] = useState(false);
   const [currentPhase, setCurrentPhase] = useState<'idle' | 'typing' | 'output' | 'done'>('idle');
   const [typedText, setTypedText] = useState('');
-  const [outputIdx, setOutputIdx] = useState(0);
+  const [, setOutputIdx] = useState(0);
   const [visibleLines, setVisibleLines] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -76,7 +68,8 @@ export function AnimatedTerminal({
         let lineIdx = 0;
         const showLine = () => {
           if (lineIdx < outputLines.length) {
-            setVisibleLines(prev => [...prev, outputLines[lineIdx]]);
+            const currentLine = outputLines[lineIdx];
+            setVisibleLines(prev => [...prev, currentLine]);
             lineIdx++;
             setOutputIdx(lineIdx);
             if (lineIdx < outputLines.length) {

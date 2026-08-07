@@ -1,5 +1,4 @@
 // ── components/fakesites/__tests__/WordPressSite.test.tsx ──────────
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';

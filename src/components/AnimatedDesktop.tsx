@@ -2,8 +2,8 @@
 // Landing demo: simulated Kali desktop with transparent terminal + Chrome
 // Loops like a short GIF — terminal gobuster → browser wp-admin login
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { WALLPAPERS } from './desktopWallpapers';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { WALLPAPERS, DEFAULT_WALLPAPER_ID } from './desktopWallpapers';
 import { GOBUSTER_DEMO, FONT_MONO } from './landing/constants';
 
 type Phase = 'idle' | 'term-cmd' | 'term-out' | 'browser' | 'browser-pass' | 'browser-dash' | 'hold';
@@ -14,7 +14,7 @@ interface AnimatedDesktopProps {
 }
 
 export function AnimatedDesktop({ className = '', isEs = false }: AnimatedDesktopProps) {
-  const wp = WALLPAPERS.find(w => w.id === 'neon-kali') ?? WALLPAPERS[0];
+  const wp = WALLPAPERS.find(w => w.id === DEFAULT_WALLPAPER_ID) ?? WALLPAPERS[0];
   const [ready, setReady] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [typedCmd, setTypedCmd] = useState('');

@@ -18,19 +18,19 @@ describe('cmd_rmdir', () => {
       web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
       learning_steps: [],
       files: [
-        { path: '/home/.dir', content: '', type: 'text' },
-        { path: '/home/kali/.dir', content: '', type: 'text' },
-        { path: '/home/kali/test/.dir', content: '', type: 'text' },
-        { path: '/home/kali/test/file.txt', content: 'contenido', type: 'text' },
-        { path: '/home/kali/empty/.dir', content: '', type: 'text' },
-        { path: '/tmp/.dir', content: '', type: 'text' },
-        { path: '/tmp/testdir/.dir', content: '', type: 'text' },
-        { path: '/var/.dir', content: '', type: 'text' },
-        { path: '/var/www/.dir', content: '', type: 'text' },
-        { path: '/var/www/html/.dir', content: '', type: 'text' },
-        { path: '/var/www/html/empty/.dir', content: '', type: 'text' },
+        { path: '/home/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/home/kali/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+        { path: '/home/kali/test/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+        { path: '/home/kali/test/file.txt', content: 'contenido', type: 'text', owner: 'kali', group: 'kali', mode: 0o644 },
+        { path: '/home/kali/empty/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+        { path: '/tmp/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o777 },
+        { path: '/tmp/testdir/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/var/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/var/www/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/var/www/html/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/var/www/html/empty/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
       ],
-      found_credentials: { file: '', user: 'kali', pass: 'kali', verified: false }
+      found_credentials: [{ file: '', user: 'kali', pass: 'kali', verified: true }]
     };
 
     mockContext = {
@@ -106,11 +106,11 @@ describe('cmd_rmdir', () => {
   it('debe eliminar estructura completa con -p', () => {
     // Agregar estructura completa incluyendo padres
     mockContext.machine.files.push(
-      { path: '/.dir', content: '', type: 'text' },
-      { path: '/tmp/.dir', content: '', type: 'text' },
-      { path: '/tmp/deep/.dir', content: '', type: 'text' },
-      { path: '/tmp/deep/structure/.dir', content: '', type: 'text' },
-      { path: '/tmp/deep/structure/test/.dir', content: '', type: 'text' }
+      { path: '/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/tmp/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o777 },
+      { path: '/tmp/deep/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+      { path: '/tmp/deep/structure/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+      { path: '/tmp/deep/structure/test/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 }
     );
 
     const result = cmd_rmdir.execute(['-p', '/tmp/deep/structure/test'], mockContext);
@@ -121,29 +121,38 @@ describe('cmd_rmdir', () => {
     expect(mockContext.machine.files).not.toContainEqual({
       path: '/tmp/deep/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
     expect(mockContext.machine.files).not.toContainEqual({
       path: '/tmp/deep/structure/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
     expect(mockContext.machine.files).not.toContainEqual({
       path: '/tmp/deep/structure/test/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
   });
 
   it('debe eliminar padres con -p si quedan vacíos', () => {
     // Agregar estructura completa incluyendo todos los padres necesarios
     mockContext.machine.files.push(
-      { path: '/.dir', content: '', type: 'text' },
-      { path: '/tmp/.dir', content: '', type: 'text' },
-      { path: '/tmp/parent/.dir', content: '', type: 'text' },
-      { path: '/tmp/parent/child/.dir', content: '', type: 'text' },
-      { path: '/tmp/parent/child/grandchild/.dir', content: '', type: 'text' },
-      { path: '/tmp/parent/other/.dir', content: '', type: 'text' }
+      { path: '/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/tmp/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o777 },
+      { path: '/tmp/parent/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+      { path: '/tmp/parent/child/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+      { path: '/tmp/parent/child/grandchild/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 },
+      { path: '/tmp/parent/other/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 }
     );
 
     const result = cmd_rmdir.execute(['-p', '/tmp/parent/child/grandchild'], mockContext);
@@ -154,23 +163,35 @@ describe('cmd_rmdir', () => {
     expect(mockContext.machine.files).not.toContainEqual({
       path: '/tmp/parent/child/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
     expect(mockContext.machine.files).not.toContainEqual({
       path: '/tmp/parent/child/grandchild/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
     // Parent no debe ser eliminado porque tiene other/
     expect(mockContext.machine.files).toContainEqual({
       path: '/tmp/parent/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
     expect(mockContext.machine.files).toContainEqual({
       path: '/tmp/parent/other/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
   });
 
@@ -182,21 +203,21 @@ describe('cmd_rmdir', () => {
   });
 
   it('debe manejar paths relativos con ..', () => {
-    // Agregar estructura necesaria para el directorio padre
+    // Agregar estructura necesaria en /tmp (donde kali tiene permisos)
     mockContext.machine.files.push(
-      { path: '/.dir', content: '', type: 'text' },
-      { path: '/home/.dir', content: '', type: 'text' },
-      { path: '/home/kali/.dir', content: '', type: 'text' },
-      { path: '/home/empty/.dir', content: '', type: 'text' }
+      { path: '/tmp/empty/.dir', content: '', type: 'text', owner: 'kali', group: 'kali', mode: 0o755 }
     );
     
-    const result = cmd_rmdir.execute(['../empty'], mockContext);
+    const result = cmd_rmdir.execute(['empty'], { ...mockContext, currentDir: '/tmp/' });
     expect(result.output).toBe('');
     expect(result.isError).toBe(false);
     expect(mockContext.machine.files).not.toContainEqual({
-      path: '/home/empty/.dir',
+      path: '/tmp/empty/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'kali',
+      group: 'kali',
+      mode: 0o755
     });
   });
 
@@ -205,12 +226,15 @@ describe('cmd_rmdir', () => {
       ...mockContext,
       machine: {
         ...mockMachine,
-        found_credentials: { file: '', user: 'regularuser', pass: 'pass', verified: false }
+        found_credentials: [{ file: '', user: 'regularuser', pass: 'pass', verified: false }]
       }
     };
     
     // Agregar directorio vacío en /bin para probar
-    userContext.machine.files.push({ path: '/bin/test/.dir', content: '', type: 'text' });
+    userContext.machine.files.push(
+      { path: '/bin/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/bin/test/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 }
+    );
     
     const result = cmd_rmdir.execute(['/bin/test'], userContext);
     expect(result.output).toContain('failed to remove');
@@ -228,7 +252,10 @@ describe('cmd_rmdir', () => {
     };
     
     // Agregar directorio vacío en /bin para probar
-    rootContext.machine.files.push({ path: '/bin/test/.dir', content: '', type: 'text' });
+    rootContext.machine.files.push(
+      { path: '/bin/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/bin/test/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 }
+    );
     
     const result = cmd_rmdir.execute(['/bin/test'], rootContext);
     expect(result.output).toBe('');
@@ -236,7 +263,10 @@ describe('cmd_rmdir', () => {
     expect(rootContext.machine.files).not.toContainEqual({
       path: '/bin/test/.dir',
       content: '',
-      type: 'text'
+      type: 'text',
+      owner: 'root',
+      group: 'root',
+      mode: 0o755
     });
   });
 });

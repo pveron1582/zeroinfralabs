@@ -1,6 +1,10 @@
 // ── shells/ftp/FtpSession.ts ──────────────────────────────────────
 
 import type { ShellSession, ShellContext, ShellResult } from '../ShellSession';
+import { canRead } from '../../../utils/permissions';
+import { getCurrentUser } from '../../../utils/users';
+import { defaultOwnership } from '../../../utils/fs';
+import { applyUmask } from '../../../commands/builtin/umask';
 
 // ── Estado del shell FTP ──────────────────────────────────────────
 export interface FtpState {
@@ -115,45 +119,71 @@ export const ftpSession: ShellSession<FtpState> = {
 
     // ── 2. Username ───────────────────────────────────────────────
     if (state.step === 'username') {
-      const username = trimmedInput.toLowerCase();
-      if (username !== 'anonymous') {
+      const username = trimmedInput;
+      const target = ctx.allMachines.find(m => m.id === state.targetId);
+      const ftpPort = target?.scan_results.ports.find(
+        p => p.service === 'ftp' && p.state === 'open'
+      );
+      const validUser = ftpPort?.credentials?.user;
+
+      // Acepta anonymous (cualquier password) o el usuario configurado en el puerto
+      if (username.toLowerCase() === 'anonymous' || (validUser && username === validUser)) {
         return {
           result: {
-            output: `530 Permission denied.\nftp: Login failed.`,
-            isError: true,
-            closeSession: true,
+            output: `331 Please specify the password.`,
           },
-          newState: { ...state, connected: false, loggedIn: false },
+          newState: {
+            ...state,
+            username: trimmedInput,
+            step: 'password',
+          },
         };
       }
+
       return {
         result: {
-          output: `331 Please specify the password.`,
+          output: `530 Login incorrect.\nftp: Login failed.`,
+          isError: true,
+          closeSession: true,
         },
-        newState: {
-          ...state,
-          username: trimmedInput,
-          step: 'password',
-        },
+        newState: { ...state, connected: false, loggedIn: false },
       };
     }
 
     // ── 3. Password ──────────────────────────────────────────────
     if (state.step === 'password') {
-      // Acepta cualquier contraseña (incluyendo vacía, solo presionar Enter)
-      // Si el usuario es anonymous, se permite cualquier password (incluyendo vacía)
+      const target = ctx.allMachines.find(m => m.id === state.targetId);
+      const ftpPort = target?.scan_results.ports.find(
+        p => p.service === 'ftp' && p.state === 'open'
+      );
+      const validPass = ftpPort?.credentials?.pass;
       const isAnonymous = state.username?.toLowerCase() === 'anonymous';
-      
+
+      // anonymous: acepta cualquier password (incluyendo vacía).
+      // Usuario configurado (p. ej. ftpuser): exige la contraseña correcta.
+      const authOk = isAnonymous || (validPass !== undefined && trimmedInput === validPass);
+
+      if (authOk) {
+        return {
+          result: {
+            output: `230 Login successful.\nRemote system type is UNIX.\nUsing binary mode to transfer files.`,
+          },
+          newState: {
+            ...state,
+            loggedIn: true,
+            step: 'connected',
+            password: trimmedInput,
+          },
+        };
+      }
+
       return {
         result: {
-          output: `230 Login successful.\nRemote system type is UNIX.\nUsing binary mode to transfer files.`,
+          output: `530 Login incorrect.\nftp: Login failed.`,
+          isError: true,
+          closeSession: true,
         },
-        newState: {
-          ...state,
-          loggedIn: true,
-          step: 'connected',
-          password: trimmedInput,
-        },
+        newState: { ...state, connected: false, loggedIn: false },
       };
     }
 
@@ -208,7 +238,22 @@ export const ftpSession: ShellSession<FtpState> = {
             };
           }
 
+          // Permiso FTP: el usuario logueado solo puede leer archivos que tenga
+          // permisos para leer. Si el archivo remoto no tiene `r` para ese user, falla.
+          const ftpUser = { username: state.username || 'anonymous', uid: 65534, gid: 65534, home: '/srv/ftp', shell: '/bin/nologin', groups: [65534] };
+          if (!canRead(target, targetFile, ftpUser)) {
+            return {
+              result: { output: `550 Failed to open file: Permission denied` },
+              newState: state,
+            };
+          }
+
           const downloadPath = `/root/${filename}`;
+
+          // Asignar owner/group/mode del usuario atacante (kali)
+          const attacker = ctx.machine;
+          const localUser = getCurrentUser(attacker);
+          const ownership = defaultOwnership(attacker, localUser, applyUmask(0o644, ctx.umask ?? 0o022));
 
           return {
             result: {
@@ -221,6 +266,9 @@ export const ftpSession: ShellSession<FtpState> = {
                 path: downloadPath,
                 content: targetFile.content,
                 type: targetFile.type,
+                owner: ownership.owner,
+                group: ownership.group,
+                mode: ownership.mode,
               },
             },
             newState: state,

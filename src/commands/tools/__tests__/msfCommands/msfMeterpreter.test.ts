@@ -9,17 +9,7 @@ const createMockContext = (machines: Machine[] = []): CommandContext => ({
   machine: machines[0] || { id: 'target-01', machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '00:00:00:00:00:00', os: 'Windows 7', status: 'up', type: 'server' }, discovery_level: 2, scan_results: { ports: [{ port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' }] }, web_enumeration: { web_server: 'none', cms: 'none', directories: [] }, learning_steps: [], files: [] },
   allMachines: machines,
   currentMissionId: 5,
-});
-
-// Create mock machine for testing
-const createMockMachine = (ip: string): Machine => ({
-  id: 'target-01',
-  machine_info: { hostname: 'WIN7-TARGET', ip, mac: '00:00:00:00:00:00', os: 'Windows 7', status: 'up', type: 'server' },
-  discovery_level: 2,
-  scan_results: { ports: [{ port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' }] },
-  web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-  learning_steps: [],
-  files: [],
+  currentDir: '/root',
 });
 
 describe('executeMeterpreterCommand', () => {
@@ -30,6 +20,7 @@ describe('executeMeterpreterCommand', () => {
     options: { RHOSTS: '192.168.1.10', RPORT: '445', LHOST: '192.168.1.5', LPORT: '4444' },
     sessionOpen: true,
     shellMode: false,
+    uidChecked: false,
     auxChecked: true
   };
 
@@ -71,11 +62,7 @@ describe('executeMeterpreterCommand', () => {
     const result = executeMeterpreterCommand('shell', [], meterpreterState, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('Microsoft Windows');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.shellMode).toBe(true);
-    }
+    expect(result!.msfStateUpdate?.shellMode).toBe(true);
   });
 
   it('debe ejecutar hashdump', () => {
@@ -89,11 +76,7 @@ describe('executeMeterpreterCommand', () => {
     const result = executeMeterpreterCommand('background', [], meterpreterState, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('Backgrounding session');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.sessionOpen).toBe(false);
-    }
+    expect(result!.msfStateUpdate?.sessionOpen).toBe(false);
   });
 
   it('debe ejecutar bg (alias de background)', () => {
@@ -106,11 +89,7 @@ describe('executeMeterpreterCommand', () => {
     const result = executeMeterpreterCommand('exit', [], meterpreterState, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('Shutting down Meterpreter');
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.sessionOpen).toBe(false);
-    }
+    expect(result!.msfStateUpdate?.sessionOpen).toBe(false);
   });
 
   it('debe cerrar sesión con quit', () => {

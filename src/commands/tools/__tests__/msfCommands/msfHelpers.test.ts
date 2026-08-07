@@ -9,32 +9,21 @@ describe('msfHelpers', () => {
     options: { RHOSTS: '192.168.1.10' },
     sessionOpen: false,
     shellMode: false,
+    uidChecked: false,
     auxChecked: false
   };
 
   describe('withState', () => {
-    it('debe encodear el estado en el output', () => {
+    it('debe retornar el output limpio sin prefijo de estado', () => {
       const result = withState('Test output', testState);
-      expect(result.output).toContain('MSF_STATE:');
-      expect(result.output).toContain('Test output');
+      expect(result.output).toBe('Test output');
     });
 
-    it('debe serializar el estado como JSON', () => {
+    it('debe exponer el estado en msfStateUpdate', () => {
       const result = withState('Test', testState);
-      const stateMatch = result.output.match(/MSF_STATE:(\{[^\n]*\})/);
-      expect(stateMatch).not.toBeNull();
-      if (stateMatch) {
-        const state = JSON.parse(stateMatch[1]);
-        expect(state.active).toBe(true);
-        expect(state.options.RHOSTS).toBe('192.168.1.10');
-      }
-    });
-
-    it('debe incluir el output después del estado', () => {
-      const result = withState('Test output', testState);
-      const lines = result.output.split('\n');
-      expect(lines[0]).toContain('MSF_STATE:');
-      expect(lines[1]).toBe('Test output');
+      expect(result.msfStateUpdate).toEqual(testState);
+      expect(result.msfStateUpdate?.active).toBe(true);
+      expect(result.msfStateUpdate?.options.RHOSTS).toBe('192.168.1.10');
     });
   });
 

@@ -14,12 +14,12 @@
 import type { CommandContext, CommandResponse } from '../../types';
 import type { MsfState } from '../../frameworks/metasploit/core/msfTypes';
 import { INITIAL_STATE } from '../../frameworks/metasploit/core/msfTypes';
-import { withState, basePrompt, modulePrompt } from '../../frameworks/metasploit/core/msfHelpers';
+import { withState } from '../../frameworks/metasploit/core/msfHelpers';
 import { executeBaseCommand } from '../../frameworks/metasploit/orchestrators/msfBase';
 import { executeMeterpreterCommand } from '../../frameworks/metasploit/orchestrators/msfMeterpreter';
 import { executeShellCommand } from '../../frameworks/metasploit/orchestrators/msfShell';
 import { executeExploitCommand } from '../../frameworks/metasploit/orchestrators/msfExploits';
-import { executeContextHelp, getContextPrompt } from '../../frameworks/metasploit/orchestrators/msfContextHelp';
+import { executeContextHelp } from '../../frameworks/metasploit/orchestrators/msfContextHelp';
 
 // ── MSF sub-command handler (called when inside MSF session) ──────
 // Orchestrates all command handlers in order of priority

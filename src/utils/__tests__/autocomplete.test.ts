@@ -75,6 +75,35 @@ describe('autocompleteCommand', () => {
     expect(result).toContain('cd');
     expect(result).toContain('clear');
   });
+
+  it('debe incluir comandos de gestión de permisos (chmod, chown, chgrp)', () => {
+    expect(autocompleteCommand('')).toContain('chmod');
+    expect(autocompleteCommand('')).toContain('chown');
+    expect(autocompleteCommand('')).toContain('chgrp');
+  });
+
+  it('debe filtrar chmod, chown, chgrp por prefijo "ch"', () => {
+    const result = autocompleteCommand('ch');
+    expect(result).toContain('chmod');
+    expect(result).toContain('chown');
+    expect(result).toContain('chgrp');
+  });
+
+  it('debe incluir nano, echo, touch, rm, cp, mv en autocompletado', () => {
+    const all = autocompleteCommand('');
+    expect(all).toContain('nano');
+    expect(all).toContain('echo');
+    expect(all).toContain('touch');
+    expect(all).toContain('rm');
+    expect(all).toContain('cp');
+    expect(all).toContain('mv');
+  });
+
+  it('debe incluir msfconsole para arrancar el REPL', () => {
+    const all = autocompleteCommand('');
+    expect(all).toContain('msfconsole');
+    expect(autocompleteCommand('msf')).toContain('msfconsole');
+  });
 });
 
 // Tests para autocompletado de archivos y directorios
@@ -182,6 +211,24 @@ describe('getAutocompleteSuggestions', () => {
     const result = getAutocompleteSuggestions('hel', 3, machine, '/');
     expect(result.suggestions).toContain('help');
     expect(result.completedText).toBe('help');
+  });
+
+  it('debe usar comandos MSF cuando msfState está activo (dentro de msfconsole)', () => {
+    const machine = createMachine([]);
+    const msfState = { active: true };
+    const result = getAutocompleteSuggestions('us', 2, machine, '/', msfState);
+    expect(result.suggestions).toContain('use');
+    // No deben aparecer comandos del sistema que empiecen con 'us'
+    expect(result.suggestions.every(s => ['use', 'search', 'show', 'set', 'options', 'info', 'exit', 'help', 'back', 'run', 'exploit', 'check'].includes(s))).toBe(true);
+    expect(result.completedText).toBe('use');
+  });
+
+  it('debe autocompletar módulos tras "use" dentro de msfconsole', () => {
+    const machine = createMachine([]);
+    const msfState = { active: true };
+    const result = getAutocompleteSuggestions('use explo', 9, machine, '/', msfState, MSF_MODULES);
+    expect(result.suggestions.length).toBeGreaterThan(0);
+    expect(result.suggestions.every(s => s.startsWith('explo'))).toBe(true);
   });
 });
 

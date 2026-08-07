@@ -1,5 +1,4 @@
 // ── components/fakesites/SqlInjectionSite.tsx ───────────────────────
-import React from 'react';
 import { VulnerableLogin } from './sql_lab/VulnerableLogin';
 import type { Machine } from '../../types';
 
@@ -20,9 +19,6 @@ export function SqlInjectionSite({
   currentUrl,
   onNavigate,
   onLoginSuccess,
-  onLogout,
-  onCredentialsFound,
-  onVerifyCredentials,
   onMissionComplete,
 }: SqlInjectionSiteProps) {
   const ip = machine.machine_info.ip;

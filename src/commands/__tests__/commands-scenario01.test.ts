@@ -57,8 +57,9 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     const result = exec('arp-scan 192.168.1.0/24', attacker, [attacker, wpTarget], 1);
     expectSuccess(result);
     // arp-scan ya no completa misiones - es un comando libre
-    expect(result.discoveredHosts).toBeDefined();
-    expect(result.discoveredHosts?.some(h => h.ip === '192.168.1.11')).toBe(true);
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toBeDefined();
+    expect(dh?.some(h => h.ip === '192.168.1.11')).toBe(true);
     expect(result.output).toContain('192.168.1.11');
   });
 
@@ -67,8 +68,9 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     const result = exec('nmap -sV 192.168.1.11', attacker, [attacker, target], 2);
     expectSuccess(result);
     // nmap ya no completa misiones - es un comando libre
-    expect(result.scanResults).toBeDefined();
-    expect(result.scanResults?.targetIp).toBe('192.168.1.11');
+    const sr = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr).toBeDefined();
+    expect(sr?.targetIp).toBe('192.168.1.11');
     expect(result.output).toContain('22/tcp');
     expect(result.output).toContain('80/tcp');
   });
@@ -78,8 +80,9 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     const result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, [attacker, target], 4);
     expectSuccess(result);
     // gobuster ya no completa misiones - es un comando libre
-    expect(result.foundDirectories).toBeDefined();
-    expect(result.foundDirectories?.directories.some(d => d.path === '/wp-admin')).toBe(true);
+    const fd = 'foundDirectories' in result ? result.foundDirectories : undefined;
+    expect(fd).toBeDefined();
+    expect(fd?.directories.some(d => d.path === '/wp-admin')).toBe(true);
     expect(result.output).toContain('/wp-admin');
     expect(result.output).toContain('/uploads');
   });
@@ -88,7 +91,8 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     // nmap ya no valida discovery_level - es un comando libre
     const result = exec('nmap -sV 192.168.1.11', attacker, [attacker, wpTarget], 2);
     expectSuccess(result);
-    expect(result.scanResults).toBeDefined();
+    const sr2 = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr2).toBeDefined();
   });
 
   it('gobuster funciona sin nmap previo (comando libre)', () => {
@@ -96,7 +100,8 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
     const target = withLevel(wpTarget, 1);
     const result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, [attacker, target], 4);
     expectSuccess(result);
-    expect(result.foundDirectories).toBeDefined();
+    const fd2 = 'foundDirectories' in result ? result.foundDirectories : undefined;
+    expect(fd2).toBeDefined();
   });
 
   it('Golden path: arp-scan → nmap → gobuster sin simular estado', () => {
@@ -104,18 +109,21 @@ describe('Happy Path: Scenario 01 - WordPress Lab', () => {
 
     let result = exec('arp-scan 192.168.1.0/24', attacker, machines, 1);
     // arp-scan ya no completa misiones - verificar metadata
-    expect(result.discoveredHosts).toBeDefined();
+    const dh2 = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh2).toBeDefined();
     machines = evolveState(machines, result);
 
     result = exec('nmap -sV 192.168.1.11', attacker, machines, 2);
     // nmap ya no completa misiones - verificar metadata
-    expect(result.scanResults).toBeDefined();
-    expect(result.scanResults?.ports.some(p => p.port === 22)).toBe(true);
+    const sr3 = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr3).toBeDefined();
+    expect(sr3?.ports.some(p => p.port === 22)).toBe(true);
     machines = evolveState(machines, result);
 
     result = exec('gobuster dir -u http://192.168.1.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt', attacker, machines, 4);
     // gobuster ya no completa misiones - verificar metadata
-    expect(result.foundDirectories).toBeDefined();
+    const fd3 = 'foundDirectories' in result ? result.foundDirectories : undefined;
+    expect(fd3).toBeDefined();
     expectSuccess(result);
   });
 });

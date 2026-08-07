@@ -91,7 +91,6 @@ export const cmd_netdiscover = {
     }
 
     const baseIp = ipParts.slice(0, 3).join('.');
-    const networkPrefix = ipParts[0] + '.' + ipParts[1];
 
     // Collect discovered hosts
     const discoveredHosts: Array<{ip: string; mac: string; hostname: string}> = [];
@@ -154,8 +153,11 @@ export const cmd_netdiscover = {
       output += `  Scan completed in ${scanTime} seconds\n`;
     }
 
+    const outputLines = output.split('\n');
     return {
       output,
+      type: 'discovery',
+      streamingLineDelays: outputLines.map(() => 50 + Math.random() * 70),
       discoveredHosts: discoveredHosts.length > 0 ? discoveredHosts : undefined,
       networkScanned: baseIp,
     };

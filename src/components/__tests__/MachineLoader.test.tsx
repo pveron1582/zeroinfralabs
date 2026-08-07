@@ -1,7 +1,6 @@
 // ── components/__tests__/MachineLoader.test.tsx ───────────────────
 // Tests para el componente MachineLoader (versión con countdown + carga realista)
 
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MachineLoader } from '../MachineLoader';

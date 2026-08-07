@@ -1,12 +1,12 @@
 // ── src/components/__tests__/FakeBrowser.test.tsx ──────────────────
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { FakeBrowser } from '../FakeBrowser';
 
 // Mock dinámico del store para simular la navegación real
 let currentUrl = 'https://www.google.com';
+const mockAddFile = vi.fn();
 
 vi.mock('../../store/scenarioStore', () => ({
   useScenarioStore: vi.fn((selector) => {
@@ -20,7 +20,7 @@ vi.mock('../../store/scenarioStore', () => ({
       setBrowserNavHistory: vi.fn(),
       refreshBrowser: vi.fn(),
       setActiveApp: vi.fn(),
-      addFileToMachine: vi.fn(),
+      addFileToMachine: mockAddFile,
       confirmRCE: vi.fn(),
       listeningPort: null,
       setBlockingCommand: vi.fn(),
@@ -58,6 +58,52 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
   beforeEach(() => {
     currentUrl = 'https://www.google.com';
     vi.clearAllMocks();
+  });
+
+  it('debe crear el marcador .dir de uploads al subir el payload (Escenario 4)', () => {
+    vi.useFakeTimers();
+    try {
+    const mockKaliMachine = {
+      id: 'attacker-01',
+      machine_info: { hostname: 'kali', ip: '10.10.20.10', mac: '00:00:00:03', os: 'Kali Linux', status: 'up', type: 'workstation' },
+      discovery_level: 0,
+      scan_results: { ports: [] },
+      web_enumeration: { web_server: '', cms: '', directories: [] },
+      learning_steps: [],
+      files: [{ path: '/root/payload.php', content: '<?php system($_GET["c"]); ?>', type: 'text', owner: 'root', group: 'root', mode: 0o644 }]
+    };
+    const { rerender } = render(
+      <FakeBrowser
+        allMachines={[mockWpMachine, mockLfiMachine, mockKaliMachine]}
+        onClose={vi.fn()}
+        onMissionComplete={vi.fn()}
+        onCredentialsFound={vi.fn()}
+        onVerifyCredentials={vi.fn()}
+        scenarioHasWeb={true}
+        wpDiscoveryLevel={2}
+        mission3Already={true}
+        onSetPossibleUsers={vi.fn()}
+      />
+    );
+
+    // Navegar a la página de upload
+    const input = screen.getByDisplayValue('https://www.google.com');
+    fireEvent.change(input, { target: { value: 'http://10.10.20.11/upload.php' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    rerender(<FakeBrowser allMachines={[mockWpMachine, mockLfiMachine, mockKaliMachine]} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+
+    // Subir el payload
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '/root/payload.php' } });
+    fireEvent.click(screen.getByRole('button', { name: /upload file/i }));
+    vi.runAllTimers();
+
+    // La subida debe crear tanto el marcador .dir como el archivo
+    const addedPaths = mockAddFile.mock.calls.map((c: unknown[]) => (c[1] as { path: string }).path);
+    expect(addedPaths).toContain('/var/www/html/uploads/payload.php');
+    expect(addedPaths).toContain('/var/www/html/uploads/.dir');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('debe iniciar en la página de Google', () => {

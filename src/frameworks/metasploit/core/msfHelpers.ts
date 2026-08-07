@@ -2,7 +2,8 @@ import type { CommandResponse } from '../../../types';
 import type { MsfState } from './msfTypes';
 
 export const withState = (output: string, state: MsfState): CommandResponse => ({
-  output: `MSF_STATE:${JSON.stringify(state)}\n${output}`,
+  output,
+  msfStateUpdate: state,
 });
 
 export const basePrompt = (): string => `msf6 > `;

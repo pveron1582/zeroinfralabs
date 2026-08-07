@@ -36,7 +36,11 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
     web_enumeration: config.targetMachine.web_enumeration || { web_server: 'none', cms: 'none', directories: [] },
     discovery_level: 0,
     learning_steps: config.learningSteps.map((step, idx) => ({ ...step, id: idx + 1, targetMachineId: config.targetMachine.id })),
-    files: config.targetMachine.files || [],
+    // Los labs sobrescriben archivos base (p.ej. /etc/sudoers). Dedupe por path
+    // manteniendo el ÚLTIMO: así el archivo específico del lab tiene prioridad.
+    files: Array.from(
+      new Map((config.targetMachine.files || []).map(f => [f.path, f])).values(),
+    ),
   };
   const machines = assignDHCP(config.networkRange, [attacker, target]);
 
@@ -79,8 +83,17 @@ export function createWebDirs(paths: Array<{ path: string; status: 200 | 301 | 4
   return paths.map(p => ({ path: p.path, status: p.status, description: p.description }));
 }
 
-export function createFile(path: string, content: string, type: 'text' | 'hash' | 'binary' = 'text') {
-  return { path, content, type };
+export function createFile(
+  path: string,
+  content: string,
+  type: 'text' | 'hash' | 'binary' = 'text',
+  owner = 'root',
+  group = 'root',
+  mode?: number,
+) {
+  const isDir = path.endsWith('.dir');
+  const effectiveMode = mode ?? (isDir ? 0o755 : 0o644);
+  return { path, content, type, owner, group, mode: effectiveMode };
 }
 
 export const REVERSE_SHELL_PAYLOAD = {
@@ -109,12 +122,12 @@ export function createLinuxFileSystemLegacy(config: LinuxFileSystemConfig = {}) 
     createFile('/mnt/.dir', '', 'text'),
     createFile('/opt/.dir', '', 'text'),
     createFile('/proc/.dir', '', 'text'),
-    createFile('/root/.dir', '', 'text'),
+    createFile('/root/.dir', '', 'text', 'root', 'root', 0o700),
     createFile('/run/.dir', '', 'text'),
     createFile('/sbin/.dir', '', 'text'),
     createFile('/srv/.dir', '', 'text'),
     createFile('/sys/.dir', '', 'text'),
-    createFile('/tmp/.dir', '', 'text'),
+    createFile('/tmp/.dir', '', 'text', 'root', 'root', 0o1777),
     createFile('/usr/.dir', '', 'text'),
     createFile('/var/.dir', '', 'text'),
 
@@ -191,7 +204,7 @@ admin:${sp}:19400:0:99999:7:::
 ${u}:$6$rounds=656000$saltysalt$hashedpassword1234567890abcdef/1234567890:19400:0:99999:7:::
 mysql:!:19400:0:99999:7:::
 postgres:$6$rounds=656000$anothersalt$anotherhash9876543210fedcba/0987654321:19400:0:99999:7:::
-ftp:*:19400:0:99999:7:::`, 'text'),
+ftp:*:19400:0:99999:7:::`, 'text', 'root', 'shadow', 0o640),
 
     createFile('/etc/hostname', 'target-server', 'text'),
     createFile('/etc/hosts', '127.0.0.1\tlocalhost\n127.0.1.1\ttarget-server\n::1\t\tlocalhost ip6-localhost ip6-loopback\nff02::1\t\tip6-allnodes\nff02::2\t\tip6-allrouters', 'text'),
@@ -243,9 +256,9 @@ ftp:*:19400:0:99999:7:::`, 'text'),
     // ═══════════════════════════════════════════════════════════════
     // /root/ - Directorio del superusuario
     // ═══════════════════════════════════════════════════════════════
-    createFile('/root/.bashrc', '# ~/.bashrc: executed by bash(1) for non-login shells.\n\n# If not running interactively, don\'t do anything\ncase $- in\n    *i*) ;;\n      *) return;;\nesac\n\nHISTCONTROL=ignoreboth\nshopt -s histappend\nHISTSIZE=1000\nHISTFILESIZE=2000\nshopt -s checkwinsize\n\n# Alias definitions\nalias ll=\'ls -l\'\nalias la=\'ls -la\'\nalias l=\'ls -CF\'\n\n# Root specific\nexport PATH="/root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"\nexport EDITOR=nano', 'text'),
-    createFile('/root/.profile', '# ~/.profile: executed by the command interpreter for login shells.\nif [ -n "$BASH_VERSION" ]; then\n    if [ -f "$HOME/.bashrc" ]; then\n\t. "$HOME/.bashrc"\n    fi\nfi\n\nif [ -d "$HOME/bin" ] ; then\n    PATH="$HOME/bin:$PATH"\nfi', 'text'),
-    createFile('/root/flag.txt', 'THM{ROOT_ACCESS_ACHIEVED}', 'text'),
+    createFile('/root/.bashrc', '# ~/.bashrc: executed by bash(1) for non-login shells.\n\n# If not running interactively, don\'t do anything\ncase $- in\n    *i*) ;;\n      *) return;;\nesac\n\nHISTCONTROL=ignoreboth\nshopt -s histappend\nHISTSIZE=1000\nHISTFILESIZE=2000\nshopt -s checkwinsize\n\n# Alias definitions\nalias ll=\'ls -l\'\nalias la=\'ls -la\'\nalias l=\'ls -CF\'\n\n# Root specific\nexport PATH="/root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"\nexport EDITOR=nano', 'text', 'root', 'root', 0o600),
+    createFile('/root/.profile', '# ~/.profile: executed by the command interpreter for login shells.\nif [ -n "$BASH_VERSION" ]; then\n    if [ -f "$HOME/.bashrc" ]; then\n\t. "$HOME/.bashrc"\n    fi\nfi\n\nif [ -d "$HOME/bin" ] ; then\n    PATH="$HOME/bin:$PATH"\nfi', 'text', 'root', 'root', 0o600),
+    createFile('/root/flag.txt', 'THM{ROOT_ACCESS_ACHIEVED}', 'text', 'root', 'root', 0o600),
 
     // ═══════════════════════════════════════════════════════════════
     // /usr/ - Programas y datos de usuario
@@ -259,7 +272,7 @@ ftp:*:19400:0:99999:7:::`, 'text'),
     // ═══════════════════════════════════════════════════════════════
     // /tmp/ - Archivos temporales
     // ═══════════════════════════════════════════════════════════════
-    createFile('/tmp/.dir', '', 'text'),
+    createFile('/tmp/.dir', '', 'text', 'root', 'root', 0o1777),
 
     // ═══════════════════════════════════════════════════════════════
     // /opt/ - Software opcional

@@ -1,4 +1,3 @@
-import React from 'react';
 // ── components/fakesites/wordpress/wp01/Uploads.tsx ──────────────
 
 interface Props {

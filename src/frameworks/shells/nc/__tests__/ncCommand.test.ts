@@ -71,18 +71,20 @@ describe('cmd_nc', () => {
     expect(result.isError).toBe(false);
     // nc ahora es un comando libre - no retorna completedMissionId
     // El labValidator detectará el blockingCommand y validará la misión
-    expect(result.blockingCommand).toBeDefined();
-    expect(result.blockingCommand?.message).toContain('4444');
-    expect(result.blockingCommand?.message).toContain('Ctrl+C'); // Verificar nuevo mensaje
-    expect(result.blockingCommand?.listeningPort).toBe(4444);
-    expect(result.blockingCommand?.cancelKey).toBeUndefined(); // cancelKey es opcional ahora
+    const bc = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc).toBeDefined();
+    expect(bc?.message).toContain('4444');
+    expect(bc?.message).toContain('Ctrl+C'); // Verificar nuevo mensaje
+    expect(bc?.listeningPort).toBe(4444);
+    expect(bc?.cancelKey).toBeUndefined(); // cancelKey es opcional ahora
   });
 
   it('nc sin step de listener activo igual inicia listener (comando libre)', () => {
     const result = cmd_nc.execute(['-nlvp', '4444'], ctxNoListener);
     expect(result.output).toContain('listening');
     // nc ahora es un comando libre - no retorna completedMissionId
-    expect(result.blockingCommand).toBeDefined(); // El listener igual se activa
+    const bc = 'blockingCommand' in result ? result.blockingCommand : undefined;
+    expect(bc).toBeDefined(); // El listener igual se activa
   });
 
   it('debe aceptar múltiples órdenes de argumentos (-vlnp, -pvnl, etc)', () => {
@@ -96,8 +98,9 @@ describe('cmd_nc', () => {
     testCases.forEach((args) => {
       const result = cmd_nc.execute(args, ctxWithListener);
       expect(result.output).toContain('listening');
-      expect(result.blockingCommand).toBeDefined();
-      expect(result.blockingCommand?.listeningPort).toBeGreaterThan(6000);
+      const bc = 'blockingCommand' in result ? result.blockingCommand : undefined;
+      expect(bc).toBeDefined();
+      expect(bc?.listeningPort).toBeGreaterThan(6000);
     });
   });
 

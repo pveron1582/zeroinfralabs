@@ -3,7 +3,8 @@
 // Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
 // Solo reporta credenciales encontradas para que el laboratorio valide.
 
-import type { CommandContext, CommandResponse } from '../../types';
+import type { CommandContext, CommandResponse, FileEntry } from '../../types';
+import { getKnownPassword } from '../../utils/credentials';
 
 export const cmd_hydra = {
   name: 'hydra',
@@ -46,21 +47,35 @@ export const cmd_hydra = {
 
     let output = `Hydra v9.2 starting at ${new Date().toLocaleString()}\n[DATA] target: ${ip}, service: ${svc}, port: ${port.port}\n[ATTACK] user "${user}" | wordlist "${wl}"\n`;
 
-    // Buscar la máquina atacante para leer su wordlist real
-    const attacker = allMachines.find(m => m.machine_info.type === 'workstation' || m.machine_info.hostname.includes('kali'));
-    const wordlistFile = attacker?.files.find(f => f.path === wl || (wl.length > 0 && f.path.endsWith(`/${wl}`)));
-    const hasCorrectPass = port.credentials && wordlistFile?.content.includes(port.credentials.pass);
+    // Buscar la wordlist en todas las máquinas disponibles
+    const wlFilename = wl.split('/').pop() || wl;
+    const wordlistFile = allMachines.reduce<FileEntry | null>((found, m) => {
+      if (found) return found;
+      return m.files?.find(f => f.path === wl || f.path.endsWith('/' + wlFilename)) || null;
+    }, null);
+    const hasCorrectPass = port.credentials && (!wordlistFile || wordlistFile.content.includes(port.credentials.pass));
 
-    if (port.credentials && port.credentials.user === user && hasCorrectPass) {
-      output += `\n[${port.port}][${svc}] host: ${ip}   login: ${user}   password: ${port.credentials.pass}\n1 of 1 target successfully completed, 1 valid password found`;
+    // También probar contra la tabla de passwords del sistema (known_passwords):
+    // cualquier usuario cuyo password esté en la wordlist es válido por fuerza bruta.
+    const knownPass = getKnownPassword(target, user);
+    const hasKnownPass = knownPass !== undefined && (!wordlistFile || wordlistFile.content.includes(knownPass));
+
+    const portCredOk = port.credentials?.user === user && hasCorrectPass;
+
+    if (portCredOk || hasKnownPass) {
+      const foundPass: string = portCredOk ? port.credentials!.pass : knownPass!;
+
+      output += `\n[${port.port}][${svc}] host: ${ip}   login: ${user}   password: ${foundPass}\n1 of 1 target successfully completed, 1 valid password found`;
 
       // Comando libre: reporta credenciales para que el lab valide
       return {
         output,
+        type: 'creds',
+        streamingLineDelays: output.split('\n').map(() => 80 + Math.random() * 120),
         foundCredentials: {
           machineId: target.id,
           user,
-          pass: port.credentials.pass,
+          pass: foundPass,
           file: `/etc/hydra_${svc}.txt`,
           service: svc.toLowerCase(),
           verified: true,
@@ -68,8 +83,11 @@ export const cmd_hydra = {
       };
     }
 
+    const failureOutput = output + `\n[ERROR] No valid password found for user "${user}"`;
     return { 
-      output: output + `\n[ERROR] No valid password found for user "${user}"`, 
+      output: failureOutput,
+      type: 'creds',
+      streamingLineDelays: failureOutput.split('\n').map(() => 80 + Math.random() * 120),
       isError: true,
       failedUser: {
         machineId: target.id,

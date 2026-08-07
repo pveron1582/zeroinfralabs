@@ -1,7 +1,9 @@
-// ── commands/builtin/mkdir.ts ───────────────────────────────────────
-// Comando mkdir - Crear directorios
-
-import type { CommandContext, CommandResponse } from '../../types';
+import type { CommandContext, CommandResponse, FileEntry } from '../../types';
+import { normalizePath, resolvePath } from '../../utils/path';
+import { getCurrentUser } from '../../utils/users';
+import { canCreateInDir } from '../../utils/permissions';
+import { findDirEntry, findParentDir, defaultOwnership, buildNewFile } from '../../utils/fs';
+import { applyUmask } from './umask';
 
 export const cmd_mkdir = {
   name: 'mkdir',
@@ -17,11 +19,9 @@ export const cmd_mkdir = {
     }
 
     let createParents = false;
-    let directories: string[] = [];
+    const directories: string[] = [];
 
-    // Parsear argumentos
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
+    for (const arg of args) {
       if (arg === '-p') {
         createParents = true;
       } else if (arg.startsWith('-')) {
@@ -41,132 +41,75 @@ export const cmd_mkdir = {
       };
     }
 
-    // Verificar permisos (solo root puede crear en /var, /etc, etc.)
-    const sshUser = (machine.found_credentials as any)?.user || 'user';
-    const isRoot = sshUser === 'root' || machine.id === 'attacker-01';
-
+    const currentUser = getCurrentUser(machine);
+    const homeDir = currentUser.home;
+    const umask = context.umask ?? 0o022;
     const results: string[] = [];
+    const newFiles: FileEntry[] = [...machine.files];
+    const fsView = { files: newFiles };
 
     for (const dir of directories) {
       try {
-        // Determinar la ruta completa
-        let fullPath: string;
-        
-        if (dir === '/') {
-          fullPath = '/';
-        } else if (dir.startsWith('/')) {
-          // Path absoluto
-          fullPath = dir.endsWith('/') ? dir : dir + '/';
-        } else if (dir.startsWith('~')) {
-          // Path relativo a home
-          fullPath = '/home/' + sshUser + '/' + dir.slice(2).replace(/^\//, '');
-          fullPath = fullPath.endsWith('/') ? fullPath : fullPath + '/';
-        } else {
-          // Path relativo al directorio actual
-          const baseDir = currentDir ? (currentDir.endsWith('/') ? currentDir : currentDir + '/') : '/';
-          fullPath = baseDir + dir;
-          fullPath = fullPath.endsWith('/') ? fullPath : fullPath + '/';
-        }
+        const fullPath = normalizePath(resolvePath(dir, currentDir || '/', homeDir));
 
-        // Normalizar el path (remover ./ y ../)
-        const parts = fullPath.split('/').filter(Boolean);
-        const normalized: string[] = [];
-        for (const part of parts) {
-          if (part === '..') {
-            normalized.pop();
-          } else if (part !== '.') {
-            normalized.push(part);
-          }
-        }
-        fullPath = normalized.length === 0 ? '/' : '/' + normalized.join('/') + '/';
-
-        // Verificar si ya existe
-        const dirExists = machine.files.some(f => f.path === fullPath + '.dir');
-        if (dirExists) {
+        if (findDirEntry(fsView, fullPath)) {
           results.push(`mkdir: cannot create directory '${dir}': File exists`);
           continue;
         }
 
-        // Verificar permisos para directorios del sistema
-        if (!isRoot) {
-          const systemDirs = ['/bin', '/boot', '/dev', '/etc', '/lib', '/lib64', '/proc', '/root', '/sbin', '/srv', '/sys', '/usr', '/var'];
-          const isSystemDir = systemDirs.some(sysDir => fullPath.startsWith(sysDir));
-          if (isSystemDir && !fullPath.startsWith('/home') && !fullPath.startsWith('/tmp')) {
+        if (createParents) {
+          const parts = fullPath.split('/').filter(p => p);
+          let currentPath = '';
+          let permissionOk = true;
+
+          for (const part of parts) {
+            currentPath += '/' + part;
+            if (!findDirEntry(fsView, currentPath)) {
+              const parentForThis = findParentDir(fsView, currentPath);
+              if (!parentForThis) {
+                results.push(`mkdir: cannot create directory '${dir}': No such file or directory`);
+                permissionOk = false;
+                break;
+              }
+              if (!canCreateInDir(machine, parentForThis, currentUser)) {
+                results.push(`mkdir: cannot create directory '${dir}': Permission denied`);
+                permissionOk = false;
+                break;
+              }
+              const ownership = defaultOwnership(machine, currentUser, applyUmask(0o777, umask));
+              newFiles.push(buildNewFile(currentPath + '/.dir', '', 'text', ownership));
+            }
+          }
+
+          if (!permissionOk) continue;
+        } else {
+          const parentEntry = findParentDir(fsView, fullPath);
+          if (!parentEntry) {
+            results.push(`mkdir: cannot create directory '${dir}': No such file or directory`);
+            continue;
+          }
+          if (!canCreateInDir(machine, parentEntry, currentUser)) {
             results.push(`mkdir: cannot create directory '${dir}': Permission denied`);
             continue;
           }
-        }
-
-        // Crear directorio(s)
-        if (createParents) {
-          // Con -p: crear todos los directorios padres necesarios
-          const parts = fullPath.split('/').filter(p => p);
-          let currentPath = '';
-          
-          for (const part of parts) {
-            currentPath += '/' + part;
-            const parentPath = currentPath.slice(0, -part.length - 1) || '/';
-            const parentItems = machine.files.filter(f => f.path.startsWith(parentPath));
-            const dirExists = parentItems.some((f: any) => f.path === currentPath + '.dir');
-            
-            if (!dirExists) {
-              // Agregar directorio al sistema de archivos
-              machine.files.push({
-                path: currentPath + '/.dir',
-                content: '',
-                type: 'text'
-              });
-            }
-          }
-        } else {
-          // Sin -p: crear directorio final, los padres deben existir
-          // Para paths relativos, no verificar padres (asumir directorio actual existe)
-          // Para paths absolutos, sí verificar padres
-          
-          // Verificar si el directorio ya existe
-          const dirExists = machine.files.some(f => f.path === fullPath + '.dir');
-          if (dirExists) {
-            results.push(`mkdir: cannot create directory '${dir}': File exists`);
-            continue;
-          }
-
-          // Verificar permisos para directorios del sistema
-          if (!isRoot) {
-            const systemDirs = ['/bin', '/boot', '/dev', '/etc', '/lib', '/lib64', '/proc', '/root', '/sbin', '/srv', '/sys', '/usr', '/var'];
-            const isSystemDir = systemDirs.some(sysDir => fullPath.startsWith(sysDir));
-            if (isSystemDir && !fullPath.startsWith('/home') && !fullPath.startsWith('/tmp')) {
-              results.push(`mkdir: cannot create directory '${dir}': Permission denied`);
-              continue;
-            }
-          }
-
-          // Verificar padres solo para paths absolutos
           if (dir.startsWith('/')) {
-            // Path absoluto: verificar que todos los directorios padres existan
             const parts = fullPath.split('/').filter(p => p);
             let currentPath = '';
-            
-            // Verificar cada directorio padre
+            let interrupted = false;
+
             for (let i = 0; i < parts.length - 1; i++) {
               currentPath += '/' + parts[i];
-              // Asegurar que el path termine con / para verificar el directorio
-              const checkPath = currentPath.endsWith('/') ? currentPath : currentPath + '/';
-              const parentExists = machine.files.some(f => f.path === checkPath + '.dir');
-              
-              if (!parentExists) {
+              if (!findDirEntry(fsView, currentPath)) {
                 results.push(`mkdir: cannot create directory '${dir}': No such file or directory`);
-                continue;
+                interrupted = true;
+                break;
               }
             }
+            if (interrupted) continue;
           }
-          // Para paths relativos, no verificar padres (asumir directorio actual existe)
 
-          // Crear el directorio final
-          machine.files.push({
-            path: fullPath + '.dir',
-            content: '',
-            type: 'text'
-          });
+          const ownership = defaultOwnership(machine, currentUser, applyUmask(0o777, umask));
+          newFiles.push(buildNewFile(fullPath + '.dir', '', 'text', ownership));
         }
 
       } catch (error) {
@@ -174,9 +117,11 @@ export const cmd_mkdir = {
       }
     }
 
+    machine.files = newFiles;
     return {
       output: results.length > 0 ? results.join('\n') : '',
       isError: results.length > 0,
+      filesChanged: newFiles,
     };
   },
 };

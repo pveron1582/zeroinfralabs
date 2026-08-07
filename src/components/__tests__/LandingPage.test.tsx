@@ -1,7 +1,6 @@
 // ── components/__tests__/LandingPage.test.tsx ──────────────────────
 // Tests for the marketing LandingPage
 
-import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -67,7 +66,7 @@ describe('LandingPage (marketing)', () => {
     await waitFor(() => {
       expect(screen.getByText('Pick your first lab')).toBeInTheDocument();
       expect(screen.getAllByText('WordPress Vulnerable Lab').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText(/View all labs \(5\)/)).toBeInTheDocument();
+      expect(screen.getByText(/View all labs \(6\)/)).toBeInTheDocument();
     });
   });
 

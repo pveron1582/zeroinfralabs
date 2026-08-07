@@ -66,9 +66,6 @@ describe('VulnerableLogin - SQL Injection Lab', () => {
   });
 
   it('debe mostrar dashboard después de login exitoso', () => {
-    const mockLoginSuccess = vi.fn();
-    const mockMissionComplete = vi.fn();
-    
     // Simular que el componente ya está en estado logged in renderizando el dashboard
     const { container } = render(
       <div>

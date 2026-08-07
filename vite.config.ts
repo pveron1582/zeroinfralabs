@@ -8,6 +8,13 @@ export default defineConfig({
     tailwindcss()
   ],
   build: {
-    chunkSizeWarningLimit: 1000, // Increase limit to 1000kb to suppress warning
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          zustand: ['zustand'],
+        },
+      },
+    },
   }
 })

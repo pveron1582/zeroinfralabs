@@ -1,6 +1,5 @@
 // Compact lab cards for landing preview
 
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { SCENARIOS, SCENARIOS_META } from '../../laboratorios/laboratorios';
 import { useLanguage, useT } from '../../i18n/translations';

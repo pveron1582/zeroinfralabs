@@ -6,8 +6,13 @@
 //   C:\Windows\...  → dir, cd, ipconfig, whoami, exit (background)
 
 import type { CommandContext, CommandResponse } from '../../../types';
-import type { MsfState, MsfSession } from '../modules/types';
-import type { SessionManager } from './SessionManager';
+import type { MsfState, MsfSession } from './msfTypes';
+
+// NOTE: SessionManager type was referenced from './SessionManager' but that module
+// doesn't exist on disk. Defining a local stub as a stopgap — see MEJORAS.md Fase 5.7.
+export interface SessionManager {
+  // Marker interface — methods to be defined when SessionManager module is created
+}
 
 // ── Context Types ───────────────────────────────────────────────────
 export type MsfContextType = 
@@ -101,7 +106,7 @@ class ContextRegistry {
     const seen = new Set<string>();
     const result: MsfCommand[] = [];
 
-    for (const [name, cmd] of contextMap) {
+    for (const [_name, cmd] of contextMap) {
       if (!seen.has(cmd.name)) {
         seen.add(cmd.name);
         result.push(cmd);
@@ -163,7 +168,7 @@ export const contextRegistry = new ContextRegistry();
 // ── Helper Functions ───────────────────────────────────────────────
 export function getContextPrompt(
   context: MsfContextType,
-  session?: MsfSession
+  _session?: MsfSession
 ): string {
   switch (context) {
     case 'msfconsole':

@@ -100,7 +100,7 @@ describe('FeedbackModal', () => {
   });
 
   it('debe mostrar mensaje de éxito después de enviar', async () => {
-    const { trackEvent } = await import('../../utils/analytics');
+    await import('../../utils/analytics');
     render(<FeedbackModal isOpen={true} onClose={mockOnClose} />);
     
     // Llenar formulario

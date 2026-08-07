@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -11,35 +10,48 @@ describe('DesktopTopBar', () => {
     termWindows: [],
     browserWindows: [],
     wallpaperWindows: [],
+    guideWindows: [],
     topWindowId: undefined,
     showAppMenu: false,
-    showSysMenu: false,
     time: new Date('2026-06-20T20:00:00Z'),
     isEs: true,
     currentScenarioCategory: 'General',
     onToggleAppMenu: vi.fn(),
-    onToggleSysMenu: vi.fn(),
     onCloseAppMenu: vi.fn(),
-    onCloseSysMenu: vi.fn(),
     onAddTerminal: vi.fn(),
     onAddBrowser: vi.fn(),
+    onOpenGuide: vi.fn(),
     onOpenWallpaperPicker: vi.fn(),
     onMinimizeWindow: vi.fn(),
     onRestoreWindow: vi.fn(),
     onBringToFront: vi.fn(),
-    onGoHome: vi.fn(),
+    onRequestExit: vi.fn(),
     onShowAbout: vi.fn(),
   };
 
   it('debe renderizar la hora correctamente en español', () => {
     const time = new Date('2026-06-20T15:30:45Z');
     render(<DesktopTopBar {...defaultProps} time={time} isEs={true} />);
-    // Debería mostrar la hora en formato HH:MM:SS
+    // Debería mostrar la hora en formato HH:MM (sin segundos)
     // Dependiendo del huso horario de la máquina del usuario o timezone de Node, localTimeString puede variar,
-    // pero la cadena contiene "15" o "30" o "45" de alguna forma.
+    // pero la cadena contiene "15" o "30" de alguna forma.
     // Vamos a buscar un formato de reloj.
-    const timeText = time.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const timeText = time.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
     expect(screen.getByText(timeText)).toBeInTheDocument();
+  });
+
+  it('debe mostrar el reloj fijo a la derecha, justo antes del botón de apagado, sin segundos', () => {
+    const time = new Date('2026-06-20T15:30:45Z');
+    render(<DesktopTopBar {...defaultProps} time={time} isEs={true} />);
+
+    const timeText = time.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const clockEl = screen.getByText(timeText);
+    const powerBtn = screen.getByTitle('Apagar');
+
+    // El reloj debe estar inmediatamente antes del botón de apagado
+    expect(powerBtn.previousElementSibling).toBe(clockEl);
+    // Formato HH:MM → solo 2 partes separadas por ':'
+    expect(timeText.split(':')).toHaveLength(2);
   });
 
   it('debe abrir y alternar el menú de aplicaciones al hacer clic en Aplicaciones', () => {
@@ -83,6 +95,7 @@ describe('DesktopTopBar', () => {
     // Opciones del menú
     const termBtn = screen.getByText('Abrir Terminal');
     const wallBtn = screen.getByText('Cambiar Fondo');
+    const guideBtn = screen.getByText('Ver Manual de uso');
     const aboutBtn = screen.getByText('Acerca de Kali');
 
     fireEvent.click(termBtn);
@@ -91,6 +104,9 @@ describe('DesktopTopBar', () => {
 
     fireEvent.click(wallBtn);
     expect(onOpenWallpaperPicker).toHaveBeenCalled();
+
+    fireEvent.click(guideBtn);
+    expect(defaultProps.onOpenGuide).toHaveBeenCalled();
 
     fireEvent.click(aboutBtn);
     expect(onShowAbout).toHaveBeenCalled();
@@ -128,27 +144,6 @@ describe('DesktopTopBar', () => {
     expect(onCloseAppMenu).toHaveBeenCalled();
   });
 
-  it('debe mostrar el menú de sistema cuando showSysMenu es true', () => {
-    const onGoHome = vi.fn();
-    const onCloseSysMenu = vi.fn();
-
-    render(
-      <DesktopTopBar
-        {...defaultProps}
-        showSysMenu={true}
-        onGoHome={onGoHome}
-        onCloseSysMenu={onCloseSysMenu}
-        isEs={true}
-      />
-    );
-
-    const exitBtn = screen.getByText('Salir del Lab');
-    fireEvent.click(exitBtn);
-
-    expect(onGoHome).toHaveBeenCalled();
-    expect(onCloseSysMenu).toHaveBeenCalled();
-  });
-
   it('debe mostrar botones para las ventanas abiertas (Terminal, Browser, Wallpaper)', () => {
     const onMinimizeWindow = vi.fn();
     const onRestoreWindow = vi.fn();
@@ -161,8 +156,10 @@ describe('DesktopTopBar', () => {
       minimized: false,
       maximized: false,
       zIndex: 10,
-      width: 600,
-      height: 400,
+      opacity: 100,
+      fontSize: 14,
+      w: 600,
+      h: 400,
       x: 10,
       y: 10,
     };
@@ -174,8 +171,10 @@ describe('DesktopTopBar', () => {
       minimized: true,
       maximized: false,
       zIndex: 5,
-      width: 800,
-      height: 600,
+      opacity: 100,
+      fontSize: 14,
+      w: 800,
+      h: 600,
       x: 50,
       y: 50,
     };
@@ -183,12 +182,14 @@ describe('DesktopTopBar', () => {
     const wallpaperWindow: DesktopWindow = {
       id: 'wall-1',
       title: 'Wallpapers',
-      type: 'wallpapers',
+      type: 'wallpaper',
       minimized: false,
       maximized: false,
       zIndex: 12,
-      width: 400,
-      height: 300,
+      opacity: 100,
+      fontSize: 14,
+      w: 400,
+      h: 300,
       x: 100,
       y: 100,
     };
@@ -225,23 +226,14 @@ describe('DesktopTopBar', () => {
     expect(onBringToFront).toHaveBeenCalledWith('browser-1');
   });
 
-  it('debe alternar el menú de sistema al hacer clic en el botón de apagado', () => {
-    const onToggleSysMenu = vi.fn();
-    const { container } = render(
-      <DesktopTopBar
-        {...defaultProps}
-        showSysMenu={false}
-        onToggleSysMenu={onToggleSysMenu}
-      />
-    );
+  it('debe llamar onRequestExit al hacer clic en el botón de apagado', () => {
+    const onRequestExit = vi.fn();
+    render(<DesktopTopBar {...defaultProps} onRequestExit={onRequestExit} isEs={true} />);
 
-    // El botón del menú de sistema es el que tiene el SVG con el icono de apagado
-    // Buscamos el botón de apagado a través del path de su SVG
-    const sysBtn = container.querySelector('path[d^="M18.36"]')?.closest('button');
-    expect(sysBtn).toBeInTheDocument();
-    fireEvent.click(sysBtn!);
+    const powerBtn = screen.getByTitle('Apagar');
+    fireEvent.click(powerBtn);
 
-    expect(onToggleSysMenu).toHaveBeenCalled();
+    expect(onRequestExit).toHaveBeenCalled();
   });
 
   it('debe interactuar correctamente con ventanas de fondos de pantalla minimizadas', () => {
@@ -252,12 +244,14 @@ describe('DesktopTopBar', () => {
     const wallpaperWindow: DesktopWindow = {
       id: 'wall-1',
       title: 'Wallpapers',
-      type: 'wallpapers',
+      type: 'wallpaper',
       minimized: true,
       maximized: false,
       zIndex: 12,
-      width: 400,
-      height: 300,
+      opacity: 100,
+      fontSize: 14,
+      w: 400,
+      h: 300,
       x: 100,
       y: 100,
     };
@@ -277,5 +271,43 @@ describe('DesktopTopBar', () => {
 
     expect(onRestoreWindow).toHaveBeenCalledWith('wall-1');
     expect(onBringToFront).toHaveBeenCalledWith('wall-1');
+  });
+
+  it('debe mostrar y manejar el botón del Manual en la barra de tareas', () => {
+    const onMinimizeWindow = vi.fn();
+    const onRestoreWindow = vi.fn();
+    const onBringToFront = vi.fn();
+
+    const guideWindow: DesktopWindow = {
+      id: 'guide-1',
+      title: 'Manual de uso - manual.pdf',
+      type: 'guide',
+      minimized: true,
+      maximized: false,
+      zIndex: 12,
+      opacity: 100,
+      fontSize: 14,
+      w: 640,
+      h: 520,
+      x: 100,
+      y: 100,
+    };
+
+    render(
+      <DesktopTopBar
+        {...defaultProps}
+        guideWindows={[guideWindow]}
+        onMinimizeWindow={onMinimizeWindow}
+        onRestoreWindow={onRestoreWindow}
+        onBringToFront={onBringToFront}
+      />
+    );
+
+    const guideBtn = screen.getByText('Manual');
+    expect(guideBtn).toBeInTheDocument();
+
+    fireEvent.click(guideBtn);
+    expect(onRestoreWindow).toHaveBeenCalledWith('guide-1');
+    expect(onBringToFront).toHaveBeenCalledWith('guide-1');
   });
 });

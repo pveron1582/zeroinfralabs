@@ -25,14 +25,14 @@ describe('Integración de Comandos y Lógica de Pentesting', () => {
     it('debe descubrir hosts con arp-scan y escanear con nmap', () => {
       const resArp = executeCommand(`arp-scan ${scenario.network_range}`, attacker, scenario.machines, 1);
       // arp-scan retorna discoveredHosts para que el lab valide
-      expect(resArp.discoveredHosts).toBeDefined();
+      expect('discoveredHosts' in resArp).toBe(true);
 
       // nmap funciona sin depender de arp-scan
       const resNmap = executeCommand(`nmap -sV ${target.machine_info.ip}`, attacker, scenario.machines, 1);
       
       expect(resNmap.isError).toBeUndefined();
       expect(resNmap.output).toContain('Nmap scan report');
-      expect(resNmap.scanResults).toBeDefined();
+      expect('scanResults' in resNmap).toBe(true);
     });
   });
 
@@ -76,7 +76,8 @@ describe('Integración de Comandos y Lógica de Pentesting', () => {
         [sshAttacker, discoveredTarget], 
         4
       );
-      expect(result1.sshSession?.active).toBe(true);
+      const sshSession = 'sshSession' in result1 ? result1.sshSession : undefined;
+      expect(sshSession?.active).toBe(true);
       
       // Paso 2: proporcionar contraseña
       const result2 = executeCommand(
@@ -86,7 +87,8 @@ describe('Integración de Comandos y Lógica de Pentesting', () => {
         4
       );
       
-      expect(result2.newMachineId).toBe(sshTarget.id);
+      const nmId = 'newMachineId' in result2 ? result2.newMachineId : undefined;
+      expect(nmId).toBe(sshTarget.id);
       expect(result2.output).toContain('Welcome to');
     });
   });

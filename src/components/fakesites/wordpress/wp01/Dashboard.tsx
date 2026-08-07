@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 // ── components/fakesites/wordpress/wp01/Dashboard.tsx ────────────
 interface Props {
   ip: string;

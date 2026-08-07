@@ -2,7 +2,7 @@
 // Scenario 6 — SQL Injection & Database Exfiltration Lab
 // Datos específicos para este escenario
 
-import { buildScenario, COMMON_PORTS, createFile, createLinuxFileSystem } from './templates';
+import { buildScenario, createFile, createLinuxFileSystem } from './templates';
 import type { Scenario } from '../types';
 
 // Datos específicos del escenario SQL Injection
@@ -14,7 +14,7 @@ const scenario06Data = {
   taglineEs: 'Explota una vulnerabilidad de SQL injection para extraer registros sensibles de la base de datos y escalar privilegios.',
   description: 'SQL injection vulnerability exploitation and database enumeration.',
   descriptionEs: 'Explotación de vulnerabilidades de SQL injection y enumeración de bases de datos.',
-  tools: ['arp-scan', 'nmap', 'curl', 'nc', 'hydra'],
+  tools: ['arp-scan', 'nmap', 'curl', 'ftp'],
   accentColor: '#f59e0b',
   networkRange: '192.168.40.0/24',
   dbVersion: 'MySQL 5.7',
@@ -66,7 +66,8 @@ const scenario06Data = {
       hints: { 
         hint1: { en: 'Use arp-scan to discover hosts', es: 'Usá arp-scan para descubrir hosts' }, 
         hint2: { en: 'arp-scan 192.168.40.0/24', es: 'arp-scan 192.168.40.0/24' } 
-      } 
+      },
+      validationCriteria: { type: 'discoveredHosts' as const, minHosts: 1 }
     },
     { 
       task: 'Port Enumeration', 
@@ -77,7 +78,8 @@ const scenario06Data = {
       hints: { 
         hint1: { en: 'Use nmap to scan', es: 'Usá nmap para escanear' }, 
         hint2: { en: 'nmap -sS -p- --min-rate 5000 192.168.40.x', es: 'nmap -sS -p- --min-rate 5000 192.168.40.x' } 
-      } 
+      },
+      validationCriteria: { type: 'scanResults' as const, port: 80 }
     },
     { 
       task: 'Identify SQL Injection Vector', 
@@ -88,7 +90,8 @@ const scenario06Data = {
       hints: { 
         hint1: { en: 'Test payload: \' OR \'1\'=\'1', es: 'Testeá payload: \' OR \'1\'=\'1' }, 
         hint2: { en: 'Use curl to send the payload to /login', es: 'Usá curl para enviar el payload a /login' } 
-      } 
+      },
+      validationCriteria: { type: 'vulnerabilityFound' as const, vulnId: 'SQLi', status: 'detected' as const }
     },
     { 
       task: 'Exploit SQL Injection', 
@@ -98,8 +101,9 @@ const scenario06Data = {
       discoveryLevel: 3, 
       hints: { 
         hint1: { en: 'Inject into the username field', es: 'Inyecta en el campo de usuario' }, 
-        hint2: { en: 'curl -X POST http://192.168.40.x/login -d "username=\' OR \'1\'=\'1&password=x"', es: 'curl -X POST http://192.168.40.x/login -d "username=\' OR \'1\'=\'1&password=x"' } 
-      } 
+        hint2: { en: 'curl -X POST http://192.168.40.11/login -d "username=\' OR \'1\'=\'1&password=x"', es: 'curl -X POST http://192.168.40.11/login -d "username=\' OR \'1\'=\'1&password=x"' } 
+      },
+      validationCriteria: { type: 'vulnerabilityFound' as const, vulnId: 'SQLi', status: 'confirmed' as const }
     },
     { 
       task: 'Database Enumeration', 
@@ -110,7 +114,8 @@ const scenario06Data = {
       hints: { 
         hint1: { en: 'Use UNION-based SQL injection', es: 'Usá UNION-based SQL injection' }, 
         hint2: { en: 'Payload: \' UNION SELECT table_name FROM information_schema.tables--', es: 'Payload: \' UNION SELECT table_name FROM information_schema.tables--' } 
-      } 
+      },
+      validationCriteria: { type: 'foundCredentials' as const, service: 'mysql' as const }
     },
     { 
       task: 'FTP Access Setup', 
@@ -120,8 +125,9 @@ const scenario06Data = {
       discoveryLevel: 4, 
       hints: { 
         hint1: { en: 'Use ftp command', es: 'Usá comando ftp' }, 
-        hint2: { en: 'ftp 192.168.40.x (user: ftpuser, pass: ftp_dump_2024)', es: 'ftp 192.168.40.x (usuario: ftpuser, contraseña: ftp_dump_2024)' } 
-      } 
+        hint2: { en: 'ftp 192.168.40.11 (user: ftpuser, pass: ftp_dump_2024)', es: 'ftp 192.168.40.11 (usuario: ftpuser, contraseña: ftp_dump_2024)' } 
+      },
+      validationCriteria: { type: 'ftpLogin' as const }
     },
     { 
       task: 'Extract Database Dump', 
@@ -132,7 +138,8 @@ const scenario06Data = {
       hints: { 
         hint1: { en: 'Look for database_dump.sql in FTP', es: 'Buscá database_dump.sql en FTP' }, 
         hint2: { en: 'Use get database_dump.sql in FTP shell', es: 'Usá "get database_dump.sql" en la shell de FTP' } 
-      } 
+      },
+      validationCriteria: { type: 'fileDownloaded' as const }
     },
     { 
       task: 'Capture Flag', 
@@ -140,10 +147,12 @@ const scenario06Data = {
       text: 'Find and extract the root flag from the database dump', 
       textEs: 'Encontrá y extrae la flag de root del dump de la BD', 
       discoveryLevel: 4, 
-      hints: { 
-        hint1: { en: 'Search for flag in the SQL dump file', es: 'Buscá "flag" en el archivo de dump SQL' }, 
-        hint2: { en: 'cat database_dump.sql | grep -i flag', es: 'cat database_dump.sql | grep -i flag' } 
-      } 
+hints: { 
+        hint1: { en: 'Read the database dump file to find the flag', es: 'Leé el archivo de dump de la BD para encontrar la flag' }, 
+        hint2: { en: 'cat /root/database_dump.sql', es: 'cat /root/database_dump.sql' },
+        hint3: { en: 'The flags are stored in the users table — look for ZIL{...}', es: 'Las flags están en la tabla users — buscá ZIL{...}' }
+      },
+      validationCriteria: { type: 'fileRead' as const, fileType: 'flag' as const }
     },
   ],
 };
@@ -170,7 +179,7 @@ export const scenario_06: Scenario = buildScenario({
     ports: [
       { ...scenario06Data.targetMachine.ports[0], credentials: { user: scenario06Data.credentials.ftp.user, pass: scenario06Data.credentials.ftp.pass } },
       scenario06Data.targetMachine.ports[1],
-      { ...scenario06Data.targetMachine.ports[2], credentials: { user: scenario06Data.credentials.database.user, pass: scenario06Data.credentials.database.pass } },
+      scenario06Data.targetMachine.ports[2],
     ],
     web_enumeration: {
       web_server: scenario06Data.targetMachine.webServer,
@@ -178,7 +187,7 @@ export const scenario_06: Scenario = buildScenario({
       directories: scenario06Data.targetMachine.directories,
     },
     files: [
-      ...createLinuxFileSystem({ username: 'www-data' }),
+      ...createLinuxFileSystem({ username: 'www-data', extraUsers: [{ username: 'ftpuser', gecos: 'FTP Backup Account' }, { username: 'nuria', gecos: 'Nuria Campos' }, { username: 'raul', gecos: 'Raúl Díaz' }] }),
       createFile('/var/www/html/index.php', `
 <?php
 // Vulnerable PHP Login Form (Intentionally Vulnerable for Learning)
@@ -210,14 +219,24 @@ CREATE TABLE users (
 
 INSERT INTO users VALUES
 (1, 'admin', 'a6f62c4f1b9c8e3d', 'admin@internal.local', 'root', '${scenario06Data.flags.root}'),
-(2, 'developer', 'e5f2a9c1d3b7g4h0', 'dev@internal.local', 'user', '${scenario06Data.flags.user}'),
-(3, 'user', '1a2b3c4d5e6f7g8h', 'user@internal.local', 'guest', 'ZIL{USER_DATA_EXPOSED}');
+(2, 'ftpuser', 'ftp_dump_2024', 'ftp@internal.local', 'ftp', ''),
+(3, 'developer', 'e5f2a9c1d3b7g4h0', 'dev@internal.local', 'user', '${scenario06Data.flags.user}'),
+(4, 'user', '1a2b3c4d5e6f7g8h', 'user@internal.local', 'guest', '${scenario06Data.flags.user}');
 
 -- INTERNAL: DO NOT EXPOSE
 -- Root MySQL Password: ${scenario06Data.credentials.database.pass}
-      `.trim(), 'text'),
-      createFile('/home/www-data/flag.txt', scenario06Data.flags.root),
+-- FTP backup account: ${scenario06Data.credentials.ftp.user} / ${scenario06Data.credentials.ftp.pass}
+      `.trim(), 'text', 'ftpuser', 'ftp', 0o640),
+      createFile('/home/www-data/flag.txt', scenario06Data.flags.user, 'text', 'www-data', 'www-data', 0o400),
     ],
+    // Tabla de passwords del sistema: root + usuarios normales. La password
+    // de root coincide con la del MySQL root que aparece en el dump de la BD.
+    known_passwords: {
+      root: scenario06Data.credentials.database.pass,
+      ftpuser: scenario06Data.credentials.ftp.pass,
+      nuria: 'mickey',
+      raul: 'hunter',
+    },
   },
   learningSteps: scenario06Data.learningSteps,
 });

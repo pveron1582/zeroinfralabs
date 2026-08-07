@@ -25,8 +25,16 @@ export const cmd_hashcat = {
     // Hash ficticio para demo educativo - MD5 de "hello"
     const demoHash = '5d41402abc4b2a76b9719d911017c592';
 
+    const out = `hashcat (v6.2.5) starting...\n* Device #1: Intel Core i7 [12.5 MH/s]\n* Device #2: NVIDIA RTX 3080 [450 MH/s]\n\n[+] Hash.Target: ${hf}\n[+] Status: Cracked\n\n${demoHash}:hello\n\nSession: Cracked ✓\n\n⚠️  NOTA: Este es un simulador educativo. Los hashes mostrados son ficticios.`;
     return {
-      output: `hashcat (v6.2.5) starting...\n* Device #1: Intel Core i7 [12.5 MH/s]\n* Device #2: NVIDIA RTX 3080 [450 MH/s]\n\n[+] Hash.Target: ${hf}\n[+] Status: Cracked\n\n${demoHash}:hello\n\nSession: Cracked ✓\n\n⚠️  NOTA: Este es un simulador educativo. Los hashes mostrados son ficticios.`
+      output: out,
+      streamingLineDelays: out.split('\n').map((line, idx) => {
+        if (line.startsWith('* Device')) return 150 + Math.random() * 100;
+        if (line.startsWith('[+]')) return 100 + Math.random() * 80;
+        if (line.includes('⚠️')) return 200 + Math.random() * 150;
+        if (idx === 0) return 120 + Math.random() * 80;
+        return 60 + Math.random() * 60;
+      }),
     };
   }
 };

@@ -15,41 +15,32 @@ Examples:
   traceroute 192.168.1.10
   traceroute -m 20 google.com`;
 
+const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$/;
+
 export const cmd_traceroute = {
   name: 'traceroute',
   execute: (args: string[], ctx: CommandContext): CommandResponse => {
-    // Help flag
     if (args.includes('-h') || args.includes('--help')) {
       return { output: TRACEROUTE_HELP };
     }
 
-    // Parse flags
-    const maxTtlIdx = args.indexOf('-m');
-    const maxTtl = maxTtlIdx >= 0 ? parseInt(args[maxTtlIdx + 1], 10) : 30;
-    
-    const queriesIdx = args.indexOf('-q');
-    const queries = queriesIdx >= 0 ? parseInt(args[queriesIdx + 1], 10) : 3;
-    
-    const waitIdx = args.indexOf('-w');
-    const waitTime = waitIdx >= 0 ? parseInt(args[waitIdx + 1], 10) : 5;
+    let maxTtl = 30, queries = 3;
+    let target: string | undefined;
 
-    // Find target (first non-flag argument)
-    const target = args.find((arg, idx) => {
-      if (arg.startsWith('-')) return false;
-      if (idx > 0 && args[idx - 1].startsWith('-')) {
-        const prevFlag = args[idx - 1];
-        if (['-m', '-q', '-w'].includes(prevFlag)) return false;
+    for (let i = 0; i < args.length; i++) {
+      switch (args[i]) {
+        case '-m': maxTtl = parseInt(args[++i], 10); break;
+        case '-q': queries = parseInt(args[++i], 10); break;
+        default:
+          if (!target && !args[i].startsWith('-')) target = args[i];
       }
-      return true;
-    });
+    }
 
     if (!target) {
       return { output: 'traceroute: usage error: Hostname required\n\n' + TRACEROUTE_HELP, isError: true };
     }
 
-    // Validate IP format
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    if (!ipRegex.test(target)) {
+    if (!IP_REGEX.test(target)) {
       return { output: `traceroute: ${target}: Name or service not known`, isError: true };
     }
 
@@ -64,7 +55,6 @@ export const cmd_traceroute = {
     if (!targetMachine) {
       // Target doesn't exist - show timeouts for all hops
       for (let hop = 1; hop <= Math.min(15, maxTtl); hop++) {
-        const hopIp = `${base1}.${base2}.0.${hop}`;
         output += ` ${hop.toString().padStart(2)}  `;
         for (let q = 0; q < queries; q++) {
           output += `* `;

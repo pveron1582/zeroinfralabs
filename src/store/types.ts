@@ -1,37 +1,22 @@
 // ── store/types.ts ─────────────────────────────────────────────────
 // Type definitions for the scenario store
 
-import type { Machine, Scenario, Mission, FileEntry, BlockingCommand } from '../types';
+import type { Machine, Scenario, Mission, FileEntry, BlockingCommand, FtpSessionData, SshSessionData } from '../types';
 import type { MsfState } from '../commands/tools/msfconsole';
 import type { EnumerationSnapshot } from '../utils/networkAlert';
+import type { IdentitySlice } from './slices/identitySlice';
 
 export interface Notification {
   text: string;
   id: number;
 }
 
-export interface FtpSessionState {
-  active: boolean;
-  targetIp?: string;
-  targetId?: string;
-  username?: string;
-  loggedIn?: boolean;
-  currentDir?: string;
-  step: 'connecting' | 'username' | 'password' | 'connected';
-}
-
-export interface SshSessionState {
-  active: boolean;
-  targetIp?: string;
-  targetId?: string;
-  username?: string;
-  authenticated?: boolean;
-  step: 'connecting' | 'password' | 'connected';
-}
+export type FtpSessionState = FtpSessionData;
+export type SshSessionState = SshSessionData;
 
 export type AppView = 'landing' | 'workspace' | 'blog';
 
-export interface ScenarioState {
+export interface ScenarioState extends IdentitySlice {
   view: AppView;
   setView: (view: AppView) => void;
 
@@ -86,6 +71,10 @@ export interface ScenarioState {
   showCompletionOverlay: boolean;
   setShowCompletionOverlay: (show: boolean) => void;
 
+  foxyTourOpen: boolean;
+  openFoxyTour: () => void;
+  closeFoxyTour: () => void;
+
   selectScenario: (id: string) => void;
   completeMission: (id: number) => void;
   revealNextHint: (missionId: number) => void;
@@ -95,7 +84,10 @@ export interface ScenarioState {
   addFailedUser: (machineId: string, user: string) => void;
   setSudoPrivileges: (machineId: string, user: string, commands: string[], canSudo: boolean) => void;
   setPrivescCompleted: (machineId: string) => void;
+  resetPrivescCompleted: (machineId: string) => void;
+  setSuUser: (machineId: string, suUser?: string) => void;
   addFileToMachine: (machineId: string, file: FileEntry) => void;
+  setMachineFiles: (machineId: string, files: FileEntry[]) => void;
   addExploredDirectory: (machineId: string, path: string) => void;
   confirmRCE: (machineId: string, user: string, method: string) => void;
   changeMachine: (machineId: string) => void;
@@ -106,6 +98,7 @@ export interface ScenarioState {
   showNotification: (text: string) => void;
   clearNotification: () => void;
   goHome: () => void;
+  resetWorkspace: () => void;
   getActiveMachine: () => Machine;
   getScenarioMachines: () => Machine[];
   setBrowserUrl: (url: string) => void;

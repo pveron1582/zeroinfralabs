@@ -1,5 +1,4 @@
 // ── components/fakesites/WordPressSite.tsx ─────────────────────────
-import React, { useMemo } from 'react';
 import { WPIndex }     from './wordpress/wp01/Index';
 import { WPLogin }     from './wordpress/wp01/Login';
 import { WPDashboard } from './wordpress/wp01/Dashboard';

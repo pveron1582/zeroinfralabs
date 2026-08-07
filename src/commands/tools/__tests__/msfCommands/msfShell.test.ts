@@ -11,6 +11,7 @@ describe('executeShellCommand', () => {
     options: { RHOSTS: '192.168.1.10' },
     sessionOpen: true,
     shellMode: true,
+    uidChecked: false,
     auxChecked: true
   };
 
@@ -22,11 +23,7 @@ describe('executeShellCommand', () => {
   it('debe retornar a meterpreter con exit', () => {
     const result = executeShellCommand('exit', [], shellState);
     expect(result).not.toBeNull();
-    const stateMatch = result!.output.match(/MSF_STATE:(\{[^\n]*\})/);
-    if (stateMatch) {
-      const state = JSON.parse(stateMatch[1]);
-      expect(state.shellMode).toBe(false);
-    }
+    expect(result!.msfStateUpdate?.shellMode).toBe(false);
   });
 
   it('debe limpiar pantalla con cls', () => {

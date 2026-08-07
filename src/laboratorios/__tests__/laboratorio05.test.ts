@@ -57,7 +57,7 @@ describe('Laboratorio 05 - FTP Enumeration & Privilege Escalation', () => {
     const files = scenario05Data.targetMachine.files;
     expect(files.some(f => f.path === '/etc/sudoers')).toBe(true);
     expect(files.some(f => f.path === '/root/flag2.txt')).toBe(true);
-    expect(files.some(f => f.path === '/home/john/flag1.txt')).toBe(true);
+    expect(files.some(f => f.path === '/home/john/flag1.txt')).toBe(false);
   });
 
   it('debe tener 9 learning steps', () => {

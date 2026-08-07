@@ -1,4 +1,3 @@
-import React from 'react';
 import type { DesktopWindow } from '../hooks/useDesktopWindows';
 
 interface DesktopTopBarProps {
@@ -6,39 +5,39 @@ interface DesktopTopBarProps {
   termWindows: DesktopWindow[];
   browserWindows: DesktopWindow[];
   wallpaperWindows: DesktopWindow[];
+  guideWindows: DesktopWindow[];
   topWindowId: string | undefined;
   showAppMenu: boolean;
-  showSysMenu: boolean;
   time: Date;
   isEs: boolean;
   currentScenarioCategory: string;
   onToggleAppMenu: () => void;
-  onToggleSysMenu: () => void;
   onCloseAppMenu: () => void;
-  onCloseSysMenu: () => void;
   onAddTerminal: () => void;
   onAddBrowser: () => void;
+  onOpenGuide: () => void;
   onOpenWallpaperPicker: () => void;
   onMinimizeWindow: (id: string) => void;
   onRestoreWindow: (id: string) => void;
   onBringToFront: (id: string) => void;
-  onGoHome: () => void;
+  onRequestExit?: () => void;
+  onOpenTour?: () => void;
   onShowAbout: () => void;
 }
 
 export function DesktopTopBar({
-  windows, termWindows, browserWindows, wallpaperWindows, topWindowId,
-  showAppMenu, showSysMenu, time, isEs, currentScenarioCategory,
-  onToggleAppMenu, onToggleSysMenu, onCloseAppMenu, onCloseSysMenu,
-  onAddTerminal, onAddBrowser, onOpenWallpaperPicker,
+  termWindows, browserWindows, wallpaperWindows, guideWindows, topWindowId,
+  showAppMenu, time, isEs, currentScenarioCategory,
+  onToggleAppMenu, onCloseAppMenu,
+  onAddTerminal, onAddBrowser, onOpenGuide, onOpenWallpaperPicker,
   onMinimizeWindow, onRestoreWindow, onBringToFront,
-  onGoHome, onShowAbout,
+  onRequestExit, onOpenTour, onShowAbout,
 }: DesktopTopBarProps) {
   return (
-    <div className="relative z-40 w-full h-8 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between px-3 text-xs text-slate-300 font-sans backdrop-blur-md">
-      <div className="flex items-center gap-1.5 relative">
+    <div data-desktop-topbar className="relative z-40 w-full h-8 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between px-3 text-xs text-slate-300 font-sans backdrop-blur-md">      <div className="flex items-center gap-1.5 relative">
         <button
           onClick={(e) => { e.stopPropagation(); onToggleAppMenu(); }}
+          data-tour="apps-btn"
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors duration-150 ${showAppMenu ? 'bg-emerald-600 text-slate-950 font-semibold' : 'hover:bg-slate-800 text-emerald-400 font-medium'}`}
         >
           <span className="w-3.5 h-3.5 rounded flex items-center justify-center bg-emerald-500 text-slate-950 font-bold text-[9px] shadow-sm shadow-emerald-500/20">K</span>
@@ -56,6 +55,16 @@ export function DesktopTopBar({
               className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
               <span>🖼️</span>
               <span>{isEs ? 'Cambiar Fondo' : 'Change Wallpaper'}</span>
+            </button>
+            <button onClick={() => { onOpenGuide(); onCloseAppMenu(); }}
+              className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
+              <span className="text-red-400 text-sm">📄</span>
+              <span>{isEs ? 'Ver Manual de uso' : 'View User Manual'}</span>
+            </button>
+            <button onClick={() => { onOpenTour?.(); onCloseAppMenu(); }}
+              className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
+              <span className="text-amber-400 text-sm">🦊</span>
+              <span>{isEs ? 'Guía con Foxy' : 'Guide with Foxy'}</span>
             </button>
             {currentScenarioCategory === 'Web' && (
               <button onClick={() => { onAddBrowser(); onCloseAppMenu(); }}
@@ -123,10 +132,18 @@ export function DesktopTopBar({
             </button>
           );
         })}
-      </div>
 
-      <div className="font-medium text-slate-400 tracking-wide select-none">
-        {time.toLocaleTimeString(isEs ? 'es-AR' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+        {guideWindows.map((gw) => {
+          const isActive = !gw.minimized && gw.id === topWindowId;
+          return (
+            <button key={gw.id}
+              onClick={() => { if (gw.minimized) { onRestoreWindow(gw.id); onBringToFront(gw.id); } else if (gw.id !== topWindowId) { onBringToFront(gw.id); } else { onMinimizeWindow(gw.id); } }}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-red-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-red-400'}`}>
+              <span className="text-red-400">📄</span>
+              <span>Manual</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex items-center gap-3 relative">
@@ -153,25 +170,19 @@ export function DesktopTopBar({
 
         <div className="w-px h-4 bg-slate-800 mx-0.5" />
 
-        <button onClick={(e) => { e.stopPropagation(); onToggleSysMenu(); }}
-          className={`p-1.5 rounded transition-colors duration-150 ${showSysMenu ? 'bg-slate-800 text-emerald-400' : 'text-slate-400 hover:text-slate-200'}`}>
+        <div className="font-medium text-slate-400 tracking-wide select-none pointer-events-none tabular-nums">
+          {time.toLocaleTimeString(isEs ? 'es-AR' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+        </div>
+
+        <button
+          onClick={(e) => { e.stopPropagation(); onRequestExit?.(); }}
+          title={isEs ? 'Apagar' : 'Power off'}
+          className="p-1.5 rounded transition-colors duration-150 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+        >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/>
           </svg>
         </button>
-
-        {showSysMenu && (
-          <div className="absolute top-7 right-0 w-48 bg-slate-900/95 border border-slate-700/60 rounded-lg shadow-2xl py-1 text-slate-300 backdrop-blur-md animate-fadeIn z-50">
-            <div className="px-3 py-1 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-              {isEs ? 'Salir' : 'Exit'}
-            </div>
-            <button onClick={() => { onGoHome(); onCloseSysMenu(); }}
-              className="w-full text-left px-3 py-2 hover:bg-red-500/10 hover:text-red-400 flex items-center gap-2 text-red-400">
-              <span>🚪</span>
-              <span>{isEs ? 'Salir del Lab' : 'Exit Laboratory'}</span>
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

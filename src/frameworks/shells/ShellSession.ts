@@ -1,7 +1,7 @@
 // ── shells/ShellSession.ts ────────────────────────────────────────
 // Interfaz base para todos los shells modulares
 
-import type { Machine, CommandResponse, BlockingCommand, FileEntry } from '../../types';
+import type { Machine, BlockingCommand, FileEntry } from '../../types';
 
 // ── Contexto que recibe cada shell ────────────────────────────────
 export interface ShellContext {
@@ -11,6 +11,7 @@ export interface ShellContext {
   currentDir: string;
   setCurrentDir: (dir: string) => void;
   language?: 'en' | 'es';
+  umask?: number;
 }
 
 // ── Resultado de ejecutar un comando ──────────────────────────────
@@ -20,6 +21,8 @@ export interface ShellResult {
   newMachineId?: string;
   blockingCommand?: BlockingCommand;
   downloadedFile?: FileEntry;
+  // When the shell command completes a mission, this informs the caller of the mission id
+  completedMissionId?: number;
   foundCredentials?: {
     machineId: string;
     user: string;

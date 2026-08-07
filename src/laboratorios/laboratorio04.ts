@@ -2,7 +2,7 @@
 // Scenario 4 — LFI to RCE Lab
 // Datos y configuración específicos para este escenario
 
-import { buildScenario, COMMON_PORTS, createFile, createWebDirs, createLinuxFileSystem, REVERSE_SHELL_PAYLOAD } from './templates';
+import { buildScenario, COMMON_PORTS, createFile, createLinuxFileSystem, REVERSE_SHELL_PAYLOAD } from './templates';
 import type { Scenario } from '../types';
 
 // Re-exportar resetAttackerCounter desde templates para compatibilidad
@@ -50,14 +50,20 @@ export const SCENARIO_TEMPLATES_LFI = {
         directories: [],
       },
       files: [
-        ...createLinuxFileSystem({ username: 'www-data' }),
+        ...createLinuxFileSystem({ username: 'www-data', extraUsers: [{ username: 'lucia', gecos: 'Lucía Pérez' }, { username: 'ivan', gecos: 'Iván Torres' }] }),
         createFile('/var/www/html/flag.txt', 'ZIL{LFI_REVERSE_SHELL_PWNED}'),
       ],
+      // Tabla de passwords del sistema: root + usuarios normales.
+      known_passwords: {
+        root: 'D3bi@nR00t#2024',
+        lucia: 'welcome1',
+        ivan: 'superman',
+      },
     },
     learningSteps: [
       { task: 'Reconnaissance', taskEs: 'Reconocimiento', text: 'Discover the host on the network', textEs: 'Descubrí el host en la red', discoveryLevel: 1, hints: { hint1: { en: 'Use arp-scan', es: 'Usá arp-scan' }, hint2: { en: 'arp-scan 192.168.20.0/24', es: 'arp-scan 192.168.20.0/24' } }, validationCriteria: { type: 'discoveredHosts' as const, minHosts: 1 } },
       { task: 'Scanning', taskEs: 'Escaneo', text: 'Identify the services running on the target', textEs: 'Identificá los servicios que corren en el objetivo', discoveryLevel: 2, hints: { hint1: { en: 'Use nmap', es: 'Usá nmap' }, hint2: { en: 'nmap -sS -p- --min-rate 5000 192.168.20.11', es: 'nmap -sS -p- --min-rate 5000 192.168.20.11' } }, validationCriteria: { type: 'scanResults' as const, port: 80 } },
-      { task: 'LFI Discovery', taskEs: 'Descubrimiento LFI', text: 'Test for Local File Inclusion vulnerability', textEs: 'Probá la vulnerabilidad de Inclusión Local de Archivos', discoveryLevel: 3, hints: { hint1: { en: 'Use the browser to test LFI', es: 'Usá el navegador para probar LFI' }, hint2: { en: 'Navigate to the About page and test ../../../../etc/passwd', es: 'Navegá a la página About y probá ../../../../etc/passwd' } }, validationCriteria: { type: 'custom' as const } },
+      { task: 'LFI Discovery', taskEs: 'Descubrimiento LFI', text: 'Test for Local File Inclusion vulnerability', textEs: 'Probá la vulnerabilidad de Inclusión Local de Archivos', discoveryLevel: 3, hints: { hint1: { en: 'Use the browser to test LFI', es: 'Usá el navegador para probar LFI' }, hint2: { en: 'Navigate to the About page and test ../../../../etc/passwd', es: 'Navegá a la página About y probá ../../../../etc/passwd' } }, validationCriteria: { type: 'browserAction' as const, action: 'viewPage' as const, url: '/about' } },
       { task: 'Prepare Payload', taskEs: 'Preparar Payload', text: 'Inspect the reverse shell payload file', textEs: 'Inspeccioná el archivo de la reverse shell', discoveryLevel: 3, hints: { hint1: { en: 'View the payload.php file', es: 'Visualizá el archivo payload.php' }, hint2: { en: 'cat /root/payload.php', es: 'cat /root/payload.php' } }, validationCriteria: { type: 'fileRead' as const, fileType: 'payload' as const } },
       { task: 'Setup Listener', taskEs: 'Configurar Listener', text: 'Prepare a listener to receive the reverse shell', textEs: 'Prepará un listener para recibir la reverse shell', discoveryLevel: 3, hints: { hint1: { en: 'Use netcat', es: 'Usá netcat' }, hint2: { en: 'nc -nlvp 4444', es: 'nc -nlvp 4444' } }, validationCriteria: { type: 'ncListener' as const } },
       { task: 'Remote Code Execution', taskEs: 'Ejecución Remota de Código', text: 'Upload the payload and execute it to get RCE', textEs: 'Subí el payload y ejecutalo para obtener RCE', discoveryLevel: 3, hints: { hint1: { en: 'Upload via /upload.php and execute via /files/', es: 'Subí por /upload.php y ejecutá por /files/' }, hint2: { en: 'Upload at /upload.php, execute at /files/payload.php', es: 'Subí en /upload.php, ejecutá en /files/payload.php' } }, validationCriteria: { type: 'blockingCommand' as const } },

@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -9,7 +8,7 @@ describe('WallpaperPicker', () => {
   it('debe renderizar el titulo y los wallpapers en español', () => {
     render(
       <WallpaperPicker
-        activeWallpaper="matrix"
+        activeWallpaper={WALLPAPERS[0].id}
         isEs={true}
         onSelectWallpaper={vi.fn()}
       />
@@ -26,7 +25,7 @@ describe('WallpaperPicker', () => {
   it('debe renderizar el titulo y los wallpapers en inglés', () => {
     render(
       <WallpaperPicker
-        activeWallpaper="matrix"
+        activeWallpaper={WALLPAPERS[0].id}
         isEs={false}
         onSelectWallpaper={vi.fn()}
       />
@@ -43,7 +42,7 @@ describe('WallpaperPicker', () => {
   it('debe marcar con un check el wallpaper activo', () => {
     render(
       <WallpaperPicker
-        activeWallpaper="matrix"
+        activeWallpaper={WALLPAPERS[0].id}
         isEs={true}
         onSelectWallpaper={vi.fn()}
       />

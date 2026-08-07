@@ -1,7 +1,7 @@
 // ── components/AnimatedBrowser.tsx ──────────────────────────────────────
 // Animated Chrome browser mockup showing WordPress login → admin access
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface AnimatedBrowserProps {
   url?: string;
@@ -9,12 +9,11 @@ interface AnimatedBrowserProps {
 }
 
 export function AnimatedBrowser({ url, className = '' }: AnimatedBrowserProps) {
-  const [visible, setVisible] = useState(false);
+  const [, setVisible] = useState(false);
   const [phase, setPhase] = useState<'login' | 'typing-user' | 'typing-pass' | 'redirecting' | 'dashboard' | 'done'>('login');
   const [typedUser, setTypedUser] = useState('');
   const [typedPass, setTypedPass] = useState('');
   const [dashPhase, setDashPhase] = useState(0); // 0-3 dashboard items appearing
-  const containerRef = useRef<HTMLDivElement>(null);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const animationRef = useRef<(() => void) | null>(null);
 
@@ -34,7 +33,7 @@ export function AnimatedBrowser({ url, className = '' }: AnimatedBrowserProps) {
   const runAnimation = useCallback(() => {
     cleanup();
 
-    const typeText = (text: string, delay: number, cb: (i: number) => void, done: () => void) => {
+    const typeText = (text: string, _delay: number, cb: (i: number) => void, done: () => void) => {
       let i = 0;
       const tick = () => {
         if (i <= text.length) {

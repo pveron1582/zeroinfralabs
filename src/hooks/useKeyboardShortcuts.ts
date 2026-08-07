@@ -42,10 +42,10 @@ interface UseKeyboardShortcutsReturn {
 export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions): UseKeyboardShortcutsReturn {
   const {
     input, setInput, machine, currentDir, msfState,
-    cmdHistory, setCmdHistory, histIdx, setHistIdx,
+    cmdHistory, histIdx, setHistIdx,
     busy, setBusy, blockingCommand, setBlockingCommand,
     setListeningPort, setHistory, prompt, runCommand,
-    makeWelcome, allMachines, goHome, setMsfState,
+    makeWelcome, allMachines, setMsfState,
   } = options;
 
   const [suggestions, setSuggestions] = useState<string[]>([]);

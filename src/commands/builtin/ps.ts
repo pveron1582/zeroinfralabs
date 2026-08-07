@@ -1,86 +1,75 @@
 // ── commands/builtin/ps.ts ─────────────────────────────────────────
-// Simulador de ps - reporta estado de procesos
+// Simulador de ps - reporta estado de procesos (ROADMAP Fase 5.2)
 // Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
 
 import type { CommandContext, CommandResponse } from '../../types';
+import { list, type SimProcess } from '../../frameworks/process/processManager';
+import { getCurrentUser } from '../../utils/users';
 
-interface Process {
-  pid: number;
-  tty: string;
-  stat: string;
-  time: string;
-  command: string;
+const START_TIME = '10:15';
+
+function vszFor(pid: number): number {
+  return 10000 + (pid % 50) * 800;
 }
 
-function generateProcesses(machineOs: string): Process[] {
-  const isWindows = machineOs.toLowerCase().includes('windows');
-  
-  const commonProcesses: Process[] = [
-    { pid: 1, tty: '?', stat: 'Ss', time: '00:00:01', command: isWindows ? 'System Idle Process' : 'init' },
-    { pid: 2, tty: '?', stat: 'S', time: '00:00:00', command: isWindows ? 'System' : 'kthreadd' },
-    { pid: 100, tty: '?', stat: 'Ss', time: '00:00:02', command: isWindows ? 'services.exe' : 'sshd' },
-    { pid: 200, tty: '?', stat: 'S', time: '00:01:15', command: isWindows ? 'svchost.exe' : 'crond' },
-    { pid: 300, tty: '?', stat: 'Ssl', time: '00:02:30', command: isWindows ? 'explorer.exe' : 'systemd-journal' },
-    { pid: 500, tty: 'pts/0', stat: 'R+', time: '00:00:05', command: 'bash' },
-    { pid: 600, tty: 'pts/0', stat: 'R+', time: '00:00:01', command: 'ps aux' },
-  ];
+function rssFor(proc: SimProcess): number {
+  return Math.floor(vszFor(proc.pid) * (proc.mem / 10 + 0.05));
+}
 
-  // Add OS-specific processes
-  if (isWindows) {
-    commonProcesses.push(
-      { pid: 400, tty: '?', stat: 'S', time: '00:00:45', command: 'lsass.exe' },
-      { pid: 450, tty: '?', stat: 'Ssl', time: '00:01:20', command: 'winlogon.exe' },
-    );
-  } else {
-    commonProcesses.push(
-      { pid: 350, tty: '?', stat: 'Ss', time: '00:00:30', command: 'nginx' },
-      { pid: 360, tty: '?', stat: 'Ssl', time: '00:00:25', command: 'mysqld' },
-      { pid: 370, tty: '?', stat: 'S', time: '00:00:15', command: 'rsyslogd' },
-    );
-  }
-
-  return commonProcesses;
+function selfProcess(command: string): SimProcess {
+  return {
+    pid: 600,
+    name: 'ps',
+    user: 'root',
+    cpu: 0.0,
+    mem: 0.1,
+    state: 'R+',
+    tty: 'pts/0',
+    time: '00:00:00',
+    command,
+  };
 }
 
 export const cmd_ps = {
   name: 'ps',
   execute: (args: string[], ctx: CommandContext): CommandResponse => {
-    const isAux = args.includes('aux') || args.includes('-e') || args.includes('-ef');
-    const machineOs = ctx.machine?.machine_info?.os || 'Linux';
-    
-    const processes = generateProcesses(machineOs);
+    const machine = ctx.machine;
+    const procs = list(machine);
+    const currentUser = getCurrentUser(machine).username;
+    const commandLine = `ps ${args.join(' ')}`.trim();
+
+    const isAux = args.includes('aux') || args.includes('-e');
+    const isEf = args.includes('-ef') || args.includes('-f');
 
     if (isAux) {
-      // Full listing (ps aux)
+      // ps aux / ps -e — listado completo estilo BSD
+      const all = [...procs, { ...selfProcess(commandLine), user: currentUser }];
       let output = 'USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\n';
-      
-      const users = ['root', 'root', 'www-data', 'mysql', 'syslog'];
-      
-      processes.forEach((proc, idx) => {
-        const user = users[idx % users.length];
-        const cpu = (Math.random() * 5).toFixed(1);
-        const mem = (Math.random() * 10).toFixed(1);
-        const vsz = Math.floor(Math.random() * 50000 + 10000);
-        const rss = Math.floor(vsz * 0.3);
-        
-        output += `${user.padEnd(10)} ${proc.pid.toString().padStart(5)} ${cpu.padStart(4)} ${mem.padStart(4)} ${vsz.toString().padStart(6)} ${rss.toString().padStart(5)} ${proc.tty.padEnd(8)} ${proc.stat.padStart(4)} 00:00 ${proc.time.padStart(6)} ${proc.command}\n`;
+      all.forEach(proc => {
+        output += `${proc.user.padEnd(10)} ${proc.pid.toString().padStart(5)} ${proc.cpu.toFixed(1).padStart(4)} ${proc.mem.toFixed(1).padStart(4)} ${vszFor(proc.pid).toString().padStart(6)} ${rssFor(proc).toString().padStart(5)} ${proc.tty.padEnd(8)} ${proc.state.padStart(4)} ${START_TIME} ${proc.time.padStart(6)} ${proc.command}\n`;
       });
-      
-      return { output };
-    } else {
-      // Basic listing (ps)
-      let output = '  PID TTY          TIME CMD\n';
-      
-      // Only show current shell processes
-      const currentProcesses = processes.filter(p => 
-        p.tty === 'pts/0' || p.command === 'bash'
-      );
-      
-      currentProcesses.forEach(proc => {
-        output += `${proc.pid.toString().padStart(5)} ${proc.tty.padEnd(12)} ${proc.time.padStart(8)} ${proc.command}\n`;
-      });
-      
       return { output };
     }
+
+    if (isEf) {
+      // ps -ef — formato estándar (UID PID PPID C STIME TTY TIME CMD)
+      const all = [...procs, { ...selfProcess(commandLine), user: currentUser }];
+      let output = 'USER       PID  PPID  C STIME TTY         TIME     CMD\n';
+      all.forEach(proc => {
+        const ppid = proc.pid === 1 ? 0 : proc.pid - 1;
+        output += `${proc.user.padEnd(10)} ${proc.pid.toString().padStart(5)} ${ppid.toString().padStart(5)} ${Math.min(99, Math.round(proc.cpu)).toString().padStart(2)} ${START_TIME} ${proc.tty.padEnd(10)} ${proc.time.padStart(8)} ${proc.command}\n`;
+      });
+      return { output };
+    }
+
+    // ps — solo procesos del shell actual
+    let output = '  PID TTY          TIME CMD\n';
+    const shellProcs = [...procs, { ...selfProcess(commandLine), user: currentUser }].filter(p =>
+      p.tty === 'pts/0' || p.command === 'bash'
+    );
+    shellProcs.forEach(proc => {
+      output += `${proc.pid.toString().padStart(5)} ${proc.tty.padEnd(12)} ${proc.time.padStart(8)} ${proc.command}\n`;
+    });
+    return { output };
   }
 };

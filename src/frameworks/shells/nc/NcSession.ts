@@ -53,7 +53,7 @@ function parseListenerMode(args: string[]): { isListener: boolean; port?: number
 export const ncSession: ShellSession<NcState> = {
   name: 'nc',
 
-  getPrompt(state: NcState): string {
+  getPrompt(_state: NcState): string {
     return '';
   },
 
@@ -61,7 +61,7 @@ export const ncSession: ShellSession<NcState> = {
     return { listening: false, connected: false };
   },
 
-  executeCommand(input: string, state: NcState, ctx: ShellContext): { result: ShellResult; newState: NcState } {
+  executeCommand(input: string, state: NcState, _ctx: ShellContext): { result: ShellResult; newState: NcState } {
     const parts = input.trim().split(/\s+/);
 
     // Sin argumentos: mostrar uso

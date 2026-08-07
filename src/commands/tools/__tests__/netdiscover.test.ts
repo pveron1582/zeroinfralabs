@@ -28,7 +28,8 @@ describe('cmd_netdiscover', () => {
     expect(result.isError).toBeUndefined();
     expect(result.output).toContain('Scanning range: 192.168.1.0/24');
     expect(result.output).toContain('192.168.1.10');
-    expect(result.discoveredHosts).toHaveLength(1);
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toHaveLength(1);
   });
 
   it('debe escanear red y encontrar hosts', () => {
@@ -51,7 +52,8 @@ describe('cmd_netdiscover', () => {
     expect(result.output).toContain('192.168.1.20');
     expect(result.output).toContain('Oracle Corporation');
     expect(result.output).toContain('2 hosts found');
-    expect(result.discoveredHosts).toHaveLength(2);
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toHaveLength(2);
   });
 
   it('debe reportar 0 hosts si red está vacía', () => {
@@ -64,7 +66,8 @@ describe('cmd_netdiscover', () => {
     expect(result.isError).toBeUndefined();
     expect(result.output).toContain('No hosts found');
     expect(result.output).toContain('0 hosts found');
-    expect(result.discoveredHosts).toBeUndefined();
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toBeUndefined();
   });
 
   // ── Options ──
@@ -137,7 +140,8 @@ describe('cmd_netdiscover', () => {
     // Check that 192.168.1.5 is NOT present (but 192.168.1.50 is)
     // Use a pattern that won't match 192.168.1.50
     expect(result.output).not.toMatch(/192\.168\.1\.5[\s\t]/);
-    expect(result.discoveredHosts).toHaveLength(1);
+    const dh = 'discoveredHosts' in result ? result.discoveredHosts : undefined;
+    expect(dh).toHaveLength(1);
   });
 
   // ── Help ──

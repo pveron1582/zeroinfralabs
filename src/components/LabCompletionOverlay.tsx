@@ -1,5 +1,5 @@
 // ── components/LabCompletionOverlay.tsx ────────────────────────────
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Scenario } from '../types';
 
 interface Props {

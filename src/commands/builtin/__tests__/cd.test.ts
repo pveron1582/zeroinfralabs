@@ -4,7 +4,9 @@ import { cmd_cd } from '../cd';
 import type { Machine, CommandContext } from '../../../types';
 
 describe('cmd_cd', () => {
-  const createMockMachine = (files: { path: string; content: string; type: string }[] = []): Machine => ({
+  interface MockFile { path: string; content: string; type: string; owner?: string; group?: string; mode?: number }
+
+const createMockMachine = (files: MockFile[] = []): Machine => ({
     id: 'test-machine',
     machine_info: {
       hostname: 'test-host',
@@ -19,8 +21,15 @@ describe('cmd_cd', () => {
     web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
     learning_steps: [],
     files: files.length > 0 ? files : [
-      { path: '/home/user/file.txt', content: 'test', type: 'text' },
-      { path: '/etc/config.conf', content: 'config', type: 'text' },
+      { path: '/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/home/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/home/user/.dir', content: '', type: 'text', owner: 'user', group: 'user', mode: 0o755 },
+      { path: '/home/user/file.txt', content: 'test', type: 'text', owner: 'user', group: 'user', mode: 0o644 },
+      { path: '/etc/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/etc/config.conf', content: 'config', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
+      { path: '/var/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/var/www/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+      { path: '/var/www/html/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
     ],
   });
 
@@ -40,7 +49,7 @@ describe('cmd_cd', () => {
     it('debe cambiar al directorio home cuando no hay argumentos', () => {
       const machine = createMockMachine();
       const setCurrentDir = vi.fn();
-      const result = cmd_cd.execute([], createMockContext(machine, '/tmp', setCurrentDir));
+      cmd_cd.execute([], createMockContext(machine, '/tmp', setCurrentDir));
 
       expect(setCurrentDir).toHaveBeenCalledWith('/home/user/');
     });
@@ -101,6 +110,9 @@ describe('cmd_cd', () => {
   describe('cd relative/path', () => {
     it('debe cambiar a ruta relativa existente', () => {
       const machine = createMockMachine([
+        { path: '/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/home/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/home/user/.dir', content: '', type: 'text', owner: 'user', group: 'user', mode: 0o755 },
         { path: '/home/user/docs/readme.txt', content: 'test', type: 'text' },
       ]);
       const setCurrentDir = vi.fn();

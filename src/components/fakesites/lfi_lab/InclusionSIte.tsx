@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 
 // Props del componente: IP del servidor, URL actual, callbacks de navegación y subida
 interface Props {
