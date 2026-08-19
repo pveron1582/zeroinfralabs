@@ -62,7 +62,7 @@ export const cmd_chmod = {
 
     let recursive = false;
     let modeArg: string | null = null;
-    let targets: string[] = [];
+    const targets: string[] = [];
 
     for (let i = 0; i < args.length; i++) {
       if (args[i] === '-R' || args[i] === '--recursive') {

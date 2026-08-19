@@ -1,0 +1,1 @@
+Resumen para recordar: en Linux, mirá barra etc, barra home y barra var doble u. En Windows, C barra Windows, C barra Users y C barra inetpub. Conocer el mapa de cada sistema es saber exactamente dónde va a estar la información cuando entres.

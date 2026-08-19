@@ -2,47 +2,24 @@
 // Main workspace content: terminal, browser, mission panel, etc.
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../store/scenarioStore';
-import { SCENARIOS } from '../laboratorios/laboratorios';
 import { Terminal } from './Terminal';
 import { DesktopTerminal } from './DesktopTerminal';
 import { FakeBrowser } from './FakeBrowser';
+import { BurpSuite } from './burpsuite';
 import { MissionPanel } from './MissionPanel';
 import { NetworkMap } from './NetworkMap';
 import { MachineLoader } from './MachineLoader';
-import { SurveyModal } from './SurveyModal';
-import { LabCompletionOverlay } from './LabCompletionOverlay';
 import { ExitConfirm } from './ExitConfirm';
 import { FoxyTour } from './tour/FoxyTour';
 import { DEFAULT_WALLPAPER } from './desktopWallpapers';
-import { trackEvent, recordLabStart } from '../utils/analytics';
-
-function ThemeSync() {
-  const theme = useScenarioStore((s) => s.theme);
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-  return null;
-}
-
-function RootRedirect() {
-  const storedLanguage = useScenarioStore(state => state.language);
-
-  const detectedLang = (() => {
-    if (storedLanguage && storedLanguage !== 'en') {
-      return storedLanguage;
-    }
-    const browserLang = navigator.language || (navigator as any).userLanguage || 'en';
-    if (browserLang.toLowerCase().startsWith('es')) {
-      return 'es';
-    }
-    return 'en';
-  })();
-
-  return <Navigate to={`/${detectedLang}`} replace />;
-}
+import { useHistorySync, useAnalyticsEffects } from './appContent/useAppContentEffects';
+import { WorkspaceTopBar } from './appContent/WorkspaceTopBar';
+import { WorkspaceOverlays } from './appContent/WorkspaceOverlays';
+import { LandingView } from './appContent/LandingView';
+import { useMissionCompletion } from '../hooks/useMissionCompletion';
 
 export function AppContent() {
   const navigate = useNavigate();
@@ -59,16 +36,6 @@ export function AppContent() {
     missions,
     activeMachineId,
     activeApp,
-  } = useScenarioStore(useShallow(s => ({
-    view: s.view,
-    currentScenario: s.currentScenario,
-    machines: s.machines,
-    missions: s.missions,
-    activeMachineId: s.activeMachineId,
-    activeApp: s.activeApp,
-  })));
-
-  const {
     browserKey,
     showNetworkMap,
     notification,
@@ -77,18 +44,6 @@ export function AppContent() {
     loadingMachine,
     msfState,
     ftpSession,
-  } = useScenarioStore(useShallow(s => ({
-    browserKey: s.browserKey,
-    showNetworkMap: s.showNetworkMap,
-    notification: s.notification,
-    termColor: s.termColor,
-    showMachineLoader: s.showMachineLoader,
-    loadingMachine: s.loadingMachine,
-    msfState: s.msfState,
-    ftpSession: s.ftpSession,
-  })));
-
-  const {
     showSurvey,
     pendingSurveyScenario,
     showCompletionOverlay,
@@ -97,6 +52,20 @@ export function AppContent() {
     currentMissionId,
     foxyTourOpen,
   } = useScenarioStore(useShallow(s => ({
+    view: s.view,
+    currentScenario: s.currentScenario,
+    machines: s.machines,
+    missions: s.missions,
+    activeMachineId: s.activeMachineId,
+    activeApp: s.activeApp,
+    browserKey: s.browserKey,
+    showNetworkMap: s.showNetworkMap,
+    notification: s.notification,
+    termColor: s.termColor,
+    showMachineLoader: s.showMachineLoader,
+    loadingMachine: s.loadingMachine,
+    msfState: s.msfState,
+    ftpSession: s.ftpSession,
     showSurvey: s.showSurvey,
     pendingSurveyScenario: s.pendingSurveyScenario,
     showCompletionOverlay: s.showCompletionOverlay,
@@ -142,6 +111,15 @@ export function AppContent() {
 
   const activeMachine = machines.find(m => m.id === activeMachineId) || machines[0];
 
+  useHistorySync(navigate, lang, setView);
+  useAnalyticsEffects(view, currentScenario, missions, openFoxyTour, foxyTourOpen);
+
+  const { checkMissionCompletion } = useMissionCompletion(completeMission);
+
+  const wpMachine = machines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress'));
+  const wpDiscoveryLevel = wpMachine?.discovery_level ?? 0;
+  const mission3Already = missions.some(m => m.id === 3 && m.status === 'completed');
+
   const handleGoHome = () => {
     const completedCount = missions.filter(m => m.status === 'completed').length;
     const totalMissions = missions.length;
@@ -153,128 +131,21 @@ export function AppContent() {
     }
   };
 
+  // Redirect cuando view === 'landing' (hook incondicional, regla rules-of-hooks)
   useEffect(() => {
-    if (window.history.state?.view === 'workspace' && window.history.state.scenarioId) {
-      const scenario = SCENARIOS.find(s => s.id === window.history.state.scenarioId);
-      if (scenario) {
-        setView('workspace');
-      }
+    if (view === 'landing' && !showMachineLoader) {
+      window.location.href = `/${language}/labs`;
     }
-  }, [setView]);
-
-  useEffect(() => {
-    const onPop = (e: PopStateEvent) => {
-      if (e.state?.view === 'workspace' && e.state.scenarioId) {
-        const scenario = SCENARIOS.find(s => s.id === e.state.scenarioId);
-        if (scenario) {
-          setView('workspace');
-        }
-      } else {
-        useScenarioStore.getState().resetWorkspace();
-        const validNavLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
-        navigate(`/${validNavLang}/labs`, { replace: true });
-      }
-    };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, [navigate, lang, setView]);
-
-  useEffect(() => {
-    if (view === 'workspace') {
-      recordLabStart();
-      trackEvent({
-        eventType: 'lab_started',
-        scenarioId: currentScenario.id,
-        scenarioName: currentScenario.name,
-        details: { missionCount: currentScenario.missions.length },
-      });
-    }
-  }, [currentScenario.id]);
-
-  const tourShownRef = useRef(false);
-  useEffect(() => {
-    if (view === 'workspace' && !foxyTourOpen && !tourShownRef.current) {
-      tourShownRef.current = true;
-      openFoxyTour();
-    }
-  }, [view, foxyTourOpen, openFoxyTour]);
-
-  useEffect(() => {
-    const completedCount = missions.filter(m => m.status === 'completed').length;
-    if (completedCount > 0 && view === 'workspace') {
-      const lastCompleted = missions.filter(m => m.status === 'completed').pop();
-      if (lastCompleted) {
-        trackEvent({
-          eventType: 'mission_complete',
-          scenarioId: currentScenario.id,
-          scenarioName: currentScenario.name,
-          details: { missionId: lastCompleted.id, missionTitle: lastCompleted.title },
-        });
-      }
-    }
-  }, [missions.map(m => m.status).join(',')]);
-
-  const prevViewRef = useRef(view);
-  useEffect(() => {
-    if (prevViewRef.current === 'workspace' && view === 'landing') {
-      const completedCount = missions.filter(m => m.status === 'completed').length;
-      const totalMissions = missions.length;
-      const allComplete = totalMissions > 0 && completedCount === totalMissions;
-
-      if (allComplete) {
-        trackEvent({
-          eventType: 'lab_completed',
-          scenarioId: currentScenario.id,
-          scenarioName: currentScenario.name,
-          details: { totalMissions },
-        });
-      } else if (completedCount > 0) {
-        trackEvent({
-          eventType: 'lab_abandoned',
-          scenarioId: currentScenario.id,
-          scenarioName: currentScenario.name,
-          details: { completedCount, totalMissions },
-        });
-      } else {
-        trackEvent({
-          eventType: 'lab_changed',
-          scenarioId: currentScenario.id,
-          scenarioName: currentScenario.name,
-          details: { completedCount, totalMissions },
-        });
-      }
-    }
-    prevViewRef.current = view;
-  }, [view]);
-
-  const wpMachine = machines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress'));
-  const wpDiscoveryLevel = wpMachine?.discovery_level ?? 0;
-  const mission3Already = missions.some(m => m.id === 3 && m.status === 'completed');
+  }, [view, showMachineLoader, language]);
 
   if (view === 'landing') {
-    if (showMachineLoader && loadingMachine) {
-      return (
-        <div className="min-h-screen flex items-center justify-center"
-          style={{ ...DEFAULT_WALLPAPER.style, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
-          <MachineLoader
-            machineName={loadingMachine.machine_info.hostname}
-            machineIp={loadingMachine.machine_info.ip}
-            machineOs={loadingMachine.machine_info.os}
-            onComplete={() => {}}
-            language={language}
-          />
-        </div>
-      );
-    }
-    useEffect(() => {
-      window.location.href = `/${language}/labs`;
-    }, [language]);
-  return (
-    <div className="min-h-screen flex items-center justify-center"
-      style={{ ...DEFAULT_WALLPAPER.style, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
-      <div className="text-emerald-400 font-mono text-sm animate-pulse">Loading...</div>
-    </div>
-  );
+    return (
+      <LandingView
+        showMachineLoader={showMachineLoader}
+        loadingMachine={loadingMachine}
+        language={language}
+      />
+    );
   }
 
   return (
@@ -285,49 +156,15 @@ export function AppContent() {
         ref={workspaceRef}
         style={{ height: 'calc(100vh - 2rem)', width: 'calc(100vw - 2rem)', borderRadius: '1rem', margin: '1rem', maxWidth: 'calc(100vw - 2rem)' }}>
 
-        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-gray-800 flex-shrink-0 select-none"
-          style={{ background: '#0d1117' }}>
-
-          <button onClick={handleGoHome} className="flex items-center gap-1.5 mr-2 group">
-            <div className="w-5 h-5 rounded flex items-center justify-center bg-emerald-500 group-hover:bg-emerald-400 transition-colors">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5">
-                <polyline points="8 10 12 14 8 18"/><rect x="2" y="3" width="20" height="18" rx="2"/>
-              </svg>
-            </div>
-            <span className="text-xs font-bold text-gray-400 group-hover:text-white transition-colors">ZI Labs</span>
-            <span className="text-[10px] text-gray-600">v4.5</span>
-          </button>
-          <div className="w-px h-4 bg-gray-800 mx-1" />
-          <div className="flex items-center gap-1.5 mr-3">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span className="text-xs text-gray-400 font-mono">{currentScenario.name}</span>
-          </div>
-
-          {uiMode === 'classic' && (
-          <button onClick={() => setActiveApp('terminal')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activeApp === 'terminal' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}`}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
-            </svg>
-            <span style={{ fontFamily: 'sans-serif' }}>Terminal</span>
-            {activeApp === 'terminal' && <div className="w-1 h-1 rounded-full bg-emerald-400 ml-0.5" />}
-          </button>
-          )}
-
-          {uiMode === 'classic' && currentScenario.category === 'Web' && (
-          <button onClick={() => { refreshBrowser(); setActiveApp('browser'); }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activeApp === 'browser' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}`}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/>
-            </svg>
-            <span style={{ fontFamily: 'sans-serif' }}>Chrome</span>
-            {activeApp === 'browser' && <div className="w-1 h-1 rounded-full bg-emerald-400 ml-0.5" />}
-          </button>
-          )}
-
-        </div>
+        <WorkspaceTopBar
+          scenarioName={currentScenario.name}
+          uiMode={uiMode}
+          scenarioCategory={currentScenario.category}
+          activeApp={activeApp}
+          onGoHome={handleGoHome}
+          onSetActiveApp={setActiveApp}
+          onRefreshBrowser={refreshBrowser}
+        />
 
         <div className="flex flex-1 min-h-0">
           <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
@@ -376,6 +213,19 @@ export function AppContent() {
                   mission3Already={mission3Already}
                   onSetPossibleUsers={setPossibleUsers}
                   onReportVulnerability={reportVulnerability}
+                  checkMissionCompletion={checkMissionCompletion}
+                />
+              </div>
+              )}
+
+              {currentScenario.category === 'Web' && (
+              <div className={`flex-1 overflow-hidden ${activeApp !== 'burpsuite' ? 'hidden' : ''}`}>
+                <BurpSuite
+                  allMachines={machines}
+                  onClose={() => setActiveApp('terminal')}
+                  onReportVulnerability={reportVulnerability}
+                  onCredentialsFound={findCredentials}
+                  checkMissionCompletion={checkMissionCompletion}
                 />
               </div>
               )}
@@ -439,49 +289,22 @@ export function AppContent() {
         )}
       </div>
 
-      {notification && (
-        <div key={notification.id}
-          className="fixed bottom-6 right-6 flex items-center gap-3 px-4 py-3 bg-emerald-900 border border-emerald-500/50 rounded-xl shadow-2xl text-emerald-300 text-sm font-medium z-50"
-          style={{ animation: 'slideUpNotif 0.3s ease-out' }}>
-          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          {notification.text}
-        </div>
-      )}
-
-      {showCompletionOverlay && (
-        <LabCompletionOverlay
-          scenario={currentScenario}
-          totalMissions={missions.length}
-          completedCount={missions.filter(m => m.status === 'completed').length}
-          onClose={() => setShowCompletionOverlay(false)}
-          language={language}
-        />
-      )}
-
-      {showSurvey && pendingSurveyScenario && (
-        <SurveyModal
-          scenario={pendingSurveyScenario}
-          onSubmit={() => {
-            useScenarioStore.getState().resetWorkspace();
-            const validLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
-            navigate(`/${validLang}/labs`, { replace: true });
-          }}
-        />
-      )}
-
-      <style>{`
-        @keyframes slideUpNotif { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
-        * { box-sizing: border-box }
-        ::-webkit-scrollbar { width: 4px }
-        ::-webkit-scrollbar-track { background: transparent }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px }
-      `}</style>
+      <WorkspaceOverlays
+        notification={notification}
+        showCompletionOverlay={showCompletionOverlay}
+        showSurvey={showSurvey}
+        pendingSurveyScenario={pendingSurveyScenario}
+        currentScenario={currentScenario}
+        totalMissions={missions.length}
+        completedCount={missions.filter(m => m.status === 'completed').length}
+        language={language}
+        onCloseCompletion={() => setShowCompletionOverlay(false)}
+        onSurveySubmit={() => {
+          useScenarioStore.getState().resetWorkspace();
+          const validLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
+          navigate(`/${validLang}/labs`, { replace: true });
+        }}
+      />
     </div>
   );
 }
-
-export { ThemeSync, RootRedirect };

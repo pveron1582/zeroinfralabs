@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { computeCursorFromSelection, type Cursor } from './editorModal/cursor';
+import { NanoStatusBar, type BarMode } from './editorModal/NanoStatusBar';
+import { NanoFooter } from './editorModal/NanoFooter';
 
 export interface SaveResult {
   success: boolean;
@@ -15,13 +18,6 @@ interface EditorModalProps {
   onClose: () => void;
 }
 
-type BarMode = 'edit' | 'confirmExit' | 'saveAs' | 'search' | 'help';
-
-interface Cursor {
-  row: number;
-  col: number;
-}
-
 const HELP_TEXT = [
   'GNU nano 6.2                Help: ^G',
   '',
@@ -33,21 +29,6 @@ const HELP_TEXT = [
   '',
   'Press ^X to leave help and return to editing.',
 ];
-
-function computeCursorFromSelection(textarea: HTMLTextAreaElement): Cursor {
-  const value = textarea.value;
-  const selStart = textarea.selectionStart;
-  const before = value.slice(0, selStart);
-  const row = before.split('\n').length - 1;
-  const lastLineStart = before.lastIndexOf('\n');
-  const col = lastLineStart === -1 ? selStart : selStart - lastLineStart - 1;
-  const linesBefore = before.split('\n');
-  const lineLen = linesBefore[row]?.length ?? 0;
-  return {
-    row: row + 1,
-    col: Math.min(col + 1, lineLen) || 1,
-  };
-}
 
 export function EditorModal({ isOpen, filePath, initialContent, readOnly, onSave, onClose }: EditorModalProps) {
   const [content, setContent] = useState(initialContent);
@@ -262,30 +243,6 @@ export function EditorModal({ isOpen, filePath, initialContent, readOnly, onSave
     ? (filename || 'New Buffer')
     : filePath;
 
-  const footerGroup = (keys: Array<[string, string]>): React.ReactNode =>
-    keys.map(([k, label], i) => (
-      <span key={i} className="whitespace-nowrap">
-        <span className="text-yellow-400">^{k}</span>
-        <span className="text-black">{label}</span>
-        {i < keys.length - 1 ? '\u00A0' : ''}
-      </span>
-    ));
-
-  const footerRow1: Array<[string, string]> = [
-    ['G', ' Help '],
-    ['O', ' Write Out '],
-    ['W', ' Where Is '],
-    ['\\', ' Replace '],
-    ['K', ' Cut '],
-  ];
-  const footerRow2: Array<[string, string]> = [
-    ['U', ' Paste '],
-    ['J', ' Justify '],
-    ['C', ' Cursor Pos '],
-    ['X', ' Exit '],
-    ['T', ' To Spell '],
-  ];
-
   return (
     <div
       className="w-full h-full flex-1 flex flex-col font-mono text-[14px] leading-[1.35] select-none bg-black overflow-hidden"
@@ -345,73 +302,19 @@ export function EditorModal({ isOpen, filePath, initialContent, readOnly, onSave
         </div>
 
         {/* Barra inferior dinámica: edit / saveAs / search */}
-        <div className="px-2 py-0.5 bg-gray-50 text-black text-[13px] min-h-[28px] whitespace-nowrap overflow-hidden">
-          {barMode === 'confirmExit' && (
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-red-700">Save modified buffer?</span>
-              <input
-                ref={barInputRef}
-                value={barInput}
-                onChange={(e) => setBarInput(e.target.value)}
-                onKeyDown={handleBarKeyDown}
-                onBlur={handleBarBlur}
-                spellCheck={false}
-                autoComplete="off"
-                className="bg-white border border-gray-400 px-1 outline-none text-black w-10 text-center"
-              />
-              <span className="text-gray-600 text-[11px]">(ANSWERING "No" WILL DISCARD CHANGES) [ Enter=accept ^C=cancel ]</span>
-            </div>
-          )}
-          {barMode === 'saveAs' && (
-            <div className="flex items-center gap-2">
-              <span className="font-bold">File Name to Write:</span>
-              <input
-                ref={barInputRef}
-                value={barInput}
-                onChange={(e) => setBarInput(e.target.value)}
-                onKeyDown={handleBarKeyDown}
-                onBlur={handleBarBlur}
-                spellCheck={false}
-                autoComplete="off"
-                className="flex-1 bg-white border border-gray-400 px-1 outline-none text-black"
-              />
-              <span className="text-gray-600 text-[11px]">[ Enter=accept ^C=cancel ]</span>
-            </div>
-          )}
-          {barMode === 'search' && (
-            <div className="flex items-center gap-2">
-              <span className="font-bold">Search:</span>
-              <input
-                ref={barInputRef}
-                value={barInput}
-                onChange={(e) => setBarInput(e.target.value)}
-                onKeyDown={handleBarKeyDown}
-                onBlur={handleBarBlur}
-                spellCheck={false}
-                autoComplete="off"
-                className="flex-1 bg-white border border-gray-400 px-1 outline-none text-black"
-              />
-              <span className="text-gray-600 text-[11px]">[ Enter=next Esc=cancel ]</span>
-            </div>
-          )}
-          {barMode === 'edit' && (
-            <span className={statusMessage?.includes('Permission denied') || statusMessage?.includes('No such file') ? 'text-red-600 font-bold' : 'text-gray-700'}>
-              {statusMessage || (newFile
-                ? 'Use ^O to save the file, ^X to exit without saving.'
-                : 'Use ^O to save, ^X to exit (will prompt for save if modified).')}
-            </span>
-          )}
-        </div>
+        <NanoStatusBar
+          barMode={barMode}
+          barInput={barInput}
+          setBarInput={setBarInput}
+          handleBarKeyDown={handleBarKeyDown}
+          handleBarBlur={handleBarBlur}
+          statusMessage={statusMessage}
+          newFile={newFile}
+          barInputRef={barInputRef}
+        />
 
         {/* Footer — dos filas de atajos estilo nano */}
-        <div className="bg-gray-50 text-black text-[13px] border-t border-gray-300">
-          <div className="px-2 py-0.5 flex flex-wrap gap-x-2 overflow-hidden">
-            {footerGroup(footerRow1)}
-          </div>
-          <div className="px-2 py-0.5 flex flex-wrap gap-x-2 overflow-hidden">
-            {footerGroup(footerRow2)}
-          </div>
-        </div>
+        <NanoFooter />
       </div>
   );
 }

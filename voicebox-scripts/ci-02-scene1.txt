@@ -1,0 +1,1 @@
+Los hashes son como huellas digitales de una contraseña. El servidor no guarda tu contraseña: guarda su huella. El cifrado es reversible: con la clave podés descifrar. Un hash es de un solo sentido: no se puede deshashear. Por eso las contraseñas se guardan como hashes, y el servidor nunca tiene tu contraseña real.

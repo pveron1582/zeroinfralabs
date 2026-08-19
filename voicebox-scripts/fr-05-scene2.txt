@@ -1,0 +1,1 @@
+Históricamente las IPs se agrupaban en clases por tamaño. La clase A para redes enormes, la B para medianas y la C para redes chicas, como el 192.168. Hoy se usa notación CIDR, por ejemplo la barra veinticuatro al final de la red, pero las clases explican por qué los rangos privados se ven así.

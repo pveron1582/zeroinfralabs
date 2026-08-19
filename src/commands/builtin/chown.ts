@@ -23,7 +23,7 @@ export const cmd_chown = {
 
     let recursive = false;
     let ownerSpec: string | null = null;
-    let targets: string[] = [];
+    const targets: string[] = [];
 
     for (let i = 0; i < args.length; i++) {
       if (args[i] === '-R' || args[i] === '--recursive') {

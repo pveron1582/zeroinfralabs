@@ -15,6 +15,7 @@ import { MarketingFooter } from './landing/MarketingFooter';
 import { LandingLabPreview } from './landing/LandingLabPreview';
 import { useColors, FONT_MONO, FONT_SANS } from './landing/constants';
 import { useScenarioStore } from '../store/scenarioStore';
+import { AcademyAnnouncement } from './academy/AcademyAnnouncement';
 
 export function LandingPage() {
   const { lang } = useParams<{ lang: string }>();
@@ -194,6 +195,9 @@ export function LandingPage() {
 
       <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
       <DonationModal isOpen={showDonation} onClose={() => setShowDonation(false)} />
+
+      {/* Anuncio de la Academy — aparece al entrar al landing */}
+      <AcademyAnnouncement />
     </div>
   );
 }

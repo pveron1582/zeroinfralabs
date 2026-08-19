@@ -1,0 +1,417 @@
+// ── academy/path-protocolos.ts ────────────────────────────────────
+// Path: Redes I — los protocolos que ves en un lab, los dispositivos
+// esenciales que los mueven (hub, switch, router, cables y APs) y las
+// VLANs que los segmentan.
+
+import type { Lesson } from '../types';
+
+export const PROTOCOLOS_LESSONS: Lesson[] = [
+  {
+    id: 'proto-01',
+    pathId: 'protocolos',
+    order: 1,
+    title: 'Protocols by layer: the essentials',
+    titleEs: 'Protocolos por capa: los imprescindibles',
+    readingMinutes: 8,
+    labRef: 'scenario-01',
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Los equipos no hablan "computadorés": hablan protocolos. Acá ves los pocos que importan de verdad, ordenados por la capa donde viven.',
+            en: 'Devices do not speak "computer-ish": they speak protocols. Here you see the few that really matter, ordered by the layer where they live.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/re101-protocols-by-layer.mp4',
+        durationSec: 67,
+        caption: 'A protocol is an agreement on how to communicate: data format, how the conversation starts and ends, how errors are reported. Layer 2/3: Ethernet (MAC), ARP (MAC for an IP), IP (routing), ICMP (ping). Layer 4: TCP (reliable, web/mail/SSH) vs UDP (fast, no guarantee, streaming/DNS). Layer 7: HTTP, DNS, SSH, SMTP.',
+        captionEs: 'Un protocolo es un acuerdo sobre cómo comunicarse: formato de datos, cómo inicia y termina la conversación, cómo se reportan los errores. Capa 2/3: Ethernet (MAC), ARP (la MAC de una IP), IP (enrutado), ICMP (ping). Capa 4: TCP (confiable, web/correo/SSH) vs UDP (rápido, sin garantía, streaming/DNS). Capa 7: HTTP, DNS, SSH, SMTP.',
+      },
+      {
+        type: 'content',
+        title: 'What is a protocol?',
+        titleEs: '¿Qué es un protocolo?',
+        body: 'A protocol is an agreement on how to communicate: the format of the data, how the conversation starts and ends, how errors are reported. If two devices speak different protocols, they cannot understand each other — like two people in different languages.',
+        bodyEs: 'Un protocolo es un acuerdo sobre cómo comunicarse: qué formato tienen los datos, cómo se inicia y termina la conversación, cómo se reportan los errores. Si dos dispositivos hablan protocolos distintos, no se entienden — como dos personas en idiomas diferentes.',
+      },
+      {
+        type: 'content',
+        title: 'Layer 2 and 3',
+        titleEs: 'Capa 2 y 3',
+        body: '`Ethernet` (layer 2): connects devices of the same network using MAC addresses. `ARP` (layer 2/3): discovers which MAC belongs to an IP — the protocol ARP spoofing exploits. `IP` (layer 3): addresses and routes packets between networks. `ICMP` (layer 3): diagnostics and control — the ping protocol.',
+        bodyEs: '`Ethernet` (capa 2): conecta equipos de la misma red usando direcciones MAC. `ARP` (capa 2/3): descubre qué MAC corresponde a una IP — el protocolo que explota el ARP spoofing. `IP` (capa 3): direcciona y enruta paquetes entre redes. `ICMP` (capa 3): diagnóstico y control — el protocolo del ping.',
+      },
+      {
+        type: 'content',
+        title: 'Layer 4: transport',
+        titleEs: 'Capa 4: transporte',
+        body: '`TCP`: connection-oriented; it opens a session and guarantees the data arrives complete and in order (web, mail, SSH). `UDP`: connectionless and faster; it does not guarantee delivery (streaming, games, DNS). Practical rule: reliability costs speed.',
+        bodyEs: '`TCP`: orientado a conexión; establece una sesión y garantiza que los datos lleguen completos y en orden (web, correo, SSH). `UDP`: sin conexión y más rápido; no garantiza la entrega (streaming, juegos, DNS). Regla práctica: la confiabilidad cuesta velocidad.',
+      },
+      {
+        type: 'content',
+        title: 'Layer 7 — the ones you will touch forever',
+        titleEs: 'Capa 7 — los que vas a tocar siempre',
+        body: '`HTTP` (webs), `DNS` (names to IPs), `SSH` (encrypted remote administration), `SMTP` (outgoing mail). In the lab, almost everything you scan is one of these. Knowing which layer they live in tells you which tool to grab.',
+        bodyEs: '`HTTP` (webs), `DNS` (nombres a IPs), `SSH` (administración remota cifrada), `SMTP` (correo saliente). En el lab, casi todo lo que escaneás es alguno de estos. Saber en qué capa viven te dice qué herramienta agarrar.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which protocol does the ping command use?',
+        questionEs: '¿Qué protocolo usa el comando ping?',
+        options: [
+          { es: 'ICMP', en: 'ICMP' },
+          { es: 'TCP', en: 'TCP' },
+          { es: 'UDP', en: 'UDP' },
+          { es: 'ARP', en: 'ARP' },
+        ],
+        correctIndex: 0,
+      },
+    ],
+  },
+  {
+    id: 'proto-06',
+    pathId: 'protocolos',
+    order: 2,
+    title: 'Ports: what they are, how many exist and the ones you must know',
+    titleEs: 'Puertos: qué son, cuántos hay y los que tenés que conocer',
+    readingMinutes: 7,
+    labRef: 'scenario-01',
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Antes que los protocolos, el mapa de puertas. Cada servicio vive detrás de un puerto — y en pentesting, escanear puertos es casi siempre lo primero que hacés.',
+            en: 'Before protocols, the map of doors. Every service lives behind a port — and in pentesting, scanning ports is almost always the first thing you do.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/re103-ports.mp4',
+        durationSec: 91,
+        caption: 'A port is a number from 0 to 65535 identifying a service inside a machine: the IP says WHICH machine, the port says WHICH service. Together they form a socket (IP:port). Three ranges: well-known (0–1023), registered (1024–49151), dynamic (49152–65535). The classics: 21 FTP, 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 80 HTTP, 110 POP3, 143 IMAP, 443 HTTPS, 445 SMB, 3306 MySQL, 3389 RDP, 8080 HTTP.',
+        captionEs: 'Un puerto es un número de 0 a 65535 que identifica un servicio dentro de una máquina: la IP dice QUÉ máquina, el puerto QUÉ servicio. Juntos forman un socket (IP:puerto). Tres rangos: bien conocidos (0–1023), registrados (1024–49151), dinámicos (49152–65535). Los clásicos: 21 FTP, 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 80 HTTP, 110 POP3, 143 IMAP, 443 HTTPS, 445 SMB, 3306 MySQL, 3389 RDP, 8080 HTTP.',
+      },
+      {
+        type: 'content',
+        title: 'What is a port',
+        titleEs: 'Qué es un puerto',
+        body: 'A port is a number between `0` and `65535` that identifies a service inside a machine. The IP says WHICH machine; the port says WHICH service inside it. Together they form a `socket` (IP:port): 192.168.1.11:22 is "the SSH on that machine".',
+        bodyEs: 'Un puerto es un número entre `0` y `65535` que identifica un servicio dentro de una máquina. La IP dice QUÉ máquina; el puerto dice QUÉ servicio dentro de ella. Juntos forman un `socket` (IP:puerto): 192.168.1.11:22 es "el SSH de esa máquina".',
+      },
+      {
+        type: 'content',
+        title: 'Why ports exist',
+        titleEs: 'Por qué existen',
+        body: 'A server has one IP but runs many services at the same time: web, SSH, databases, mail. Without ports there would be no way to know which packet belongs to which service. Port `443` for HTTPS, `22` for SSH: each conversation has its own door. The OS reads the port and delivers the packet to the correct program.',
+        bodyEs: 'Un servidor tiene una sola IP pero corre muchos servicios a la vez: web, SSH, bases de datos, correo. Sin puertos no habría forma de saber qué paquete corresponde a qué servicio. Puerto `443` para HTTPS, `22` para SSH: cada conversación tiene su propia puerta. El sistema operativo lee el puerto y le entrega el paquete al programa correcto.',
+      },
+      {
+        type: 'content',
+        title: 'How many there are: the three ranges',
+        titleEs: 'Cuántos hay: los tres rangos',
+        body: '`65536` in total (0–65535), divided into three ranges. `0–1023`: well-known ports, reserved for the classic services (HTTP, SSH, DNS, FTP) — binding them usually requires root. `1024–49151`: registered ports, the ones user services use (like MySQL on 3306). `49152–65535`: dynamic or ephemeral ports, assigned by the OS to outgoing connections.',
+        bodyEs: '`65536` en total (0–65535), repartidos en tres rangos. `0–1023`: puertos bien conocidos, reservados para los servicios clásicos (HTTP, SSH, DNS, FTP) — bindearlos suele requerir root. `1024–49151`: puertos registrados, los que usan los servicios de usuario (como MySQL en el 3306). `49152–65535`: puertos dinámicos o efímeros, que el SO asigna a las conexiones salientes.',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'grep -E "^(ssh|http|https|ftp|mysql)\\s" /etc/services',
+        output: 'ssh\t22/tcp\nhttp\t80/tcp\nhttps\t443/tcp\nftp\t21/tcp\nmysql\t3306/tcp',
+        explanation: 'Linux keeps the map of port names in /etc/services. You can check it any time: name, port and protocol (tcp/udp) in each line.',
+        explanationEs: 'Linux guarda el mapa de nombres de puertos en /etc/services. Podés consultarlo en cualquier momento: nombre, puerto y protocolo (tcp/udp) por línea.',
+      },
+      {
+        type: 'content',
+        title: 'The ones you must know for pentesting',
+        titleEs: 'Los que tenés que conocer para pentesting',
+        body: 'The classics that show up in every scan: `21` FTP, `22` SSH, `23` Telnet (unencrypted, still found around), `25` SMTP, `53` DNS, `80` HTTP, `110` POP3, `143` IMAP, `443` HTTPS, `445` SMB, `3306` MySQL, `3389` RDP and `8080` alternative HTTP. When you see one of these open, you already know the next command to run.',
+        bodyEs: 'Los clásicos que aparecen en cada escaneo: `21` FTP, `22` SSH, `23` Telnet (sin cifrar, todavía se encuentra), `25` SMTP, `53` DNS, `80` HTTP, `110` POP3, `143` IMAP, `443` HTTPS, `445` SMB, `3306` MySQL, `3389` RDP y `8080` HTTP alternativo. Cuando ves uno de estos abierto, ya sabés el siguiente comando a correr.',
+      },
+      {
+        type: 'quiz',
+        question: 'What is the range of the well-known ports?',
+        questionEs: '¿Cuál es el rango de los puertos bien conocidos (well-known)?',
+        options: [
+          { es: '0–1023', en: '0–1023' },
+          { es: '1024–49151', en: '1024–49151' },
+          { es: '49152–65535', en: '49152–65535' },
+          { es: '0–65535', en: '0–65535' },
+        ],
+        correctIndex: 0,
+      },
+    ],
+  },
+  {
+    id: 'proto-03',
+    pathId: 'protocolos',
+    order: 3,
+    title: 'Common network services: SMB, FTP, SSH and VNC',
+    titleEs: 'Servicios de red comunes: SMB, FTP, SSH y VNC',
+    readingMinutes: 8,
+    labRef: 'scenario-02',
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Cuando escaneás una máquina, estos cuatro aparecen una y otra vez. Cada uno tiene su personalidad — y su truco de ataque favorito.',
+            en: 'When you scan a machine, these four show up again and again. Each one has its personality — and its favorite attack trick.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/re102-services.mp4',
+        durationSec: 77,
+        caption: 'SSH (22): encrypted remote administration; typical attacks are brute force and stolen keys. FTP (21): plain text credentials, anonymous login common. SMB (445): Windows file sharing, famous for EternalBlue (MS17-010). VNC (5900): graphical remote desktop, sometimes with no or weak password. nmap -sV turns open ports into exploit leads.',
+        captionEs: 'SSH (22): administración remota cifrada; ataques típicos, fuerza bruta y robo de claves. FTP (21): credenciales en texto plano, login anónimo común. SMB (445): archivos en Windows, famoso por EternalBlue (MS17-010). VNC (5900): escritorio remoto gráfico, a veces sin contraseña o débil. nmap -sV convierte puertos abiertos en pistas de exploits.',
+      },
+      {
+        type: 'content',
+        title: 'SSH (22): the serious one',
+        titleEs: 'SSH (22): el serio',
+        body: 'Secure remote administration over a terminal, encrypted end to end. The standard of Linux and servers. Typical attacks: brute force and stolen keys. When you see port 22 open, the password guessing starts.',
+        bodyEs: 'Administración remota segura por terminal, cifrada de punta a punta. El estándar de Linux y de los servidores. Los ataques típicos: fuerza bruta y robo de claves. Cuando ves el puerto 22 abierto, empieza la adivinación de contraseñas.',
+      },
+      {
+        type: 'content',
+        title: 'FTP (21): the old one',
+        titleEs: 'FTP (21): el viejo',
+        body: 'File transfer, an old protocol that sends user and password in plain text. It often shows up with anonymous login enabled. Its secure replacement is SFTP (over SSH).',
+        bodyEs: 'Transferencia de archivos, un protocolo viejo que manda usuario y contraseña en texto plano. Muchas veces aparece con login anónimo habilitado. Su reemplazo seguro es SFTP (sobre SSH).',
+      },
+      {
+        type: 'content',
+        title: 'SMB (445): the Windows one',
+        titleEs: 'SMB (445): el de Windows',
+        body: 'Shares files and printers on Windows networks. Historically the most famous one for EternalBlue (MS17-010), the exploit that took down half the world in 2017. If you see 445 open on a Windows box, your mind should go straight to known exploits.',
+        bodyEs: 'Comparte archivos e impresoras en redes Windows. Históricamente el más famoso por EternalBlue (MS17-010), el exploit que tumbó medio mundo en 2017. Si ves 445 abierto en una máquina Windows, tu mente debería ir directo a exploits conocidos.',
+      },
+      {
+        type: 'content',
+        title: 'VNC (5900): the screen one',
+        titleEs: 'VNC (5900): el de la pantalla',
+        body: 'Graphical remote desktop: it shows the device screen and lets you control it. Sometimes it appears with no password or a weak one. Its Windows cousin is RDP (3389).',
+        bodyEs: 'Escritorio remoto gráfico: te muestra la pantalla del equipo y te deja manejarlo. A veces aparece sin contraseña o con una débil. Su primo de Windows es RDP (3389).',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'nmap -sV 10.0.0.11',
+        output: 'PORT     STATE SERVICE VERSION\n21/tcp   open  ftp     vsFTPd 3.0.3\n22/tcp   open  ssh     OpenSSH 8.2p1\n445/tcp  open  smb     Samba smbd 4.11.6\n5900/tcp open  vnc     VNC (protocol 3.8)',
+        explanation: 'Four classic services on a single host. Each version string is a lead to search for exploits.',
+        explanationEs: 'Cuatro servicios clásicos en un mismo host. Cada versión es una pista para buscar exploits.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which service runs on port 5900?',
+        questionEs: '¿Qué servicio corre en el puerto 5900?',
+        options: [
+          { es: 'SMB', en: 'SMB' },
+          { es: 'VNC', en: 'VNC' },
+          { es: 'FTP', en: 'FTP' },
+          { es: 'SSH', en: 'SSH' },
+        ],
+        correctIndex: 1,
+      },
+    ],
+  },
+  {
+    // Unifica las antiguas proto-04 (switch) y proto-05 (router) en una
+    // sola clase de dispositivos físicos (2026-08-17). Id nuevo `proto-07`.
+    id: 'proto-07',
+    pathId: 'protocolos',
+    order: 4,
+    title: 'Essential network devices: hub, switch and router',
+    titleEs: 'Dispositivos esenciales de red: hub, switch y router',
+    readingMinutes: 10,
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Detrás de cada LAN hay tres aparatos que hacen todo el trabajo: el hub (en extinción), el switch (el cerebro de la LAN) y el router (la puerta de salida). Esta clase los pone en la mesa, junto con los cables que los unen.',
+            en: 'Behind every LAN there are three boxes doing all the work: the hub (endangered), the switch (the LAN brain) and the router (the exit door). This lesson puts them on the table, along with the cables that join them.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/re104-devices.mp4',
+        durationSec: 76,
+        caption: 'Hub (layer 1): repeats everything to every port, makes no decisions. Switch (layer 2): learns which MAC lives on each port and delivers only to the destination; VLANs, managed/unmanaged, PoE. Router (layer 3): connects networks via IP, routing table (OSPF/BGP), NAT and DHCP, WAN/LAN ports. Cabling: copper (RJ45, ~100m), fiber (light, long links), access point (WiFi).',
+        captionEs: 'Hub (capa 1): repite todo a todos los puertos, no toma decisiones. Switch (capa 2): aprende qué MAC vive en cada puerto y entrega solo al destino; VLANs, administrable/no, PoE. Router (capa 3): conecta redes por IP, tabla de rutas (OSPF/BGP), NAT y DHCP, puertos WAN/LAN. Cableado: cobre (RJ45, ~100 m), fibra (luz, enlaces largos), access point (WiFi).',
+      },
+      {
+        type: 'content',
+        title: 'The hub: the fossil (layer 1)',
+        titleEs: 'El hub: el fósil (capa 1)',
+        body: 'The hub is the most basic device: it works on `layer 1` and does one thing — **repeats everything it receives to every port**. If a packet arrives for your neighbor, it also arrives at your machine. It does not understand MAC addresses nor make decisions. Today it survives in museum shelves and in old network captures, but it explains the whole evolution: sniffing traffic used to be trivial when networks ran on hubs.',
+        bodyEs: 'El hub es el aparato más básico: trabaja en `capa 1` y hace una sola cosa — **repite todo lo que recibe hacia todos los puertos**. Si un paquete llega para tu vecino, también llega a tu máquina. No entiende de direcciones MAC ni toma ninguna decisión. Hoy sobrevive en vitrinas y capturas de red viejas, pero explica toda la evolución: sniffing era trivial cuando las redes corrían sobre hubs.',
+      },
+      {
+        type: 'content',
+        title: 'The switch: the brain of the LAN (layer 2)',
+        titleEs: 'El switch: el cerebro de la LAN (capa 2)',
+        body: 'The switch works on `layer 2` and uses MAC addresses. Unlike the hub, it **learns which MAC lives on each port** (its MAC table) and delivers data only to the destination: less traffic, more speed, full duplex. `VLANs` split one physical switch into several logical LANs; `managed` switches are configurable (VLANs, monitoring, port mirroring, port security) while `unmanaged` are plug and play; `PoE` powers cameras and access points through the same cable. For pentesting: an unmanaged switch will not stop you sniffing your own segment, but port security (one MAC per port) limits moves like ARP spoofing.',
+        bodyEs: 'El switch trabaja en `capa 2` y usa direcciones MAC. A diferencia del hub, **aprende qué MAC vive en cada puerto** (su tabla MAC) y entrega los datos solo al destino: menos tráfico, más velocidad, full duplex. Las `VLANs` dividen un switch físico en varias LAN lógicas; los switches `administrables` se configuran (VLANs, monitoreo, espejo de puertos, seguridad de puertos) mientras que los `no administrables` son plug and play; `PoE` alimenta cámaras y puntos de acceso por el mismo cable. Para el pentesting: un switch unmanaged no te impide sniffear tu propio segmento, pero la seguridad de puertos (una MAC por puerto) limita jugadas como el ARP spoofing.',
+      },
+      {
+        type: 'content',
+        title: 'The router: the exit door (layer 3)',
+        titleEs: 'El router: la puerta de salida (capa 3)',
+        body: 'The router works on `layer 3` and uses IP addresses. Its job: **connect different networks** and decide where each packet goes according to its `routing table` (static by hand, or dynamic with protocols like OSPF and BGP). At home it also runs `NAT` and `DHCP`, with a `WAN` port toward the ISP and `LAN` ports toward the inside. The key difference with the switch: the switch joins devices of one network (MAC); the router joins networks to each other (IP). Models: Cisco ISR, MikroTik, Ubiquiti EdgeRouter — or your ISP box doing switch + wifi + firewall in one.',
+        bodyEs: 'El router trabaja en `capa 3` y usa direcciones IP. Su trabajo: **conectar redes distintas** y decidir hacia dónde va cada paquete según su `tabla de rutas` (estática a mano, o dinámica con protocolos como OSPF y BGP). En casa además corre `NAT` y `DHCP`, con un puerto `WAN` hacia el proveedor y puertos `LAN` hacia adentro. La diferencia clave con el switch: el switch une equipos de una misma red (MAC); el router une redes entre sí (IP). Modelos: Cisco ISR, MikroTik, Ubiquiti EdgeRouter — o la caja de tu proveedor haciendo de switch + wifi + firewall en uno.',
+      },
+      {
+        type: 'content',
+        title: 'The cabling: copper, fiber and air',
+        titleEs: 'Los cables: cobre, fibra y aire',
+        body: 'How the devices join each other depends on the cable. `Copper` (UTP with RJ45 connectors, Cat5e/Cat6): cheap and universal, up to ~100 meters — PCs, printers and the switch itself connect with it. `Fiber optic`: light instead of electricity, more speed, more distance, no electrical noise — used for long links (switch → router, building → building) with SFP connectors. And there are no cables: the `access point` (AP) broadcasts WiFi so laptops, phones and anything that moves can join the LAN without a wall port.',
+        bodyEs: 'Cómo se unen los dispositivos entre sí depende del cable. `Cobre` (UTP con fichas RJ45, Cat5e/Cat6): barato y universal, hasta ~100 metros — las PCs, impresoras y el propio switch se conectan con él. `Fibra óptica`: luz en vez de electricidad, más velocidad, más distancia, sin ruido eléctrico — se usa para enlaces largos (switch → router, edificio → edificio) con conectores SFP. Y de cables nada: el `access point` (AP) irradia WiFi para que laptops, celulares y cualquier cosa que se mueva entren a la LAN sin una roseta en la pared.',
+      },
+      {
+        type: 'matching',
+        title: 'Match each device with its definition',
+        titleEs: 'Emparejá cada dispositivo con su definición',
+        instructions: 'Tap a term on the left and its definition on the right. They lock in green when they match.',
+        instructionsEs: 'Tocá un término de la izquierda y su definición de la derecha. Se fijan en verde cuando coinciden.',
+        pairs: [
+          {
+            left: 'Hub',
+            leftEs: 'Hub',
+            right: 'Layer 1 device that repeats all traffic to every port',
+            rightEs: 'Dispositivo de capa 1 que repite todo el tráfico a todos los puertos',
+          },
+          {
+            left: 'Switch',
+            leftEs: 'Switch',
+            right: 'Layer 2 device that forwards by MAC only to the destination',
+            rightEs: 'Dispositivo de capa 2 que reenvía por MAC solo al destino',
+          },
+          {
+            left: 'Router',
+            leftEs: 'Router',
+            right: 'Layer 3 device that joins different networks using IPs',
+            rightEs: 'Dispositivo de capa 3 que une redes distintas usando IPs',
+          },
+          {
+            left: 'Access point',
+            leftEs: 'Access point',
+            right: 'Delivers WiFi to laptops, phones and mobile devices',
+            rightEs: 'Entrega WiFi a laptops, celulares y dispositivos móviles',
+          },
+          {
+            left: 'Fiber optic',
+            leftEs: 'Fibra óptica',
+            right: 'Cable of light: speed and long distance for key links',
+            rightEs: 'Cable de luz: velocidad y larga distancia para enlaces clave',
+          },
+        ],
+      },
+      {
+        type: 'interactive-demo',
+        demoKind: 'network-topology',
+        instructions: 'Mini Packet Tracer: select the cable type FIRST (copper, fiber or WiFi), then drag from device to device. PCs go to the switch over copper, the server over fiber, and the laptop and phone join over WiFi through the access point. Goal: every device online.',
+        instructionsEs: 'Mini Packet Tracer: seleccioná PRIMERO el tipo de cable (cobre, fibra o WiFi) y después arrastrá de equipo a equipo. Las PCs van al switch por cobre, el servidor por fibra, y la laptop y el celular entran por WiFi a través del access point. Objetivo: todos los equipos online.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which layer of the OSI model does the switch work on?',
+        questionEs: '¿En qué capa del modelo OSI trabaja el switch?',
+        options: [
+          { es: 'Capa 1', en: 'Layer 1' },
+          { es: 'Capa 2', en: 'Layer 2' },
+          { es: 'Capa 3', en: 'Layer 3' },
+          { es: 'Capa 4', en: 'Layer 4' },
+        ],
+        correctIndex: 1,
+      },
+    ],
+  },
+  {
+    id: 'proto-08',
+    pathId: 'protocolos',
+    order: 5,
+    title: 'VLANs: segmentation by design',
+    titleEs: 'VLANs: segmentación por diseño',
+    readingMinutes: 9,
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Un switch une a todos — y eso es exactamente el problema. La impresora, el gerente, las cámaras y los invitados no deberían gritar al mismo pasillo. Las VLANs dibujan paredes invisibles adentro del switch, sin cambiar un solo cable.',
+            en: 'A switch joins everyone — and that is exactly the problem. The printer, the manager, the cameras and the guests should not all shout into the same hallway. VLANs draw invisible walls inside the switch, without moving a single cable.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/re105-vlans.mp4',
+        durationSec: 83,
+        caption: 'A VLAN is a logical network on top of the physical one: a group of switch ports that behave as their own switch at layer 2. Segmentation by design: VLAN 10 employees, 20 servers, 30 cameras/IoT, 40 guests. Efficiency: each broadcast stays inside its own VLAN. 802.1Q tags frames with the VLAN id (1–4094); access ports carry one VLAN, trunks carry many. Security: containment, but VLAN hopping can jump floors.',
+        captionEs: 'Una VLAN es una red lógica encima de la física: un grupo de puertos que se comporta como su propio switch en capa 2. Segmentación por diseño: VLAN 10 empleados, 20 servidores, 30 cámaras/IoT, 40 invitados. Eficiencia: cada broadcast se queda en su VLAN. 802.1Q taguea las tramas con el id (1–4094); los puertos access llevan una VLAN, los trunks muchas. Seguridad: contención, pero el VLAN hopping puede saltar de piso.',
+      },
+      {
+        type: 'content',
+        title: 'What a VLAN is',
+        titleEs: 'Qué es una VLAN',
+        body: 'A **VLAN** (Virtual LAN) is a *logical* network built on top of the physical one: a group of switch ports that, at layer 2, behave as if they were connected to their own switch. Port 3 can belong to the "Accounting" VLAN and port 4 to the "Guests" VLAN, even though both are physical neighbors. The devices of one VLAN cannot talk to the devices of the other — unless someone lets the traffic cross (a router or a layer 3 switch).',
+        bodyEs: 'Una **VLAN** (Virtual LAN) es una red *lógica* construida encima de la física: un grupo de puertos del switch que, en capa 2, se comporta como si estuviera conectado a su propio switch. El puerto 3 puede ser de la VLAN "Contabilidad" y el 4 de "Invitados", aunque sean vecinos físicos. Los equipos de una VLAN no pueden hablar con los de la otra — salvo que alguien deje cruzar el tráfico (un router o un switch capa 3).',
+      },
+      {
+        type: 'content',
+        title: 'Segmentation by design: order instead of luck',
+        titleEs: 'Segmentación por diseño: orden en vez de suerte',
+        body: 'Without VLANs every port lives in one flat LAN: whoever plugs in sees everyone (and everything broadcasts to everyone). With VLANs you decide the map **before** anything happens: `VLAN 10` for employees, `VLAN 20` for servers, `VLAN 30` for cameras and IoT (those devices never sleep patching), `VLAN 40` for guests who only get internet. Each VLAN gets its own IP range, and moving a person desks means moving one switch port, not rewiring a wall. The network stops being a soup and becomes a building with named floors.',
+        bodyEs: 'Sin VLANs todos los puertos viven en una LAN plana: quien enchufa un cable ve a todos (y los broadcasts les llegan a todos). Con VLANs decidís el mapa **antes** de que pase cualquier cosa: `VLAN 10` para empleados, `VLAN 20` para servidores, `VLAN 30` para cámaras e IoT (dispositivos que nadie parchea), `VLAN 40` para invitados que solo necesitan internet. Cada VLAN recibe su propio rango de IPs, y mover una persona de escritorio significa mover un puerto del switch, no recablear una pared. La red deja de ser una sopa y se vuelve un edificio con pisos con nombre.',
+      },
+      {
+        type: 'content',
+        title: 'Efficiency: smaller broadcast domains',
+        titleEs: 'Eficiencia: dominios de broadcast más chicos',
+        body: 'Every device shouts some traffic to everybody (`ARP`, `DHCP`, "is anyone there?"): that is the **broadcast domain**. On one flat 200-device network, every shout wakes every machine — wasted CPU and bandwidth. VLANs cut the shout: a broadcast only reaches the members of its own VLAN. A hundred devices per VLAN make four small domains instead of one giant one. The bigger the company, the more you feel the difference.',
+        bodyEs: 'Cada equipo le grita algo de tráfico a todos (`ARP`, `DHCP`, "¿hay alguien ahí?"): eso es el **dominio de broadcast**. En una red plana de 200 equipos, cada grito despierta a todas las máquinas — CPU y ancho de banda desperdiciados. Las VLANs cortan el grito: un broadcast solo alcanza a los miembros de su propia VLAN. Cien equipos por VLAN hacen cuatro dominios chicos en vez de uno gigante. Cuanto más grande la empresa, más se nota la diferencia.',
+      },
+      {
+        type: 'content',
+        title: 'The tag: 802.1Q and trunks',
+        titleEs: 'El tag: 802.1Q y trunks',
+        body: 'How does a packet know which VLAN it belongs to? With a **tag**: the `802.1Q` standard adds 4 bytes to the ethernet frame carrying the VLAN id (1–4094). Ports can work in two modes: `access` (one single VLAN, the tag is added/removed invisibly — devices never see it) or `trunk` (carries many VLANs at once between switches, tagged all the way). That is why two buildings can share "the same" VLAN 10: the trunk transports the tag across the fiber. Between VLANs, only the router crosses.',
+        bodyEs: '¿Cómo sabe un paquete a qué VLAN pertenece? Con un **tag**: el estándar `802.1Q` agrega 4 bytes a la trama ethernet llevando el id de VLAN (1–4094). Los puertos trabajan en dos modos: `access` (una sola VLAN, el tag se agrega/saca en forma invisible — los equipos nunca lo ven) o `trunk` (lleva muchas VLANs a la vez entre switches, tageadas todo el camino). Por eso dos edificios pueden compartir "la misma" VLAN 10: el trunk transporta el tag por la fibra. Entre VLANs, solo cruza el router.',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'show vlan brief\nshow interfaces trunk',
+        output: 'VLAN  Name               Status    Ports\n10    EMPLEADOS          active    Fa0/1-8\n20    SERVIDORES         active    Fa0/9-10\n30    CAMARAS            active    Fa0/11-16\n99    NATIVE             active\n\nPort     Mode     Vlans allowed on trunk\nFa0/24   trunk    10,20,30 (tagged 802.1Q)',
+        explanation: 'show vlan brief exposes the map of the house: which ports live on which floor. The trunk on Fa0/24 carries VLANs 10, 20 and 30 tagged — everything the fiber between buildings moves.',
+        explanationEs: 'show vlan brief expone el mapa de la casa: qué puertos viven en qué piso. El trunk en Fa0/24 lleva las VLANs 10, 20 y 30 tageadas — todo lo que la fibra entre edificios transporta.',
+      },
+      {
+        type: 'content',
+        title: 'Security: walls the attacker cannot see',
+        titleEs: 'Seguridad: paredes que el atacante no ve',
+        body: 'VLANs shrink the attack surface in three ways. First, **containment**: an attacker who compromises the guest WiFi stays trapped in the guest VLAN — the servers sit in another room. Second, an attack that depends on reaching everyone **dies at the VLAN border**: ARP spoofing (the MITM lesson), rogue DHCP, scanning — none of them crosses a tagged trunk unless the router forwards it. Third, **control**: every route between VLANs is a choke point you can watch, filter and log. But be honest: VLANs are a *segmentation* control, not an encryption mechanism — someone with access to the switch configuration or a trunk port can still cross. That is why the best-practice list matters: change the default VLAN, put the native VLAN into a dedicated number with no devices, lock user ports as `access`, and disable trunk negotiation (DTP) on ports that do not need it. Those same doors are what the pentester knocks first: **VLAN hopping** (double-tagging the frames or spoofing a switch with DTP) is the classic attempt to jump floors.',
+        bodyEs: 'Las VLANs achican la superficie de ataque de tres formas. Primero, **contención**: un atacante que compromete el WiFi de invitados queda atrapado en la VLAN de invitados — los servidores están en otra habitación. Segundo, un ataque que depende de alcanzar a todos **muere en el límite de la VLAN**: ARP spoofing (la lección de MITM), rogue DHCP, escaneos — ninguno cruza un trunk tageado si el router no lo reenvía. Tercero, **control**: cada ruta entre VLANs es un cuello de botella que podés vigilar, filtrar y loguear. Pero honestidad: las VLANs son un control de *segmentación*, no un mecanismo de cifrado — alguien con acceso a la configuración del switch o a un puerto trunk puede cruzar igual. Por eso la lista de buenas prácticas importa: cambiar la VLAN por defecto, poner la native VLAN en un número dedicado sin equipos, fijar los puertos de usuario como `access`, y desactivar la negociación de trunks (DTP) en puertos que no la necesitan. Esas mismas puertas toca primero el pentester: el **VLAN hopping** (doble tagueo de tramas o spoofing de switch con DTP) es el intento clásico de saltar de piso.',
+      },
+      {
+        type: 'quiz',
+        question: 'An ARP spoofing attack on the guest WiFi does not reach the servers. What is stopping it?',
+        questionEs: 'Un ataque de ARP spoofing en el WiFi de invitados no alcanza a los servidores. ¿Qué lo detiene?',
+        options: [
+          { es: 'Los servidores están en otra VLAN y el tráfico de capa 2 no la cruza', en: 'The servers are in another VLAN and layer 2 traffic does not cross it' },
+          { es: 'El switch cifra el tráfico de ARP', en: 'The switch encrypts ARP traffic' },
+          { es: 'El protocolo ARP no funciona en redes grandes', en: 'The ARP protocol does not work on big networks' },
+          { es: 'Los servidores usan fibra y por eso son inmunes', en: 'The servers use fiber and are therefore immune' },
+        ],
+        correctIndex: 0,
+      },
+    ],
+  },
+];

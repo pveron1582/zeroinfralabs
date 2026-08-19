@@ -251,6 +251,42 @@ describe('labValidator', () => {
       expect(validateMission(result, mission)).toBe(false);
     });
 
+    it('debe validar httpRequest cuando hay una request capturada', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        httpRequest: { method: 'GET', url: 'http://192.168.50.11/login', headers: {}, body: '' },
+        httpResponse: { status: 200, statusText: 'OK', headers: {}, body: '' },
+      };
+      const mission = createMission({ type: 'httpRequest' });
+      expect(validateMission(result, mission)).toBe(true);
+    });
+
+    it('debe validar httpRequest que coincida con una URL objetivo', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        httpRequest: { method: 'GET', url: 'http://192.168.50.11/login', headers: {}, body: '' },
+        httpResponse: { status: 200, statusText: 'OK', headers: {}, body: '' },
+      };
+      const mission = createMission({ type: 'httpRequest', url: '/login' });
+      expect(validateMission(result, mission)).toBe(true);
+    });
+
+    it('debe retornar false para httpRequest sin request capturada', () => {
+      const result: CommandResponse = { output: 'test' };
+      const mission = createMission({ type: 'httpRequest' });
+      expect(validateMission(result, mission)).toBe(false);
+    });
+
+    it('debe retornar false para httpRequest con URL que no coincide', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        httpRequest: { method: 'GET', url: 'http://192.168.50.11/', headers: {}, body: '' },
+        httpResponse: { status: 200, statusText: 'OK', headers: {}, body: '' },
+      };
+      const mission = createMission({ type: 'httpRequest', url: '/admin' });
+      expect(validateMission(result, mission)).toBe(false);
+    });
+
     it('debe retornar false para tipo desconocido', () => {
       const result: CommandResponse = { output: 'test' };
       const mission = createMission({ type: 'unknown' as any });

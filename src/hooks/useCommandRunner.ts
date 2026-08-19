@@ -12,6 +12,7 @@ import { resetPackageManager } from '../frameworks/packages/packageManager';
 import { resetCron } from '../frameworks/cron/cronRunner';
 import { resetMounts } from '../frameworks/fs/mounts';
 import { useMissionCompletion } from './useMissionCompletion';
+import { DEFAULT_ENV } from '../utils/environment';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { useTerminalIdentity, getShortPath } from './useTerminalIdentity';
 import { useIdentityStack } from './useIdentityStack';
@@ -60,7 +61,11 @@ export function useCommandRunner({
   const [listeningPort, setListeningPort] = useState<number | null>(null);
   const [nanoFile, setNanoFile] = useState<NanoFileState | null>(null);
   const [umask, setUmask] = useState(0o022);
-  const [env, setEnv] = useState<Record<string, string> | undefined>(undefined);
+  // El entorno arranca con DEFAULT_ENV (PATH, HOME, USER, SHELL...) para que
+  // `echo $PATH`, `export` y la expansión de $VAR funcionen desde el primer comando.
+  // El tipo conserva `| undefined` para respetar las firmas de los deps, pero en
+  // runtime siempre queda definido (inicialización + resets con DEFAULT_ENV).
+  const [env, setEnv] = useState<Record<string, string> | undefined>(() => DEFAULT_ENV(machine));
 
   // ── Stack de identidades ─────────────────────────────────────────
   const { pushIdentity, popIdentity } = useIdentityStack({
@@ -138,7 +143,7 @@ export function useCommandRunner({
     resetCron();
     resetMounts();
     setUmask(0o022);
-    setEnv(undefined);
+    setEnv(DEFAULT_ENV(machine));
     useScenarioStore.getState().resetIdentity({
       machineId: machine.id,
       suUser: machine.su_user,
@@ -148,6 +153,15 @@ export function useCommandRunner({
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioId, allMachines.length]);
+
+  // ── Entorno por máquina/usuario ──────────────────────────────────
+  // Re-deriva las variables por defecto (PATH/HOME/USER/SHELL...) cuando
+  // cambia la máquina activa (SSH a otro host) o el usuario efectivo (su),
+  // preservando los `export` custom del usuario (como `su` en bash real).
+  useEffect(() => {
+    setEnv(prev => ({ ...prev, ...DEFAULT_ENV(machine) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [machine.id, sshUser]);
 
   // ── Deps compartidas para ejecutar comandos ──────────────────────
   const sessionDeps: SessionRunnerDeps = {

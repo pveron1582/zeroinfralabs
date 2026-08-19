@@ -1,0 +1,1 @@
+Una red es un conjunto de dispositivos conectados entre sí para compartir datos y recursos. Cada equipo conectado es un nodo: tu compu, el celu, el servidor, la impresora. Puede ser por cable, como ethernet o fibra, o inalámbrica, como el wifi. Una red existe para compartir: archivos, impresoras y el acceso a internet.

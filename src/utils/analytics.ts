@@ -21,7 +21,7 @@ export interface TrackEventData {
 const WEBHOOK_URL = import.meta.env.VITE_ANALYTICS_WEBHOOK || '';
 
 // In-memory queue for events that fire before the webhook is ready
-let queue: TrackEventData[] = [];
+const queue: TrackEventData[] = [];
 let flushing = false;
 
 // Session tracking

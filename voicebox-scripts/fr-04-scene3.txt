@@ -1,0 +1,1 @@
+Pero internet funciona con TCP/IP, que junta las siete capas en cuatro: aplicación, transporte, internet y acceso a red. OSI queda como el modelo de referencia para estudiar. Regla de oro: cuando en un lab escuches capa dos o capa tres, siempre se refieren al modelo OSI.

@@ -1,0 +1,1 @@
+Antes de buscar información en un sistema, tenés que entender cómo se organiza: cada sistema operativo guarda sus datos en lugares predecibles. Linux y Windows organizan todo de manera distinta, y conocer ese mapa es la mitad del trabajo.

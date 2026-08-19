@@ -128,11 +128,10 @@ src/
 ├── commands/
 │   ├── builtin/        # 59 system commands (ls, cd, cat, sudo, ps, kill, systemctl, iptables, ufw, ip, ss, export, grep, crontab, mount, df, du, ln, find, ...)
 │   ├── tools/          # 11 pentest/system tools (nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, msfconsole, apt, dpkg, ...)
-│   ├── tools/msfCommands/   # Stateful MSF sub-commands
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid
 ├── frameworks/
-│   ├── metasploit/     # ModuleLoader, SessionManager, exploit modules (ms17_010)
+│   ├── metasploit/     # core/ (module DB, ContextRegistry, types) + orchestrators/ (MSF + meterpreter commands)
 │   ├── shells/         # ShellManager + SSH/FTP/NC sessions (stack-based, nested)
 │   ├── process/        # ProcessManager (buildProcessList, kill/stop/start)
 │   ├── network/        # NetworkState (iptables/ufw/interfaces, effectivePortState)

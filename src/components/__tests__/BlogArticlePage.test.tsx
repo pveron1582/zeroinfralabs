@@ -54,8 +54,17 @@ describe('BlogArticlePage en inglés', () => {
     expect(screen.getByText('Back to blog')).toBeInTheDocument();
   });
 
-  it('debe mostrar el CTA para empezar', () => {
+  it('debe mostrar el CTA "Go to Academy" para el artículo de la Academy', () => {
     renderWithRoute('en', BLOG_ARTICLES[0].slug);
+
+    const link = screen.getByRole('link', { name: /Go to Academy/i });
+    expect(link).toBeInTheDocument();
+    expect(link.getAttribute('href')).toBe('/en/academy');
+  });
+
+  it('debe mostrar el CTA "Start for free" para el artículo de labs', () => {
+    const labsArticle = BLOG_ARTICLES.find(a => a.ctaTo !== 'academy')!;
+    renderWithRoute('en', labsArticle.slug);
 
     expect(screen.getByText('Start for free')).toBeInTheDocument();
   });
@@ -95,6 +104,14 @@ describe('BlogArticlePage en español', () => {
     renderWithRoute('es', BLOG_ARTICLES[0].slugEs!);
 
     expect(screen.getByText(BLOG_ARTICLES[0].titleEs!)).toBeInTheDocument();
+  });
+
+  it('debe mostrar el CTA "Ir a la Academy" en español para el artículo de la Academy', () => {
+    renderWithRoute('es', BLOG_ARTICLES[0].slugEs!);
+
+    const link = screen.getByRole('link', { name: /Ir a la Academy/i });
+    expect(link).toBeInTheDocument();
+    expect(link.getAttribute('href')).toBe('/es/academy');
   });
 
   it('debe mostrar "Volver al blog"', () => {

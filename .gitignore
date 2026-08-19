@@ -9,3 +9,4 @@ coverage/
 .kilo/
 .continue/
 *.mcp.json
+push.sh

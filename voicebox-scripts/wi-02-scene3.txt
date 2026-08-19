@@ -1,0 +1,1 @@
+¿Por qué te importa todo esto? Porque cada versión tiene su personalidad a la hora de atacar. Windows 10 y 11 son estaciones de trabajo. Los servidores guardan la identidad de toda la empresa. Y si comprometés un controlador de dominio, tenés la empresa entera. Saber distinguir qué Windows estás mirando te dice por dónde empezar.

@@ -1,0 +1,1 @@
+Fase tres: la explotación. Con lo que descubriste, buscás una vulnerabilidad concreta y la aprovechás para entrar: un exploit de un servicio, una contraseña débil, una web mal configurada. El objetivo es uno: conseguir acceso al sistema.

@@ -8,7 +8,7 @@ export interface UISlice {
   pendingSurveyScenario: ScenarioState['pendingSurveyScenario'];
   view: AppView;
   uiMode: 'classic' | 'desktop';
-  activeApp: 'terminal' | 'browser';
+  activeApp: 'terminal' | 'browser' | 'burpsuite';
   browserKey: number;
   showNetworkMap: boolean;
   hasNewNetworkInfo: boolean;
@@ -33,7 +33,7 @@ export interface UISlice {
   setShowCompletionOverlay: (show: boolean) => void;
   openFoxyTour: () => void;
   closeFoxyTour: () => void;
-  setActiveApp: (app: 'terminal' | 'browser') => void;
+  setActiveApp: (app: 'terminal' | 'browser' | 'burpsuite') => void;
   refreshBrowser: () => void;
   toggleNetworkMap: (show?: boolean) => void;
   setTermColor: (color: string) => void;

@@ -1,0 +1,1 @@
+Linux es el kernel, el corazón del sistema: gestiona la memoria, los procesos y los drivers del hardware. Pero un sistema operativo completo necesita mucho más: la shell, los comandos, los compiladores. Ese conjunto de programas es el proyecto GNU. Por eso hablamos de GNU barra Linux: un kernel libre, con herramientas libres.

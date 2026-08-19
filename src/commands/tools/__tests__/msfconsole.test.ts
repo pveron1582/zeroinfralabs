@@ -1,6 +1,6 @@
 // ── commands/tools/__tests__/msfconsole.test.ts ────────────────────
 // Integration tests for msfconsole orchestrator
-// Unit tests for individual command handlers are in msfCommands/ directory
+// Unit tests for individual command handlers are in src/frameworks/metasploit/__tests__
 import { describe, it, expect } from 'vitest';
 import { cmd_msfconsole, executeMsfCommand, type MsfState } from '../msfconsole';
 import type { Machine, CommandContext } from '../../../types';

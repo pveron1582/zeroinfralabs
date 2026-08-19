@@ -1,0 +1,1 @@
+Configurar un equipo en una red son tres números. La dirección IP es la identidad del equipo dentro de la red. La máscara de red delimita qué parte de esa IP identifica a la red y qué parte identifica al equipo. Y la puerta de enlace es la IP del router: el puente por donde salís de tu red hacia afuera.

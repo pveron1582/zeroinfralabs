@@ -1,0 +1,1 @@
+El tercero es WinRM, en el puerto 5985: el canal de administración para PowerShell Remoting. Con credenciales válidas obtenés una shell remota completa. Herramientas como Evil-WinRM abusan exactamente de esto: usuario y contraseña, y tenés un PowerShell interactivo en el objetivo. Es de lo primero que se prueba cuando conseguís credenciales.

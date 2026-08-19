@@ -6,7 +6,7 @@ import { useLanguage, useSetLanguage } from '../../i18n/translations';
 import { useColors, FONT_MONO, FONT_SANS } from './constants';
 import { useScenarioStore } from '../../store/scenarioStore';
 
-export type SiteNav = 'labs' | 'blog';
+export type SiteNav = 'labs' | 'blog' | 'academy';
 
 interface SiteHeaderProps {
   activeNav?: SiteNav | null;
@@ -52,6 +52,7 @@ export function SiteHeader({
 
   const labsLink = `/${language}/labs`;
   const blogLink = `/${language}/blog`;
+  const academyLink = `/${language}/academy`;
 
   return (
     <header className="sticky top-0 z-50 border-b backdrop-blur-md"
@@ -64,6 +65,7 @@ export function SiteHeader({
 
         <nav className="hidden md:flex items-center gap-1">
           <Link to={labsLink} className={navClass('labs')}>Labs</Link>
+          <Link to={academyLink} className={navClass('academy')}>Academy</Link>
           <Link to={blogLink} className={navClass('blog')}>Blog</Link>
           {onFeedback && (
             <button type="button" onClick={onFeedback}
@@ -104,6 +106,7 @@ export function SiteHeader({
       {menuOpen && (
         <div className="md:hidden border-t px-4 py-3 flex flex-col gap-1" style={{ borderColor: colors.border, background: colors.pageBg }}>
           <Link to={labsLink} onClick={close} className={navClass('labs')}>Labs</Link>
+          <Link to={academyLink} onClick={close} className={navClass('academy')}>Academy</Link>
           <Link to={blogLink} onClick={close} className={navClass('blog')}>Blog</Link>
           {onFeedback && (
             <button type="button" onClick={() => { onFeedback(); close(); }}

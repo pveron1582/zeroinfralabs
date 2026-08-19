@@ -1,0 +1,1 @@
+Fase cuatro: la post-explotación. Ya estás adentro, y querés más. Escalar privilegios para volverte root, mantener el acceso para no perderlo, y lootear: credenciales, datos, información sensible. Acá se consiguen las banderas, o en un pentest real, la prueba del daño potencial.

@@ -1,0 +1,1 @@
+Fuera de Linux y Windows existe un tercer mundo de sistemas operativos. Son los que corren en las Mac, en los routers y firewalls, y en las Chromebooks. No son mayoría en los servidores, pero los vas a encontrar en el camino. En este video: macOS, la familia BSD y ChromeOS.

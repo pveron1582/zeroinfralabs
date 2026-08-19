@@ -1,0 +1,1 @@
+La terminal es tu mapa del sistema. El prompt te dice quién sos, y los comandos te dicen qué hay y qué podés hacer. Cuanto mejor la leas, más fácil te vas a mover en cualquier máquina Linux. Y esto se practica: abrí una terminal y empezá a mirar cada símbolo con calma.

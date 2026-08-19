@@ -1,0 +1,1 @@
+Y la fase cinco, la más importante de todas: el reporte. Todo se documenta: la vulnerabilidad, cómo se explota, el impacto, y cómo se arregla. Entrar es la parte divertida, pero el reporte es por lo que te pagan.

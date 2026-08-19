@@ -5,6 +5,7 @@ import type { Machine, Scenario, Mission, FileEntry, BlockingCommand, FtpSession
 import type { MsfState } from '../commands/tools/msfconsole';
 import type { EnumerationSnapshot } from '../utils/networkAlert';
 import type { IdentitySlice } from './slices/identitySlice';
+import type { AcademySlice } from './slices/academySlice';
 
 export interface Notification {
   text: string;
@@ -16,7 +17,7 @@ export type SshSessionState = SshSessionData;
 
 export type AppView = 'landing' | 'workspace' | 'blog';
 
-export interface ScenarioState extends IdentitySlice {
+export interface ScenarioState extends IdentitySlice, AcademySlice {
   view: AppView;
   setView: (view: AppView) => void;
 
@@ -26,7 +27,7 @@ export interface ScenarioState extends IdentitySlice {
   currentMissionId: number;
   activeMachineId: string;
 
-  activeApp: 'terminal' | 'browser';
+  activeApp: 'terminal' | 'browser' | 'burpsuite';
   browserKey: number;
   showNetworkMap: boolean;
   hasNewNetworkInfo: boolean;
@@ -91,7 +92,7 @@ export interface ScenarioState extends IdentitySlice {
   addExploredDirectory: (machineId: string, path: string) => void;
   confirmRCE: (machineId: string, user: string, method: string) => void;
   changeMachine: (machineId: string) => void;
-  setActiveApp: (app: 'terminal' | 'browser') => void;
+  setActiveApp: (app: 'terminal' | 'browser' | 'burpsuite') => void;
   refreshBrowser: () => void;
   toggleNetworkMap: (show?: boolean) => void;
   setTermColor: (color: string) => void;

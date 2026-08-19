@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Academy — propuesta v4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #8E9280; font-family: 'Courier Prime', monospace; padding: 56px 24px;
+    color: #211E19;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+
+  .eyebrow {
+    font-family: 'Courier Prime', monospace; font-size: 12px; color: #7a1f1f;
+    letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+  }
+
+  .stamp {
+    font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 1px;
+    color: #7a1f1f; border: 1px solid #676B5C; background: #A6AA96;
+    padding: 6px 12px; border-radius: 2px; display: flex; align-items: center; gap: 8px;
+  }
+  .stamp::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #7a1f1f; }
+
+  h1 {
+    font-family: 'Special Elite', monospace; font-weight: 400; font-size: 42px;
+    line-height: 1.15; margin-bottom: 16px; color: #201d18;
+  }
+  .desc { font-size: 14px; color: #5a5340; max-width: 520px; line-height: 1.7; margin-bottom: 44px; }
+
+  .overall {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding-bottom: 20px; border-bottom: 2px solid #71755F; margin-bottom: 48px;
+  }
+  .overall .label { font-size: 12px; color: #454A3B; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+  .overall .num { font-family: 'Special Elite', monospace; font-weight: 400; font-size: 58px; color: #201d18; }
+  .overall .num span { color: #7a1f1f; }
+  .overall .track { width: 260px; height: 3px; background: #71755F; position: relative; margin-bottom: 10px; }
+  .overall .track .fill { position: absolute; left: 0; top: 0; height: 100%; width: 29%; background: #7a1f1f; }
+  .overall .frac { font-size: 12px; color: #454A3B; text-align: right; }
+
+  .group { margin-bottom: 44px; }
+  .group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .group-head h2 { font-family: 'Special Elite', monospace; font-weight: 400; font-size: 16px; color: #201d18; }
+  .group-head .count { font-size: 11px; color: #454A3B; }
+
+  .row {
+    display: flex; align-items: center; gap: 20px; padding: 20px 0;
+    border-bottom: 1px solid #7C806D; cursor: default; transition: padding-left .15s;
+  }
+  .row:hover { padding-left: 8px; }
+  .row:last-child { border-bottom: none; }
+
+  .ring { flex-shrink: 0; }
+  .ring circle.track { fill: none; stroke: #767A6A; stroke-width: 3; }
+  .ring circle.fill { fill: none; stroke: #7a1f1f; stroke-width: 3; stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; }
+  .ring.zero circle.fill { stroke: #5A5E4E; }
+
+  .row-main { flex: 1; }
+  .row-main .file-id { font-size: 10px; color: #4A4E3F; letter-spacing: 1px; margin-bottom: 4px; }
+  .row-main .name { font-family: 'Special Elite', monospace; font-weight: 400; font-size: 17px; margin-bottom: 3px; color: #201d18; }
+  .row-main .sub { font-size: 13px; color: #33362B; line-height: 1.55; max-width: 460px; }
+  .row-main .redact { display: inline-block; height: 9px; width: 42%; background: #2a2620; border-radius: 1px; margin-top: 6px; opacity: .85; }
+
+  .row-meta { font-size: 12px; color: #454A3B; white-space: nowrap; font-weight: 700; }
+  .row-meta.active { color: #7a1f1f; }
+  .row-meta.locked { color: #5A5E4E; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="eyebrow">Academia · Ciberseguridad</div>
+    <div class="stamp">Nivel 01 · Acceso concedido</div>
+  </div>
+  <h1>Aprendé antes de entrar al lab</h1>
+  <div class="desc">Cada base tiene lecciones cortas con ejemplos reales del simulador y práctica guiada.</div>
+
+  <div class="overall">
+    <div>
+      <div class="label">Tu progreso</div>
+      <div class="num">29<span>%</span></div>
+    </div>
+    <div style="text-align:right">
+      <div class="track"><div class="fill"></div></div>
+      <div class="frac">4 / 14 lecciones</div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head"><h2>Sistemas operativos</h2><span class="count">3 módulos</span></div>
+
+    <div class="row">
+      <svg class="ring zero" width="40" height="40" viewBox="0 0 40 40">
+        <circle class="track" cx="20" cy="20" r="17"/>
+        <circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="106.8"/>
+      </svg>
+      <div class="row-main">
+        <div class="file-id">EXP-014 · sin abrir</div>
+        <div class="name">Linux</div>
+        <div class="redact"></div>
+      </div>
+      <div class="row-meta locked">0 / 5</div>
+    </div>
+
+    <div class="row">
+      <svg class="ring zero" width="40" height="40" viewBox="0 0 40 40">
+        <circle class="track" cx="20" cy="20" r="17"/>
+        <circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="106.8"/>
+      </svg>
+      <div class="row-main">
+        <div class="file-id">EXP-015 · sin abrir</div>
+        <div class="name">Windows</div>
+        <div class="redact" style="width:30%"></div>
+      </div>
+      <div class="row-meta locked">0 / 1</div>
+    </div>
+
+    <div class="row">
+      <svg class="ring" width="40" height="40" viewBox="0 0 40 40">
+        <circle class="track" cx="20" cy="20" r="17"/>
+        <circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="53.4"/>
+      </svg>
+      <div class="row-main">
+        <div class="file-id">EXP-016 · en curso</div>
+        <div class="name">Pentesting</div>
+        <div class="sub">Reconocimiento, escaneo, explotación, post-explotación, reporte.</div>
+      </div>
+      <div class="row-meta active">1 / 2</div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head"><h2>Redes y fundamentos</h2><span class="count">2 módulos</span></div>
+
+    <div class="row">
+      <svg class="ring zero" width="40" height="40" viewBox="0 0 40 40">
+        <circle class="track" cx="20" cy="20" r="17"/>
+        <circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="106.8"/>
+      </svg>
+      <div class="row-main">
+        <div class="file-id">EXP-017 · sin abrir</div>
+        <div class="name">Redes</div>
+        <div class="redact" style="width:55%"></div>
+      </div>
+      <div class="row-meta locked">0 / 3</div>
+    </div>
+
+    <div class="row">
+      <svg class="ring zero" width="40" height="40" viewBox="0 0 40 40">
+        <circle class="track" cx="20" cy="20" r="17"/>
+        <circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="106.8"/>
+      </svg>
+      <div class="row-main">
+        <div class="file-id">EXP-018 · sin abrir</div>
+        <div class="name">Fundamentos de ciberseguridad</div>
+        <div class="redact" style="width:48%"></div>
+      </div>
+      <div class="row-meta locked">0 / 2</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

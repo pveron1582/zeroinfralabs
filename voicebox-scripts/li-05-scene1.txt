@@ -1,0 +1,1 @@
+Cuando listás archivos en formato largo, ves un montón de guiones y letras al inicio: guion, r, w, guion, r, guion, guion, r, guion, guion. Parece ruido, pero es el sistema diciéndote quién puede hacer qué con cada archivo. Aprender a leerlo te va a destapar la puerta de la escalada de privilegios.

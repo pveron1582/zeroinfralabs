@@ -56,6 +56,34 @@ describe('FoxyTour en AppContent real', () => {
     expect(screen.queryByText(/¡Hola! Soy Foxy/)).not.toBeInTheDocument();
   });
 
+  it('no reabre el tour tras un remount de AppContent (bug de sessionStorage)', async () => {
+    // Bug real: el guard era un useRef que se reseteaba al remontar AppContent
+    // (el pushState de selectScenario cambia la location key de ScenarioLauncher).
+    // Con el flag en sessionStorage el tour NO debe reabrirse tras el remount.
+    const first = render(
+      <MemoryRouter initialEntries={['/es/scenario/scenario-01']}>
+        <AppContent />
+      </MemoryRouter>
+    );
+    expect(screen.getByText(/¡Hola! Soy Foxy/)).toBeInTheDocument();
+
+    // Cerrar con Saltar (aparece desde el paso 1)
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Saltar' }));
+    await waitFor(() => expect(screen.queryByText(/¡Hola! Soy Foxy/)).not.toBeInTheDocument(), { timeout: 3000 });
+
+    // Remount (nueva instancia de AppContent = nuevo useRef)
+    first.unmount();
+    render(
+      <MemoryRouter initialEntries={['/es/scenario/scenario-01']}>
+        <AppContent />
+      </MemoryRouter>
+    );
+
+    await new Promise(r => setTimeout(r, 300));
+    expect(screen.queryByText(/¡Hola! Soy Foxy/)).not.toBeInTheDocument();
+  });
+
   it('incluye el paso de Chrome en un escenario Web', async () => {
     render(
       <MemoryRouter initialEntries={['/es/scenario/scenario-01']}>

@@ -206,6 +206,37 @@ describe('useDesktopWindows', () => {
     });
   });
 
+  describe('addBurp', () => {
+    it('debe abrir una ventana de Burp Suite', () => {
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.addBurp(); });
+      expect(result.current.burpWindows).toHaveLength(1);
+      expect(result.current.windows[0].type).toBe('burpsuite');
+      expect(result.current.windows[0].title).toBe('Burp Suite');
+      expect(result.current.windows[0].minimized).toBe(false);
+    });
+
+    it('no debe duplicar Burp si ya está abierto', () => {
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.addBurp(); });
+      act(() => { result.current.addBurp(); });
+      expect(result.current.burpWindows).toHaveLength(1);
+    });
+
+    it('debe restaurar y traer al frente la ventana Burp minimizada al reabrirla', () => {
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.addBurp(); });
+      const burpId = result.current.windows[0].id;
+      act(() => { result.current.minimizeWindow(burpId); });
+      act(() => { result.current.addTerminal(); });
+      act(() => { result.current.addBurp(); });
+      expect(result.current.burpWindows).toHaveLength(1);
+      expect(result.current.burpWindows[0].minimized).toBe(false);
+      const maxZ = Math.max(...result.current.windows.map(w => w.zIndex));
+      expect(result.current.burpWindows[0].zIndex).toBe(maxZ);
+    });
+  });
+
   describe('closeWindow', () => {
     it('debe agregar a closingWindowIds y remover luego de 300ms', async () => {
       vi.useFakeTimers();

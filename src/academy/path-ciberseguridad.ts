@@ -1,0 +1,348 @@
+// ── academy/path-ciberseguridad.ts ─────────────────────────────────
+// Path: Ciberseguridad — fundamentos, CID, cifrado y hashes.
+
+import type { Lesson } from '../types';
+
+export const CIBERSEG_LESSONS: Lesson[] = [
+  {
+    id: 'ciber-01',
+    pathId: 'ciberseguridad',
+    order: 1,
+    title: 'The CIA triad with real examples',
+    titleEs: 'La triada CID con ejemplos reales',
+    readingMinutes: 6,
+    labRef: 'scenario-05',
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Toda la seguridad gira alrededor de 3 ideas: Confidencialidad, Integridad y Disponibilidad. La triada CID. Cuando atacas, rompes una de las tres. Aquí va con ejemplos.',
+            en: "All of security revolves around 3 ideas: Confidentiality, Integrity and Availability. The CIA triad. When you attack, you break one of the three. Here it is with examples.",
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/ci01-cia-triad.mp4',
+        durationSec: 52,
+        caption: 'The CIA triad: Confidentiality (only authorized eyes read the data), Integrity (data is not silently modified) and Availability (the system works when needed). Every attack breaks one of the three.',
+        captionEs: 'La triada CID: Confidencialidad (solo ojos autorizados leen el dato), Integridad (el dato no se modifica en silencio) y Disponibilidad (el sistema funciona cuando se lo necesita). Cada ataque rompe una de las tres.',
+      },
+      {
+        type: 'content',
+        title: 'Confidentiality, Integrity, Availability',
+        titleEs: 'Confidencialidad, Integridad, Disponibilidad',
+        body: 'Every security control protects at least one leg of the triad. Confidentiality: only authorized eyes read the data. Integrity: data is not silently modified. Availability: the system works when needed.',
+        bodyEs: 'Todo control de seguridad protege al menos una pata de la triada. Confidencialidad: solo ojos autorizados leen el dato. Integridad: el dato no se modifica en silencio. Disponibilidad: el sistema funciona cuando se lo necesita.',
+      },
+      {
+        type: 'content',
+        title: 'Real attacks per leg',
+        titleEs: 'Ataques reales por cada pata',
+        body: 'Confidentiality: stealing /etc/shadow or dumping a database via SQL injection. Integrity: defacing a website, tampering with logs to hide your tracks. Availability: DDoS, killing a critical service, ransomware.',
+        bodyEs: 'Confidencialidad: robar /etc/shadow o volcar una base vía inyección SQL. Integridad: defacear un sitio, tocar logs para cubrir tus rastros. Disponibilidad: DDoS, tumbar un servicio crítico, ransomware.',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'cat /etc/shadow | head -2',
+        output: 'root:$6$rounds=656000$abcdef$...:19100:0:99999:7:::\nadmin:$6$rounds=656000$ghijkl$...:19100:0:99999:7:::',
+        explanation: 'Reading this file breaks confidentiality: now the attacker can crack the hashes offline, without any lockout or alert.',
+        explanationEs: 'Leer este archivo rompe la confidencialidad: ahora el atacante puede crackear los hashes offline, sin bloqueos ni alertas.',
+      },
+      {
+        type: 'quiz',
+        question: 'Modifying attack logs to cover your tracks breaks which principle?',
+        questionEs: 'Modificar los logs de un ataque para cubrirte rompe qué principio?',
+        options: [
+          { es: 'Confidencialidad', en: 'Confidentiality' },
+          { es: 'Integridad', en: 'Integrity' },
+          { es: 'Disponibilidad', en: 'Availability' },
+          { es: 'Autenticación', en: 'Authentication' },
+        ],
+        correctIndex: 1,
+      },
+    ],
+  },
+  {
+    id: 'ciber-02',
+    pathId: 'ciberseguridad',
+    order: 2,
+    title: 'Hashes, encryption and how passwords get cracked',
+    titleEs: 'Hashes, cifrado y cómo se crackean las contraseñas',
+    readingMinutes: 8,
+    labRef: 'scenario-02',
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Los hashes son como huellas digitales de una contraseña. El servidor guarda la huella, no la contraseña. Tu trabajo como atacante: conseguir el hash y crackearlo.',
+            en: "Hashes are like digital fingerprints of a password. The server stores the fingerprint, not the password. Your job as an attacker: get the hash and crack it.",
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/ci02-hashes-cracking.mp4',
+        durationSec: 47,
+        caption: 'A hash is a one-way fingerprint: you cannot "unhash". MD5/SHA1 are broken, SHA512 is the Linux standard, bcrypt/argon2 are slow on purpose. Crack weak hashes with john + rockyou.',
+        captionEs: 'Un hash es una huella de un solo sentido: no se puede "deshashear". MD5/SHA1 están rotos, SHA512 es el estándar de Linux, bcrypt/argon2 son lentos a propósito. Crackeá hashes débiles con john + rockyou.',
+      },
+      {
+        type: 'content',
+        title: 'Hash is not encryption',
+        titleEs: 'Hash no es cifrado',
+        body: 'Encryption is reversible (with the key you decrypt). A hash is a one-way fingerprint: you cannot "unhash". That\'s why passwords are stored as hashes — the server never keeps your real password.',
+        bodyEs: 'El cifrado es reversible (con la clave descifras). Un hash es una huella de un solo sentido: no se puede "deshashear". Por eso las contraseñas se guardan como hashes — el servidor nunca guarda tu contraseña real.',
+      },
+      {
+        type: 'content',
+        title: 'Common algorithms',
+        titleEs: 'Algoritmos comunes',
+        body: 'MD5 and SHA1: broken, avoid. sha512 (`$6$` in /etc/shadow): the Linux standard. bcrypt/argon2: designed to be slow on purpose, resisting brute force. Slow is good for passwords.',
+        bodyEs: 'MD5 y SHA1: rotos, evitar. sha512 (`$6$` en /etc/shadow): el estándar de Linux. bcrypt/argon2: diseñados para ser lentos a propósito, resistiendo fuerza bruta. Lento es bueno para contraseñas.',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'john hash.txt --wordlist=rockyou.txt',
+        output: 'Loaded 1 password hash (sha512crypt)\nPress q to abort\npassword123      (admin)',
+        explanation: 'john tries every word in rockyou.txt (14M+ leaked real passwords) until one produces the same hash. Weak passwords fall in seconds.',
+        explanationEs: 'john prueba cada palabra de rockyou.txt (más de 14M de contraseñas reales filtradas) hasta que una produce el mismo hash. Las contraseñas débiles caen en segundos.',
+      },
+      {
+        type: 'quiz',
+        question: 'What does `hydra -l admin -P pass.txt ssh://192.168.1.11` do?',
+        questionEs: '¿Qué hace `hydra -l admin -P pass.txt ssh://192.168.1.11`?',
+        options: [
+          { es: 'Cifra las contraseñas del servidor', en: 'Encrypts server passwords' },
+          { es: 'Prueba combos usuario/clave por SSH hasta entrar', en: 'Tries user/pass combos over SSH until one works' },
+          { es: 'Crackea el hash de shadow localmente', en: 'Cracks the shadow hash locally' },
+          { es: 'Escanea puertos del servidor', en: 'Scans server ports' },
+        ],
+        correctIndex: 1,
+      },
+    ],
+  },
+  {
+    id: 'ciber-03',
+    pathId: 'ciberseguridad',
+    order: 3,
+    title: 'Information gathering: what it is, the law and the tools',
+    titleEs: 'Information gathering: qué es, la ley y las herramientas',
+    readingMinutes: 9,
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Antes de tocar un solo sistema, el pentester junta información. Es la fase 1 del método, y la que más se subestima: cuanto más sabés, menos fuerza bruta necesitás.',
+            en: 'Before touching a single system, the pentester gathers information. It is phase 1 of the method, and the most underestimated one: the more you know, the less brute force you need.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/ci03-information-gathering.mp4',
+        durationSec: 70,
+        caption: 'Information gathering turns your target into a map: who, what, where and how it is exposed — before you send a single packet.',
+        captionEs: 'El information gathering convierte a tu objetivo en un mapa: quién, qué, dónde y cómo está expuesto — antes de enviar un solo paquete.',
+      },
+      {
+        type: 'content',
+        title: 'What information gathering is',
+        titleEs: 'Qué es el information gathering',
+        body: 'It is the process of collecting publicly available data about a target to build a plan of attack. It has two modes: **passive** (OSINT — you only observe: Google, social media, WHOIS, job postings, leaked databases) and **active** (you touch the target: DNS queries, port scans, banner grabbing). Passive leaves no trace; active leaves logs.',
+        bodyEs: 'Es el proceso de recolectar datos disponibles públicamente sobre un objetivo para armar un plan de ataque. Tiene dos modos: **pasivo** (OSINT — solo observás: Google, redes sociales, WHOIS, ofertas de empleo, bases filtradas) y **activo** (tocás el objetivo: consultas DNS, escaneos de puertos, banner grabbing). El pasivo no deja rastro; el activo deja logs.',
+      },
+      {
+        type: 'content',
+        title: 'Is it legal?',
+        titleEs: '¿Es legal?',
+        body: 'Passive OSINT over public information is generally legal — anyone can read a website or query a WHOIS record. **Active scanning without authorization is NOT**: port scanning, vulnerability probing and exploitation require written permission (rules of engagement). The gray zone: tools that gather public data are legal; using that data against a system you do not own is a crime in most countries.',
+        bodyEs: 'El OSINT pasivo sobre información pública es en general legal — cualquiera puede leer un sitio o consultar un registro WHOIS. **El escaneo activo sin autorización NO lo es**: escanear puertos, probar vulnerabilidades y explotar requieren permiso escrito (reglas de engagement). La zona gris: las herramientas que juntan datos públicos son legales; usar esos datos contra un sistema que no es tuyo es un delito en la mayoría de los países.',
+      },
+      {
+        type: 'content',
+        title: 'The methodology',
+        titleEs: 'La metodología',
+        body: 'Follow the funnel: 1) **Footprinting** — map the organization: domains, IP ranges, emails, tech stack. 2) **Enumeration** — dig deeper: DNS records, subdomains, open ports, services and versions. 3) **Fingerprinting** — identify exactly what runs (Apache 2.4.41, WordPress 6.2) to pick exploits. Each step narrows the surface from "the whole internet" to "one vulnerable service".',
+        bodyEs: 'Seguí el embudo: 1) **Footprinting** — mapeá la organización: dominios, rangos de IP, emails, stack tecnológico. 2) **Enumeración** — cavá más profundo: registros DNS, subdominios, puertos abiertos, servicios y versiones. 3) **Fingerprinting** — identificá exactamente qué corre (Apache 2.4.41, WordPress 6.2) para elegir exploits. Cada paso reduce la superficie de "toda la internet" a "un servicio vulnerable".',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'whois example.com\ndig example.com ANY +short\nnmap -sV 192.168.1.11',
+        output: 'Domain Name: EXAMPLE.COM\nName Server: NS1.EXAMPLE.COM\n>>> example.com. 3600 IN A 93.184.216.34\n21/tcp open  ftp     vsFTPd 3.0.3\n80/tcp open  http    Apache httpd 2.4.41',
+        explanation: 'Three tools, three layers: `whois` tells you who owns the domain, `dig` finds the IP and DNS records, `nmap -sV` fingerprints the services. Each one narrows the map one step further.',
+        explanationEs: 'Tres herramientas, tres capas: `whois` te dice quién es dueño del dominio, `dig` encuentra la IP y los registros DNS, `nmap -sV` hace fingerprinting de los servicios. Cada una reduce el mapa un paso más.',
+      },
+      {
+        type: 'content',
+        title: 'The toolset',
+        titleEs: 'El set de herramientas',
+        body: 'Passive: `whois`, `dig`/`nslookup`, Google dorking (search operators), Shodan/Censys (exposed devices), theHarvester, Maltego, HaveIBeenPwned for leaks. Active: `nmap`/`masscan` for ports, `gobuster`/`ffuf` for directories and subdomains, `curl` for banners. Automate the boring parts, but read the output: the best tool is the one that tells you the version.',
+        bodyEs: 'Pasivo: `whois`, `dig`/`nslookup`, Google dorking (operadores de búsqueda), Shodan/Censys (dispositivos expuestos), theHarvester, Maltego, HaveIBeenPwned para filtraciones. Activo: `nmap`/`masscan` para puertos, `gobuster`/`ffuf` para directorios y subdominios, `curl` para banners. Automatizá lo aburrido, pero leé la salida: la mejor herramienta es la que te da la versión.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which technique is PASSIVE information gathering?',
+        questionEs: '¿Qué técnica es información gathering PASIVO?',
+        options: [
+          { es: 'Escanear puertos con nmap', en: 'Port scanning with nmap' },
+          { es: 'Probar credenciales por SSH', en: 'Testing SSH credentials' },
+          { es: 'Buscar datos públicos en Google y WHOIS', en: 'Searching public data on Google and WHOIS' },
+          { es: 'Lanzar un exploit', en: 'Launching an exploit' },
+        ],
+        correctIndex: 2,
+      },
+    ],
+  },
+  {
+    id: 'ciber-04',
+    pathId: 'ciberseguridad',
+    order: 4,
+    title: 'Cryptography basics: encrypting vs hashing',
+    titleEs: 'Bases de criptografía: cifrar vs hashear',
+    readingMinutes: 8,
+    labRef: 'scenario-02',
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'En la clase 2 viste hashes: huellas de un solo sentido. Ahora la otra cara: la criptografía que cifra y descifra. Son primas, no gemelas, y saber diferenciarlas te ahorra errores de novato en el lab.',
+            en: 'In class 2 you saw hashes: one-way fingerprints. Now the other side: the cryptography that encrypts and decrypts. They are cousins, not twins, and telling them apart saves you rookie mistakes in the lab.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/ci04-cryptography.mp4',
+        durationSec: 68,
+        caption: 'Cryptography is the art of scrambling data so only the right key unscrambles it. Encryption is reversible (with the key); hashing is a one-way fingerprint. Two families: symmetric (one shared key) and asymmetric (public + private key).',
+        captionEs: 'La criptografía es el arte de mezclar datos para que solo la clave correcta los vuelva legibles. El cifrado es reversible (con la clave); el hash es una huella de un solo sentido. Dos familias: simétrica (una clave compartida) y asimétrica (clave pública + privada).',
+      },
+      {
+        type: 'content',
+        title: 'What cryptography is',
+        titleEs: 'Qué es la criptografía',
+        body: 'The art of scrambling data so only the right key unscrambles it. Two operations: **encrypt** (plain → cipher) and **decrypt** (cipher → plain). The secret is not the algorithm (that is public) — the secret is the **key**. Without the key, the ciphertext is just noise.',
+        bodyEs: 'El arte de mezclar datos para que solo la clave correcta los vuelva legibles. Dos operaciones: **cifrar** (plano → cifrado) y **descifrar** (cifrado → plano). El secreto no es el algoritmo (eso es público) — el secreto es la **clave**. Sin la clave, el cifrado es solo ruido.',
+      },
+      {
+        type: 'content',
+        title: 'Encryption vs hashing',
+        titleEs: 'Cifrado vs hashing',
+        body: '**Encryption is reversible**: with the key you get the original data back. Used for data that must be read later (passwords in transit, files). **Hashing is one-way**: you cannot "unhash". Used to verify integrity without storing the data itself (password verification, file checksums). If you can decrypt it, it is encryption; if there is no way back, it is a hash.',
+        bodyEs: '**El cifrado es reversible**: con la clave recuperás el dato original. Se usa para datos que se tienen que leer después (contraseñas en tránsito, archivos). **El hash es de un solo sentido**: no se puede "deshashear". Se usa para verificar integridad sin guardar el dato (verificación de contraseñas, checksums). Si se puede descifrar, es cifrado; si no hay vuelta atrás, es hash.',
+      },
+      {
+        type: 'content',
+        title: 'Two families: symmetric and asymmetric',
+        titleEs: 'Dos familias: simétrica y asimétrica',
+        body: '**Symmetric** (AES, ChaCha20): ONE shared key encrypts and decrypts. Fast, but both parties must agree on the key without it leaking. **Asymmetric** (RSA, ECC): a **public** key (anyone can have it) + a **private** key (only the owner). What one encrypts, only the other decrypts. Slower, but no shared secret. HTTPS uses both: asymmetric to exchange the key, symmetric to carry the traffic.',
+        bodyEs: '**Simétrica** (AES, ChaCha20): UNA clave compartida cifra y descifra. Rápida, pero ambas partes deben acordar la clave sin que se filtre. **Asimétrica** (RSA, ECC): una clave **pública** (la puede tener cualquiera) + una **privada** (solo el dueño). Lo que cifra una, solo lo descifra la otra. Más lenta, pero sin secreto compartido. HTTPS usa las dos: asimétrica para intercambiar la clave, simétrica para llevar el tráfico.',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'ssh-keygen -t ed25519\nopenssl dgst -sha256 archivo.txt\ncurl -I https://example.com',
+        output: 'Generating public/private ed25519 key pair.\nSHA256(archivo.txt)= 7f83b1657ff1fc53b92dc18148a1d65d\nHTTP/2 200\nSSL certificate verify ok.',
+        explanation: 'Three everyday crypto tools: `ssh-keygen` creates an asymmetric key pair (the file in ~/.ssh that authenticates you), `openssl dgst` computes a hash to verify a file did not change, and `curl https://` only works because of the TLS handshake encrypting the connection.',
+        explanationEs: 'Tres herramientas de criptografía cotidianas: `ssh-keygen` crea un par de claves asimétricas (el archivo en ~/.ssh que te autentica), `openssl dgst` calcula un hash para verificar que un archivo no cambió, y `curl https://` solo funciona gracias al handshake TLS que cifra la conexión.',
+      },
+      {
+        type: 'content',
+        title: 'Where you see it every day',
+        titleEs: 'Dónde la ves todos los días',
+        body: '**HTTPS/TLS**: every padlock in the browser encrypts traffic with AES + RSA/ECDHE. **SSH**: your key pair authenticates the connection. **VPN**: encrypts the tunnel (OpenVPN, WireGuard, IPsec). **Password storage**: hashes, not encryption (you never need the plaintext back). **Digital signatures**: a private key "signs" a document and the public key proves it is genuine and untouched.',
+        bodyEs: '**HTTPS/TLS**: cada candado del navegador cifra el tráfico con AES + RSA/ECDHE. **SSH**: tu par de claves autentica la conexión. **VPN**: cifra el túnel (OpenVPN, WireGuard, IPsec). **Almacenamiento de contraseñas**: hashes, no cifrado (nunca necesitás el texto plano de vuelta). **Firmas digitales**: una clave privada "firma" un documento y la pública prueba que es genuino y no fue tocado.',
+      },
+      {
+        type: 'quiz',
+        question: 'HTTPS uses which combination of cryptography?',
+        questionEs: '¿Qué combinación de criptografía usa HTTPS?',
+        options: [
+          { es: 'Solo hashing', en: 'Hashing only' },
+          { es: 'Asimétrica para intercambiar la clave, simétrica para el tráfico', en: 'Asymmetric to exchange the key, symmetric for the traffic' },
+          { es: 'Solo simétrica', en: 'Symmetric only' },
+          { es: 'Ninguna, HTTPS no cifra', en: 'None, HTTPS does not encrypt' },
+        ],
+        correctIndex: 1,
+      },
+    ],
+  },
+  {
+    id: 'ciber-05',
+    pathId: 'ciberseguridad',
+    order: 5,
+    title: 'The OWASP Top Ten: where to look first',
+    titleEs: 'El OWASP Top Ten: dónde mirar primero',
+    readingMinutes: 10,
+    labRef: 'scenario-03',
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: '¿Dónde apuntás cuando defendés o atacás una app web? El OWASP Top Ten es la lista oficial de los diez riesgos más explotados. Es la primera tabla que un red team memoriza: cada entrada es un lugar donde mirar, y cada una tiene un ataque clásico que probar.',
+            en: 'Where do you aim when defending or attacking a web app? The OWASP Top Ten is the official list of the ten most exploited risks. It is the first table a red team memorizes: each entry is a place to look, and each has a classic attack to try.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/ci05-owasp-top-ten.mp4',
+        durationSec: 70,
+        caption: 'The OWASP Top Ten is the ranked list of the most critical web risks. The top 3: injection, broken authentication, and sensitive data exposure. Every entry is both a defense checklist and an attack checklist.',
+        captionEs: 'El OWASP Top Ten es la lista ordenada de los riesgos web más críticos. El top 3: inyección, autenticación rota y exposición de datos sensibles. Cada entrada es a la vez checklist de defensa y de ataque.',
+      },
+      {
+        type: 'content',
+        title: 'What OWASP is',
+        titleEs: 'Qué es OWASP',
+        body: 'The Open Web Application Security Project: a nonprofit that publishes the definitive ranking of web security risks. The Top Ten is updated roughly every 3–4 years (2021 edition is current) and is the de-facto standard: auditors test against it, developers harden against it, and attackers hunt inside it.',
+        bodyEs: 'El Open Web Application Security Project: una organización sin fines de lucro que publica el ranking definitivo de riesgos de seguridad web. El Top Ten se actualiza cada 3–4 años (la edición 2021 es la vigente) y es el estándar de facto: los auditores testean contra él, los desarrolladores refuerzan contra él y los atacantes cazan dentro de él.',
+      },
+      {
+        type: 'content',
+        title: 'The top three, the ones that matter most',
+        titleEs: 'El top 3, los que más importan',
+        body: '**1. Broken Access Control** — you can reach things you should not (edit another user\'s data, enter /admin). **2. Cryptographic Failures** — sensitive data stored or sent unprotected (plaintext passwords, weak hashes). **3. Injection** — your input is executed as code (SQLi: `\' OR 1=1--`, XSS, command injection). Together these three cover most real-world breaches.',
+        bodyEs: '**1. Broken Access Control** — podés llegar a cosas que no deberías (editar datos de otro usuario, entrar a /admin). **2. Cryptographic Failures** — datos sensibles guardados o enviados sin protección (contraseñas en texto plano, hashes débiles). **3. Injection** — tu entrada se ejecuta como código (SQLi: `\' OR 1=1--`, XSS, inyección de comandos). Juntos, estos tres cubren la mayoría de las brechas reales.',
+      },
+      {
+        type: 'content',
+        title: 'The other seven, in short',
+        titleEs: 'Los otros siete, en corto',
+        body: '**4. Insecure Design** — flaws in the architecture, not in the code. **5. Security Misconfiguration** — default credentials, debug endpoints left on, verbose errors. **6. Vulnerable Components** — a plugin or library with a known CVE. **7. Identification & Authentication Failures** — weak password rules, missing MFA. **8. Software & Data Integrity Failures** — untrusted updates, deserialization. **9. Logging & Monitoring Failures** — you were hacked and did not notice. **10. SSRF** — the server fetches attacker-chosen URLs.',
+        bodyEs: '**4. Insecure Design** — fallas en la arquitectura, no en el código. **5. Security Misconfiguration** — credenciales por defecto, endpoints de debug prendidos, errores verbosos. **6. Vulnerable Components** — un plugin o librería con un CVE conocido. **7. Identification & Authentication Failures** — reglas de contraseñas débiles, sin MFA. **8. Software & Data Integrity Failures** — actualizaciones no confiables, deserialización. **9. Logging & Monitoring Failures** — te hackearon y no te diste cuenta. **10. SSRF** — el servidor hace requests a URLs que elige el atacante.',
+      },
+      {
+        type: 'terminal-demo',
+        command: "curl -X POST http://192.168.1.11/login -d \"user=admin' OR 1=1--&pass=x\"\ncurl http://192.168.1.11/admin\nnmap -p- --script=http-title 192.168.1.11",
+        output: 'HTTP/1.1 200 OK\nWelcome, admin!\nHTTP/1.1 200 OK\n<title>Admin Panel</title>\nPORT   STATE SERVICE  VERSION\n80/tcp open  http     Apache httpd 2.4.41',
+        explanation: 'Three Top Ten probes in action: the SQLi on the login (`\' OR 1=1--`) tests Injection, hitting `/admin` directly tests Broken Access Control, and the nmap scan checks the version for Vulnerable Components and Misconfiguration.',
+        explanationEs: 'Tres sondas del Top Ten en acción: el SQLi en el login (`\' OR 1=1--`) testea Injection, pegarle a `/admin` directo testea Broken Access Control, y el escaneo nmap chequea la versión para Vulnerable Components y Misconfiguration.',
+      },
+      {
+        type: 'content',
+        title: 'Red team: turn the list into a playbook',
+        titleEs: 'Red team: convertí la lista en un playbook',
+        body: 'For every entry, ask: *"how do I test this?"* Injection → submit payloads to every input. Broken Access Control → enumerate IDs, force URLs. Misconfiguration → default creds, `/robots.txt`, debug pages. Vulnerable Components → `searchsploit` the version. The Top Ten is not a list to memorize — it is a **menu of attack ideas** and, inverted, a **menu of defense fixes**. Blue team: fix the same ten and you close 80% of the door.',
+        bodyEs: 'Para cada entrada preguntate: *"¿cómo testeo esto?"*. Injection → mandá payloads a cada input. Broken Access Control → enumerá IDs, forzá URLs. Misconfiguration → credenciales por defecto, `/robots.txt`, páginas de debug. Vulnerable Components → `searchsploit` a la versión. El Top Ten no es una lista para memorizar — es un **menú de ideas de ataque** y, invertido, un **menú de arreglos de defensa**. Blue team: arreglá los mismos diez y cerrás el 80% de la puerta.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which OWASP Top Ten entry does SQL injection belong to?',
+        questionEs: '¿A qué entrada del OWASP Top Ten pertenece la inyección SQL?',
+        options: [
+          { es: 'Broken Access Control', en: 'Broken Access Control' },
+          { es: 'Injection', en: 'Injection' },
+          { es: 'SSRF', en: 'SSRF' },
+          { es: 'Security Misconfiguration', en: 'Security Misconfiguration' },
+        ],
+        correctIndex: 1,
+      },
+    ],
+  },
+];

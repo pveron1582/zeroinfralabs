@@ -1,0 +1,1 @@
+Un detalle que los atacantes aman: el archivo punto bash, punto history guarda una lista de todo lo que escribiste en la terminal. Cuando estás en un sistema ajeno, leerlo te dice qué hizo el usuario, qué comandos usa y qué rutas existen. Es como leerle la mente a la persona.

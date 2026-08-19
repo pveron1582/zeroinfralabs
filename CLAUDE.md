@@ -47,11 +47,10 @@ src/
 ├── commands/
 │   ├── builtin/        # ls, cd, cat, sudo, whoami, ifconfig, hashcat, ping, traceroute, ps, top, htop, which
 │   ├── tools/          # nmap, hydra, gobuster, arp-scan, netdiscover, msfconsole
-│   ├── tools/msfCommands/   # Stateful MSF sub-commands
 │   └── index.ts        # Central registry: COMMANDS array + executeCommand() entry point
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid
 ├── frameworks/
-│   ├── metasploit/     # ModuleLoader, SessionManager, exploit modules (ms17_010)
+│   ├── metasploit/     # core/ (module DB, ContextRegistry, types) + orchestrators/ (MSF + meterpreter commands)
 │   └── shells/         # ShellManager + SSH/FTP/NC sessions
 ├── laboratorios/       # 6 lab definitions (laboratorio01-06.ts) + templates.ts (buildScenario, COMMON_PORTS)
 ├── store/              # Zustand: scenarioStore.ts + selectors.ts

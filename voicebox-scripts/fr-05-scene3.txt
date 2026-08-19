@@ -1,0 +1,1 @@
+Las máquinas se buscan por IP, pero las personas por nombre. El DNS traduce nombres como google punto com a una IP: es la agenda de contactos de internet. Si el DNS falla, la web no anda aunque tengas internet. Y para el pentester, enumerar el DNS revela subdominios y registros internos.

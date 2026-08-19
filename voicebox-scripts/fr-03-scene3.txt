@@ -1,0 +1,1 @@
+Para el pentesting esto importa: cuando escaneás una red le estás preguntando al switch quién está conectado, y cuando atacás algo fuera de tu LAN, el tráfico cruza routers. Saber dónde estás parado en la topología te dice qué podés ver y qué no.

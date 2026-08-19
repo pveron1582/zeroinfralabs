@@ -1,0 +1,1 @@
+La LAN tiene tres protagonistas. El hub trabaja en la capa uno y repite todo lo que recibe a todos sus puertos: ineficiente, casi sin uso, pero aparece en textos viejos. El switch trabaja en la capa dos: aprende qué MAC vive en cada puerto y entrega los datos solo al destino. Y el router trabaja en la capa tres: une redes distintas, hace NAT y reparte direcciones.

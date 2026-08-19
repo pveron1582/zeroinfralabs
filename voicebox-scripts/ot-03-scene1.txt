@@ -1,0 +1,1 @@
+No todo ataque sale de un teclado. Existe todo un mundo de dispositivos físicos que hackean redes, teclados, radios y llaves. En este video: el WiFi Pineapple, el Flipper Zero y el Rubber Ducky, más algunos compañeros de viaje. Y ojo: todo esto es de doble uso, también es la herramienta que usan los defensores para probar su propio equipo.

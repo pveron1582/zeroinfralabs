@@ -1,0 +1,1 @@
+Todo empezó en 1991, en Finlandia. Un estudiante llamado Linus Torvalds publicó en un foro: estoy haciendo un sistema operativo, solo por hobby, no va a ser grande ni profesional. Ese hobby se convirtió en el kernel Linux, el núcleo que hoy mueve la mayor parte de internet.

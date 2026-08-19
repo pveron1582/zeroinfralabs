@@ -115,7 +115,7 @@ export const cmd_which = {
     }
 
     let output = '';
-    let notFound: string[] = [];
+    const notFound: string[] = [];
 
     for (const cmd of args) {
       if (cmd.startsWith('-')) {

@@ -64,6 +64,9 @@ export const validateMission = (result: CommandResponse, mission: Mission): bool
     case 'sudoPrivileges':
       return validateSudoPrivileges(result, conditions);
 
+    case 'httpRequest':
+      return validateHttpRequest(result, conditions);
+
     case 'browserAction':
       return validateBrowserAction(result, conditions);
 
@@ -317,6 +320,25 @@ function validateSudoPrivileges(
   if (conditions.command) {
     const needle = conditions.command.toLowerCase();
     return sudoPrivileges.commands.some(rule => rule.toLowerCase().includes(needle));
+  }
+
+  return true;
+}
+
+// ── HTTP Request Validator ─────────────────────────────────────────
+// Valida transacciones HTTP capturadas por Burp Suite (Proxy/Repeater).
+// El `httpRequest` viaja en el CommandResponse emitido por BurpSuite;
+// solo la URL de la request se inspecciona (sufijo/path opcional).
+
+function validateHttpRequest(
+  result: CommandResponse,
+  conditions: Partial<ValidationCriteria>
+): boolean {
+  const httpRequest = 'httpRequest' in result ? result.httpRequest : undefined;
+  if (!httpRequest) return false;
+
+  if (conditions.url && !httpRequest.url.includes(conditions.url)) {
+    return false;
   }
 
   return true;

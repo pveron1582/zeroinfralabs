@@ -69,7 +69,8 @@ describe('BlogListPage en inglés', () => {
 
     BLOG_ARTICLES.forEach(article => {
       article.tags.forEach(tag => {
-        expect(screen.getByText(`#${tag}`)).toBeInTheDocument();
+        // un mismo tag puede repetirse entre artículos → getAllByText
+        expect(screen.getAllByText(`#${tag}`).length).toBeGreaterThan(0);
       });
     });
   });
@@ -122,7 +123,7 @@ describe('BlogListPage en español', () => {
   it('debe mostrar "Leer artículo →" en las tarjetas', () => {
     renderWithRoute('/es/blog');
 
-    expect(screen.getByText(/Leer artículo →/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Leer artículo →/).length).toBe(BLOG_ARTICLES.length);
   });
 
   it('debe mostrar "Volver a Labs" en la navegación', () => {

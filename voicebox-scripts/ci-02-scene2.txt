@@ -1,0 +1,1 @@
+Los algoritmos importan. MD5 y SHA1 están rotos, hay que evitarlos. SHA512 es el estándar de Linux: es el que aparece como signo de dólar seis dólar en el archivo de contraseñas. Y bcrypt o argon2 están diseñados para ser lentos a propósito, para resistir la fuerza bruta. Lento es bueno cuando hablamos de contraseñas.

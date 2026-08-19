@@ -735,4 +735,37 @@ describe('Terminal', () => {
 
     expect(container.textContent).toContain('Command not found');
   });
+
+  it('debe expandir $PATH y $SHELL con el entorno por defecto (regresión env)', async () => {
+    const attackerMachine = createMockMachine();
+    const { container } = render(
+      <Terminal
+        scenarioId="scenario-01"
+        machine={attackerMachine}
+        allMachines={[attackerMachine]}
+        currentMissionId={1}
+        onMissionComplete={vi.fn()}
+        onChangeMachine={vi.fn()}
+        onCredentialsFound={vi.fn()}
+      />
+    );
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+
+    // El ejercicio de la lección linux-02 pide probar `echo $PATH` y `echo $SHELL`.
+    // Antes el entorno arrancaba en undefined y $PATH se imprimía literal.
+    fireEvent.change(input, { target: { value: 'echo $PATH' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(container.textContent).toContain('/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin');
+    });
+
+    fireEvent.change(input, { target: { value: 'echo $SHELL' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(container.textContent).toContain('/bin/bash');
+    });
+  });
 });

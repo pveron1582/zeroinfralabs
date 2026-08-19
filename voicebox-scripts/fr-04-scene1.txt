@@ -1,0 +1,1 @@
+La comunicación de red es compleja, así que se organizó en capas. El modelo OSI la divide en siete, cada una con un trabajo puntual. Es como el correo postal: vos escribís la carta en la capa de aplicación, el correo la clasifica y la transporta por las capas de abajo, y al final alguien la lee.

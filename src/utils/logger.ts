@@ -29,13 +29,13 @@ export const logger = {
 
   warn(...args: unknown[]): void {
     if (isProd) return;
-    // eslint-disable-next-line no-console
+     
     console.warn('[WARN]', ...args);
   },
 
   error(...args: unknown[]): void {
     if (isProd) return;
-    // eslint-disable-next-line no-console
+     
     console.error('[ERROR]', ...args);
   },
 };

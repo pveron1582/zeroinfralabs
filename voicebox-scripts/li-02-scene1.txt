@@ -1,0 +1,1 @@
+Cuando abrís una terminal, lo primero que ves es una línea de texto que se repite antes de cada comando: eso es el prompt. Parece un garabato, pero cada símbolo tiene un significado: te dice quién sos, en qué máquina estás, dónde estás parado y cuánto poder tenés. Vamos a leerlo parte por parte.

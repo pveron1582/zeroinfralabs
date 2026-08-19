@@ -124,6 +124,31 @@
 
 ---
 
+## Laboratorio 07 — Burp Suite: Web Application Pentesting
+**Dificultad:** Medium | **Categoría:** Web | **Red:** 192.168.50.0/24
+
+**Descripción:** La víctima es "CasinoVeo", una parodia de generador de
+imágenes y videos con IA en la nube (el chiste es "casi no veo": los renders
+salen tan difusos que casi no se ven), con login vulnerable a SQLi. Primero
+se prueba manualmente en el navegador y luego se explota profesionalmente
+con Burp Suite (Proxy + Repeater).
+
+### Misiones (8)
+
+1. **Network Discovery** — Descubre hosts (arp-scan / nmap -sn)
+2. **Port Scan** — Identifica Apache con nmap
+3. **Browse CasinoVeo** — Visitá el sitio en el CyberBrowser (`http://<ip>/login`)
+4. **Test SQLi in the Browser** — Comilla simple (`'`) en el formulario → 500 SQL syntax
+5. **Bypass Auth in the Browser** — `' OR '1'='1` → dashboard premium (SQLi confirmed)
+6. **Intercept With Burp Suite** — Interceptá el POST /login en el Proxy y envíalo al Repeater
+7. **Dump Data With UNION** — `' UNION SELECT * FROM users--` → credenciales MySQL root
+8. **Capture the Flag** — La flag viaja en la tabla users del volcado
+
+**Herramientas:** arp-scan, nmap, burpsuite
+**Flags:** ZIL{BURP_REPEATER_MASTER}, ZIL{INTERCEPT_AND_EXPLOIT}
+
+---
+
 ## Consejos Generales
 
 ### Discovery Levels

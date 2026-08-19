@@ -1,0 +1,1 @@
+Detrás de cada LAN hay tres aparatos que hacen todo el trabajo: el hub, en extinción; el switch, el cerebro de la LAN; y el router, la puerta de salida. El hub trabaja en capa uno y hace una sola cosa: repite todo lo que recibe a todos sus puertos. No entiende de direcciones MAC ni toma ninguna decisión. Por eso sniffear tráfico era trivial cuando las redes corrían sobre hubs.

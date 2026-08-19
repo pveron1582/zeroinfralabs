@@ -71,7 +71,7 @@ export const cmd_ss = {
     const showEstablished = showAll || !showListening;
 
     const listening = getListeningPorts(ctx.machine!);
-    let ports = showUdp ? listening : listening.filter(p => p.protocol === 'tcp');
+    const ports = showUdp ? listening : listening.filter(p => p.protocol === 'tcp');
 
     let out = `State    Recv-Q  Send-Q  Local Address:Port  Peer Address:Port Process\n`;
     if (showListening) {

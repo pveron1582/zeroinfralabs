@@ -1,0 +1,1 @@
+La VPN no es una red física: es un túnel cifrado que corre sobre internet y hace que tu equipo parezca estar dentro de otra red. El empleado remoto entra a la oficina como si estuviera sentado ahí, y el pentester la usa para ocultar el origen de su tráfico. Regla uno: conocé el mapa antes de atacar.

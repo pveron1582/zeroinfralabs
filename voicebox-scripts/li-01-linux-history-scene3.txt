@@ -1,0 +1,1 @@
+El software libre se define con cuatro libertades. Libertad cero: ejecutar el programa como quieras. Libertad uno: estudiar cómo funciona, leyendo el código fuente. Libertad dos: redistribuir copias. Y libertad tres: mejorarlo, y compartir tus mejoras con la comunidad. Miles de ojos revisando el código: por eso Linux es tan sólido.

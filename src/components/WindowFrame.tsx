@@ -56,14 +56,16 @@ export function WindowFrame({
         display: w.minimized ? 'none' : 'flex',
       }}
       className={`flex flex-col border border-slate-700/70 rounded-lg shadow-2xl overflow-hidden min-w-[320px] min-h-[200px] transition-all duration-300 ${isClosing ? 'opacity-0 scale-90 pointer-events-none' : ''}`}
-      data-tour={w.type === 'terminal' ? 'terminal-window' : w.type === 'guide' ? 'guide-window' : w.type === 'wallpaper' ? 'wallpaper-window' : w.type === 'browser' ? 'browser-window' : undefined}
+      data-tour={w.type === 'terminal' ? 'terminal-window' : w.type === 'guide' ? 'guide-window' : w.type === 'wallpaper' ? 'wallpaper-window' : w.type === 'browser' ? 'browser-window' : w.type === 'burpsuite' ? 'burp-window' : undefined}
     >
       <div
         onPointerDown={(e) => onStartDrag(w.id, e)}
         className="h-8 bg-slate-950 border-b border-slate-800 px-3 flex items-center justify-between cursor-move select-none flex-shrink-0"
       >
         <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-          <span className="text-emerald-500 font-mono">{w.type === 'terminal' ? '>' : w.type === 'browser' ? '🌐' : w.type === 'guide' ? '📄' : '⚙'}</span>
+          <span className={w.type === 'burpsuite' ? 'text-orange-500 font-bold' : 'text-emerald-500 font-mono'}>
+            {w.type === 'terminal' ? '>' : w.type === 'browser' ? '🌐' : w.type === 'guide' ? '📄' : w.type === 'burpsuite' ? 'B' : '⚙'}
+          </span>
           <span>{w.title}</span>
         </div>
 

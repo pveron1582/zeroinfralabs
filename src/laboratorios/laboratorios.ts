@@ -4,8 +4,9 @@ import { scenario_03 as laboratorio_03, SCENARIO_TEMPLATES_ETERNAL } from './lab
 import { scenario_04 as laboratorio_04, SCENARIO_TEMPLATES_LFI } from './laboratorio04';
 import { scenario_05 as laboratorio_05, scenario05Data } from './laboratorio05';
 import { scenario_06 as laboratorio_06, scenario06Data } from './laboratorio06';
+import { scenario_07 as laboratorio_07, scenario07Data } from './laboratorio07';
 
-export const SCENARIOS = [laboratorio_01, laboratorio_02, laboratorio_03, laboratorio_04, laboratorio_05, laboratorio_06];
+export const SCENARIOS = [laboratorio_01, laboratorio_02, laboratorio_03, laboratorio_04, laboratorio_05, laboratorio_06, laboratorio_07];
 
 // Alias for backward compatibility (same object as SCENARIOS[5])
 export const TEST_SCENARIO = laboratorio_06;
@@ -19,4 +20,5 @@ export const SCENARIOS_META = [
   { tagline: SCENARIO_TEMPLATES_LFI.lfiRce().tagline, taglineEs: SCENARIO_TEMPLATES_LFI.lfiRce().taglineEs, description: SCENARIO_TEMPLATES_LFI.lfiRce().description, descriptionEs: SCENARIO_TEMPLATES_LFI.lfiRce().descriptionEs, tools: SCENARIO_TEMPLATES_LFI.lfiRce().tools, accentColor: SCENARIO_TEMPLATES_LFI.lfiRce().accentColor },
   { id: scenario05Data.id, tagline: scenario05Data.tagline, taglineEs: scenario05Data.taglineEs, description: scenario05Data.description, descriptionEs: scenario05Data.descriptionEs, tools: scenario05Data.tools, accentColor: scenario05Data.accentColor },
   { id: scenario06Data.id, tagline: scenario06Data.tagline, taglineEs: scenario06Data.taglineEs, description: scenario06Data.description, descriptionEs: scenario06Data.descriptionEs, tools: scenario06Data.tools, accentColor: scenario06Data.accentColor },
+  { id: scenario07Data.id, tagline: scenario07Data.tagline, taglineEs: scenario07Data.taglineEs, description: scenario07Data.description, descriptionEs: scenario07Data.descriptionEs, tools: scenario07Data.tools, accentColor: scenario07Data.accentColor },
 ];

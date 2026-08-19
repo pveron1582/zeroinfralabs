@@ -1,0 +1,1 @@
+Fase uno: el reconocimiento. Acá juntás toda la información posible sobre el objetivo, sin tocar nada todavía: dominios, direcciones IP, tecnologías que usa, empleados. Todo lo público, al alcance de cualquiera. No hay exploits todavía: solo observás y anotás.

@@ -11,6 +11,7 @@ describe('DesktopTopBar', () => {
     browserWindows: [],
     wallpaperWindows: [],
     guideWindows: [],
+    burpWindows: [],
     topWindowId: undefined,
     showAppMenu: false,
     time: new Date('2026-06-20T20:00:00Z'),
@@ -22,6 +23,7 @@ describe('DesktopTopBar', () => {
     onAddBrowser: vi.fn(),
     onOpenGuide: vi.fn(),
     onOpenWallpaperPicker: vi.fn(),
+    onAddBurp: vi.fn(),
     onMinimizeWindow: vi.fn(),
     onRestoreWindow: vi.fn(),
     onBringToFront: vi.fn(),
@@ -142,6 +144,67 @@ describe('DesktopTopBar', () => {
     fireEvent.click(chromeBtn);
     expect(onAddBrowser).toHaveBeenCalled();
     expect(onCloseAppMenu).toHaveBeenCalled();
+  });
+
+  it('debe mostrar el botón de Burp Suite en el menú de aplicaciones solo si la categoría es Web', () => {
+    const onAddBurp = vi.fn();
+    const onCloseAppMenu = vi.fn();
+
+    const { rerender } = render(
+      <DesktopTopBar
+        {...defaultProps}
+        showAppMenu={true}
+        currentScenarioCategory="General"
+        onAddBurp={onAddBurp}
+        onCloseAppMenu={onCloseAppMenu}
+      />
+    );
+
+    expect(screen.queryByText('Burp Suite')).not.toBeInTheDocument();
+
+    rerender(
+      <DesktopTopBar
+        {...defaultProps}
+        showAppMenu={true}
+        currentScenarioCategory="Web"
+        onAddBurp={onAddBurp}
+        onCloseAppMenu={onCloseAppMenu}
+      />
+    );
+
+    const burpBtn = screen.getByText('Burp Suite');
+    fireEvent.click(burpBtn);
+    expect(onAddBurp).toHaveBeenCalled();
+    expect(onCloseAppMenu).toHaveBeenCalled();
+  });
+
+  it('debe mostrar el botón de la ventana Burp Suite en la barra cuando está abierta', () => {
+    const onRestoreWindow = vi.fn();
+    const onBringToFront = vi.fn();
+
+    const burpWindow: DesktopWindow = {
+      id: 'burp-1',
+      title: 'Burp Suite',
+      type: 'burpsuite',
+      minimized: true,
+      maximized: false,
+      zIndex: 12,
+      x: 10, y: 10, w: 800, h: 500, opacity: 1, fontSize: 13,
+    };
+
+    render(
+      <DesktopTopBar
+        {...defaultProps}
+        burpWindows={[burpWindow]}
+        onRestoreWindow={onRestoreWindow}
+        onBringToFront={onBringToFront}
+      />
+    );
+
+    const btn = screen.getByText('Burp Suite');
+    fireEvent.click(btn);
+    expect(onRestoreWindow).toHaveBeenCalledWith('burp-1');
+    expect(onBringToFront).toHaveBeenCalledWith('burp-1');
   });
 
   it('debe mostrar botones para las ventanas abiertas (Terminal, Browser, Wallpaper)', () => {

@@ -1,0 +1,1 @@
+Las privadas no pueden salir a internet tal cual. Ahí entra NAT, la traducción de direcciones: el router traduce todas las privadas a su única IP pública. Por eso toda tu casa navega con una sola IP. En el lab, el comando ip addr te muestra tu privada y el loopback, la máquina hablándose a sí misma.

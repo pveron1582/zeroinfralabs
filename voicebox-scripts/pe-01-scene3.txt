@@ -1,0 +1,1 @@
+Fase dos: el escaneo. Ahora sí, apuntás al objetivo. Con herramientas como nmap, recorrés la máquina buscando puertos abiertos y servicios activos: qué programa corre y en qué versión. Es como tocar las puertas de un edificio para ver cuáles están abiertas.

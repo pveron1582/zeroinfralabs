@@ -1,0 +1,1 @@
+Cuando atacás, rompés alguna de las tres. Confidencialidad: robar el archivo de contraseñas de un sistema, o volcar una base de datos con una inyección SQL. Integridad: defacear una página web, o tocar los logs para cubrir tus rastros. Disponibilidad: un ataque DDoS que tumba un servicio, o un ransomware que bloquea todo y pide rescate.

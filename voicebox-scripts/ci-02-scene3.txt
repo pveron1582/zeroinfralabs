@@ -1,0 +1,1 @@
+Tu trabajo como atacante: conseguir el hash y crackearlo. John the Ripper prueba cada palabra de una lista, como rockyou, que tiene más de catorce millones de contraseñas reales filtradas, hasta que una produce el mismo hash. Las contraseñas débiles caen en segundos.

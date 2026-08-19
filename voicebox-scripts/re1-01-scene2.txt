@@ -1,0 +1,1 @@
+En las capas bajas. Ethernet, en capa dos, conecta equipos de la misma red usando direcciones MAC. ARP descubre qué MAC corresponde a cada IP, ese es el protocolo que explota el ARP spoofing. IP, en capa tres, direcciona y enruta paquetes entre redes. E ICMP es el protocolo de diagnóstico, el que usa el ping.

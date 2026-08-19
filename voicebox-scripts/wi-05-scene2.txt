@@ -1,0 +1,1 @@
+El segundo es RDP, el escritorio remoto, en el puerto 3389. Si está expuesto a internet, es un imán de fuerza bruta. Ya dentro de una red, RDP es la herramienta clásica de movimiento lateral: robás credenciales y te conectás a la siguiente máquina. Las credenciales guardadas, y el pass-the-hash con modo Restricted Admin, son técnicas reales.

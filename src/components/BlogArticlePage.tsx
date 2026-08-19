@@ -99,12 +99,16 @@ export function BlogArticlePage() {
 
           <div className="mt-12 pt-6 rounded-xl p-5" style={{ background: colors.sectionBg, border: `1px solid ${colors.border}` }}>
             <p className="text-sm mb-3" style={{ color: colors.textMuted }}>
-              {language === 'es' ? '¿Querés practicar en nuestro simulador ya mismo?' : 'Want to practice with our simulator yourself?'}
+              {article.ctaTo === 'academy'
+                ? (language === 'es' ? '¿Querés empezar a aprender los fundamentos ahora mismo?' : 'Want to start learning the fundamentals now?')
+                : (language === 'es' ? '¿Querés practicar en nuestro simulador ya mismo?' : 'Want to practice with our simulator yourself?')}
             </p>
-            <Link to={`/${language}/labs`}
+            <Link to={article.ctaTo === 'academy' ? `/${language}/academy` : `/${language}/labs`}
               className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-all hover:scale-[1.02]"
               style={{ background: `linear-gradient(135deg, ${colors.emerald}, ${colors.emeraldDark})` }}>
-              {language === 'es' ? 'Empezar gratis' : 'Start for free'}
+              {article.ctaTo === 'academy'
+                ? (language === 'es' ? 'Ir a la Academy' : 'Go to Academy')
+                : (language === 'es' ? 'Empezar gratis' : 'Start for free')}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </Link>
           </div>

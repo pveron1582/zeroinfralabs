@@ -1,0 +1,1 @@
+Tu teléfono y esas placas mini también son sistemas operativos. Android es Linux, iOS es Unix, y la Raspberry Pi es Linux pura pensada para electrónica. Como ya sabés Linux, los vas a entender rapidísimo.

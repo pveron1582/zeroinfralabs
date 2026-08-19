@@ -1,5 +1,7 @@
 // ── components/MachineLoader.tsx ─────────────────────────────────
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { PHASES, DEFAULT_TOTAL_DURATION, COUNTDOWN_DURATION, UI_TEXTS, interpolateLogLine, type LogEntry } from './machineLoader/phases';
+import { CountdownScreen, CompleteScreen, LoadingScreen } from './machineLoader/screens';
 
 interface Props {
   machineName: string;
@@ -8,108 +10,6 @@ interface Props {
   onComplete: () => void;
   duration?: number;
   language?: 'en' | 'es';
-}
-
-interface LogEntry {
-  text: string;
-  timestamp: number;
-  type: 'info' | 'ok' | 'warn' | 'retry';
-}
-
-interface LoadPhase {
-  label: { en: string; es: string };
-  duration: number;
-  targetProgress: number;
-  logLines?: { text: { en: string; es: string }; type: LogEntry['type']; atPercent: number }[];
-}
-
-const PHASES: LoadPhase[] = [
-  {
-    label: { en: 'Resolving infrastructure...', es: 'Resolviendo infraestructura...' },
-    duration: 600,
-    targetProgress: 15,
-    logLines: [
-      { text: { en: '→ Resolving lab DNS...', es: '→ Resolviendo DNS del laboratorio...' }, type: 'info', atPercent: 3 },
-      { text: { en: '→ Infrastructure found ✓', es: '→ Infraestructura encontrada ✓' }, type: 'ok', atPercent: 10 },
-    ],
-  },
-  {
-    label: { en: 'Provisioning virtual machines...', es: 'Provisionando máquinas virtuales...' },
-    duration: 900,
-    targetProgress: 38,
-    logLines: [
-      { text: { en: '→ Provisioning {machineName}...', es: '→ Provisionando {machineName}...' }, type: 'info', atPercent: 18 },
-      { text: { en: '→ Allocating resources...', es: '→ Asignando recursos...' }, type: 'info', atPercent: 28 },
-      { text: { en: '→ Snapshot applied ✓', es: '→ Snapshot aplicado ✓' }, type: 'ok', atPercent: 35 },
-    ],
-  },
-  {
-    label: { en: 'Configuring isolated network...', es: 'Configurando red aislada...' },
-    duration: 800,
-    targetProgress: 55,
-    logLines: [
-      { text: { en: '→ Creating isolated virtual network...', es: '→ Creando red virtual aislada...' }, type: 'info', atPercent: 40 },
-      { text: { en: '→ IP assigned: {machineIp}', es: '→ IP asignada: {machineIp}' }, type: 'ok', atPercent: 48 },
-      { text: { en: '→ Firewall configured ✓', es: '→ Firewall configurado ✓' }, type: 'ok', atPercent: 53 },
-    ],
-  },
-  {
-    label: { en: 'Initializing services...', es: 'Inicializando servicios...' },
-    duration: 700,
-    targetProgress: 72,
-    logLines: [
-      { text: { en: '→ Detecting OS: {machineOs}', es: '→ Detectando OS: {machineOs}' }, type: 'info', atPercent: 58 },
-      { text: { en: '→ Network services starting...', es: '→ Servicios de red arrancando...' }, type: 'info', atPercent: 65 },
-      { text: { en: '→ Ports listening ✓', es: '→ Puertos escuchando ✓' }, type: 'ok', atPercent: 70 },
-    ],
-  },
-  {
-    label: { en: 'Deploying attack vectors...', es: 'Desplegando vectores de ataque...' },
-    duration: 600,
-    targetProgress: 88,
-    logLines: [
-      { text: { en: '→ Loading pentesting tools...', es: '→ Cargando herramientas de pentesting...' }, type: 'info', atPercent: 75 },
-      { text: { en: '→ Attack vectors configured ✓', es: '→ Vectores de ataque configurados ✓' }, type: 'ok', atPercent: 85 },
-    ],
-  },
-  {
-    label: { en: 'Verifying connectivity...', es: 'Verificando conectividad...' },
-    duration: 500,
-    targetProgress: 96,
-    logLines: [
-      { text: { en: '→ Ping to gateway... OK', es: '→ Ping a gateway... OK' }, type: 'ok', atPercent: 92 },
-      { text: { en: '→ Connection established ✓', es: '→ Conexión establecida ✓' }, type: 'ok', atPercent: 95 },
-    ],
-  },
-  {
-    label: { en: 'Finalizing...', es: 'Finalizando...' },
-    duration: 400,
-    targetProgress: 100,
-    logLines: [
-      { text: { en: '→ Lab ready. Access granted.', es: '→ Laboratorio listo. Acceso concedido.' }, type: 'ok', atPercent: 100 },
-    ],
-  },
-];
-
-const DEFAULT_TOTAL_DURATION = 6500;
-const COUNTDOWN_DURATION = 1500;
-
-const UI_TEXTS = {
-  deploying: { en: 'DEPLOYING LAB', es: 'DESPLEGANDO LABORATORIO' },
-  initializing: { en: 'INITIALIZING', es: 'INICIALIZANDO' },
-  labActive: { en: 'LAB ACTIVE', es: 'LABORATORIO ACTIVO' },
-  ready: { en: 'Ready', es: 'Listo' },
-  accessGranted: { en: 'Access granted. Ready for attack.', es: 'Acceso concedido. Ready for attack.' },
-  target: { en: 'target', es: 'objetivo' },
-  ip: { en: 'ip', es: 'ip' },
-  windowTitle: { en: 'ZeroInfra Labs — Deploying lab', es: 'ZeroInfra Labs — Desplegando laboratorio' },
-};
-
-function interpolateLogLine(text: string, machineName: string, machineIp: string, machineOs: string): string {
-  return text
-    .replace('{machineName}', machineName)
-    .replace('{machineIp}', machineIp)
-    .replace('{machineOs}', machineOs);
 }
 
 export function MachineLoader({ machineName, machineIp, machineOs, onComplete, duration = DEFAULT_TOTAL_DURATION, language = 'en' }: Props) {
@@ -197,7 +97,7 @@ export function MachineLoader({ machineName, machineIp, machineOs, onComplete, d
     };
 
     requestAnimationFrame(tick);
-  }, [phase, machineName, machineIp, machineOs, language, onComplete, addLog]);
+  }, [phase, machineName, machineIp, machineOs, language, onComplete, addLog, LOADING_DURATION]);
 
   const getPhaseColor = () => {
     if (phase === 'complete') return '#22c55e';
@@ -207,189 +107,16 @@ export function MachineLoader({ machineName, machineIp, machineOs, onComplete, d
   };
 
   let content: React.ReactNode;
-
   if (phase === 'countdown') {
-    content = (
-      <>
-        <div className="flex flex-col items-center justify-center h-full bg-transparent text-white p-8 select-none">
-          {/* Title */}
-          <div className="mb-8 text-center">
-            <p className="text-xs font-mono tracking-[0.3em] text-gray-500 uppercase mb-3">
-              ZeroInfra Labs
-            </p>
-            <h1 className="text-2xl font-bold font-mono tracking-tight" style={{ color: '#10b981' }}>
-              {UI_TEXTS.deploying[language]}
-            </h1>
-          </div>
-
-          {/* Countdown number */}
-          <div className="relative mb-8">
-            <span
-              key={countdown}
-              className="text-7xl font-black font-mono block text-center"
-              style={{
-                color: countdown > 0 ? '#10b981' : '#22c55e',
-                textShadow: `0 0 40px ${countdown > 0 ? '#10b98166' : '#22c55e66'}`,
-                animation: 'countdownPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }}
-            >
-              {countdown > 0 ? countdown : 'GO'}
-            </span>
-          </div>
-
-          {/* Machine info */}
-          <div className="text-center font-mono text-sm text-gray-500 space-y-1">
-            <p>
-              <span className="text-gray-600">{UI_TEXTS.target[language]}:</span>{' '}
-              <span className="text-gray-400">{machineName}</span>
-              {' '}<span className="text-gray-700">|</span>{' '}
-              <span className="text-gray-600">ip:</span>{' '}
-              <span className="text-gray-400">{machineIp}</span>
-            </p>
-          </div>
-
-          {/* Decorative line */}
-          <div className="mt-6 flex items-center gap-2">
-            <div className="h-px w-16 bg-gray-800" />
-            <span className="text-[10px] font-mono text-gray-700 tracking-widest">{UI_TEXTS.initializing[language]}</span>
-            <div className="h-px w-16 bg-gray-800" />
-          </div>
-        </div>
-        <style>{`
-          @keyframes countdownPop {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
-          }
-        `}</style>
-      </>
-    );
+    content = <CountdownScreen machineName={machineName} machineIp={machineIp} language={language} countdown={countdown} />;
   } else if (phase === 'complete') {
-    content = (
-      <>
-        <div className="flex flex-col items-center justify-center h-full bg-transparent text-white p-8 select-none">
-          {/* Checkmark circle */}
-          <div className="relative mb-5">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{
-                border: `3px solid #22c55e`,
-                boxShadow: '0 0 30px #22c55e33',
-                animation: 'completePulse 0.6s ease-out',
-              }}
-            >
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-          </div>
-
-          <h2 className="text-xl font-bold font-mono mb-2" style={{ color: '#22c55e' }}>
-            {UI_TEXTS.labActive[language]}
-          </h2>
-          <p className="text-sm font-mono text-gray-400 mb-5">
-            {machineName} — {machineIp}
-          </p>
-
-          {/* Quick log summary */}
-          <div className="w-72 max-h-28 overflow-hidden font-mono text-[10px] text-gray-600 space-y-0.5 opacity-60">
-            {logs.slice(-4).map((log, i) => (
-              <div key={i}>
-                <span style={{ color: log.type === 'ok' ? '#22c55e' : '#6b7280' }}>
-                  {log.type === 'ok' ? '✓' : '→'}
-                </span>{' '}
-                {log.text}
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-4 text-xs font-mono text-emerald-400 animate-pulse">
-            {UI_TEXTS.accessGranted[language]}
-          </p>
-        </div>
-        <style>{`
-          @keyframes completePulse {
-            0% { transform: scale(0); opacity: 0; }
-            60% { transform: scale(1.15); }
-            100% { transform: scale(1); opacity: 1; }
-          }
-        `}</style>
-      </>
-    );
+    content = <CompleteScreen machineName={machineName} machineIp={machineIp} language={language} logs={logs} />;
   } else {
     content = (
-      <>
-        <div className="flex flex-col items-center justify-center h-full bg-transparent text-white p-8 select-none">
-          {/* Machine info */}
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold font-mono mb-1" style={{ color: getPhaseColor() }}>
-              {machineName}
-            </h2>
-            <p className="text-sm font-mono text-gray-400">
-              {machineIp} <span className="text-gray-600">|</span> {machineOs}
-            </p>
-          </div>
-
-          {/* Terminal-style log output */}
-          <div className="w-80 max-h-32 overflow-hidden mb-5 font-mono text-sm space-y-0.5">
-            {logs.map((log, i) => (
-              <div
-                key={log.timestamp + i}
-                style={{
-                  animation: 'logFadeIn 0.2s ease-out',
-                  color: log.type === 'ok' ? '#22c55e' : log.type === 'warn' ? '#f59e0b' : log.type === 'retry' ? '#f97316' : '#9ca3af',
-                }}
-              >
-                <span className="text-gray-700">[{String(i + 1).padStart(2, '0')}]</span>{' '}
-                {log.text}
-              </div>
-            ))}
-          </div>
-
-          {/* Progress section */}
-          <div className="w-72 mb-3">
-            <div className="flex justify-between text-sm font-mono mb-2">
-              <span style={{ color: '#9ca3af' }}>
-                {currentLabel}
-              </span>
-              <span style={{ color: getPhaseColor() }}>{progress}%</span>
-            </div>
-
-            {/* Progress bar */}
-            <div className="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-150"
-                style={{
-                  width: `${progress}%`,
-                  background: `linear-gradient(90deg, ${getPhaseColor()}, #22c55e)`,
-                  boxShadow: `0 0 12px ${getPhaseColor()}44`,
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Decorative bottom */}
-          <div className="flex items-center gap-1 mt-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="w-1 rounded-full"
-                style={{
-                  height: `${8 + Math.random() * 8}px`,
-                  background: i < Math.floor(progress / 12.5) ? getPhaseColor() : '#1f2937',
-                  transition: 'background 0.15s',
-                }}
-              />
-            ))}
-          </div>
-        </div>
-        <style>{`
-          @keyframes logFadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: none; }
-          }
-        `}</style>
-      </>
+      <LoadingScreen
+        machineName={machineName} machineIp={machineIp} machineOs={machineOs}
+        logs={logs} currentLabel={currentLabel} progress={progress} phaseColor={getPhaseColor()}
+      />
     );
   }
 

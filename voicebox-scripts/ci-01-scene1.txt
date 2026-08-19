@@ -1,0 +1,1 @@
+Toda la seguridad gira alrededor de tres ideas: confidencialidad, integridad y disponibilidad. Es la triada CID. Confidencialidad: solo los ojos autorizados pueden leer el dato. Integridad: el dato no se modifica en silencio. Disponibilidad: el sistema funciona cuando lo necesitás. Cada control de seguridad protege al menos una de estas tres patas.

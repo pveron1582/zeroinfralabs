@@ -1,5 +1,990 @@
 # Changelog
 
+## [Unreleased] - 2026-08-17
+
+### Academy: Redes I estrena "VLANs: segmentación por diseño"
+
+Clase nueva `proto-08` (`src/academy/path-protocolos.ts`, orden 5) —
+"VLANs: segmentación por diseño". Cubre: qué es una VLAN (red lógica en
+capa 2 sobre los puertos físicos); **segmentación por diseño**
+(empleado/servidores/cámaras-iot/invitados con su propio rango IP, orden
+en vez de suerte); **eficiencia** (dominios de broadcast más chicos →
+menos CPU/ancho de banda desperdiciados); **802.1Q y trunks** (el tag de
+4 bytes, puertos access vs trunk, VLANs compartidas entre edificios);
+demo `show vlan brief` + `show interfaces trunk`; y **seguridad**:
+contención de invasores en la VLAN de invitados, ataques que mueren en el
+límite de VLAN (ARP spoofing/MITM de la lección anterior, rogue DHCP,
+scanning), puntos de control ruteables, buenas prácticas (cambiar la
+VLAN default, native VLAN dedicada, user ports en access, DTP off) y el
+**VLAN hopping** (double-tagging / DTP spoofing) como el clásico del
+pentester. Quiz: por qué el ARP spoofing del WiFi de invitados no alcanza
+a los servidores. Redes I vuelve a 5 lecciones; total de la academia 50
+(progreso `5/50` = 10%).
+
+### Academy: Redes I — switch y router se unifican + simulador de cables estilo Packet Tracer
+
+Las lecciones `proto-04` "El switch: el dispositivo de capa 2" y `proto-05`
+"El router: el dispositivo de capa 3" se **unifican** en una sola clase de
+dispositivos físicos: `proto-07` "Dispositivos esenciales de red: hub,
+switch y router" (`src/academy/path-protocolos.ts`, orden 4). Contenido
+nuevo/unificado:
+
+- Hub (capa 1, el fósil: repite todo a todos los puertos), switch (capa 2,
+  tabla MAC, VLANs, managed/unmanaged, PoE) y router (capa 3, tabla de
+  rutas estática/dinámica, NAT/DHCP, puertos WAN/LAN) con su diferencia
+  clave.
+- **Nueva sección de cableado**: cobre UTP RJ45 (Cat5e/6, ~100 m), fibra
+  óptica (SFP, enlaces largos switch→router) y aire: el **access point**
+  que irradia WiFi para laptops y celulares.
+- `matching` unificado de 5 pares (hub/switch/router/AP/fibra) y
+  `interactive-demo` nuevo.
+
+**Simulador nuevo: `NetworkTopologyLab`**
+(`src/components/academy/NetworkTopologyLab.tsx`) — mini Packet Tracer:
+- Selector de cable (cobre 🟧 / fibra 🟦 / WiFi 📶) **antes** de arrastrar;
+  cada conexión valida el tipo elegido y rechaza los incorrectos con
+  mensajes pedagógicos ("la PC va con cable de cobre", "el celular no tiene
+  puerto: solo WiFi").
+- 8 nodos: internet, router, switch, AP, PC, laptop, servidor y celular.
+  Cobre para internet→router y switch→AP (PoE), fibra para el servidor,
+  WiFi para laptop/celular vía AP. Gana cuando los 4 terminales están
+  online; stats "por cable / WiFi / con internet".
+
+Para esto se extendió **`NetworkSimCore`** (motor genérico): nuevo tipo
+`SimCableType`, `cableTypes?` + `cableRules?` opcionales en `SimConfig`,
+`SimCable.type`, selector de cable en la UI, validación por regla con
+mensaje propio, cables coloreados por tipo (cobre ámbar, fibra cyan, WiFi
+lila punteado) y línea de drag con el color del cable elegido. Los labs
+viejos no usan nada de esto y quedan idénticos.
+
+- Cableo: `demoKind: 'network-topology'` en `types/academy.ts`,
+  `LessonContent.tsx` y el StepEditor del LessonBuilder.
+- Redes I queda transitoriamente con 4 lecciones (proto-01, proto-06,
+  proto-03, proto-07); la clase 5 de VLANs (`proto-08`) llega en el cambio
+  siguiente y lleva el total de la academia a **50** lecciones. El progreso
+  de `proto-04`/`proto-05` deja de contar; la clase nueva es `proto-07`.
+- Tests: conteos 0/5→7 y 0/4→3 (Otros, Protocolos I y Protocolos II);
+  total `5/49` = 10%; listao de Redes I verifica la clase unificada y que
+  las dos viejas ya no están; el test de matching apunta a `proto-07`
+  (8 pasos: narrator + 4 contents + matching + sim + quiz);
+  `NetworkSims.test.tsx` suma 4 tests del laboratorio de topologías
+  (render + selector, rechazos de cable, victoria completa).
+
+### Academy: VPN pasa antes de la DMZ en Redes II
+
+Al armar el orden pedagógico quedó mejor VPN (4) antes que DMZ (5) —
+primero se entiende cómo entrar seguro a la red y después cómo exponer lo
+público. El párrafo de segmentación de la clase de VPN ahora adelanta la
+DMZ ("guardate la idea: en la lección de DMZ vas a ver la otra cara del
+control de exposición"). Orden final de Redes II: DHCP (1) → NAT (2) →
+DNS (3) → VPN (4) → DMZ (5).
+
+### Academy: Redes II se reenfoca — nuevas lecciones DHCP, NAT, DNS y VPN (se sacan 3 repetidas)
+
+Las primeras 3 lecciones de Redes II duplicaban contenido de
+**Fundamentos de redes** o **Redes I** y se eliminan:
+`network-01` "Qué es un puerto y por qué importa" (puertos ya se ven en
+Redes I/proto-06), `network-02` "Servicios clásicos" (ya en Redes I/proto-03)
+y `network-03` "Tu primera red doméstica" (ya en Fundamentos de redes/redes-03).
+El progreso de esas 3 deja de contar.
+
+**Nueva clase 1: DHCP** (`network-06`, orden 1) — "DHCP: el servicio que
+reparte las direcciones IP". Cubre: qué es y qué reparte (IP, máscara,
+gateway, DNS) con leases; cómo funciona el handshake **DORA**
+(Discover/Offer/Request/Acknowledge, UDP 67/68); qué pasa sin DHCP →
+**IP estática** y comparación pros/contras (estática estable pero no escala;
+DHCP automático pero depende del servicio); quién lo ejecuta (router ISP en
+casa; Windows Server con rol DHCP o Linux con `isc-dhcp-server`/`dnsmasq` en
+empresas); y el ataque **rogue DHCP** (servidor falso reparte gateway/DNS
+maliciosos → MITM sin pelear la tabla ARP; defensa: DHCP snooping).
+Terminal-demo con `dhclient -v eth0` + quiz.
+
+**Nueva clase 2: NAT** (`network-07`, orden 2) — "NAT: cómo toda tu red
+sale a internet con una sola IP". Cubre: qué es NAT y por qué existe
+(rewriting de IPs privadas → pública); la **tabla de traducción**
+(conntrack) y por qué NAT solo reacciona al tráfico saliente (bloqueo
+implícito de conexiones entrantes); **PAT/masquerading** (un puerto de
+salida distinto por equipo sobre la misma IP pública) como solución al
+agotamiento de IPv4; demo de `iptables MASQUERADE` + `conntrack -L`;
+pros y contras (ahorro de IPs / firewall gratis vs. ruptura del modelo
+end-to-end y problemas con FTP/VoIP/P2P); y **DNAT / port forwarding**
+(dejar entrar: cada regla DNAT es un agujero en la pared del NAT → puente
+con la lección de DMZ). Quiz sobre el bloqueo de conexiones entrantes.
+
+**Nueva clase 3: DNS** (`network-08`, orden 3) — "DNS: cómo busca los
+nombres la internet". Cubre: qué hace (nombre → IP, UDP/TCP puerto 53);
+la cadena de resolución completa (resolver → root → TLD → autoritativo);
+caché y TTL (por qué parece instantáneo y por qué los cambios tardan en
+propagarse); demo de `dig` leyendo la ANSWER SECTION y el TTL; tipos de
+registro principales (A, AAAA, MX, NS, CNAME, TXT + enumeración DNS como
+recon); y ataques (cache poisoning/Kaminsky, DNS hijacking vía rogue DHCP
+de la lección 1, exfiltración por consultas al puerto 53; defensas:
+DNSSEC, DNS sobre HTTPS/TLS). Quiz sobre el servidor autoritativo.
+
+**Nueva clase 5: VPN** (`network-09`, orden 5) — "VPN: túneles cifrados
+que extienden la red". Cubre: qué es (túnel cifrado sobre internet,
+virtual + privada); los tres trabajos (confidencialidad, integridad,
+autenticidad); extender (site-to-site une sedes) y segmentar (la VPN como
+puerta controlada, puente directo con la DMZ); los protocolos (IPsec,
+OpenVPN, WireGuard, TLS/SSL VPN); demo de `openvpn` estableciendo el túnel;
+y de qué te protege la VPN y de qué no (cifra el camino como HTTPS, no el
+destino; credencial comprometida = entrada a la red). Quiz sobre site-to-site.
+
+- Redes II queda con **5 lecciones**: DHCP (`network-06`, orden 1) + NAT
+  (`network-07`, orden 2) + DNS (`network-08`, orden 3) + DMZ
+  (`network-04`, orden 4) + VPN (`network-09`, orden 5). Total de la
+  academia: 49 → **50** lecciones (se sacan 3 repetidas, se agregan 4
+  nuevas).
+- `paths.ts`: descripción de Redes II actualizada ("DHCP, NAT, DNS, DMZ,
+  VPN").
+- Tests: conteos 0/5→9 (8 cards + el progreso global "0/50" también matchea
+  `/0\/5/`), 0/4→2 y 0/2→1; total 50 (progreso `10%`, `5/50`); listao de
+  Redes II verifica las 5 lecciones y que las 3 eliminadas ya no están;
+  `FoxyNarrator.test.tsx` apunta a `network-06`; el back-link flat usa
+  `network-04`. `NetworkSims.test.tsx` intacto (el simulador `NetworkHomeLab`
+  sigue testeado standalone, solo quedó sin lección que lo referencie).
+
+### Academy: "MITM" se mueve de Redes II a Pentesting
+
+La lección "Man-in-the-middle: interceptando tráfico" (`network-05`, era
+orden 5 de Redes II) pasa al módulo **Pentesting** como lección 4. Se muda
+completa (narrator + 3 contents + terminal-demo de `arpspoof`/`ip_forward`
++ interactive-demo `network-mitm` + quiz) de `path-protocolos-ii.ts` a
+`path-hacking.ts`. **Conserva su id `network-05`** para no perder progreso
+guardado — mismo criterio que con `proto-02`.
+
+- Redes II queda con 4 lecciones (network-01, network-02, network-03,
+  network-04); Pentesting pasa de 3 a 4.
+- Total de la academia sigue siendo 49 lecciones.
+- `Academy.test.tsx`: conteos 0/5→7 y 0/4→3 (Otros, Protocolos II y
+  Hacking); listado de Redes II ahora verifica que MITM ya no aparece
+  ahí; el test de Pentesting espera las 4 lecciones.
+
+### Academy: "Protocolos en hacking web" se mueve de Redes I a Pentesting
+
+La lección 6 de Redes I ("Protocolos en hacking web: HTTP, HTTPS y más")
+pasa al módulo **Pentesting** como lección 3. Se muda completa (mismos
+pasos: narrator + 3 contents + terminal-demo de `curl -I` + quiz de
+WebSocket) de `src/academy/path-protocolos.ts` a `src/academy/path-hacking.ts`
+con `order: 3`. **Conserva su id `proto-02`** para no perder el progreso
+guardado de quien ya la completó — mismo criterio usado con el reorden
+anterior de la lección de puertos.
+
+- Redes I queda con 5 lecciones (proto-01, proto-06, proto-03, proto-04,
+  proto-05); Pentesting pasa de 2 a 3 (hacking-01, hacking-02, proto-02).
+- Total de la academia sigue siendo 49 lecciones.
+- Tests (`Academy.test.tsx`): conteos 0/5→8, 0/3→1, 0/2→1; el test de
+  listao de Redes I ahora espera 5 títulos y verifica que la lección web
+  ya no aparece ahí; test nuevo para el listado de Pentesting con 3.
+
+### Academy: redes I gana una lección de puertos + 5 videos de Fundamentos de redes
+
+**Lección nueva en Redes I** (`src/academy/path-protocolos.ts`): "Puertos:
+qué son, cuántos hay y los que tenés que conocer" (`proto-06`, orden 2) —
+fundamental para pentesting. Cubre qué es un puerto (socket = IP:puerto),
+por qué existen (una IP, muchos servicios), los 65 536 puertos y sus tres
+rangos (0–1023 bien conocidos, 1024–49151 registrados, 49152–65535
+dinámicos), `terminal-demo` sobre `/etc/services` y tabla de puertos clave
+(21/22/23/25/53/80/110/143/443/445/3306/3389/8080). La antigua orden 2
+("Protocolos en hacking web: HTTP, HTTPS y más") pasa a orden 6; se
+conserva su id `proto-02` para no perder progreso guardado. Total de la
+academia: 48 → 49 lecciones (tests de conteo actualizados).
+
+**Videos de Fundamentos de redes** (Remotion, `src/video/remotion/`):
+5 composiciones nuevas, una por lección del path `redes`
+(`Re01NetworkTypes`, `Re02IpAddresses`, `Re03DevicesTopologies`,
+`Re04OsiLayers`, `Re05AddressingDns`) — 3 escenas c/u siguiendo el patrón
+existente (TitleScene/RevealLine/KeyCapsule/TerminalWindow + tema oscuro
+JetBrains Mono). Se agregaron `steps` de video en `path-redes.ts`
+(`/videos/re0N-*.mp4`) con captions ES/EN. Guiones de narración en
+`voicebox-scripts/re-*.txt` (15 escenas).
+
+**Flujo pendiente de audio** (`audioTimings.ts`): nuevos helper `hasAudio()`
++ registro `AUDIO_PENDING` — los ids en pendiente omiten el `<Audio>` y se
+renderizan mudos. Para completar un video: 1) generar los wavs con Voicebox
+a `public/videos/audio/<id>/<id>-sceneN.wav`, 2) reemplazar los timings
+estimados con `ffprobe`, 3) sacar el id de `AUDIO_PENDING`, 4)
+`pnpm exec remotion render src/video/remotion/index.ts <id>
+--output public/videos/<salida>.mp4`. Verificado: `remotion compositions`
+lista las 5 (1788–2238 frames).
+
+**Verificación**: tsc 0 · lint 0 errores · `remotion compositions` OK ·
+1871 tests verdes · build OK.
+
+### Academy: diseño unificado con el landing page
+
+**Decisión final de diseño**: la estética "expediente táctico"
+(`docs/propuesta_diseno_v4.html`) se implementó, se probó y fue descartada.
+La Academy ahora usa exactamente el mismo diseño que el landing / páginas
+internas: `SiteHeader` + `PageHero` (hero oscuro con dot grid + glow
+emerald) + cuerpo claro con cards + `MarketingFooter`. Los tokens salen de
+`src/components/landing/constants.ts` (`useColors()`, `FONT_SANS`,
+`FONT_MONO`) — sin paletas propias, y con soporte de tema claro/oscuro.
+
+- **Doc de diseño**: `docs/ACADEMY_DESIGN.md` reescrito describiendo el
+  diseño del landing (colores, hero, cards, botones, progreso); la
+  propuesta expediente queda como histórico descartado.
+- **Componentes reescritos** (`src/components/academy/`):
+  - `AcademyHome` — PageHero + secciones con cards de módulo (hover con
+    borde/sombra emerald, `translateY`, entrada `fadeInEntry` escalonada),
+    progreso general con % grande y barra delgada emerald→cyan.
+  - `AcademyPath` — PageHero por módulo + filas-card de lección con chip de
+    orden, metadata mono y flecha que se desplaza en hover; progreso del
+    módulo con conteo `x de y lecciones completadas` + %.
+  - `LessonViewer` — hero oscuro compacto (back link, título, paso n/m,
+    progreso) + cuerpo claro; botones Anterior/Siguiente con CTA emerald
+    en gradiente y sombra glow; dots de paso.
+  - `LessonContent` (384→159 líneas) + `lessonSteps.tsx` (nuevo, 240) —
+    quiz, matching y ejercicio práctico con tokens del landing;
+    terminal-demo con chrome de ventana oscura.
+  - `AcademyVideo`, `FoxyNarrator`, `FoxyAssistantBubble`, `LabMiniTerminal` —
+    chrome de ventana oscura (slate-900, dots, bordes slate-800) igual a
+    los demos del landing.
+  - `NetworkSimCore` — marco exterior tipo ventana oscura (el canvas
+    interno sigue dark por ser superficie de pantalla).
+- **Limpieza**: `academyTheme.tsx` (tokens del expediente) eliminado;
+  Special Elite/Courier Prime removidos del link de Google Fonts de
+  `index.html`.
+- **Verificación**: `tsc` 0, lint 0 errores, build OK, 1871 tests verdes
+  (aserciones de `Academy.test.tsx` actualizadas al nuevo diseño).
+- Pendientes menores documentados en `QWEN3.8.md` §7
+  (fuentes JetBrains sin usar, step `lab-challenge` sin contenido, doc
+  `PROYECTO_ACADEMY.md` desactualizado, `NetworkSimCore` > 300 líneas).
+
+## [Unreleased] - 2026-08-16
+
+### Fix: Foxy ya no se reabre al cerrarlo + rebranding CasinoVeo (Lab 07)
+
+**Fix del tour de Foxy** (`useAppContentEffects.ts`): el guard que evitaba
+reabrir el tour era un `useRef`, que se reseteaba cuando `AppContent` se
+remontaba (el `pushState` de `selectScenario` cambia la location key y
+`ScenarioLauncherWrapper` usa `key={location.key}`). Tras el remount, el
+effect veía ref limpio + tour cerrado y lo reabría una vez más. El flag
+ahora vive en `sessionStorage['foxy-tour-shown']` con el id del escenario
+como valor, así sobrevive remounts dentro de la pestaña y se reabre al
+cambiar de lab. El test ya limpiaba esa clave — la clave era correcta,
+el código la había dejado de usar.
+
+**Rebranding CasinoVeo**: el sitio del Lab 07 ya no tiene temática de casino.
+Es una parodia de generador de imágenes y videos con IA en la nube; el chiste
+del nombre es "casi no veo" (los renders salen tan difusos que casi no se
+ven). Modelo "Casi-No-Veo v2", planes Free/Premium, prompts absurdos. Se
+actualizaron `casinoveo.ts` (motor HTTP), `CasinoVeoSite.tsx` (fake site),
+`laboratorio07.ts` y todos los tests y docs que referenciaban textos de casino.
+
+### Lab 07 (Burp Suite): sitio "CasinoVeo" + flujo navegador→Burp
+
+- **`src/frameworks/http/casinoveo.ts`** (nuevo): branding de "CasinoVeo" —
+  parodia de generador de imágenes con IA (tipo Veo) para el objetivo del Lab 07.
+  Expone `isCasinoVeo`, `classifySqli` y el HTML sintético (landing, login, 403,
+  error SQL y dashboard). Compartido por el motor HTTP sintético y el fake site
+  del navegador para que ambos emitan metadata idéntica.
+- **`src/frameworks/http/response.ts`**: usa `classifySqli`/`isCasinoVeo` para
+  las respuestas de SQLi; cuando el target es CasinoVeo devuelve las páginas con
+  ese branding (el resto de labs mantiene el aspecto genérico).
+- **`src/components/fakesites/casinoveo/CasinoVeoSite.tsx`** (nuevo): fake site
+  con landing + login vulnerable. El formulario corre por el mismo motor HTTP que
+  Burp/curl, por lo que `'` → 500 SQL syntax (SQLi detected) y `' OR '1'='1` →
+  dashboard premium (SQLi confirmed), emitiendo `CommandResponse` tipo `http`.
+- **`src/components/FakeBrowser.tsx`**: registra la máquina CasinoVeo (detectada
+  por id `casino` o cms `CasinoVeo`), navega al site, completa la misión 3 al
+  visitar la IP (con discovery_level >= 2) y propaga `checkMissionCompletion`.
+  La lógica LFI-to-RCE del escenario 04 se extrajo a `fakebrowser/lfiRce.ts`
+  para mantener el componente < 300 líneas.
+- **`laboratorio07.ts`**: target renombrado `lab-scenario-07-casinoveo` y misiones
+  reestructuradas al flujo profesional: 1-2 discovery/scan, 3 navegar el sitio,
+  4-5 SQLi probado en el navegador (detected/confirmed), 6-8 intercept+Repeater
+  con Burp (request, UNION → creds MySQL, flag).
+- **Tests**: `CasinoVeoSite.test.tsx` (9), branding CasinoVeo en `http.test.ts` (6),
+  FakeBrowser (2), happyPath-scenario07 re-escrito al nuevo flujo. Suite completa verde.
+
+## [Unreleased] - 2026-08-16
+
+### Refactors de archivos > 300 líneas + mejora de fidelidad de nmap + Burp Suite simulado
+
+**Rondas 1-3 refactor (>300 → submódulos, 12 archivos):**
+
+- `nmap.ts` (517) → directorio `nmap/` con 9 módulos (index/flags/help/vendors/ports/cidr/outfiles/pingScan/portScan)
+- `commands/index.ts` (467) → 127 + `executor.ts`, `shellIntegration.ts`, `suid.ts`
+- `fs-linux.ts` (548) → 93 + `fs-etc.ts`, `fs-var.ts`, `fs-wordlists.ts`, `fs-linux-types.ts`
+- `FakeBrowser.tsx` (463) → 293 + `fakebrowser/pages.tsx`
+- `types.ts` (482) → eliminado; `types/` con `machine.ts`, `mission.ts`, `command.ts`, `academy.ts` + barrel index.ts (imports `../types` preservados)
+- `MissionPanel.tsx` (432) → 126 + `missionPanel/{HintButton,StepCarousel,AttackerCredentials}`
+- `MachineLoader.tsx` (420) → 147 + `machineLoader/{phases,screens}`
+- `EditorModal.tsx` (417) → 320 + `editorModal/{cursor,NanoStatusBar,NanoFooter}`
+- `FeedbackModal.tsx` (410) → 193 + `feedbackModal/{captcha,texts,StatusViews,CaptchaSection,FeedbackForm}`
+- `LabGrid.tsx` (409) → 198 + `labGrid/{helpers,ScenarioCard,ModalContent}`
+- `AdminPanel.tsx` (597) → 294 + `admin/{LoginScreen,AdminHome,DebugPanel,shared}`
+- `AppContent.tsx` (486) → 292 + `appContent/{useAppContentEffects,WorkspaceTopBar,WorkspaceOverlays,LandingView}`
+
+**Mejora de fidelidad de nmap (3 correcciones + extra):**
+
+- `-A` ahora implica `-sV` → columna VERSION + detección de servicio automática (`flags.ts`)
+- MAC Address siempre visible en misma subred sin `-v` (`portScan.ts`, `pingScan.ts`) — fiel al nmap real
+- `Host is up` siempre visible sin `-v` (`portScan.ts`)
+- Default `-p` = top ~1000: 1-1024 + puertos altos frecuentes (3306, 3389, 5432, 5900, 6379, 8080, 8443, 9090, 27017, ...) (`ports.ts`)
+- `buildHostScriptResults` integrado en `-A`: smb-os-discovery (Windows+445/139), http-server-header/http-title (servicios web) (`scripts.ts` + `portScan.ts`)
+- `Service Info: OS:` en `-A` (`portScan.ts`)
+- Help actualizado: `-A` ≡ `-sV -O --script=default`, default top-1000 (`help.ts`)
+- 8 tests nuevos (46 total en nmap.test.ts)
+
+**Burp Suite simulado (Proxy + Repeater + Target):**
+
+- **`src/frameworks/http/`** (nuevo): motor HTTP sintético compartido. `request.ts` (parseUrl, parseFormData, buildRawRequest/Response), `response.ts` (getVulnerablePage, buildLoginResponse, buildSyntheticResponse). La lógica de SQLi/auth-bypass/UNION-extract se extrajo de curl.ts para reutilizarla en Burp sin duplicar.
+- **`src/commands/tools/curl.ts` (298→117)**: refactorizado para usar el motor extraído — mismo comportamiento, mismo output, misma metadata (`foundVulnerability`, `foundCredentials`). Ahora emite `httpRequest`/`httpResponse` en cada response para alimentar el historial de Burp.
+- **`src/components/burpsuite/`** (nuevo, 5 archivos): app con 3 tabs
+  - **Proxy**: form de "Intercept" (method+URL+body), historial tabla (id/method/URL/status/time), click→Send to Repeater
+  - **Repeater**: editor de request (method select, URL, headers textarea, body textarea, Send ▶ / Ctrl+Enter) + panel de response (status code colorizado, headers, body formatting)
+  - **Target**: site map de máquinas con `web_enumeration` — lista directorios con status, cada uno con "Intercept →" que preconfigura Proxy
+- **Integración**: `activeApp` extendido a `'terminal' | 'browser' | 'burpsuite'`; WorkspaceTopBar gana botón "Burp" (solo en escenarios Web); AppContent renderiza `<BurpSuite>` cuando `activeApp === 'burpsuite'`. Las acciones de Burp propagan `onReportVulnerability` y `onCredentialsFound` al store — LabValidator valida igual que con curl.
+- **Tipos** (`src/types/command.ts`): nuevos `HttpRequestData`/`HttpResponseData` + tipo `'http'` en `CommandResponse` (con `foundVulnerability?`/`foundCredentials?`/`foundDirectories?` opcionales). `CmdResponseBase` gana `httpRequest?`/`httpResponse?`.
+- **Laboratorio 07** (`src/laboratorios/laboratorio07.ts`, nuevo): "Burp Suite: Web Application Pentesting" — 8 misiones que guían el flujo intercept→Repeater→SQLi bypass→UNION SELECT→flag. Reusa el mismo motor que curl, así que LabValidator valida `vulnerabilityFound`/`foundCredentials` con criterios existentes (sin crear nuevos tipos de criteria). Registrado en `SCENARIOS` y `SCENARIOS_META` → los Labs pasan de 6 a 7.
+- **Tests**: 36 nuevos (16 del motor HTTP + 16 del laboratorio07 + 4 ajustes a tests existentes). `credentials-by-machine.test.ts` gana scenario-07 con usuarios `[admin, analyst]`. `LandingPage.test.tsx` actualiza `View all labs (6)` → `(7)`. curl.test.ts (12) intacto, happyPath-scenario06 (13) intacto — el refactor del motor no rompió nada.
+
+**Métricas:** `tsc --noEmit` 0 · `pnpm test:run` → **140 archivos / 1822 tests pasando** (antes 138/1778) · `pnpm build` OK · `pnpm lint` 0 errores / 112 warnings.
+
+---
+
+## [Unreleased] - 2026-08-14
+
+### Sync fino corregido de los 5 videos de Windows (`wi-`) contra los segmentos de habla reales
+
+Re-midiendo `public/videos/audio/wi-*/` con `silencedetect` (-50dB, d=0.12) se detectó que varios
+`at`/`delay` de las composiciones quedaban corridos **2–9s** contra lo que el narrador dice en cada
+wav (p. ej. EternalBlue en Wi05 estaba en 11.4s y el audio lo menciona a los ~20.2s; el "¿dónde vive
+lo jugoso?" de Wi04 a 8.7s y se dice a los ~15.3s). Correcciones por video:
+
+- **Wi01**: timeline re-mapeada a las menciones reales (Microsoft 6.5 / Windows 1.0 7.0 / Windows 95 14.6 / XP 19.2 / kernel NT 24.7, arranque a 6.5s) · privativo: 3.0/4.3/5.3/7.1 · libre: 10.7/11.9 (antes 15.1/17.6) · legacy: 4.2/5.1/5.8 · exploits: 12.2/15.2 · cierre "PUERTA SIN LLAVE": 17.4.
+- **Wi02**: card Win10 a 4.0s + puntos 5.4/7.9/9.7/13.1 · chips Server a 17.9/19.2/20.6/25.9 (antes 12.4/14.6/16.9/19.3) · cierre: 13.6.
+- **Wi03**: firewall reordenado al orden real del narrador (activado 6.1 → 3 perfiles 7.6 → puerto en LAN 14.4) · Defender 2.1/4.6/7.1 · UAC 12.6/14.9/17.9 · GPO 2.1/6.7 · defensas 11.2/13.2/14.3/15.0/17.1.
+- **Wi04**: resaltados del TreeView re-medidos (C:\ 5.3 / Windows 7.2 / System32 8.0 / Temp 10.6 / Users 14.5 / Program Files 17.8 / inetpub 18.8 / wwwroot 19.8) + footer ACL/NTFS con fade a 21.9s · SAM 0.3/2.8/5.1 · cuentas 10.3/11.5/12.4/14.8 · ACL 2.6/5.0/9.2 · sección "lo jugoso" a 15.4s (antes 8.7s) con 16.8/22.1/24.3 · fix del pop del resaltado (`highlightStart` ahora relativo a la Sequence interna).
+- **Wi05**: SMB 3.2/6.7/14.1/20.2 · RDP 2.0/5.5/9.8/17.6 · WinRM 2.2/7.8/11.2 · cierre "USUARIO + CONTRASEÑA": 15.3.
+
+Los 5 MP4 re-renderizados con `remotion render` (mismo audio aac real, misma duración total).
+
+**Métricas:** `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-14
+
+### Videos de Windows (`wi-`) re-renderizados con los audios reales del autor + sincronización fina
+
+El autor pasó los 15 audios (`wi-0X-sceneN.wav` en cada carpeta) y los 5 videos pasan de placeholder silencioso con sync estimado a **audio real + sincronizado segmento por segmento**:
+
+- **`src/video/remotion/audioTimings.ts`**: los timings estimados de `wi-*` se reemplazan con las duraciones reales medidas con ffprobe:
+
+  | Video | Antes (est.) | Ahora (real) | Total MP4 |
+  |---|---|---|---|
+  | wi-01-windows-history | [18, 20, 16] | **[27.52, 23.60, 21.52]** | 74.3s · 3.7 MB |
+  | wi-02-current-versions | [18, 22, 16] | **[24.32, 31.76, 17.12]** | 74.8s · 3.8 MB |
+  | wi-03-security | [18, 19, 19] | **[21.44, 21.20, 23.36]** | 67.6s · 3.5 MB |
+  | wi-04-filesystem | [21, 20, 21] | **[33.44, 28.16, 27.36]** | 90.6s · 4.8 MB |
+  | wi-05-network-services | [20, 15, 15] | **[28.96, 21.60, 22.56]** | 74.7s · 3.9 MB |
+
+- **Syncs internos re-alineados** con `silencedetect` fino (-50dB, d=0.12) a los segmentos de habla reales (los estimados quedaban hasta 2-9s corridos):
+  - **Wi01**: timeline 1985→kernel NT (4.3s + cápsulas c/2.4s) · privativo vs libre: 'código fuente cerrado' 1.8 / 'no podés leerlo' 3.3 / 'licencia' 5.4 / 'es de Microsoft' 8.9 / 'podés leer cada línea' 15.1 / 'gratis y modificable' 17.6 · legacy: Win7 4.6 / XP 5.2 / Server 2008 7.1 / MS17-010 12.1 / MS08-067 14.9 · cierre "LEGACY = PUERTA SIN LLAVE" 17.1.
+  - **Wi02**: card Win10 6.5 + puntos (7.6/11/13/17.1) · chips Win11 (TPM 5.5 / Secure Boot 7.8 / kernel NT 9.3) y Server (AD 12.4 / IIS+DNS 14.6 / SMB 16.9 / Core+WinRM 19.3) · cierre 17.0.
+  - **Wi03**: firewall (perfiles 6.5 / por defecto 9.8 / puerto en LAN 15.1) · Defender (1.6/4.5/9.1) y UAC (12.3/14.6/17.5) · GPO (2.8/6.2) + defensas (BitLocker 10.9 / Credential Guard 11.9 / Secure Boot 12.9 / AppLocker 14.0 / Event Logs 16.7).
+  - **Wi04**: **TreeView con resaltado por palabra** (`highlight`/`highlighted`) sobre el árbol de C:\ — C:\ 4.5 / Windows 5.2 / System32 7.0 / Temp 10.2 / Users 12.5 / Program Files 14.0 / inetpub 16.5 / wwwroot 17.6 · SAM (1.5/3.0/6.5) + cuentas (9.4/10.2/11.2/12.1) · ACL (2.5/4.5/6.8) y loot (14.2/16.3/18.1).
+  - **Wi05**: SMB (puerto 4.3 / shares admin 6.3 / shares custom 9.3 / EternalBlue 11.4) · RDP (3.0/5.4/8.1/10.1) · WinRM (2.1/4.6/8.0) + cierre "USUARIO + CONTRASEÑA = SHELL" 11.1.
+
+- **Render**: los 5 MP4 re-generados con audio aac real + video h264, renombrados a la convención corta (`wi01-…wi05-…`) que usan las lecciones.
+- **Verificación por píxeles**: resaltados del árbol de Wi04 crecen con la narración (cyan 189 → 645 → 935 → 1033), reveals de Wi01 crecen 862 → 1010, chips de Wi02 crecen 421 → 974, y el cierre de Wi01 aparece justo al cambiar la narración (ámbar 386 → 1473). Audio del MP4 verificado contra los wavs (33 segmentos de habla en wi-04).
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **138 archivos / 1776 tests pasando**.
+
+---
+
+## [Unreleased] - 2026-08-13
+
+### Landing: ventana de anuncio de la Academy al ingresar
+
+Nueva ventana modal `AcademyAnnouncement` que anuncia la Academy al entrar al landing (`src/components/academy/AcademyAnnouncement.tsx`):
+
+- **Estética de ventana de escritorio del simulador**: barra con puntitos rojo/ámbar/verde, título `zeroinfra · anuncio`, badge `ZILABS`, botón de cierre ✕.
+- **Dos columnas**: panel visual izquierdo (slot de imagen) + contenido derecho con badge `✦ NUEVO`, título `🎓 Academy`, descripción, chips de los 6 módulos (Linux/Windows/Redes/Ciberseguridad/Pentesting/Scripting) y CTAs `Ir a la Academy →` / `Ahora no`.
+- **Slot de imagen reemplazable**: si existe `public/academy-announcement.png` se muestra; si no, fallback con Foxy + gradiente etiquetado «aquí va tu imagen» (para cuando el autor genere la imagen con otra IA).
+- **Comportamiento**: aparece ~1.4s después de entrar (tras el fade-in del hero), se cierra con ✕, backdrop, tecla Escape o «Ahora no». Textos bilingües ES/EN vía `useLanguage`.
+- **`LandingPage.tsx`**: `<AcademyAnnouncement />` montado junto a FeedbackModal/DonationModal.
+- **Tests**: `AcademyAnnouncement.test.tsx` (8) — delay de aparición, CTA hacia `/en/academy`, módulos, cierres (✕, backdrop, Escape, «Not now») y textos en español.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **138 archivos / 1776 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-13
+
+### Academy: infraestructura completa de los 2 videos de Ciberseguridad (`ci-`)
+
+Videos para las 2 lecciones del path de ciberseguridad, siguiendo el patrón `wi-` (3 escenas, 1280×720, 30fps):
+
+| ID | Composición | Lección | Duración |
+|---|---|---|---|
+| `ci-01-cia-triad` | `Ci01CiaTriad.tsx` | ciber-01 · Triada CID | 52.6s |
+| `ci-02-hashes-cracking` | `Ci02HashesCracking.tsx` | ciber-02 · Hashes y cracking | 47.6s |
+
+- **`voicebox-scripts/ci-0X-scene1..3.txt`** (6 scripts): narraciones en español nivel principiante — triada CID (las 3 patas, ataques reales por pata, cierre pentester) y hashes (hash vs cifrado, algoritmos MD5/SHA1/SHA512/bcrypt/argon2, cracking con john + rockyou).
+- **Composiciones**: `Ci01CiaTriad` (3 columnas de la triada con RevealLines, ataques reales ✗, terminal `cat /etc/shadow`) y `Ci02HashesCracking` (terminal `echo | sha512sum`, cápsulas de algoritmos, terminal `john hash.txt --wordlist=rockyou.txt`).
+- **`src/video/remotion/audioTimings.ts`**: claves `ci-*` con **timings ESTIMADOS** → se reemplazan con los reales (ffprobe) cuando el autor pase los wavs.
+- **`public/videos/audio/ci-0X-*/ci-0X-sceneN.wav`**: carpetas de audio con **wavs placeholder de silencio** de la duración estimada (se reemplazan 1:1 por los reales).
+- **`src/academy/path-ciberseguridad.ts`**: las 2 lecciones incorporan el paso `video` como paso 2 (narrator → video → contenido).
+- **`AcademyVideo.test.tsx`**: 2 tests nuevos — ciber-01 → `ci01-cia-triad.mp4` y ciber-02 → `ci02-hashes-cracking.mp4` como paso 2.
+
+**Estado:** los 2 MP4 ya están renderizados con los placeholders (silencioso + sync estimado) para que las lecciones queden funcionales. **Pendiente de terminar:** cuando el autor pase los audios reales → medir con ffprobe, actualizar `audioTimings` y `durationSec`, re-sincronizar los reveals internos y re-renderizar.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **137 archivos / 1768 tests pasando** · `pnpm build` OK · QC por píxeles de los 2 MP4 (YAVG/YMAX consistentes con li/pe/wi) · streams video h264 + audio aac.
+
+---
+
+## [Unreleased] - 2026-08-13
+
+### Academy: nuevo path de Scripting para pentesting — Bash, PowerShell y Python (5 clases c/u)
+
+Nuevo path **`scripting`** ("Scripting para pentesting", 💻, naranja `#f97316`) agrupado dentro de **Hacking Ético** en el Home de la Academy, con 3 subsecciones y **15 lecciones nuevas**:
+
+| Subsección | Icono | Lecciones |
+|---|---|---|
+| **Bash** | 🐚 | bash-01 Qué es bash · bash-02 Bases: variables, argumentos y condicionales · bash-03 Bucles, funciones y filtros de texto · bash-04 Pentesting I: enumeración · bash-05 Pentesting II: automatización y reverse shells |
+| **PowerShell** | 🪟 | powershell-01 Qué es PowerShell: objetos, no texto · powershell-02 Bases: variables, arrays y condiciones · powershell-03 Bucles, funciones y cmdlets útiles · powershell-04 Pentesting I: enumeración de Windows · powershell-05 Pentesting II: credenciales, ofuscación y exfiltración |
+| **Python** | 🐍 | python-01 Qué es Python: el lenguaje del hacking · python-02 Bases: variables, tipos y condiciones · python-03 Bucles, funciones y librerías · python-04 Pentesting I: redes con socket · python-05 Pentesting II: HTTP con requests |
+
+**Estructura de cada clase:** narrator → content (¿qué es? + bases) → 2× content técnico → terminal-demo con ejemplo real → practical-exercise (sin `labId` — no hay lab Windows; el ejercicio se muestra sin terminal embebida) → quiz que bloquea el avance.
+
+**Archivos nuevos:** `src/academy/bash-lessons.ts`, `powershell-lessons.ts`, `python-lessons.ts`, `path-scripting.ts` (exporta `SCRIPTING_SUBSECTIONS` + `SCRIPTING_LESSONS` flat para callers antiguos). Registrado en `src/types.ts` (`AcademyPathId` gana `'scripting'`), `paths.ts` y `AcademyHome.tsx` (módulos dentro del grupo Hacking Ético, con rutas `/module/{bash,powershell,python}` y back links vía `getSubIdForLesson`).
+
+**Total de la Academy: 31 → 46 lecciones.** Tests actualizados: `Academy.test.tsx` — 8×`0/5 lecs` (antes 5) y 3×`0/2`, progreso global `0/46` y 11% (5 de 46), y 5 tests nuevos del módulo (redirect a bash, las 3 listas de 5 lecciones, back link a módulo).
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **137 archivos / 1766 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-13
+
+### Academy: paths de redes renombrados + infraestructura completa de los 5 videos de Windows (`wi-`)
+
+**Renombre de módulos de redes** (solo nombres visibles; los IDs `protocolos`/`protocolos-ii` se mantienen → el progreso guardado no se pierde):
+
+- `Protocolos y dispositivos` → **Redes I** (`title` EN: *Networking I*)
+- `Protocolos y Dispositivos II` → **Redes II** (`title` EN: *Networking II*)
+- Afecta: `src/academy/paths.ts`, el selector del `LessonBuilder` (admin) y `Academy.test.tsx`.
+
+**5 videos nuevos de Windows con prefijo `wi-`** (3 escenas cada uno, 1280×720, 30fps, ~52-64s):
+
+| ID | Composición | Lección | Duración |
+|---|---|---|---|
+| `wi-01-windows-history` | `Wi01WindowsHistory.tsx` | windows-01 · Historia | 55.6s |
+| `wi-02-current-versions` | `Wi02CurrentVersions.tsx` | windows-02 · Versiones 10/11/Server | 57.6s |
+| `wi-03-security` | `Wi03Security.tsx` | windows-03 · Firewall/Defender/UAC/GPO | 57.6s |
+| `wi-04-filesystem` | `Wi04Filesystem.tsx` | windows-04 · Filesystem/usuarios/ACL | 63.6s |
+| `wi-05-network-services` | `Wi05NetworkServices.tsx` | windows-05 · SMB/RDP/WinRM | 51.6s |
+
+- **`voicebox-scripts/wi-0X-scene1..3.txt`** (15 scripts): narraciones en español nivel principiante (historia, versiones, seguridad, filesystem, red), listas para generar audios con la voz "Miguel".
+- **`src/video/remotion/audioTimings.ts`**: claves `wi-*` con **timings ESTIMADOS** (marcados con comentario) → se reemplazan con los reales (ffprobe) cuando el autor pase los wavs.
+- **`public/videos/audio/wi-0X-*/wi-0X-sceneN.wav`**: carpetas de audio con **wavs placeholder de silencio** de la duración estimada (para poder renderizar ya; se reemplazan 1:1 por los reales).
+- **`src/academy/windows-lessons.ts`**: cada lección de Windows incorpora el paso `video` como paso 2 (narrator → video → contenido), con `src` `/videos/wi0X-*.mp4`, captions ES/EN y `durationSec` = duración real del placeholder.
+- **`AcademyVideo.test.tsx`**: nuevo test — windows-01 incluye `wi01-windows-history.mp4` como paso 2.
+
+**Estado:** los 5 MP4 ya están renderizados con los placeholders (silencioso + sync estimado) para que las lecciones queden funcionales. **Pendiente de terminar:** cuando el autor pase los audios reales → medir con ffprobe, actualizar `audioTimings` y `durationSec`, re-sincronizar los reveals internos y re-renderizar.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **137 archivos / 1761 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-13
+
+### Videos li-02 a li-05: corrección de delays en secuencias anidadas + fix del video de la lección 2
+
+Se encontró y corrigió el patrón de bug transversal: dentro de una `Sequence` anidada (`from={titleEnd}`), `useCurrentFrame()` reinicia a 0, pero los `delay`/`at` de chips y líneas se calculaban como segundos absolutos de la escena → los elementos aparecían tarde o nunca. Se pasaron todos a tiempos relativos al arranque de la secuencia anidada:
+
+- **`Li02ShellAnatomy.tsx` Scene 1**: las 4 cápsulas (usuario/máquina/home/permisos) ahora aparecen a ~1.45s, 2.35s, 3.25s y 4.15s dentro de la secuencia (narración los lista ~5.8-8.5s absolutos).
+- **`Li04CreateEdit.tsx` Scene 1**: `ORDER_STEPS.at` de mkdir/touch/nano relativizados (0.7 / 4.5 / 6.7 dentro de la secuencia); **Scene 2**: `PIPELINE.at` de touch (7.0→4.0) y nano (15.0→7.0) re-ubicados según las pausas de la narración (3.9s / 6.7s).
+- **`Li05Permissions.tsx` Scene 1**: revelación de caracteres y las líneas "parece ruido"/"escalada de privilegios" relativizadas al arranque de la secuencia (antes se corrían ~1.4s).
+- **`Li03CoreCommands.tsx` Scene 1**: delay de las cápsulas con preguntas (¿dónde estoy? pwd / ¿quién soy? id / …) pasados a relativos — era el reporte "ahora no sale" del usuario; el render final muestra las 4 preguntas apareciendo progresivamente (verificado por hashes de frames 5.8→12.4s).
+
+**Corrección de contenido en la Academy** (`src/academy/linux-lessons.ts`):
+- **Bug reportado**: la lección `linux-02` ("La terminal: shells, PATH, prompt y flags") reproducía `/videos/li04-create-edit.mp4` (mkdir/touch/nano) por un `src` mal copiado. Reemplazado por `/videos/li02-shell.mp4` con caption/`durationSec` (111s) coherentes.
+- `durationSec` de las demás lecciones corregidos a la duración real de los mp4: li01 75 · li03 **65** (era 21) · li04 **71** (era 46) · li05 **110** (era 37).
+
+**Verificación:** re-render de `li02-shell.mp4`, `li03-commands.mp4`, `li04-create-edit.mp4` y `li05-permissions.mp4` (mismas duraciones totales de antes: 111.5 / 65.4 / 71.4 / 109.9s). El audio del mp4 de li-02 se comparó contra los `.wav` de la carpeta: patrones de silencio idénticos → el audio ya era el correcto, el problema era solo la referencia en la lección. `tsc --noEmit` 0 errores y 5/5 tests de `AcademyVideo.test.tsx`.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Video pe-02: re-sincronización fina de resaltados y cierre con la narración
+
+Los tiempos de aparición de textos se habían estimado a ojo con silencios gruesos y quedaban corridos respecto al audio. Re-medidos con `silencedetect` fino (-50dB, d=0.08) y alineados por segmento de habla (`src/video/remotion/compositions/Pe02Filesystem.tsx`):
+
+- **Resaltados del árbol Linux** (escena 2): `/` 2.6→**2.7** · `etc` 3.4→**3.5** · `home` 7.5→**7.4** · `root` 10.0 (igual) · `www` 12.3→**12.4** · `log` 14.6→**15.0**.
+- **Resaltados del árbol Windows** (escena 3): `C:\` 2.2→**2.4** · `Windows` 3.2→**4.4** (antes aparecía ~1s antes) · `Users` 6.4→**7.3** · `Program Files` 9.6→**9.7** · `inetpub`/`wwwroot` 12.2/12.45 (iguales) · `System32` 14.5→**14.6**.
+- **Cierre** (escena 4): `/etc` 2.2→**3.3** · `/home` 4.0→**4.3** · `/var/www` 6.5→**6.4** · `C:\Windows` 10.8→**8.5** (antes ~2.3s tarde) · `C:\Users` 11.8→**9.4** · `C:\inetpub` 12.9→**11.9**.
+
+**Verificación:** re-render `public/videos/pe02-filesystem.mp4` (**4.4 MB**, 2297 frames). Análisis por píxeles frame a frame: cada caja del cierre aparece escalonada en el momento en que el audio pronuncia la ruta (jumps de píxeles en 64.5/65.3/67.3/69.4/70.3/72.8s) y los resaltados de los árboles crecen en sus instantes correspondientes. `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Video pe-02: cierre rediseñado como panel de resumen con rutas por sistema
+
+La escena 4 del video de filesystems (dos líneas de texto plano) pasa a ser un panel visual:
+
+- **`ClosingScene`** (`src/video/remotion/compositions/Pe02Filesystem.tsx`): título "CUANDO ENTRES A UN SISTEMA, SABÉ DÓNDE MIRAR" + dos columnas con encabezado de color — 🐧 **LINUX** (verde) y 🪟 **WINDOWS** (cian) — cada una con **3 cajas de ruta** (borde + fondo + glow del color del sistema, con pop 0.85→1): Linux `/etc` `/home` `/var/www`, Windows `C:\Windows` `C:\Users` `C:\inetpub`, cada una con su descripción.
+- Cada caja **aparece cuando el narrador la menciona** (medido con silencedetect, voz Miguel): `/etc` ~2.2s · `/home` ~4.0s · `/var/www` ~6.5s · `C:\Windows` ~10.8s · `C:\Users` ~11.8s · `C:\inetpub` ~12.9s (relativos al inicio del cierre).
+- Pie de cierre: "conocer el mapa de cada sistema es saber dónde va a estar la información".
+
+**Verificación:** re-render `public/videos/pe02-filesystem.mp4` (**4.4 MB**, 2297 frames). Análisis por píxeles del cierre: las cajas verdes crecen con cada ruta de Linux (378 → 578 → 1002 → 1544 px) y las cian con las de Windows (925 → 5074 → 11734 px) en los momentos de la narración. `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Video pe-02: resaltado por palabra + Linux y Windows en una sola escena continua
+
+Rediseño de la escena central del video de filesystems para seguir la narración:
+
+- **`TreeView`** (`src/video/remotion/primitives/TreeView.tsx`): nuevas props `highlight` / `highlightStart` / `highlighted`. La fila que el narrador menciona se rodea con un **rectángulo redondeado con glow** (pop 0.82→1 al activarse); las palabras ya mencionadas quedan con una **caja sutil persistente** (borde + fondo al 14%).
+- **`Pe02Filesystem.tsx`**: las escenas 2 y 3 se fusionan en **una sola escena continua** (`Sequence` único con ambos audios). El árbol de Linux queda en pantalla todo el tiempo (sin oscurecerse ni reiniciar su animación) y el de Windows **crece al lado** con un fade+slide cuando el narrador pasa a explicarlo — se acabó el "corte de escena".
+- **Sincronización por palabra** (medida con `silencedetect`, voz Miguel):
+  - Linux: `/` ~2.6s · `etc` ~3.4 · `home` ~7.5 · `root` ~10.0 · `www` ~12.3 · `log` ~14.6.
+  - Windows: `C:\` ~2.2 · `Windows` ~3.2 · `Users` ~6.4 · `Program Files` ~9.6 · `inetpub` ~12.2 · `wwwroot` ~12.5 · `System32` ~14.5.
+- El pie de página cruza de "Un solo árbol desde /" a "Un árbol por disco: C:\\, D:\\..." en la transición.
+
+**Verificación:** re-render `public/videos/pe02-filesystem.mp4` (**4.3 MB**, 2297 frames). Análisis por píxeles: los píxeles verdes del resaltado Linux crecen al narrar cada palabra (686 → 2293), la mitad derecha arranca vacía (0) y el árbol cian de Windows crece a partir de la transición (0 → 2104 → 10367 → 14669 px) — sin reiniciarse ni cortar. `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Video pe-02 (filesystem) re-renderizado con los audios nuevos del autor
+
+El autor regrabó los 4 audios de `pe-02-filesystem` con narración más clara y extensa. Re-sincronizado y re-renderizado:
+
+- **`src/video/remotion/audioTimings.ts`**: `'pe-02-filesystem'` pasa de [4.48, 14.08, 16.08, 10.24] a las duraciones reales medidas con ffprobe: **[12.08, 23.84, 24.24, 14.48]** (74.6s de audio + gaps ≈ 76.5s total).
+- **`src/academy/path-hacking.ts`**: `durationSec` del video de hacking-02 45 → **76**.
+- **Render**: `public/videos/pe02-filesystem.mp4` re-generado (**76.6s, 3.7 MB**, 2297 frames) con los 4 wavs nuevos (`pe-02-scene1..4.wav`) sincronizados escena por escena. Verificado por píxeles en los 4 momentos (título t=6s, árbol Linux t=20s, ambos árboles t=45s, cierre t=72s) y streams de video+audio presentes.
+
+**Métricas:** `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Videos de Pentesting renombrados: prefijo `pe-` (Hacking Ético → Pentesting)
+
+Los videos del path de pentesting pasan de prefijo `he-` a `pe-`, manteniendo la consistencia con la convención por plataforma (`li-` Linux, `pe-` Pentesting, `wi-` Windows futuro). Renombrado 1:1 en composición, ID de Remotion, MP4, carpeta de audio, wavs y scripts — **sin re-render** (el contenido no cambió):
+
+| Antes | Ahora | Composición | MP4 |
+|---|---|---|---|
+| `he-01-pentest-phases` | `pe-01-pentest-phases` | `Pe01PentestPhases` | `pe01-pentest-phases.mp4` |
+| `he-02-filesystem` | `pe-02-filesystem` | `Pe02Filesystem` | `pe02-filesystem.mp4` |
+
+- **`src/video/remotion/compositions/`**: `He01PentestPhases.tsx` → `Pe01PentestPhases.tsx`, `He02Filesystem.tsx` → `Pe02Filesystem.tsx` (componentes, rutas `staticFile` y headers actualizados).
+- **`Root.tsx`**: IDs `pe-01-pentest-phases` / `pe-02-filesystem` (imports + registro).
+- **`audioTimings.ts`**: claves `'pe-01-pentest-phases'` y `'pe-02-filesystem'` (timings intactos).
+- **Assets**: MP4 renombrados, carpetas de audio `pe-01-pentest-phases/` y `pe-02-filesystem/` con wavs renombrados (`pe-0N-sceneM.wav`).
+- **Scripts Voicebox**: `he-01-scene1..6.txt` → `pe-01-scene1..6.txt`, `he-02-scene1..4.txt` → `pe-02-scene1..4.txt`.
+- **Academy**: `path-hacking.ts` apunta a `/videos/pe01-pentest-phases.mp4` y `/videos/pe02-filesystem.mp4`; `AcademyVideo.test.tsx` actualizado.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **1760 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Video he-01 (5 fases del pentesting) renderizado con los audios reales
+
+- **`audioTimings.ts`**: `'he-01-pentest-phases'` pasa de estimados [16, 20, 21, 18, 22, 22] a las duraciones reales medidas con ffprobe: **[12.56, 15.60, 13.92, 13.60, 16.24, 12.32]** (84.2s + gaps ≈ 86s).
+- **`src/academy/path-hacking.ts`**: `durationSec` del video de hacking-01 121 → **86**.
+- **Render**: `public/videos/he01-pentest-phases.mp4` (**86.8s, 4.1 MB**, 2603 frames) con los 6 wavs del autor (`he-01-scene1..6.wav`) sincronizados escena por escena.
+
+**Métricas:** `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Academy: la sección Redes se divide en 3 paths (total de lecciones 21 → 31)
+
+La categoría Redes pasa de 1 path con 5 lecciones a **3 paths** con 15 lecciones: `Fundamentos de redes`, `Protocolos y dispositivos` y `Protocolos y Dispositivos II`. Además, nuevo tipo de paso **`matching`** (emparejar términos con definiciones haciendo clic en pares).
+
+**`src/academy/path-redes.ts` (nuevo) — Fundamentos de redes (5 lecciones):**
+
+- **redes-01 · ¿Qué es una red?** — definición (nodos, medios de conexión) y tipos por tamaño: LAN, MAN, WAN (internet) y PAN; la VPN como túnel cifrado sobre internet. Quiz: la WAN más grande.
+- **redes-02 · Cómo se comunican** — concepto de dirección IP (formato, conflicto de IP), públicas vs privadas (rangos 10.x/172.16-31.x/192.168.x) y NAT a nivel concepto. Terminal-demo con `ip addr`.
+- **redes-03 · Dispositivos básicos y topologías** — hub (obsoleto), switch y router; topologías bus, estrella, anillo y malla. **Simulador `network-home`**: armá tu propia red en estrella arrastrando cables.
+- **redes-04 · Modelo OSI y TCP/IP** — las 7 capas con su trabajo puntual (analogía postal) y el modelo TCP/IP de 4 capas que usa internet de verdad.
+- **redes-05 · Direccionamiento** — dirección, máscara y puerta de enlace; clases A/B/C y CIDR; DNS como agenda de internet. Terminal-demo con `resolv.conf` + `ip route`.
+
+**`src/academy/path-protocolos.ts` (nuevo) — Protocolos y dispositivos (5 lecciones):**
+
+- **proto-01 · Protocolos por capa** — qué es un protocolo y dos por capa: Ethernet/ARP (2), IP/ICMP (3), TCP/UDP (4), HTTP/DNS/SSH/SMTP (7). Quiz: ping = ICMP.
+- **proto-02 · Protocolos en hacking web** — HTTP (80, texto plano, GET/POST, cookies, SQLi/XSS), HTTPS (443, TLS cifra el canal, no la app) + WebSocket, WebDAV y REST/API; DNS como vía de exfiltración. Terminal-demo con `curl -I`.
+- **proto-03 · Servicios de red comunes** — SSH (22), FTP (21), SMB (445, EternalBlue) y VNC (5900, primo de RDP). Terminal-demo con `nmap -sV`.
+- **proto-04 · El switch (capa 2)** — tabla MAC, full duplex, velocidades, VLANs, managed/unmanaged, PoE, ejemplos reales. **Ejercicio `matching`**: 5 pares término↔definición.
+- **proto-05 · El router (capa 3)** — tabla de rutas, NAT/PAT, DHCP, puertos WAN/LAN, ruteo estático vs dinámico, y la diferencia clave con el switch. **Ejercicio `matching`**: 5 pares.
+
+**`src/academy/path-protocolos-ii.ts` (nuevo) — Protocolos y Dispositivos II:** las 5 lecciones históricas del path Redes (`network-01` puertos, `network-02` servicios, `network-03` red doméstica con simulador, `network-04` DMZ, `network-05` MITM) se mudan acá con sus IDs intactos (el progreso de los usuarios no se pierde). `path-network.ts` eliminado.
+
+**Nuevo tipo de paso `matching` (`src/types.ts`):**
+
+- `{ type: 'matching'; title; instructions; pairs: {left, leftEs, right, rightEs}[] }`.
+- **`LessonContent.tsx`**: `MatchingStep` — dos columnas (términos a la izquierda, definiciones **barajadas** a la derecha), clic en un término + su definición → se fijan en verde; par equivocado → flash rojo; banner de éxito al completar y botón reiniciar.
+- **`LessonViewer.tsx`/`LessonPreviewLive.tsx`**: el matching **bloquea el avance** hasta resolver todos los pares (igual que el quiz).
+- **Builder**: `LessonBuilder`/`StepEditor`/`generateLessonTs` soportan `matching` (editor de pares) y las options de path incluyen los 3 de redes.
+
+**Integración:**
+
+- `src/types.ts`: `AcademyPathId` = `'os' | 'redes' | 'protocolos' | 'protocolos-ii' | 'ciberseguridad' | 'hacking'`.
+- `paths.ts`: 6 paths registrados; `AcademyHome.tsx`: la sección Redes muestra las 3 tarjetas (🌐 Fundamentos · 📡 Protocolos · 🖧 Protocolos II).
+- Tests `Academy.test.tsx`: total 21 → **31** (0/31, progreso 5/31 = 16%), conteos 0/5 lecs ×5 y 0/2 lecs ×3, tests nuevos de los 3 paths y del matching (bloquea hasta emparejar los 5 pares y luego completa la lección). `FoxyNarrator.test.tsx` apunta a `protocolos-ii/network-01`.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → 137 archivos / **1760 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Fix: variables de entorno en la terminal — `echo $PATH` / `echo $SHELL` ya funcionan
+
+El entorno del terminal arrancaba en `undefined`: `DEFAULT_ENV` (PATH, HOME, USER, SHELL, TERM, EDITOR...) solo existía en los tests y nunca se inicializaba en la app real. Como la expansión de `$VAR` en `executeCommand` depende de `ctx.env`, `echo $PATH` imprimía literalmente `$PATH` y `env` no mostraba nada — rompiendo el ejercicio práctico de linux-02 ("probá `echo $PATH`") y la demo de la lección.
+
+- **`src/hooks/useCommandRunner.ts`**: `env` se inicializa con `DEFAULT_ENV(machine)` (lazy init) en vez de `undefined`; el reset de escenario lo restaura a `DEFAULT_ENV` en vez de `undefined`; y un nuevo effect que **re-deriva las variables por defecto** (PATH/HOME/USER/SHELL...) cuando cambia la máquina activa (`machine.id`, SSH) o el usuario efectivo (`sshUser`, su), preservando los `export` custom del usuario (como `su` en bash real).
+- **Tests**: `Terminal.test.tsx` — nuevo test de regresión que tipea `echo $PATH` y `echo $SHELL` en el flujo real del hook y verifica la expansión (`/usr/local/sbin:...` y `/bin/bash`).
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → 137 archivos / **1756 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Academy: subsección Otros SOs pasa de 1 a 2 lecciones (total de lecciones 20 → 21)
+
+**`src/academy/others-lessons.ts`** (nuevo, patrón de `linux-lessons.ts`/`windows-lessons.ts`) — reemplaza la lección única "Android, macOS, BSD: primos de Linux" por dos lecciones completas y bilingües:
+
+- **others-01 · Sistemas de PC y servidores alternativos: macOS, BSD y ChromeOS** — macOS como Unix certificado basado en BSD (`zsh`, `/Users`, `launchd`, capa privativa de Apple: SIP, Gatekeeper), la familia BSD (FreeBSD, OpenBSD la más auditada, NetBSD; pfSense/OPNSense; licencia permisiva), y ChromeOS (kernel Linux + navegador como interfaz; variantes ChromiumOS, ChromeOS Flex y contenedor Linux Crostini). Terminal-demo con `uname -a` de FreeBSD y quiz (¿cuál usa kernel Linux? → ChromeOS).
+- **others-02 · Equipos portátiles y de electrónica: Android, iOS y Raspberry Pi** — Android como kernel Linux modificado (`adb shell`, ART, rooting con Magisk/ROMs custom, relevancia para pentesting móvil), iOS como Unix encerrado (sandbox, App Store, jailbreak, exploits caros), y la Raspberry Pi como Linux puro pensado para electrónica (Raspberry Pi OS = Debian, pines GPIO, Pi-hole; en pentesting: caja de ataque Kali, honeypots, gadgets USB). Terminal-demo con `/etc/os-release` de Raspbian y quiz (base de Raspberry Pi OS → Debian Linux).
+
+- **`src/academy/path-os.ts`**: importa `OTHERS_LESSONS` desde el nuevo archivo (subsecciones intactas).
+- **Tests** `Academy.test.tsx` actualizados: total de lecciones **20 → 21** (0/21, progreso 25%→24%), conteos de módulos (0/5 ×3 y 0/2 ×3: Otros + Ciberseguridad + Hacking), progreso del path OS (1 de 11 → **1 de 12**, 9%→8%) y un test nuevo del módulo `/module/others` con sus 2 lecciones.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → 137 archivos / **1755 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Academy: 5 lecciones de Windows (la subsección pasa de 1 a 5 lecciones)
+
+**`src/academy/windows-lessons.ts`** (nuevo, patrón de `linux-lessons.ts`) — la subsección Windows del path OS pasa de 1 lección a 5, reemplazando `windows-01` por contenido completo y bilingüe:
+
+- **windows-01 · Historia** — orígenes (Microsoft, Bill Gates/Paul Allen, 1975; Windows 1.0 sobre MS-DOS en 1985; 95/XP/Vista/7/8), el kernel NT como base común, el **modelo privativo** (código cerrado, licencia, imposibilidad de auditar vs Linux) y por qué el Windows viejo (EternalBlue MS17-010, MS08-067) sigue siendo relevante. Quiz: qué es privativo.
+- **windows-02 · Versiones actuales** — Windows 10 (soporte hasta 2025, ediciones LTSC), Windows 11 (TPM 2.0 + Secure Boot, mismo kernel NT), Windows Server (Active Directory, IIS, Server Core). Quiz: requisito TPM.
+- **windows-03 · Seguridad** — Defender Firewall (3 perfiles), Microsoft Defender Antivirus, **UAC**, **Group Policy (GPO)** + extras pedidos: BitLocker, Windows Hello, Credential Guard, Secure Boot/TPM, AppLocker/WDAC, Sandbox, Event Logs. Quiz: qué hace UAC.
+- **windows-04 · Filesystem, usuarios y permisos** — mapa de C:\ (System32, Temp, Users, Program Files, inetpub, NTFS vs FAT32), tipos de cuentas (Administrador, estándar, Guest, **SYSTEM**, cuentas de servicio), SAM, grupos, **ACL NTFS** (full control/modify/read/execute, dueño, herencia, `icacls`) y dónde vive la info jugosa (SAM, Registry, perfiles). Quiz: `icacls`.
+- **windows-05 · Servicios de red** — **SMB** (445/139, shares C$/ADMIN$/IPC$, EternalBlue), **RDP** (3389, fuerza bruta y movimiento lateral), **WinRM** (5985/5986, PowerShell Remoting, Evil-WinRM). Quiz: puerto 5985.
+
+Las lecciones de Windows usan narrator → content → terminal-demo (comandos Windows mostrados, el simulador es Linux) → quiz, sin practical-exercise ni video aún — los videos `wi-0N` vendrán cuando el autor los produzca.
+
+- **`src/academy/path-os.ts`**: importa `WINDOWS_LESSONS` desde el nuevo archivo (OTHERS y subsecciones intactas).
+- **Tests** `Academy.test.tsx` actualizados: total de lecciones **16 → 20** (0/20, progreso 31%→25%), conteos de módulos (0/5 ×3, 0/1 ×1), progreso del path OS (1 de 7 → **1 de 11**, 14%→9%) y el test del módulo Windows ahora verifica las 5 lecciones; quiz de windows-01 actualizado.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → 137 archivos / **1754 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Video he-02 reescrito + nuevo video he-01 (5 fases del pentesting) para hacking-01
+
+**he-02 (filesystem, hacking-02):** narración reescrita (`voicebox-scripts/he-02-scene1..4.txt`) para principiantes — qué es un mapa de sistema, el árbol único de Linux (etc/home/root/var/www/var/log) y el de Windows por discos (C:\Windows, Users, Program Files, inetpub/wwwroot, System32), con cierre-resumen de dónde mirar. Composición y audio folder intactos; pendiente regrabar el audio y re-renderizar.
+
+**he-01 (nuevo, hacking-01): video de las 5 fases del pentesting**
+
+- **`voicebox-scripts/he-01-scene1..6.txt`** (nuevo): 6 escenas — título (el método, no el caos) + una escena por fase (reconocimiento, escaneo, explotación, post-explotación, reporte) con narración clara y paso a paso.
+- **`src/video/remotion/compositions/He01PentestPhases.tsx`** (nuevo): una escena por fase con barra de progreso (FASE n DE 5), número grande + nombre en color de fase, 3 bullets que aparecen línea por línea (efecto `RevealLine`) y un comando representativo por fase (`whois` → `nmap -sV -sC` → `searchsploit` → `sudo su` → `nano informe.md`).
+- **`src/video/remotion/primitives/RevealLine.tsx`** (nuevo): primitive compartido para líneas que aparecen con fade + slide sincronizado con la narración (extraído de Li01, que ahora lo importa — mismo output, re-render verificado).
+- **`audioTimings.ts`**: `'he-01-pentest-phases'` con duraciones **estimadas** [16, 20, 21, 18, 22, 22] marcadas como pendientes de reemplazar con las reales.
+- **`Root.tsx`**: composición registrada como `he-01-pentest-phases`.
+- **`src/academy/path-hacking.ts`**: hacking-01 gana el paso `video` (`/videos/he01-pentest-phases.mp4`) después del narrator.
+- Carpeta `public/videos/audio/he-01-pentest-phases/` creada para los audios nuevos.
+
+**Pendiente del autor:** grabar los 4 audios de he-02 y los 6 de he-01 (voz Miguel); después se miden duraciones, se sincronizan los beats y se re-renderizan `he02-filesystem.mp4` y `he01-pentest-phases.mp4`.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → 137 archivos / **1754 tests pasando** · `pnpm build` OK · li-01 re-renderizado tras el refactor.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Narraciones de li-02..li-05 reescritas: más claras y paso a paso para principiantes
+
+Los guiones de los 4 videos de Linux (terminal, comandos, crear/editar, permisos) eran demasiado abreviados — explicaban cada tema como para alguien que ya lo sabe. Reescritas las 14 escenas (`voicebox-scripts/li-02-scene1..4.txt`, `li-03-scene1..3.txt`, `li-04-scene1..3.txt`, `li-05-scene1..4.txt`) manteniendo el mismo número de escenas y los términos que muestra cada pantalla:
+
+- **li-02 (terminal)**: qué es el prompt y para qué sirve cada símbolo (usuario, máquina, virgulilla=home, `$`=usuario común, `#`=root); anatomía del comando explicando comando → flags → argumento con `nmap -sV -p-`.
+- **li-03 (comandos)**: pwd/id/ls/echo explicados con su pregunta base (dónde estoy, quién soy, qué hay, cómo escribo), qué mirar en la salida de `id` (grupo sudo) y el `ls -la`; `.bash_history` como lectura de la mente del usuario.
+- **li-04 (crear/editar)**: pipeline mkdir → touch → nano explicado paso a paso (incluye Ctrl+O guardar / Ctrl+X salir) y por qué /tmp es el lugar para trabajar (escritura global) frente a /etc (solo root).
+- **li-05 (permisos)**: tipo de archivo, los 3 grupos (dueño/grupo/otros), r/w/x con sus valores 4/2/1 y la suma octal; SUID explicado con el mecanismo completo (corre como el dueño, normalmente root) y su valor en escalada.
+
+**Flujo pendiente:** el autor regraba el audio con estas narraciones (voz Miguel); después se miden las duraciones reales (`ffmpeg silencedetect`), se re-sincronizan los beats internos de cada composición si hace falta y se re-renderizan los 4 MP4. Las composiciones no cambian (el contenido visual sigue siendo válido).
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### li-01-linux-history escena 4: características de Linux/Windows aparecen línea por línea con la narración
+
+Nuevo componente `Line` en `Li01LinuxHistory.tsx` (spring + fade) para que cada ✓/✗ de los paneles comparativos aparezca cuando el narrador la menciona (tiempos medidos con `silencedetect`):
+
+- **Linux** (panel izquierdo): 'código fuente disponible' ~1.4s · 'podés leerlo y estudiarlo' ~2.2s · 'entenderlo por dentro' ~4.8s · 'crear tus propias herramientas' ~8.7s.
+- **Windows** (panel derecho, el narrador pasa a Windows ~10.9s): 'código privativo' ~11.0s · 'eso es mucho más difícil' ~12.3s · 'no sabés qué hay adentro' ~13.2s. El orden de las líneas se reordenó para seguir el orden de la narración.
+- Antes: las 7 líneas aparecían juntas de golpe al iniciar la escena.
+
+**Verificación:** re-render de `public/videos/li01-linux-history.mp4` (3.8 MB, 2241 frames) + análisis por píxeles con seek preciso: el texto crece escalonado en los momentos exactos (47 → 195 → 252 → 255 → 335 → 393 → 542 px entre 56.5s y 69.5s). `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Fix de sincronización en li-01-linux-history: los cambios de pantalla siguen a la narración
+
+Los beats internos de las escenas 3 y 4 cambiaban de pantalla antes de que el narrador terminara de explicar. Medidos los silencios reales de los wavs con `ffmpeg silencedetect` (voz Miguel) y realineados los switches al inicio de cada frase:
+
+- **Escena 1**: la ventana con la cita del foro pasa de 6.5s → **6.7s** (la cita arranca en el silencio 6.20-6.66).
+- **Escena 2**: el bloque GNU/LINUX pasa de 8.5s → **9.5s** (la frase del kernel termina en el silencio 8.99-9.49).
+- **Escena 3**: el beat "miles de ojos" pasa de 10s → **15.6s** (la frase final arranca ~15.7s). Además, cada cápsula de las 4 libertades aparece cuando el narrador la nombra: 0→2.8s, 1→6.7s, 2→9.4s, 3→11.7s (`FREEDOM_AT`).
+- **Escena 4**: el cierre "CON LINUX, NO HAY SECRETOS" pasa de 9.5s → **14.6s** (arranca ~14.7s) — los paneles comparativos quedan mientras explica Linux y Windows.
+
+**Verificación:** re-render de `public/videos/li01-linux-history.mp4` (3.8 MB, 2241 frames) + análisis de píxeles en los 4 momentos clave: a los 49s las 4 cápsulas siguen en pantalla (4 colores), a los 53s ya está "miles de ojos" (solo verde), a los 67s los paneles verde/rojo siguen, a los 72s el cierre (verde, sin rojo). `tsc --noEmit` 0 errores.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Videos renombrados a la convención por plataforma: `li-` (Linux) y `he-` (Hacking Ético)
+
+Nueva convención de naming de videos pensando en el contenido futuro de Windows (`wi-`). Los 5 videos de Linux pasan de prefijo `os-` a `li-`; el video de filesystems (en hacking-02) pasa a `he-02`. Renombrado 1:1 en composición, ID de Remotion, MP4, carpeta de audio, wavs y scripts — sin re-render (el contenido no cambió):
+
+| Antes | Ahora | Composición | MP4 |
+|---|---|---|---|
+| `os-01-linux-history` | `li-01-linux-history` | `Li01LinuxHistory` | `li01-linux-history.mp4` |
+| `os-02-shell-anatomy` | `li-02-shell-anatomy` | `Li02ShellAnatomy` | `li02-shell.mp4` |
+| `os-03-core-commands` | `li-03-core-commands` | `Li03CoreCommands` | `li03-commands.mp4` |
+| `os-04-create-edit` | `li-04-create-edit` | `Li04CreateEdit` | `li04-create-edit.mp4` |
+| `os-05-permissions` | `li-05-permissions` | `Li05Permissions` | `li05-permissions.mp4` |
+| `os-06-filesystem` | `he-02-filesystem` | `He02Filesystem` | `he02-filesystem.mp4` |
+
+- **`src/video/remotion/`**: 6 composiciones renombradas (componentes + rutas `staticFile` + headers), `Root.tsx` con IDs nuevos, `audioTimings.ts` con claves nuevas (timings intactos).
+- **Assets**: MP4 renombrados, carpetas de audio `li-01-linux-history/` … `he-02-filesystem/` con wavs renombrados (`li-0N-sceneM.wav` / `he-02-sceneM.wav`).
+- **Scripts voicebox**: `os-0N-sceneM.txt` → `li-0N-sceneM.txt`, `os-06-sceneM.txt` → `he-02-sceneM.txt` (recreados los del filesystem, que un `mv` previo había pisado).
+- **Academy**: `linux-lessons.ts` (5 srcs `/videos/li0N-*.mp4`), `path-hacking.ts` (`/videos/he02-filesystem.mp4`), `AcademyVideo.test.tsx` y comentario en `types.ts` actualizados.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → 137 archivos / **1754 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Video de historia de Linux (os-01-linux-history) construido y renderizado + Academy renombrada
+
+**Nuevo video `os-01-linux-history` (~75s, 2241 frames, 3.8 MB):**
+
+- **`src/video/remotion/compositions/Os01LinuxHistory.tsx`** (nuevo) — 4 escenas que siguen la narración: (1) 1991 · Linus Torvalds y el post en el foro (título + `TerminalWindow` con `Typewriter` de la cita real), (2) kernel (memoria/procesos/drivers) + proyecto GNU = `GNU/LINUX` (KeyCapsules shell/comandos/compiladores), (3) las 4 libertades (4 KeyCapsules 0-3 + "miles de ojos revisando el código"), (4) Linux abierto vs Windows cerrado + cierre "CON LINUX, NO HAY SECRETOS".
+- **`audioTimings.ts`**: `'os-01-linux-history': [15.28, 20.40, 19.20, 17.92]` (duraciones reales medidas con ffprobe).
+- **`Root.tsx`**: composición registrada como `os-01-linux-history`.
+- **`linux-lessons.ts`**: `durationSec` del video de linux-01 40 → 75.
+- **Audios**: `public/videos/audio/os-01-linux-history/` con los 4 wavs del autor renombrados a `os-01-linux-history-sceneN.wav` (estaban como `os-06-sceneN.wav`).
+- **Fix**: los scripts `voicebox-scripts/os-01-linux-history-scene1..4.txt` habían quedado con la narración del filesystem (el `mv` de la tanda anterior pisó los de historia) — restaurados con la narración correcta.
+- **Render**: `public/videos/os01-linux-history.mp4` (streams video + audio, verificado por píxeles: paleta completa en las 4 escenas).
+
+**Academy renombrada:**
+
+- **Grupo** `Pentesting y Ciberseguridad` → **`Hacking Ético`** (`AcademyHome.tsx`, header de la sección que agrupa los paths ciberseguridad + hacking).
+- **Path** `Hacking Ético` → **`Pentesting`** (`paths.ts` title/titleEs, `LessonBuilder.tsx` option, comentario de `path-hacking.ts`).
+- **Test** `Academy.test.tsx` actualizado (heading 'Hacking Ético' + tarjeta 'Pentesting').
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → 137 archivos / **1754 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Videos renumerados: filesystem os-01 → os-06, historia de Linux pasa a ser os-01
+
+Reorganización de la numeración de videos tras mover el filesystem a Hacking Ético. El video de historia de Linux (en preparación, con audio grabado por el autor) toma el número **os-01** porque es el primer video del path Linux; el video de filesystems (ahora en hacking-02) pasa a **os-06**. Todo consistente entre composición, MP4, audio y scripts:
+
+- **Composición**: `src/video/remotion/compositions/Os01Filesystem.tsx` → `Os06Filesystem.tsx` (componente renombrado, rutas `staticFile` → `videos/audio/os-06-filesystem/os-06-sceneN.wav`).
+- **`Root.tsx`**: ID `os-01-filesystem` → `os-06-filesystem` (import + registro).
+- **`audioTimings.ts`**: clave `'os-01-filesystem'` → `'os-06-filesystem'` (timings intactos: 4.48/14.08/16.08/10.24).
+- **Assets**: `public/videos/os01-filesystem.mp4` → `os06-filesystem.mp4`; carpeta `audio/os-01-filesystem/` → `audio/os-06-filesystem/` con los wavs renombrados a `os-06-sceneN.wav`.
+- **Scripts Voicebox**: `voicebox-scripts/os-01-scene1..4.txt` → `os-06-scene1..4.txt` (filesystem). La narración del video nuevo pasa de `os-06-scene1..4.txt` a `os-01-linux-history-scene1..4.txt`.
+- **Academy**: `linux-lessons.ts` apunta a `/videos/os01-linux-history.mp4` (nuevo, en preparación); `path-hacking.ts` apunta a `/videos/os06-filesystem.mp4`. Test `AcademyVideo.test.tsx` actualizado (ambas src + nombre del test).
+- **Carpeta libre**: `public/videos/audio/os-01-linux-history/` creada vacía — el autor dejará ahí los 4 audios nuevos (`os-01-linux-history-scene1..4.wav`).
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Academy: video de filesystems movido a Hacking Ético + nueva lección "dónde está la info" + video de historia de Linux en preparación
+
+- **`src/academy/linux-lessons.ts`**: el video de linux-01 pasa de `/videos/os01-filesystem.mp4` a `/videos/os06-linux-history.mp4` (nuevo, en preparación) con caption actualizado. El video de filesystems ya no pertenecía a la lección de historia.
+- **`src/academy/path-hacking.ts`**: eliminada `hacking-02` ("Tu primera práctica: reconocimiento con el lab", con paso `lab-challenge` que mandaba al simulador completo). Nueva `hacking-02` — **"Dónde está la información en cada sistema"** — con el video `os01-filesystem.mp4` movido aquí, contenido de dónde vive la info en Linux (/etc/passwd, /etc/shadow, /var/log, .bash_history, /var/www, /tmp) y Windows (SAM, Event Logs, C:\Users, C:\inetpub), terminal-demo (`cat /etc/passwd | grep bash`) y quiz. Sin `labRef` (no manda al simulador).
+- **Narración del nuevo video de Linux (`voicebox-scripts/os-06-scene1..4.txt`)**: 4 escenas estilo Voicebox (voz Miguel) — (1) nacimiento 1991 / Linus Torvalds, (2) kernel + GNU/Linux, (3) las 4 libertades, (4) por qué es el SO del hacking (código fuente disponible vs Windows cerrado). El audio lo genera el autor; la composición Remotion `os-06-linux-history` se construirá con las duraciones reales del audio.
+- **Tests**: `AcademyVideo.test.tsx` actualizado (linux-01 apunta a os06) + test nuevo de hacking-02 con el video os01. Total de lecciones intacto: 16.
+
+**Métricas:** `tsc --noEmit` 0 errores · tests de Academy pasando · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Videos Academy: polish post-revisión — fuente bundleada en todas las composiciones + íconos en el árbol + fixes
+
+Continuación del feedback de revisión de las 5 composiciones Remotion. `tsc --noEmit` 0 errores · `pnpm test:run` → **137 archivos / 1753 tests pasando** · renders de verificación con `remotion still` OK.
+
+- **`src/video/remotion/fonts.ts` → `fonts.tsx`** — fix de compilación: el archivo contenía JSX (`<style>`) con extensión `.ts`, que TypeScript no parsea (TS1005 en línea 27). Renombrado a `.tsx`; los imports (`from '../fonts'`) resuelven igual.
+- **Os04 y Os05 refactorizados a primitives compartidos**: ahora usan `THEME`/`MONO` de `theme.ts` (colores duplicados hardcodeados eliminados), renderizan `<FontFace />` (antes **no cargaban la fuente JetBrains Mono bundleada** — seguían dependiendo de Cascadia/Fira/Consolas instalados en la máquina de render, el riesgo que señalaba la revisión) y usan `TitleScene` para los títulos de apertura.
+- **`TreeView` con íconos por directorio**: nuevo campo opcional `icon?: string` en `TreeItem`; Os01 usa íconos semánticos — Linux: 🌱 `/` · ⚙️ etc · 🔑 passwd · 👤 home · 👑 root · 🗃️ var · 🌐 www · 📋 log · ⏳ tmp; Windows: 💽 `C:\` · 🪟 Windows · ⚙️ System32 · 👤 Users · 📦 Program Files · 🌐 inetpub.
+- **Os05**: eliminado el shorthand raro `margin: '24 auto 0'` → `marginLeft/Right: 'auto'` + `marginTop` explícitos.
+- **Fixes de `noUnusedLocals` pre-existentes**: `interpolate` sin usar en Os01 e `useCurrentFrame`/`frame` sin usar en Os02.
+- **Verificación visual**: `remotion still` de os-01 (frame 300, árbol Linux con íconos) y os-05 (frame 350, breakdown rwx) renderizaron PNG 1280×720 sin errores; análisis de píxeles confirma la paleta esperada (verde/cian del árbol e íconos, 4 colores del breakdown).
+- **Re-render de los 5 MP4** (`public/videos/os01..os05.mp4`): regenerados con el código nuevo (2.4 / 2.0 / 1.2 / 1.2 / 1.8 MB, con streams de video + audio). Frame extraído de `os01-filesystem.mp4` confirma el árbol con emojis a color (1400 píxeles coloridos — sin cajas tofu).
+
+---
+
+## [Unreleased] - 2026-08-12
+
+### Academy: NetworkSimCore genérico + 2 simuladores nuevos (DMZ y MITM)
+
+**`src/components/academy/NetworkSimCore.tsx`** (nuevo) — motor genérico de simulador de red, config-driven:
+canvas con drag&drop de cables, nodos con estado (`internet` / `lan` / `blocked` / `none`), toggles ON/OFF
+(firewall, ARP spoof), animación de paquetes (coords reales vía ResizeObserver), zonas (DMZ/LAN como paneles),
+leyenda, stats, banners de éxito/advertencia y reset.
+
+- **Refactor:** `NetworkHomeLab.tsx` ahora es un wrapper fino sobre el core (misma topología y comportamiento).
+  Fix latente: las coordenadas de drag fallan a la posición del nodo cuando no son finitas (jsdom), evitando
+  CSS inválido `calc(NaN% + ...)`.
+- **`NetworkDMZLab.tsx`** (nuevo) — topología DMZ con zonas visibles (DMZ pública + LAN privada), firewall
+  como chokepoint, badges `⚡ público` vs `🛡️ protegido`.
+- **`NetworkMitmLab.tsx`** (nuevo) — ataque Man-in-the-Middle con ARP spoof: toggle en el atacante,
+  la víctima pasa a `⚠️ vía atacante` / `interceptada` cuando el spoof está activo y el atacante está en la LAN.
+- **Puertos por peer:** `port(node, peer)` permite que un nodo salga por bordes distintos según con quién conecta.
+
+**Lecciones nuevas en `src/academy/path-network.ts` (path de Redes: 3 → 5):**
+- **`network-04`** — «DMZ: separando lo público de lo privado» con simulador DMZ + demo `iptables` NAT.
+- **`network-05`** — «Man-in-the-middle: interceptando tráfico» con simulador MITM + demo `arpspoof`/`ip_forward`.
+
+**Integración:**
+- `src/types.ts`: `demoKind` = `'network-home' | 'network-dmz' | 'network-mitm'`.
+- `LessonContent.tsx`: map de los 3 simuladores.
+- `LessonBuilder`/`StepEditor`: selector de simulador (3 opciones) para pasos `interactive-demo`.
+- `src/components/__tests__/NetworkSims.test.tsx` (nuevo): 9 tests (ruteo de cables, refuerzos ilegales,
+  estados, condiciones de victoria y advertencias de los 3 simuladores).
+- Tests de Academy actualizados por el cambio 14 → 16 lecciones.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **137 archivos / 1751 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-10
+
+### Academy: videos con Remotion en las 5 lecciones Linux
+
+**Infraestructura Remotion (video como código):**
+
+- **`src/video/remotion/index.ts`** — entry point.
+- **`src/video/remotion/Root.tsx`** — registro de 5 composiciones (una por lección Linux).
+- **`remotion.config.ts`** — output JPEG, overwrite on.
+- Render: `pnpm exec remotion render src/video/remotion/index.ts <id> public/videos/<nombre>.mp4`.
+
+**5 composiciones nuevas (todas 1280×720, 30fps, ~20s):**
+
+| ID | Lección | Contenido |
+|---|---|---|
+| `os-01-filesystem` | Linux vs Windows | comparación lado a lado del árbol de directorios |
+| `os-02-shell-anatomy` | La terminal | prompt descompuesto (user@host:~$) + anatomía de un comando con flags |
+| `os-03-core-commands` | pwd/id/ls/echo | 4 bloques animados de comandos esenciales |
+| `os-04-create-edit` | touch/mkdir/nano | pipeline "carpeta → archivo → editor", dónde se puede escribir (/tmp vs /etc) |
+| `os-05-permissions` | permisos/SUID | lectura de `-rwsr-xr-x`, octal, SUID = escalada |
+
+**Estructura:**
+
+- **`src/types.ts`**: nuevo tipo `LessonStep` = `'video'` (`src`, `durationSec`, `caption` ES/EN).
+- **`src/components/academy/AcademyVideo.tsx`** (nuevo): player embebido con estética del sitio (borde cyan, header ventana, caption footer bilingüe).
+- **`LessonContent.tsx`**: caso `video` → `VideoStep` → `AcademyVideo`.
+- **`src/academy/linux-lessons.ts`**: cada una de las 5 lecciones lleva su video como step después del narrator.
+
+**Salida:** `public/videos/os01..05.mp4` (1.0-1.3 MB por video), servidos como assets estáticos por Vercel bajo `/videos/`.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **136 archivos / 1737 tests pasando** · `pnpm build` · total de videos: 5, ~5.4 MB.
+
+---
+
+## [Unreleased] - 2026-08-09
+
+### Academy: restructura de contenido con subsecciones + Foxy flotante en ejercicios
+
+**Path OS dividido en subsecciones con sidebar:**
+
+- **`src/types.ts`**: nuevo tipo `AcademySubSection`; `AcademyPath` gana `subSections?: AcademySubSection[]` (compatible con flat `lessons`).
+- **`src/academy/linux-lessons.ts`** (nuevo): 5 lecciones Linux completas — historia/software libre · terminal/PATH/prompt · comandos base (pwd/echo/id/ls) · crear/editar (touch/mkdir/nano) · permisos (rwx/octal/SUID/sticky). Cada una con narrator → content → terminal-demo → practical-exercise → quiz.
+- **`src/academy/path-os.ts`** reescrito: subsecciones Linux/Windows/Otros. WINDOWS_LESSONS (1 lección) y OTHERS_LESSONS (1 lección: Android, macOS, BSD) separados.
+- **`src/academy/paths.ts`**: expone `subSections` en el path OS.
+- **`AcademyPath.tsx`**: sidebar con subsecciones, click filtra lecciones; barra de progreso global del path permanece arriba.
+
+**Cambio de flujo en practical-exercise (UI):**
+
+- **`LessonContent.tsx`**: `PracticalExerciseStep` muestra banner + `<LabMiniTerminal>` inline + `<FoxyAssistantBubble>` flotante (reintroducida).
+- Banner ya no tiene el hint — solo la consigna y aviso "Foxy está abajo a la derecha".
+- **`LabMiniTerminal`** queda inline (sin overlay), con altura fija 320px.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **134 archivos / 1733 tests pasando** · `pnpm build` OK.
+
+---
+
+## [Unreleased] - 2026-08-08
+
+### Academy: sección educativa con lecciones guiadas (Fases A–D) + Admin Panel hub + Lab Builder UI
+
+Nueva sección `/es/academy` con 4 bases de contenido y 9 lecciones bilingües, asistida por Foxy (la mascota) en dos formas: narrator de contexto y burbuja flotante en ejercicios prácticos con terminal embebida del lab.
+
+**Admin Panel:**
+
+- **`src/components/AdminPanel.tsx`** rediseñado: hub con 4 tarjetas (Sandbox/Debug · Lab Builder · Asistente Foxy · Analíticas). Sandbox conserva el workspace + debug panel; el resto queda con badge "Próximamente" salvo Builder que abre el Lab Builder. Login `admin`/`admin` actualizado a mensaje de error bilingüe correcto. Ruta `/es/zildeb`.
+- **`src/components/admin/LabBuilder*.tsx`** (4 archivos nuevos): wizard de 5 pasos (Básico → Máquina → Piezas → Misiones → Revisar) con preview JSON copiable. Solo UI — la generación del Scenario y el share vienen en una fase posterior.
+
+**Academy — infraestructura:**
+
+- **`src/types.ts`**: `AcademyPathId`, `AcademyPath`, `LessonStep` (5 tipos: content / terminal-demo / quiz / practical-exercise / foxy-narrator), `Lesson`.
+- **`src/academy/`**: 4 paths (os, network, ciberseguridad, hacking) con 9 lecciones semilla ES/EN, mapeadas a labs existentes vía `labRef`/`labId`.
+- **`src/store/slices/academySlice.ts`**: progreso (`completedLessons`) + analytics de quizzes (`quizResults` con `firstTryCorrect`). Ambos persistidos en `localStorage` vía `partialize`/`merge`.
+- **`src/App.tsx`**: 3 rutas nuevas (`/academy`, `/academy/:pathId`, `/academy/:pathId/:lessonId`).
+- **`SiteHeader.tsx`**: link "Academy" en nav (desktop y mobile).
+
+**Academy — componentes UI (`src/components/academy/`):**
+
+- `AcademyHome.tsx`: progreso global + grid de paths ordenado por menor avance
+- `AcademyPath.tsx`: lista de lecciones + barra de progreso por path (con %)
+- `LessonViewer.tsx`: stepper con navegación y auto-cierre de la terminal embebida al cambiar de paso
+- `LessonContent.tsx`: renderer de los 5 tipos de step
+- `FoxyAssistantBubble.tsx`: Foxy flotante con consigna + pista expandible (estética ≈ FoxyTour sin spotlight)
+- `FoxyNarrator.tsx`: Foxy inline con mensajes rotativos ("Siguiente tip →")
+- `LabMiniTerminal.tsx`: modal con `<Terminal>` standalone cargando el scenario del ejercicio (760×480, comandos reales). Cierra con X roja, click fuera o cambio de paso.
+
+**Contenido y tono:**
+
+- Lecciones con recorrido `narrator → content → terminal-demo → practical-exercise → quiz`.
+- Tono latino neutro (sin "che", "mirá", "hacé"). Foxy habla directo pero no robótico.
+- Quizzes bloquean el avance hasta acertar. Los `practical-exercise` no bloquean — son invitación.
+- Terminal-demo con inline code (`backticks` resaltados) y llamadas explicativas.
+
+**Fix de IDs**: `labRef`/`labId` usaban `laboratorio-XX`; corregido a `scenario-XX` (el ID real del Scenario).
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm build` OK · `pnpm test:run` → **133 archivos / 1734 tests pasando** (29 nuevos: 13 Academy + 5 FoxyNarrator + 4 FoxyAssistantBubble + 4 LabMiniTerminal + 3 quiz tracking en academyStore).
+
+---
+
 ## [Unreleased] - 2026-08-06
 
 ### Auditoría de arquitectura completa — MEJORAS_KIMI.md

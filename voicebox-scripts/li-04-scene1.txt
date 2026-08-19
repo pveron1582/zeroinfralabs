@@ -1,0 +1,1 @@
+Cuando entrás a un sistema, la primera regla es: no ensucies. Trabajá en una carpeta tuya. Para eso hay tres comandos, en un orden muy simple: primero creás la carpeta con mkdir, después creás el archivo con touch, y por último lo editás con nano. Vamos a verlos.

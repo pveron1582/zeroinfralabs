@@ -1,0 +1,1 @@
+Las redes se clasifican por tamaño. PAN es tu espacio personal: el bluetooth entre tu celu y los auriculares. LAN es la red local: tu casa u oficina, la que arman el switch y el wifi. MAN une varias LAN en una ciudad o un campus. Y WAN une ciudades y países: la más grande de todas es internet.

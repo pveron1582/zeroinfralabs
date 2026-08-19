@@ -1,0 +1,1 @@
+El pentesting no es caos: es método. Los profesionales trabajan en cinco fases, siempre en el mismo orden: reconocimiento, escaneo, explotación, post-explotación y reporte. Vamos a recorrerlas una por una.

@@ -5,7 +5,7 @@ import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type Wallpaper } from '../components/
 
 export interface DesktopWindow {
   id: string;
-  type: 'terminal' | 'wallpaper' | 'browser' | 'guide';
+  type: 'terminal' | 'wallpaper' | 'browser' | 'guide' | 'burpsuite';
   title: string;
   x: number;
   y: number;
@@ -109,6 +109,20 @@ export function useDesktopWindows() {
       const id = `wallpaper-${Date.now()}`;
       const offset = cascadeOffset(prev.length);
       return [...prev, { id, type: 'wallpaper' as const, title: isEs ? 'Configuración de Fondo' : 'Wallpaper Settings', x: 150 + offset, y: 90 + offset, w: 660, h: 540, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
+    });
+  };
+
+  const addBurp = () => {
+    setWindows(prev => {
+      if (prev.some(w => w.type === 'burpsuite')) {
+        const win = prev.find(w => w.type === 'burpsuite');
+        if (win?.minimized) restoreWindow(win.id);
+        bringToFront(win!.id);
+        return prev;
+      }
+      const id = `burp-${Date.now()}`;
+      const offset = cascadeOffset(prev.length);
+      return [...prev, { id, type: 'burpsuite' as const, title: 'Burp Suite', x: 200 + offset, y: 80 + offset, w: 900, h: 560, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
     });
   };
 
@@ -250,6 +264,7 @@ export function useDesktopWindows() {
   const browserWindows = windows.filter(w => w.type === 'browser');
   const wallpaperWindows = windows.filter(w => w.type === 'wallpaper');
   const guideWindows = windows.filter(w => w.type === 'guide');
+  const burpWindows = windows.filter(w => w.type === 'burpsuite');
   const topWindow = windows.reduce<DesktopWindow | null>((best, w) =>
     !w.minimized && (!best || w.zIndex > best.zIndex) ? w : best, null);
   const topWindowId = topWindow?.id;
@@ -257,8 +272,8 @@ export function useDesktopWindows() {
   return {
     time, windows, setWindows, closingWindowIds, activeWallpaper, setActiveWallpaper,
     selectedWallpaper, activeSettingsId, setActiveSettingsId, showAppMenu, setShowAppMenu,
-    showSysMenu, setShowSysMenu, termWindows, browserWindows, wallpaperWindows, guideWindows,
-    topWindowId, addTerminal, addBrowser, addGuide, openWallpaperPicker, closeWindow,
+    showSysMenu, setShowSysMenu, termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows,
+    topWindowId, addTerminal, addBrowser, addGuide, addBurp, openWallpaperPicker, closeWindow,
     minimizeWindow, restoreWindow, toggleMaximize, bringToFront, changeFontSize,
     startDrag, startResize, desktopRef, isEs, currentScenario, missions, showNotification,
   };

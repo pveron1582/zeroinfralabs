@@ -1,0 +1,1 @@
+Cada dispositivo de una red tiene una dirección IP: un número único que permite entregarle datos, como la dirección postal de tu casa. El formato son cuatro números de cero a doscientos cincuenta y cinco separados por puntos, por ejemplo 192.168.1.10. Si dos equipos usan la misma IP en la misma red, se pisan: eso es un conflicto de IP.

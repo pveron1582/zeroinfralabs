@@ -1,0 +1,1 @@
+Hay cuatro comandos que vas a usar todos los días en cualquier máquina Linux: pwd, id, ls y echo. Cada uno responde una pregunta simple: dónde estoy, quién soy, qué hay acá, y cómo escribo. Te los muestro uno por uno.

@@ -1,6 +1,6 @@
 // ── src/components/__tests__/FakeBrowser.test.tsx ──────────────────
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { FakeBrowser } from '../FakeBrowser';
 
@@ -358,7 +358,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
 
   it('debe llamar onClose al hacer clic en el botón rojo', () => {
     const onClose = vi.fn();
-    
+
     render(
       <FakeBrowser
         allMachines={allMachines}
@@ -378,6 +378,87 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.click(redButton);
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  // ── CasinoVeo (Escenario 7) ──────────────────────────────────────
+  const mockCasinoMachine = {
+    id: 'lab-scenario-07-casinoveo',
+    machine_info: { hostname: 'casinoveo-web', ip: '192.168.50.11', mac: '08:00:27:B8:7F:2A', os: 'Ubuntu 20.04 LTS', status: 'up', type: 'server' },
+    discovery_level: 2,
+    scan_results: { ports: [{ port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache httpd 2.4.52' }] },
+    web_enumeration: {
+      web_server: 'Apache/2.4.52',
+      cms: 'CasinoVeo 2.0 - AI Image Generator (login vulnerable)',
+      directories: [
+        { path: '/', status: 200, description: 'Home page (CasinoVeo landing)' },
+        { path: '/login', status: 200, description: 'Login form (VULNERABLE to SQLi)' },
+        { path: '/admin', status: 403, description: 'Admin panel (restricted)' },
+      ],
+    },
+    known_passwords: { root: 'BurpSQLi@2024!' },
+    flags: { root: 'ZIL{INTERCEPT_AND_EXPLOIT}' },
+    learning_steps: [],
+    files: []
+  };
+
+  function renderCasinoBrowser(onMissionComplete = vi.fn()) {
+    const machines = [mockCasinoMachine];
+    return {
+      onMissionComplete,
+      ...render(
+        <FakeBrowser
+          allMachines={machines}
+          onClose={vi.fn()}
+          onMissionComplete={onMissionComplete}
+          onCredentialsFound={vi.fn()}
+          onVerifyCredentials={vi.fn()}
+          scenarioHasWeb={true}
+          wpDiscoveryLevel={0}
+          mission3Already={false}
+          onSetPossibleUsers={vi.fn()}
+          onReportVulnerability={vi.fn()}
+        />
+      ),
+    };
+  }
+
+  it('debe renderizar la landing de CasinoVeo al navegar a la IP (Escenario 7)', () => {
+    const { rerender, onMissionComplete } = renderCasinoBrowser();
+
+    const input = screen.getByDisplayValue('https://www.google.com');
+    fireEvent.change(input, { target: { value: 'http://192.168.50.11/' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    rerender(<FakeBrowser allMachines={[mockCasinoMachine]} onClose={vi.fn()} onMissionComplete={onMissionComplete} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={0} mission3Already={false} onSetPossibleUsers={vi.fn()} />);
+
+    expect(screen.getByText(/CasinoVeo/)).toBeInTheDocument();
+    // Visita a la IP con discovery_level >= 2 completa la misión 3
+    expect(onMissionComplete).toHaveBeenCalledWith(3);
+  });
+
+  it('debe renderizar el login de CasinoVeo y validar SQLi en el browser', () => {
+    vi.useFakeTimers();
+    try {
+      const { rerender } = renderCasinoBrowser();
+
+      const input = screen.getByDisplayValue('https://www.google.com');
+      fireEvent.change(input, { target: { value: 'http://192.168.50.11/login' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      rerender(<FakeBrowser allMachines={[mockCasinoMachine]} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={0} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+
+      expect(screen.getByLabelText('Usuario')).toBeInTheDocument();
+      expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
+
+      // Comilla simple → 500 con error SQL (SQLi detected desde el browser)
+      fireEvent.change(screen.getByLabelText('Usuario'), { target: { value: "admin'" } });
+      fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'x' } });
+      fireEvent.click(screen.getByRole('button', { name: /Entrar a generar/i }));
+      act(() => { vi.advanceTimersByTime(900); });
+
+      expect(screen.getByText(/500 Internal Server Error/)).toBeInTheDocument();
+      expect(screen.getByText(/SQL syntax/)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('debe mostrar sugerencias de búsqueda en Google', () => {

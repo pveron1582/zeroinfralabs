@@ -1,0 +1,1 @@
+Para el hacking, esto es clave: el código fuente está disponible. Podés leerlo, estudiarlo, entender cómo funciona el sistema por dentro, y crear tus propias herramientas para ese uso. En Windows, que es cerrado, eso es mucho más difícil: no sabés qué hay adentro. Con Linux, no hay secretos.

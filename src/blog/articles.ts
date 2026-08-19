@@ -13,9 +13,14 @@ export interface BlogArticle {
   tags: string[];
   content: string;
   contentEs?: string;
+  /** CTA del final del artículo. Por defecto va a /labs. */
+  ctaTo?: 'labs' | 'academy';
 }
 
+import { ACADEMY_LAUNCH_ARTICLE } from './article-academy-launch';
+
 export const BLOG_ARTICLES: BlogArticle[] = [
+  ACADEMY_LAUNCH_ARTICLE,
   {
     slug: 'learn-hacking-without-installing-tools',
     slugEs: 'como-aprender-hacking-sin-instalar-herramientas',

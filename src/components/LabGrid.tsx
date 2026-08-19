@@ -3,123 +3,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Scenario } from '../types';
-import { SCENARIOS } from '../laboratorios/laboratorios';
+import { SCENARIOS, SCENARIOS_META } from '../laboratorios/laboratorios';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
-import { SCENARIOS_META } from '../laboratorios/laboratorios';
-import { useColors, FONT_MONO, FONT_SANS } from './landing/constants';
+import { useColors, FONT_SANS } from './landing/constants';
 import { useScenarioStore } from '../store/scenarioStore';
 import { SiteHeader } from './landing/SiteHeader';
 import { PageHero } from './landing/PageHero';
 import { MarketingFooter } from './landing/MarketingFooter';
-
-interface ScenarioMeta {
-  tagline?: string;
-  taglineEs?: string;
-  tools?: string[];
-  accentColor?: string;
-  description?: string;
-  descriptionEs?: string;
-}
-
-const LAB_IMAGES: Record<string, string> = {
-  'scenario-01': '/lab_images/lab01.png',
-  'scenario-02': '/lab_images/lab02.png',
-  'scenario-03': '/lab_images/lab03.png',
-  'scenario-04': '/lab_images/Lab04.png',
-  'scenario-05': '/lab_images/Lab05.png',
-  'scenario-06': '/lab_images/Lab06.png',
-};
-
-function ScenarioCard({
-  scenario, index, meta, diffLabel, diffColor, accent, onOpen,
-}: {
-  scenario: Scenario; index: number; meta: ScenarioMeta | undefined;
-  diffLabel: string; diffColor: string; accent: string; onOpen: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const language = useLanguage();
-  const t = useT();
-  const colors = useColors();
-  const isDark = useScenarioStore((s) => s.theme) === 'dark';
-  const descriptionText = language === 'es' ? (meta?.descriptionEs ?? meta?.description ?? scenario.description) : (meta?.description ?? scenario.description);
-
-  return (
-    <article
-      onClick={onOpen}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="flex flex-col overflow-hidden select-none w-full cursor-pointer"
-      style={{
-        background: isDark ? '#11161f' : '#ffffff',
-        border: `1px solid ${hovered ? `${accent}60` : colors.border}`,
-        borderRadius: '12px',
-        boxShadow: hovered
-          ? `0 12px 40px ${accent}18, 0 0 0 1px ${accent}15`
-          : '0 1px 3px rgba(15,23,42,0.04)',
-        transform: hovered ? 'translateY(-4px)' : 'none',
-        transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        animationDelay: `${index * 90}ms`,
-        animation: 'cardIn 0.4s ease-out both',
-      }}
-      role="button" tabIndex={0}
-    >
-      <div className="relative overflow-hidden" style={{ height: '170px', background: isDark ? '#0a0e14' : '#f1f5f9' }}>
-        <img
-          src={LAB_IMAGES[scenario.id]}
-          alt={scenario.name}
-          className="w-full h-full object-cover"
-          loading="lazy"
-          style={{
-            transform: hovered ? 'scale(1.28)' : 'scale(1)',
-            transformOrigin: 'center center',
-            transition: 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-          }}
-        />
-        <div className="absolute top-3 left-3 font-mono text-xs font-bold px-2 py-0.5 rounded"
-          style={{ background: '#000000aa', color: accent, border: `1px solid ${accent}48`, zIndex: 2 }}>
-          0x0{index + 1}
-        </div>
-        <div className="absolute top-3 right-3 font-mono text-xs font-bold px-2 py-0.5 rounded"
-          style={{ background: '#000000aa', color: diffColor, border: `1px solid ${diffColor}48`, zIndex: 2 }}>
-          {diffLabel}
-        </div>
-      </div>
-      <div className="p-4 flex flex-col" style={{ minHeight: '200px' }}>
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs px-1.5 py-0.5 rounded font-medium"
-              style={{ fontFamily: FONT_MONO, background: `${accent}14`, color: accent, border: `1px solid ${accent}25` }}>
-              {scenario.category}
-            </span>
-            <span className="text-xs" style={{ fontFamily: FONT_MONO, color: colors.textMuted }}>
-              {scenario.network_range}
-            </span>
-          </div>
-          <h3 className="text-sm font-bold leading-snug" style={{ color: colors.text }}>
-            {scenario.name}
-          </h3>
-          <p className="text-xs mt-1 leading-relaxed line-clamp-2"
-            style={{ color: colors.textMuted, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.5em' }}>
-            {descriptionText}
-          </p>
-        </div>
-        <div className="mt-auto pt-3 flex items-center justify-between" style={{ borderTop: `1px solid ${colors.border}` }}>
-          <span className="text-xs" style={{ fontFamily: FONT_MONO, color: colors.textMuted }}>
-            {scenario.missions?.length ?? 5} {t('missions')}
-          </span>
-          <span className="flex items-center gap-1.5 text-xs font-semibold"
-            style={{ color: hovered ? accent : colors.textMuted }}>
-            {t('startButton')}
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-              style={{ transform: hovered ? 'translateX(2px)' : 'none', transition: 'transform 0.2s' }}>
-              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </span>
-        </div>
-      </div>
-    </article>
-  );
-}
+import { diffColor } from './labGrid/helpers';
+import { ScenarioCard } from './labGrid/ScenarioCard';
+import { ModalContent } from './labGrid/ModalContent';
 
 export function LabGrid() {
   const { lang } = useParams<{ lang: string }>();
@@ -186,12 +79,6 @@ export function LabGrid() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [modalIndex, closeModal, goPrev, goNext]);
-
-  const diffColor = (difficulty: string) => {
-    if (difficulty === 'Easy') return '#10b981';
-    if (difficulty === 'Medium') return '#f59e0b';
-    return '#f87171';
-  };
 
   const diffLabel = (difficulty: string) => {
     if (difficulty === 'Easy') return t('easy');
@@ -299,7 +186,6 @@ export function LabGrid() {
               meta={SCENARIOS_META[modalIndex]}
               lang={language}
               t={t}
-              diffColor={diffColor}
               diffLabel={diffLabel}
               onClose={closeModal}
               onStart={handleSelect}
@@ -308,102 +194,5 @@ export function LabGrid() {
         </div>
       )}
     </div>
-  );
-}
-
-function ModalContent({
-  index, scenario, meta, lang, t, diffColor, diffLabel, onClose, onStart,
-}: {
-  index: number; scenario: Scenario; meta: ScenarioMeta | undefined;
-  lang: string; t: ReturnType<typeof useT>;
-  diffColor: (d: string) => string; diffLabel: (d: string) => string;
-  onClose: () => void; onStart: (id: string) => void;
-}) {
-  const description = lang === 'es' ? (meta?.descriptionEs ?? meta?.description ?? scenario.description) : (meta?.description ?? scenario.description);
-  const tools = meta?.tools?.join(', ') ?? '';
-  const colors = useColors();
-  const isDark = useScenarioStore((s) => s.theme) === 'dark';
-  const [closeHover, setCloseHover] = useState(false);
-
-  return (
-    <>
-      <img
-        src={LAB_IMAGES[scenario.id]}
-        alt={scenario.name}
-        className="w-full object-cover rounded-t-2xl"
-        style={{ aspectRatio: '16/9', background: isDark ? '#0a0e14' : '#f1f5f9' }}
-      />
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors"
-        style={{
-          background: isDark ? '#1e293b' : '#f8fafc',
-          border: `1px solid ${closeHover ? '#ef444460' : isDark ? '#334155' : '#e2e8f0'}`,
-          color: closeHover ? '#ef4444' : colors.textMuted,
-        }}
-        onMouseEnter={() => setCloseHover(true)}
-        onMouseLeave={() => setCloseHover(false)}
-        aria-label={t('close')}
-      >
-        ✕
-      </button>
-      <div className="p-5 md:p-6 flex flex-col gap-3.5">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="font-mono text-sm font-semibold" style={{ color: '#10b981' }}>
-            0x0{index + 1}
-          </span>
-          <span className="mono text-xs font-semibold px-2.5 py-1 rounded-full"
-            style={{ background: isDark ? '#1e293b' : '#f1f5f9', color: colors.textMuted }}>
-            {scenario.category}
-          </span>
-          <span className="mono text-xs font-semibold px-2.5 py-1 rounded-full"
-            style={{ background: `${diffColor(scenario.difficulty)}15`, color: diffColor(scenario.difficulty) }}>
-            {diffLabel(scenario.difficulty)}
-          </span>
-        </div>
-
-        <h2 className="text-xl font-bold leading-tight" style={{ color: colors.text }}>
-          {scenario.name}
-        </h2>
-
-        <p className="text-sm leading-relaxed" style={{ color: colors.textMuted, lineHeight: 1.65 }}>
-          {description}
-        </p>
-
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 pt-1">
-          <div>
-            <span className="mono text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>
-              {t('tools')}
-            </span>
-            <p className="mono text-sm mt-0.5" style={{ color: colors.text }}>{tools}</p>
-          </div>
-          <div>
-            <span className="mono text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>
-              {t('ipRange')}
-            </span>
-            <p className="mono text-sm mt-0.5" style={{ color: colors.text }}>{scenario.network_range}</p>
-          </div>
-          <div>
-            <span className="mono text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>
-              {t('missionsTitle')}
-            </span>
-            <p className="text-sm mt-0.5 font-medium" style={{ color: colors.text }}>
-              {scenario.missions?.length ?? 5} {t('missions')}
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => onStart(scenario.id)}
-          className="self-start inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.03] active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, #10b981, #047857)', boxShadow: '0 6px 24px rgba(16,185,129,0.30)' }}
-        >
-          {t('startLab')}
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </button>
-      </div>
-    </>
   );
 }

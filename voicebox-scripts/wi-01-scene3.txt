@@ -1,0 +1,1 @@
+Y una cosa más: en las redes reales todavía hay Windows viejos por todos lados. Windows 7, XP, Server 2008: máquinas que las empresas se niegan a actualizar. Y los Windows viejos están llenos de exploits clásicos, como MS17-010, el EternalBlue, o el MS08-067. Para un pentester, encontrar una máquina Windows antigua es como encontrar una puerta sin llave.

@@ -6,6 +6,7 @@ interface DesktopTopBarProps {
   browserWindows: DesktopWindow[];
   wallpaperWindows: DesktopWindow[];
   guideWindows: DesktopWindow[];
+  burpWindows: DesktopWindow[];
   topWindowId: string | undefined;
   showAppMenu: boolean;
   time: Date;
@@ -17,6 +18,7 @@ interface DesktopTopBarProps {
   onAddBrowser: () => void;
   onOpenGuide: () => void;
   onOpenWallpaperPicker: () => void;
+  onAddBurp: () => void;
   onMinimizeWindow: (id: string) => void;
   onRestoreWindow: (id: string) => void;
   onBringToFront: (id: string) => void;
@@ -26,10 +28,10 @@ interface DesktopTopBarProps {
 }
 
 export function DesktopTopBar({
-  termWindows, browserWindows, wallpaperWindows, guideWindows, topWindowId,
+  termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows, topWindowId,
   showAppMenu, time, isEs, currentScenarioCategory,
   onToggleAppMenu, onCloseAppMenu,
-  onAddTerminal, onAddBrowser, onOpenGuide, onOpenWallpaperPicker,
+  onAddTerminal, onAddBrowser, onOpenGuide, onOpenWallpaperPicker, onAddBurp,
   onMinimizeWindow, onRestoreWindow, onBringToFront,
   onRequestExit, onOpenTour, onShowAbout,
 }: DesktopTopBarProps) {
@@ -73,6 +75,13 @@ export function DesktopTopBar({
                   <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
                 </svg>
                 <span>Chrome</span>
+              </button>
+            )}
+            {currentScenarioCategory === 'Web' && (
+              <button onClick={() => { onAddBurp(); onCloseAppMenu(); }}
+                className="w-full text-left px-3 py-2 hover:bg-orange-500/10 hover:text-orange-400 flex items-center gap-2 border-b border-slate-800/40">
+                <div className="w-3.5 h-3.5 rounded-sm bg-orange-500 flex items-center justify-center text-slate-950 font-bold text-[9px]">B</div>
+                <span>Burp Suite</span>
               </button>
             )}
             <div className="px-3 py-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
@@ -141,6 +150,18 @@ export function DesktopTopBar({
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-red-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-red-400'}`}>
               <span className="text-red-400">📄</span>
               <span>Manual</span>
+            </button>
+          );
+        })}
+
+        {burpWindows.map((bw) => {
+          const isActive = !bw.minimized && bw.id === topWindowId;
+          return (
+            <button key={bw.id}
+              onClick={() => { if (bw.minimized) { onRestoreWindow(bw.id); onBringToFront(bw.id); } else if (bw.id !== topWindowId) { onBringToFront(bw.id); } else { onMinimizeWindow(bw.id); } }}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-orange-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-orange-400'}`}>
+              <span className="w-3.5 h-3.5 rounded-sm bg-orange-500 flex items-center justify-center text-slate-950 font-bold text-[9px]">B</span>
+              <span>{bw.title}</span>
             </button>
           );
         })}

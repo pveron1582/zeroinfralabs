@@ -578,6 +578,138 @@ describe('cmd_nmap', () => {
     expect(result.output).toContain('Nmap 7.92');
   });
 
+  // ── Fidelidad: -A implica -sV, MAC siempre, default -p top-N ──
+
+  it('-A debe mostrar columna VERSION (implica -sV)', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-A', '-p', '22,80', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('VERSION');
+    expect(result.output).toContain('OpenSSH 8.2');
+    expect(result.output).toContain('Apache 2.4');
+  });
+
+  it('-A debe mostrar Service Info con OS', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-A', '-p', '22', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('Service Info');
+    expect(result.output).toContain('OS:');
+  });
+
+  it('MAC Address debe mostrarse sin -v (misma subred)', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sV', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('MAC Address');
+  });
+
+  it('Host is up debe mostrarse sin -v', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sS', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('Host is up');
+  });
+
+  it('-sn sin -v debe mostrar MAC Address (misma subred)', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+    const result = cmd_nmap.execute(['-sn', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('MAC Address');
+  });
+
+  it('default scan debe incluir puertos altos frecuentes (top-N)', () => {
+    const machine: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '08:00:27:C4:D5:E6', os: 'Ubuntu 20.04 LTS', status: 'up', type: 'server' },
+      discovery_level: 1,
+      scan_results: {
+        ports: [
+          { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.2' },
+          { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache 2.4' },
+          { port: 3306, protocol: 'tcp', state: 'open', service: 'mysql', version: 'MySQL 8.0' },
+          { port: 8080, protocol: 'tcp', state: 'open', service: 'http-proxy', version: 'Tomcat 9' },
+        ]
+      },
+      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+      learning_steps: [],
+      files: [],
+    };
+
+    // Sin -p: default ~ top 1000 (debe incluir 3306 y 8080)
+    const result = cmd_nmap.execute(['-sV', '192.168.1.10'], {
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('3306/tcp');
+    expect(result.output).toContain('8080/tcp');
+    expect(result.output).toContain('MySQL 8.0');
+  });
+
+  it('-A sobre Linux con http debe mostrar http-title en Host script results', () => {
+    const machine: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'webserver', ip: '192.168.1.10', mac: '08:00:27:C4:D5:E6', os: 'Ubuntu 20.04 LTS', status: 'up', type: 'server' },
+      discovery_level: 1,
+      scan_results: {
+        ports: [
+          { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache 2.4.52 ((Ubuntu))' },
+        ]
+      },
+      web_enumeration: { web_server: 'Apache', cms: 'none', directories: [] },
+      learning_steps: [],
+      files: [],
+    };
+
+    const result = cmd_nmap.execute(['-A', '-p', '80', '192.168.1.10'], {
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('Host script results');
+    expect(result.output).toContain('http-server-header');
+  });
+
+  it('-A sobre Windows con 445 debe mostrar smb-os-discovery', () => {
+    const machine: Machine = {
+      id: 'target-01',
+      machine_info: { hostname: 'winserver', ip: '192.168.1.10', mac: '08:00:27:AA:BB:CC', os: 'Windows Server 2019', status: 'up', type: 'server' },
+      discovery_level: 1,
+      scan_results: {
+        ports: [
+          { port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' },
+        ]
+      },
+      web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+      learning_steps: [],
+      files: [],
+    };
+
+    const result = cmd_nmap.execute(['-A', '-p', '445', '192.168.1.10'], {
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.output).toContain('Host script results');
+    expect(result.output).toContain('smb-os-discovery');
+  });
+
   // ── CIDR Network Scan ──
 
   it('-sn con CIDR debe escanear toda la red', () => {

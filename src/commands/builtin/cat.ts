@@ -10,7 +10,7 @@ import { buildFileReadMetadata } from '../../utils/fileRead';
 
 // Helper para normalizar paths
 function normalizePath(filePath: string): string {
-  let normalized = filePath.replace(/^\.\//, '');
+  const normalized = filePath.replace(/^\.\//, '');
   if (normalized.endsWith('/')) {
     return normalized;
   }

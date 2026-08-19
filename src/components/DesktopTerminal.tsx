@@ -1,23 +1,26 @@
 import { Terminal } from './Terminal';
 import { FakeBrowser } from './FakeBrowser';
+import { BurpSuite } from './burpsuite';
 import { DesktopTopBar } from './DesktopTopBar';
 import { WindowFrame } from './WindowFrame';
 import { WallpaperPicker } from './WallpaperPicker';
 import { PdfReader } from './PdfReader';
 import { useScenarioStore } from '../store/scenarioStore';
 import { useDesktopWindows } from '../hooks/useDesktopWindows';
+import { useMissionCompletion } from '../hooks/useMissionCompletion';
 import { type CommandRunnerProps } from '../hooks/useCommandRunner';
 
 export function DesktopTerminal(props: CommandRunnerProps) {
   const setPossibleUsers = useScenarioStore(state => state.setPossibleUsers);
   const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
   const setTermColor = useScenarioStore(state => state.setTermColor);
+  const { checkMissionCompletion } = useMissionCompletion(props.onMissionComplete);
 
   const {
     time, windows, setWindows, closingWindowIds, activeWallpaper, setActiveWallpaper,
     selectedWallpaper, activeSettingsId, setActiveSettingsId, showAppMenu, setShowAppMenu,
-    termWindows, browserWindows, wallpaperWindows, guideWindows,
-    topWindowId, addTerminal, addBrowser, addGuide, openWallpaperPicker, closeWindow,
+    termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows,
+    topWindowId, addTerminal, addBrowser, addGuide, addBurp, openWallpaperPicker, closeWindow,
     minimizeWindow, restoreWindow, toggleMaximize, bringToFront,
     startDrag, startResize, desktopRef, isEs, currentScenario, missions, showNotification,
   } = useDesktopWindows();
@@ -49,13 +52,13 @@ export function DesktopTerminal(props: CommandRunnerProps) {
 
       <DesktopTopBar
         windows={windows} termWindows={termWindows} browserWindows={browserWindows}
-        wallpaperWindows={wallpaperWindows} guideWindows={guideWindows} topWindowId={topWindowId}
+        wallpaperWindows={wallpaperWindows} guideWindows={guideWindows} burpWindows={burpWindows} topWindowId={topWindowId}
         showAppMenu={showAppMenu} time={time}
         isEs={isEs} currentScenarioCategory={currentScenario?.category || ''}
         onToggleAppMenu={() => { setShowAppMenu(!showAppMenu); }}
         onCloseAppMenu={() => setShowAppMenu(false)}
         onAddTerminal={addTerminal} onAddBrowser={addBrowser} onOpenGuide={addGuide}
-        onOpenWallpaperPicker={openWallpaperPicker}
+        onOpenWallpaperPicker={openWallpaperPicker} onAddBurp={addBurp}
         onMinimizeWindow={minimizeWindow} onRestoreWindow={restoreWindow}
         onBringToFront={bringToFront}
         onRequestExit={props.onRequestExit}
@@ -167,6 +170,15 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                     mission3Already={mission3Already}
                     onSetPossibleUsers={setPossibleUsers}
                     onReportVulnerability={reportVulnerability}
+                    checkMissionCompletion={checkMissionCompletion}
+                  />
+                ) : w.type === 'burpsuite' ? (
+                  <BurpSuite key={w.id}
+                    allMachines={props.allMachines}
+                    onClose={() => closeWindow(w.id)}
+                    onReportVulnerability={reportVulnerability}
+                    onCredentialsFound={props.onCredentialsFound}
+                    checkMissionCompletion={checkMissionCompletion}
                   />
                 ) : w.type === 'guide' ? (
                   <PdfReader key={w.id} isEs={isEs} />

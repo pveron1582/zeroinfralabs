@@ -18,6 +18,7 @@ const EXPECTED_USERS: Record<string, string[]> = {
   'scenario-04': ['lucia', 'ivan'],
   'scenario-05': ['marta', 'pablo'],
   'scenario-06': ['ftpuser', 'nuria', 'raul'],
+  'scenario-07': ['admin', 'analyst'],
 };
 
 function targetOf(scenarioId: string): Machine {

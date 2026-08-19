@@ -37,108 +37,166 @@ function renderAdmin(initialPath = '/es/zildeb') {
   );
 }
 
+const loginAs = (user: string, pass: string) => {
+  const inputs = screen.getAllByPlaceholderText('admin');
+  fireEvent.change(inputs[0], { target: { value: user } });
+  fireEvent.change(inputs[1], { target: { value: pass } });
+};
+
+const loginAndGoHome = async () => {
+  loginAs('admin', 'admin');
+  fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
+  await waitFor(() => expect(screen.getByText('ZeroInfra Admin')).toBeInTheDocument());
+};
+
+const enterSandbox = async () => {
+  await loginAndGoHome();
+  fireEvent.click(screen.getByText('Sandbox / Debug'));
+  await waitFor(() => expect(screen.getByText('DEBUG')).toBeInTheDocument());
+};
+
 describe('AdminPanel', () => {
   beforeEach(() => {
     useScenarioStore.setState({ language: 'es' });
   });
 
-  const loginAs = (user: string, pass: string) => {
-    const inputs = screen.getAllByPlaceholderText('admin');
-    fireEvent.change(inputs[0], { target: { value: user } });
-    fireEvent.change(inputs[1], { target: { value: pass } });
-  };
+  describe('login', () => {
+    it('muestra el formulario de login al entrar', () => {
+      renderAdmin();
+      expect(screen.getByText('Admin Panel')).toBeInTheDocument();
+      expect(screen.getAllByPlaceholderText('admin')).toHaveLength(2);
+      expect(screen.getByRole('button', { name: 'Ingresar' })).toBeInTheDocument();
+    });
 
-  it('muestra el formulario de login al entrar', () => {
-    renderAdmin();
-    expect(screen.getByText('Admin Panel')).toBeInTheDocument();
-    expect(screen.getAllByPlaceholderText('admin')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: 'Ingresar' })).toBeInTheDocument();
+    it('muestra error de credenciales incorrectas en español', () => {
+      renderAdmin();
+      loginAs('root', 'wrong');
+      fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
+      expect(screen.getByText('Credenciales incorrectas')).toBeInTheDocument();
+    });
+
+    it('muestra error en inglés cuando el idioma es en', () => {
+      useScenarioStore.setState({ language: 'en' });
+      renderAdmin('/en/zildeb');
+      loginAs('root', 'wrong');
+      fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+      expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
+    });
+
+    it('navega al inicio con el botón Volver al inicio', async () => {
+      renderAdmin();
+      fireEvent.click(screen.getByRole('button', { name: /Volver al inicio/ }));
+      await waitFor(() => expect(screen.getByTestId('home-page')).toBeInTheDocument());
+    });
   });
 
-  it('muestra error de credenciales incorrectas en español', () => {
-    renderAdmin();
-    loginAs('root', 'wrong');
-    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
-    expect(screen.getByText('Credenciales incorrectas')).toBeInTheDocument();
+  describe('home', () => {
+    it('muestra el hub con las 5 secciones tras el login', async () => {
+      renderAdmin();
+      await loginAndGoHome();
+
+      expect(screen.getByText('Bienvenido al cuartel general')).toBeInTheDocument();
+      expect(screen.getByText('Sandbox / Debug')).toBeInTheDocument();
+      expect(screen.getByText('Lab Builder')).toBeInTheDocument();
+      expect(screen.getByText('Lesson Builder')).toBeInTheDocument();
+      expect(screen.getByText('Asistente Foxy')).toBeInTheDocument();
+      expect(screen.getByText('Analíticas')).toBeInTheDocument();
+    });
+
+    it('muestra el hub en inglés cuando el idioma es en', async () => {
+      useScenarioStore.setState({ language: 'en' });
+      renderAdmin('/en/zildeb');
+      loginAs('admin', 'admin');
+      fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+      await waitFor(() => expect(screen.getByText('Welcome to headquarters')).toBeInTheDocument());
+      expect(screen.getByText('Foxy Assistant')).toBeInTheDocument();
+      expect(screen.getByText('Lesson Builder')).toBeInTheDocument();
+    });
+
+    it('las secciones no disponibles aparecen con badge Próximamente', async () => {
+      renderAdmin();
+      await loginAndGoHome();
+      expect(screen.getAllByText('Próximamente')).toHaveLength(2); // Foxy + Analíticas
+      expect(screen.getAllByText('Nuevo')).toHaveLength(2); // LabBuilder + LessonBuilder
+    });
+
+    it('muestra un reloj en el header', async () => {
+      renderAdmin();
+      await loginAndGoHome();
+      expect(screen.getByLabelText('hora actual')).toBeInTheDocument();
+    });
+
+    it('vuelve al sitio desde el botón Salir', async () => {
+      renderAdmin();
+      await loginAndGoHome();
+      fireEvent.click(screen.getByRole('button', { name: /Salir/ }));
+      await waitFor(() => expect(screen.getByTestId('home-page')).toBeInTheDocument());
+    });
   });
 
-  it('muestra error en inglés cuando el idioma es en', () => {
-    useScenarioStore.setState({ language: 'en' });
-    renderAdmin('/en/zildeb');
-    loginAs('root', 'wrong');
-    fireEvent.click(screen.getByRole('button', { name: 'Login' }));
-    expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
-  });
+  describe('sandbox', () => {
+    it('entra al sandbox desde la tarjeta y carga el workspace con debug ON', async () => {
+      renderAdmin();
+      await enterSandbox();
 
-  it('inicia sesión con admin/admin y carga el workspace con el debug ON', async () => {
-    renderAdmin();
-    loginAs('admin', 'admin');
-    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
+      expect(screen.getByTestId('mock-terminal')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-missions')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Debug ON/ })).toBeInTheDocument();
+    });
 
-    await waitFor(() => expect(screen.getByText('DEBUG')).toBeInTheDocument());
-    expect(screen.getByTestId('mock-terminal')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-missions')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Debug ON/ })).toBeInTheDocument();
-  });
+    it('cambia de escenario y recarga el workspace', async () => {
+      renderAdmin();
+      await enterSandbox();
 
-  it('cambia de escenario y recarga el workspace', async () => {
-    renderAdmin();
-    loginAs('admin', 'admin');
-    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
-    await waitFor(() => expect(screen.getByText('DEBUG')).toBeInTheDocument());
+      const select = screen.getByRole('combobox') as HTMLSelectElement;
+      fireEvent.change(select, { target: { value: select.options[1].value } });
+      await waitFor(() => expect(screen.getByText('DEBUG')).toBeInTheDocument());
+      expect(screen.queryByText('Cargando escenario...')).not.toBeInTheDocument();
+    });
 
-    const select = screen.getByRole('combobox') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: select.options[1].value } });
-    await waitFor(() => expect(screen.getByText('DEBUG')).toBeInTheDocument());
-    expect(screen.queryByText('Cargando escenario...')).not.toBeInTheDocument();
-  });
+    it('permite apagar y encender el panel de debug', async () => {
+      renderAdmin();
+      await enterSandbox();
 
-  it('permite apagar y encender el panel de debug', async () => {
-    renderAdmin();
-    loginAs('admin', 'admin');
-    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: /Debug ON/ })).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: /Debug ON/ }));
+      expect(screen.getByRole('button', { name: /Debug OFF/ })).toBeInTheDocument();
+      expect(screen.queryByText('🐞 DEBUG')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Debug ON/ }));
-    expect(screen.getByRole('button', { name: /Debug OFF/ })).toBeInTheDocument();
-    expect(screen.queryByText('🐞 DEBUG')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /Debug OFF/ }));
+      expect(screen.getByText('🐞 DEBUG')).toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: /Debug OFF/ }));
-    expect(screen.getByText('🐞 DEBUG')).toBeInTheDocument();
-  });
+    it('alterna entre las pestañas Store, Machines y Missions', async () => {
+      renderAdmin();
+      await enterSandbox();
 
-  it('alterna entre las pestañas Store, Machines y Missions', async () => {
-    renderAdmin();
-    loginAs('admin', 'admin');
-    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Store' })).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: 'Machines' }));
+      expect(screen.getAllByText(/discovery_level/).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Machines' }));
-    expect(screen.getAllByText(/discovery_level/).length).toBeGreaterThan(0);
+      fireEvent.click(screen.getByRole('button', { name: 'Missions' }));
+      expect(screen.getAllByText(/validate:/).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Missions' }));
-    expect(screen.getAllByText(/validate:/).length).toBeGreaterThan(0);
+      fireEvent.click(screen.getByRole('button', { name: 'Store' }));
+      expect(screen.getByText(/"view"/)).toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Store' }));
-    expect(screen.getByText(/"view"/)).toBeInTheDocument();
-  });
+    it('abre y cierra el mapa de red', async () => {
+      renderAdmin();
+      await enterSandbox();
 
-  it('abre y cierra el mapa de red', async () => {
-    renderAdmin();
-    loginAs('admin', 'admin');
-    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
-    await waitFor(() => expect(screen.getByTestId('mock-missions')).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: 'abrir mapa' }));
+      expect(screen.getByTestId('mock-network-map')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'abrir mapa' }));
-    expect(screen.getByTestId('mock-network-map')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'cerrar mapa' }));
+      expect(screen.queryByTestId('mock-network-map')).not.toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: 'cerrar mapa' }));
-    expect(screen.queryByTestId('mock-network-map')).not.toBeInTheDocument();
-  });
+    it('vuelve al hub con el botón Panel', async () => {
+      renderAdmin();
+      await enterSandbox();
 
-  it('navega al inicio con el botón Volver al inicio', async () => {
-    renderAdmin();
-    fireEvent.click(screen.getByRole('button', { name: /Volver al inicio/ }));
-    await waitFor(() => expect(screen.getByTestId('home-page')).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: /Panel/ }));
+      await waitFor(() => expect(screen.getByText('Bienvenido al cuartel general')).toBeInTheDocument());
+    });
   });
 });
