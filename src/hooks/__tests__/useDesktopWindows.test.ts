@@ -108,8 +108,8 @@ describe('useDesktopWindows', () => {
       const added = result.current.windows[0];
       expect(added.type).toBe('terminal');
       expect(added.title).toBe('Terminal 1 - root@kali');
-      expect(added.fontSize).toBe(13);
-      expect(added.opacity).toBe(0.5);
+      expect(added.fontSize).toBe(15);
+      expect(added.opacity).toBe(0.92);
       expect(added.minimized).toBe(false);
     });
 
@@ -305,14 +305,14 @@ describe('useDesktopWindows', () => {
       const { result } = renderHook(() => useDesktopWindows());
       const id = setupTerm(result);
       act(() => { result.current.changeFontSize(id, 2); });
-      expect(result.current.windows[0].fontSize).toBe(15);
+      expect(result.current.windows[0].fontSize).toBe(17);
     });
 
     it('debe disminuir el tamaño de fuente', () => {
       const { result } = renderHook(() => useDesktopWindows());
       const id = setupTerm(result);
       act(() => { result.current.changeFontSize(id, -2); });
-      expect(result.current.windows[0].fontSize).toBe(11);
+      expect(result.current.windows[0].fontSize).toBe(13);
     });
 
     it('debe limitar a mínimo 10', () => {

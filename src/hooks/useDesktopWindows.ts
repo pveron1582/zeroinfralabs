@@ -82,7 +82,7 @@ export function useDesktopWindows() {
       }
       const id = `term-${Date.now()}`;
       const offset = cascadeOffset(prev.length);
-      return [...prev, { id, type: 'terminal' as const, title: `Terminal ${maxNum + 1} - root@kali`, x: 90 + offset, y: 60 + offset, w: 820, h: 520, opacity: 0.5, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
+      return [...prev, { id, type: 'terminal' as const, title: `Terminal ${maxNum + 1} - root@kali`, x: 90 + offset, y: 60 + offset, w: 820, h: 520, opacity: 0.92, fontSize: 15, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
     });
   };
 

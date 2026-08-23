@@ -191,7 +191,7 @@ describe('DesktopTerminal', () => {
     });
 
     const [, opacitySlider] = screen.getAllByRole('slider') as HTMLInputElement[];
-    expect(opacitySlider.value).toBe('50');
+    expect(opacitySlider.value).toBe('92');
 
     fireEvent.change(opacitySlider, { target: { value: '75' } });
     expect(opacitySlider.value).toBe('75');
@@ -211,11 +211,11 @@ describe('DesktopTerminal', () => {
     });
 
     const [fontSlider] = screen.getAllByRole('slider') as HTMLInputElement[];
-    expect(fontSlider.value).toBe('13');
+    expect(fontSlider.value).toBe('15');
 
-    fireEvent.change(fontSlider, { target: { value: '16' } });
-    expect(fontSlider.value).toBe('16');
-    expect(screen.getByText('16px')).toBeInTheDocument();
+    fireEvent.change(fontSlider, { target: { value: '17' } });
+    expect(fontSlider.value).toBe('17');
+    expect(screen.getByText('17px')).toBeInTheDocument();
   });
 
   it('debe cerrar el panel de configuración al hacer click fuera', async () => {
