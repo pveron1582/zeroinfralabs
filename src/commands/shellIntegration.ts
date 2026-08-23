@@ -75,9 +75,14 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
   }
 
   const shellCtx = toShellContext(ctx);
-  const shellName = shellManager.getCurrentShellName();
+  const preExecName = shellManager.getCurrentShellName();
   const result = shellManager.execute(line, shellCtx);
   const current = shellManager.current();
+
+  // Nombre del shell para los metadatos: el vigente DESPUÉS de ejecutar
+  // (si el comando anidó otro shell); si la sesión se cerró con este
+  // comando, conservamos el previo para emitir el estado final correcto.
+  const effectiveName = current?.shell.name ?? preExecName;
 
   const state = current?.state;
 
@@ -93,14 +98,14 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
     foundVulnerability: result.foundVulnerability,
     sshSessionClosed: result.sshSessionClosed,
     sshLoginUser: result.sshLoginUser,
-    ...(shellName === 'ftp' || current?.shell.name === 'ftp' ? {
+    ...(effectiveName === 'ftp' ? {
       ftpSession: {
         active: shellManager.isActive(), connected: state?.connected,
         targetIp: state?.targetIp, targetId: state?.targetId,
         username: state?.username, loggedIn: state?.loggedIn, step: state?.step,
       }
     } : {}),
-    ...(shellName === 'ssh' || current?.shell.name === 'ssh' ? {
+    ...(effectiveName === 'ssh' ? {
       sshSession: {
         active: shellManager.isActive(), connected: state?.connected,
         targetIp: state?.targetIp, targetId: state?.targetId,
@@ -112,10 +117,25 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
   return response;
 };
 
-/** Cerrar la sesión de shell actual */
+/** Cerrar la sesión de shell actual, con respuesta según el TIPO de sesión
+ *  (antes siempre respondía como FTP: "221 Goodbye." incluso para SSH/NC). */
 export const closeShellSession = (): CommandResponse => {
+  const closing = shellManager.current();
+  const closingName = closing?.shell.name;
+  const targetIp = (closing?.state as { targetIp?: string } | undefined)?.targetIp;
   shellManager.closeCurrentSession();
-  return { type: 'ftp', output: '221 Goodbye.', ftpSession: { active: false, connected: false } };
+
+  if (closingName === 'ssh') {
+    return {
+      type: 'ssh',
+      output: `logout\nConnection to ${targetIp ?? 'remote'} closed.`,
+      sshSession: { active: false, connected: false },
+    };
+  }
+  if (closingName === 'ftp') {
+    return { type: 'ftp', output: '221 Goodbye.', ftpSession: { active: false, connected: false } };
+  }
+  return { type: 'hybrid', output: 'Connection closed.' };
 };
 
 /** Reset del ShellManager al cambiar de escenario */

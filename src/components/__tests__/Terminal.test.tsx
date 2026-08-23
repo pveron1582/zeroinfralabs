@@ -23,6 +23,8 @@ const mockState = {
   setFtpSession: vi.fn(),
   sshSession: null,
   setSshSession: vi.fn(),
+  globalResetDoneForScenario: null,
+  markGlobalResetDone: vi.fn(),
   setSuUser: vi.fn(),
   setPrivescCompleted: vi.fn(),
   resetPrivescCompleted: vi.fn(),

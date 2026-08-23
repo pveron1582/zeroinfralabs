@@ -131,11 +131,15 @@ function serviceNameForPort(port: Port): string | null {
 export function isPortFiltered(machine: Machine, port: { port: number; protocol?: string }): boolean {
   const s = state.get(machine.id);
   if (!s) return false;
-  const active = activeRules(s).filter(r => r.chain === 'INPUT');
-  const hasAccept = active.some(r => r.target === 'ACCEPT' && ruleMatchesPort(r, port));
-  const hasDrop = active.some(r => (r.target === 'DROP' || r.target === 'REJECT') && ruleMatchesPort(r, port));
-  if (hasDrop) return true;
-  if (hasAccept) return false;
+  // Como en iptables real: la PRIMERA regla que coincide decide el destino,
+  // sin importar si es ACCEPT o DROP (el orden de inserción importa).
+  for (const r of activeRules(s)) {
+    if (r.chain !== 'INPUT') continue;
+    if (!ruleMatchesPort(r, port)) continue;
+    return r.target === 'DROP' || r.target === 'REJECT';
+  }
+  // Ninguna regla coincide: aplica la default policy de la cadena
+  // (con ufw activo, INPUT cae en DROP).
   return getPolicy(machine.id, 'INPUT') === 'DROP';
 }
 

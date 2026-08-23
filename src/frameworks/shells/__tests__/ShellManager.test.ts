@@ -163,6 +163,17 @@ describe('ShellManager', () => {
       expect(manager.getPrompt()).toBe('mock> ');
     });
 
+    it('closeCurrentSession devuelve el frame cerrado, no el nuevo tope', () => {
+      manager.startSession('mock', [], mockCtx);
+      manager.startSession('nested', [], mockCtx);
+
+      const closed = manager.closeCurrentSession();
+
+      // El frame devuelto es el que se cerró (nested), no el nuevo tope (mock)
+      expect(closed?.shell.name).toBe('nested');
+      expect(manager.getCurrentShellName()).toBe('mock');
+    });
+
     it('debe mostrar la ruta de shells', () => {
       manager.startSession('mock', [], mockCtx);
       manager.startSession('nested', [], mockCtx);

@@ -169,6 +169,7 @@ describe('Fase 3: SUID, SGID, Sticky Bit', () => {
       files: [
         { path: '/usr/bin/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
         { path: '/usr/bin/whoami', content: '[ELF binary]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
+        { path: '/usr/bin/cat', content: '[ELF binary]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
         { path: '/usr/bin/normal', content: '[ELF binary]', type: 'binary', owner: 'root', group: 'root', mode: 0o755 },
         { path: '/tmp/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o1777 },
         { path: '/etc/passwd', content: 'root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
@@ -195,6 +196,13 @@ describe('Fase 3: SUID, SGID, Sticky Bit', () => {
       const result = executeCommand('whoami', SUID_MACHINE, [SUID_MACHINE], 0, undefined, '/');
       expect(result.privescTool).toBe('whoami');
       expect(result.privescCompleted).toBe('target-01');
+    });
+
+    it('NO debe emitir privescCompleted si el comando SUID falla (pero sí privescAttempted)', () => {
+      const result = executeCommand('cat /noexiste', SUID_MACHINE, [SUID_MACHINE], 0, undefined, '/');
+      expect(result.isError).toBe(true);
+      expect('privescAttempted' in result ? result.privescAttempted : undefined).toBe(true);
+      expect('privescCompleted' in result ? result.privescCompleted : undefined).toBeUndefined();
     });
 
     it('NO debe emitir privesc para binario sin SUID', () => {

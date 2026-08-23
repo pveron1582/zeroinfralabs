@@ -34,6 +34,9 @@ export const useScenarioStore = create<ScenarioState>()(
           pendingSurveyScenario: null,
           showCompletionOverlay: false,
           _prevMachinesSnapshot: [],
+          // Fuerza un reset global de managers al volver a entrar a un
+          // escenario (incluso si es el mismo que estaba activo antes).
+          globalResetDoneForScenario: null,
         });
       };
 

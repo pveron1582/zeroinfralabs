@@ -180,6 +180,56 @@ describe('cmd_sudo', () => {
       expect(result.output).toContain('not allowed');
       expect(result.isError).toBe(true);
     });
+
+    it('debe permitir TODO al usuario en grupo sudo con regla %sudo (como UNIX real)', () => {
+      const machine: Machine = {
+        ...createMockMachine(true),
+        files: [
+          // Sin regla por-usuario; solo la de grupo. El usuario es miembro
+          // explícito del grupo sudo en /etc/group.
+          { path: '/etc/sudoers', content: 'root ALL=(ALL:ALL) ALL\n%sudo ALL=(ALL:ALL) ALL', type: 'text' },
+          { path: '/etc/group', content: 'sudo:x:27:developer\nwheel:x:10:\n', type: 'text' },
+          { path: '/etc/passwd', content: 'root:x:0:0:root:/root:/bin/bash\ndeveloper:x:1001:27:Developer:/home/developer:/bin/bash\n', type: 'text' },
+        ],
+      };
+      const ctx = createMockContext(machine);
+
+      const result = cmd_sudo.execute(['bash'], ctx);
+      expect(result.output).not.toContain('not allowed');
+      expect(result.isError).toBe(false);
+    });
+
+    it('debe mostrar las reglas %grupo en sudo -l', () => {
+      const machine: Machine = {
+        ...createMockMachine(true),
+        files: [
+          { path: '/etc/sudoers', content: 'root ALL=(ALL:ALL) ALL\n%sudo ALL=(ALL:ALL) ALL', type: 'text' },
+          { path: '/etc/group', content: 'sudo:x:27:developer\nwheel:x:10:\n', type: 'text' },
+          { path: '/etc/passwd', content: 'root:x:0:0:root:/root:/bin/bash\ndeveloper:x:1001:1001:Developer:/home/developer:/bin/bash\n', type: 'text' },
+        ],
+      };
+      const result = cmd_sudo.execute(['-l'], createMockContext(machine));
+
+      expect(result.output).toContain('may run the following commands');
+      expect(result.output).not.toContain('may not run sudo');
+      const sp = 'sudoPrivileges' in result ? result.sudoPrivileges : undefined;
+      expect(sp?.canSudo).toBe(true);
+    });
+
+    it('NO debe otorgar privilegios por grupo si el sudoers no tiene regla %grupo', () => {
+      const machine: Machine = {
+        ...createMockMachine(true),
+        files: [
+          { path: '/etc/sudoers', content: 'root ALL=(ALL:ALL) ALL\notheruser ALL=(ALL) NOPASSWD: /usr/bin/vim', type: 'text' },
+          { path: '/etc/group', content: 'sudo:x:27:developer\nwheel:x:10:\n', type: 'text' },
+          { path: '/etc/passwd', content: 'root:x:0:0:root:/root:/bin/bash\ndeveloper:x:1001:1001:Developer:/home/developer:/bin/bash\n', type: 'text' },
+        ],
+      };
+      const result = cmd_sudo.execute(['bash'], createMockContext(machine));
+
+      expect(result.output).toContain('is not in the sudoers file');
+      expect(result.isError).toBe(true);
+    });
   });
 
   describe('sudo -i / sudo -s (login shell root)', () => {

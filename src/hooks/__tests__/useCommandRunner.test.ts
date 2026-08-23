@@ -61,6 +61,8 @@ const baseStoreState = vi.hoisted(() => ({
   applyIdentity: vi.fn(),
   setFtpSession: vi.fn(),
   setSshSession: vi.fn(),
+  globalResetDoneForScenario: null,
+  markGlobalResetDone: vi.fn(),
   setCurrentDir: vi.fn(),
   changeMachine: vi.fn(),
 }));

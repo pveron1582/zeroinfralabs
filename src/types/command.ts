@@ -76,6 +76,9 @@ export interface FoundDirectoriesData {
 
 export interface FileReadData {
   path: string;
+  // Máquina donde ocurrió la lectura: permite al validador exigir que la
+  // flag se lea en la máquina objetivo de la misión (C2).
+  machineId?: string;
   isNote: boolean;
   isFlag: boolean;
   isPayload: boolean;

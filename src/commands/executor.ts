@@ -87,11 +87,9 @@ export function executeCommandInternal(
   onMsfStateChange?: (state: MsfState | null) => void
 ): CommandResponse {
   if (shellManager.isActive()) {
-    const result = executeShellCommand(line, ctx);
-    if (!shellManager.isActive()) {
-      return { ...result, type: 'hybrid', ftpSession: { active: false, connected: false } };
-    }
-    return result;
+    // executeShellCommand emite los metadatos de cierre del tipo correcto
+    // (ftp/ssh): no sobrescribir con un estado FTP genérico.
+    return executeShellCommand(line, ctx);
   }
 
   const msfState = getMsfState();
@@ -141,11 +139,14 @@ export function executeCommandInternal(
     ctx.machine.privesc_completed = true;
 
     try {
+      const suidResult = cmd.execute(finalArgs, ctx);
       result = {
-        ...cmd.execute(finalArgs, ctx),
+        ...suidResult,
+        // El intento se reporta siempre; la escalada SOLO se marca si el
+        // comando tuvo éxito (un SUID que falla no otorga root).
         privescAttempted: true,
         privescTool: cmdName,
-        privescCompleted: ctx.machine.id,
+        ...(suidResult.isError ? {} : { privescCompleted: ctx.machine.id }),
       };
     } finally {
       ctx.machine.privesc_completed = originalPrivesc;

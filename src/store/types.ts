@@ -52,6 +52,10 @@ export interface ScenarioState extends IdentitySlice, AcademySlice {
 
   sshSession: SshSessionState | null;
 
+  // Reset global de managers compartidos: una sola vez por escenario
+  // (ver TerminalSlice en slices/terminalSlice.ts).
+  globalResetDoneForScenario: string | null;
+
   _prevMachinesSnapshot: EnumerationSnapshot[];
 
   language: 'en' | 'es';
@@ -111,5 +115,6 @@ export interface ScenarioState extends IdentitySlice, AcademySlice {
   setMsfState: (state: MsfState | null) => void;
   setFtpSession: (session: FtpSessionState | null) => void;
   setSshSession: (session: SshSessionState | null) => void;
+  markGlobalResetDone: (scenarioId: string) => void;
   reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 }

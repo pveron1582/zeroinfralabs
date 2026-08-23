@@ -92,10 +92,13 @@ export const cmd_chown = {
       }
 
       if (recursive && file.path.endsWith('.dir')) {
+        // El prefijo necesita el '/' final: sin él, `chown -R /home`
+        // también modificaría paths hermanos como /homebackup/...
         const dirPrefix = file.path.slice(0, -4);
+        const childPrefix = dirPrefix.endsWith('/') ? dirPrefix : `${dirPrefix}/`;
         for (let i = 0; i < newFiles.length; i++) {
           const f = newFiles[i];
-          if (!f.path.startsWith(dirPrefix) || f.path === file.path) continue;
+          if (!f.path.startsWith(childPrefix) || f.path === file.path) continue;
           const updated = { ...f, owner: newOwner };
           if (newGroup) updated.group = newGroup;
           newFiles[i] = updated;

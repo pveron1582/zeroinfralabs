@@ -85,10 +85,10 @@ describe('Fase 8 - parseCrontab/listCronJobs', () => {
     expect(jobs[0].command).toBe('echo hi');
   });
 
-  it('parseCrontab: crontab de usuario sin columna de usuario', () => {
+  it('parseCrontab: crontab de usuario corre como su dueño (no root)', () => {
     const jobs = parseCrontab('0 3 * * * /usr/bin/backup', '/var/spool/cron/crontabs/admin');
     expect(jobs).toHaveLength(1);
-    expect(jobs[0].user).toBe('root');
+    expect(jobs[0].user).toBe('admin');
     expect(jobs[0].command).toBe('/usr/bin/backup');
   });
 
@@ -147,6 +147,25 @@ describe('Fase 8 - runCron (ejecución)', () => {
     runCron(machine, 5);
     const after = virtualTime(machine).getTime();
     expect(after - before).toBe(5 * 60_000);
+  });
+
+  it('runCron: el log de un job de spool muestra al dueño (no root)', () => {
+    const machine = makeMachine();
+    runCron(machine, 1);
+    const syslog = machine.files.find(f => f.path === '/var/log/syslog');
+    expect(syslog?.content).toMatch(/\(admin\) CMD \(\/usr\/bin\/echo backup > \/tmp\/admin_backup\.txt\)/);
+  });
+
+  it('runCron: redirección con texto entre comillas escribe la frase completa', () => {
+    const machine = makeMachine();
+    machine.files = machine.files.map(f =>
+      f.path === '/etc/crontab'
+        ? { ...f, content: '* * * * * root /usr/bin/echo "hola mundo cron" > /tmp/frase.txt\n' }
+        : f
+    );
+    runCron(machine, 1);
+    const f = machine.files.find(f2 => f2.path === '/tmp/frase.txt');
+    expect(f?.content).toBe('hola mundo cron\n');
   });
 });
 

@@ -56,6 +56,50 @@ describe('cmd_chmod', () => {
     expect(file?.mode).toBe(0o744);
   });
 
+  it('debe soportar bits especiales simbólicos (u+s = SUID)', () => {
+    const machine = makeMachine();
+    const context = { currentDir: '/home/user/', machine } as CommandContext;
+    const result = cmd_chmod.execute(['u+s', 'script.sh'], context);
+    expect(result.isError).toBe(false);
+    const file = machine.files.find(f => f.path === '/home/user/script.sh');
+    expect(file?.mode).toBe(0o4644);
+  });
+
+  it('debe soportar g+s (SGID) y +t (sticky en directorio)', () => {
+    const machine = makeMachine();
+    const context = { currentDir: '/home/user/', machine } as CommandContext;
+    cmd_chmod.execute(['g+s', 'script.sh'], context);
+    expect(machine.files.find(f => f.path === '/home/user/script.sh')?.mode).toBe(0o2644);
+    // sticky sobre el home del usuario (directorio propio)
+    cmd_chmod.execute(['+t', '/home/user'], context);
+    expect(machine.files.find(f => f.path === '/home/user/.dir')?.mode).toBe(0o1755);
+  });
+
+  it('debe soportar cláusulas múltiples separadas por coma', () => {
+    const machine = makeMachine();
+    const context = { currentDir: '/home/user/', machine } as CommandContext;
+    const result = cmd_chmod.execute(['u+x,g+s', 'script.sh'], context);
+    expect(result.isError).toBe(false);
+    // 644 → u+x da 744 → g+s agrega SGID
+    const file = machine.files.find(f => f.path === '/home/user/script.sh');
+    expect(file?.mode).toBe(0o2744);
+  });
+
+  it('preserva el bit SUID en operaciones simbólicas que no lo mencionan', () => {
+    const machine = makeMachine({
+      files: [
+        { path: '/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
+        { path: '/usr/bin/tool', content: '[ELF]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
+        { path: '/etc/passwd', content: 'root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
+      ],
+    });
+    // root ejecuta chmod u+x sobre el binario ya SUID
+    const context = { currentDir: '/', machine } as CommandContext;
+    cmd_chmod.execute(['u+x', '/usr/bin/tool'], context);
+    const file = machine.files.find(f => f.path === '/usr/bin/tool');
+    expect(file?.mode).toBe(0o4755); // SUID intacto
+  });
+
   it('debe cambiar permisos con modo simbólico (g-w)', () => {
     const machine = makeMachine();
     const context = { currentDir: '/home/user/', machine } as CommandContext;

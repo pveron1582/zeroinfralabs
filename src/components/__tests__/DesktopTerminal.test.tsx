@@ -20,6 +20,8 @@ const mockState = {
   setFtpSession: vi.fn(),
   sshSession: null,
   setSshSession: vi.fn(),
+  globalResetDoneForScenario: null,
+  markGlobalResetDone: vi.fn(),
   // Identity slice (necesario para useIdentityStack)
   identityStack: [],
   pushIdentity: vi.fn(),

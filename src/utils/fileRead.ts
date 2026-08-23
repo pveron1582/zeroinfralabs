@@ -27,6 +27,12 @@ function extractMentionedUsers(content: string): string[] {
   return Array.from(users);
 }
 
+// Patrón canónico de flag (formato ZIL/THM/FLAG{...}). Único punto de
+// verdad: lo usan cat/nano (metadata) y el validador de descargas.
+export function isFlagContent(content: string): boolean {
+  return /(?:ZIL|THM|FLAG)\{[^}]+\}/.test(content);
+}
+
 // Construye la metadata `fileRead` (+ possibleUsers) a partir del archivo
 // ya resuelto (symlinks seguidos). Si el archivo no es flag/nota/payload y
 // no menciona usuarios, igual devuelve fileRead (fileType 'any' valida).
@@ -36,14 +42,17 @@ export function buildFileReadMetadata(
   resolved: FileEntry,
 ): { fileRead: FileReadData; possibleUsers?: PossibleUsersData } {
   const isNote = resolved.path.endsWith('note.txt') || resolved.path.endsWith('nota.txt');
-  const hasFlagContent = /(?:ZIL|THM|FLAG)\{[^}]+\}/.test(resolved.content);
-  const isFlag = resolved.path.includes('flag') || resolved.path.includes('root.txt') || resolved.path.includes('user.txt') || hasFlagContent;
+  // Un flag se detecta SOLO por su contenido (formato ZIL/THM/FLAG{...}):
+  // el nombre del archivo no basta, si no cualquier archivo llamado
+  // "mi-flag.txt" completaría la misión de capturar la flag.
+  const isFlag = isFlagContent(resolved.content);
   const isPayload = resolved.path.includes('payload');
   const mentionedUsers = extractMentionedUsers(resolved.content);
 
   return {
     fileRead: {
       path: resolved.path,
+      machineId: machine.id,
       isNote,
       isFlag,
       isPayload,

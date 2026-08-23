@@ -99,6 +99,22 @@ describe('labValidator', () => {
       expect(validateMission(result, mission)).toBe(true);
     });
 
+    it('debe validar fileRead flag leída en la máquina atacante (flujo lab06: post-descarga)', () => {
+      const result: CommandResponse = {
+        output: 'test',
+        fileRead: {
+          path: '/root/database_dump.sql',
+          machineId: 'attacker-01',
+          isFlag: true,
+          isPayload: false,
+          isNote: false,
+          content: 'ZIL{DATABASE_COMPROMISED}',
+        },
+      };
+      const mission = createMission({ type: 'fileRead', fileType: 'flag' });
+      expect(validateMission(result, mission)).toBe(true);
+    });
+
     it('debe validar sshLogin correctamente', () => {
       const result: CommandResponse = {
         output: 'test',
@@ -153,10 +169,16 @@ describe('labValidator', () => {
       expect(validateMission(result, mission)).toBe(true);
     });
 
-    it('debe validar privesc correctamente', () => {
-      const result: CommandResponse = { output: 'test', privescAttempted: true };
+    it('debe validar privesc con escalada real (privescCompleted)', () => {
+      const result: CommandResponse = { output: 'test', privescCompleted: 'target-01' };
       const mission = createMission({ type: 'privesc' });
       expect(validateMission(result, mission)).toBe(true);
+    });
+
+    it('debe fallar privesc si solo hubo intento (privescAttempted sin completed)', () => {
+      const result: CommandResponse = { output: 'test', privescAttempted: true };
+      const mission = createMission({ type: 'privesc' });
+      expect(validateMission(result, mission)).toBe(false);
     });
 
     it('debe validar sudoPrivileges con canSudo=true', () => {

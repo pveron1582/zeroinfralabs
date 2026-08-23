@@ -3,6 +3,7 @@
 // Commands are free - this validates if a command result completes a mission
 
 import type { CommandResponse, Mission, ValidationCriteria } from '../types';
+import { isFlagContent } from './fileRead';
 
 /**
  * Validates if a command result satisfies a mission's criteria
@@ -32,10 +33,10 @@ export const validateMission = (result: CommandResponse, mission: Mission): bool
       return validateFoundDirectories(result, conditions);
 
     case 'fileRead':
-      return validateFileRead(result, conditions);
+      return validateFileRead(mission, result, conditions);
 
     case 'fileDownloaded':
-      return validateFileDownloaded(result, conditions);
+      return validateFileDownloaded(mission, result, conditions);
 
     case 'privesc':
       return validatePrivesc(result, conditions);
@@ -166,11 +167,18 @@ function validateFoundDirectories(
 }
 
 function validateFileRead(
+  _mission: Mission,
   result: CommandResponse,
   conditions: Partial<ValidationCriteria>
 ): boolean {
   const fileRead = 'fileRead' in result ? result.fileRead : undefined;
   if (!fileRead) return false;
+
+  // NOTA: NO se exige que la lectura ocurra en mission.targetMachineId:
+  // los labs permiten leer flags descargadas en la máquina atacante
+  // (ej. lab06: cat del database_dump exfiltrado). El false positivo de
+  // C2 se elimina aguas arriba: isFlag solo se marca por CONTENIDO con
+  // formato ZIL/THM/FLAG{...} (ver utils/fileRead.ts).
 
   const fileType = conditions.fileType ?? 'any';
 
@@ -188,6 +196,7 @@ function validateFileRead(
 }
 
 function validateFileDownloaded(
+  _mission: Mission,
   result: CommandResponse,
   conditions: Partial<ValidationCriteria>
 ): boolean {
@@ -202,8 +211,10 @@ function validateFileDownloaded(
   }
 
   if (fileType === 'flag') {
-    const filename = downloadedFile.path.toLowerCase();
-    return filename.includes('flag');
+    // Igual criterio que fileRead: el contenido manda; el nombre solo
+    // como fallback (archivos user.txt/root.txt sin formato FLAG{...}).
+    return isFlagContent(downloadedFile.content) ||
+      downloadedFile.path.toLowerCase().includes('flag');
   }
 
   return true;
@@ -213,7 +224,10 @@ function validatePrivesc(
   result: CommandResponse,
   _conditions: Partial<ValidationCriteria>
 ): boolean {
-  return 'privescAttempted' in result && result.privescAttempted === true;
+  // Solo una escalada REAL (privescCompleted) completa la misión:
+  // privescAttempted marca intentos (ej. correr un binario SUID) que pueden
+  // no haber elevado nada.
+  return 'privescCompleted' in result && !!result.privescCompleted;
 }
 
 function validateSshLogin(

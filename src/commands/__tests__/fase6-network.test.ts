@@ -109,6 +109,20 @@ describe('Fase 6 - iptables', () => {
     expect(isPortFiltered(machine, { port: 22, protocol: 'tcp' })).toBe(false);
   });
 
+  it('la PRIMERA regla que coincide gana (ACCEPT antes de DROP deja el puerto abierto)', () => {
+    const machine = makeRootMachine();
+    cmd_iptables.execute(['-A', 'INPUT', '-p', 'tcp', '--dport', '22', '-j', 'ACCEPT'], ctx(machine));
+    cmd_iptables.execute(['-A', 'INPUT', '-p', 'tcp', '--dport', '22', '-j', 'DROP'], ctx(machine));
+    expect(isPortFiltered(machine, { port: 22, protocol: 'tcp' })).toBe(false);
+  });
+
+  it('la PRIMERA regla que coincide gana (DROP antes de ACCEPT deja el puerto filtrado)', () => {
+    const machine = makeRootMachine();
+    cmd_iptables.execute(['-A', 'INPUT', '-p', 'tcp', '--dport', '80', '-j', 'DROP'], ctx(machine));
+    cmd_iptables.execute(['-A', 'INPUT', '-p', 'tcp', '--dport', '80', '-j', 'ACCEPT'], ctx(machine));
+    expect(isPortFiltered(machine, { port: 80, protocol: 'tcp' })).toBe(true);
+  });
+
   it('iptables valida cadenas y targets inválidos', () => {
     const machine = makeRootMachine();
     const badChain = cmd_iptables.execute(['-A', 'LOOP', '--dport', '22', '-j', 'DROP'], ctx(machine));

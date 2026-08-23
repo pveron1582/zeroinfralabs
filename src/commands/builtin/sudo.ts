@@ -19,7 +19,7 @@ function openEditorElevated(editorArgs: string[], context: CommandContext): Comm
   return editorResult;
 }
 
-function parseSudoers(sudoersContent: string, username: string): string[] {
+function parseSudoers(sudoersContent: string, username: string, userGroupNames: string[]): string[] {
   const lines = sudoersContent.split('\n');
   const rules: string[] = [];
 
@@ -28,6 +28,15 @@ function parseSudoers(sudoersContent: string, username: string): string[] {
     if (trimmed.startsWith('#') || trimmed === '') continue;
     if (trimmed.startsWith('Defaults') || trimmed.startsWith('root')) continue;
     if (trimmed.startsWith(username + ' ') || trimmed.startsWith(username + '\t')) {
+      rules.push(trimmed);
+      continue;
+    }
+    // Reglas de grupo (%sudo, %wheel): aplican si el usuario es miembro del
+    // grupo (miembro explícito en /etc/group o grupo primario por gid).
+    // Como en sudo real: estar en el grupo SIN regla %grupo en sudoers
+    // NO otorga privilegios.
+    const groupMatch = trimmed.match(/^%([A-Za-z0-9_.-]+)/);
+    if (groupMatch && userGroupNames.includes(groupMatch[1])) {
       rules.push(trimmed);
     }
   }
@@ -124,17 +133,16 @@ export const cmd_sudo = {
       };
     }
 
-    const rules = parseSudoers(sudoersFile.content, username);
-
-    // Sudo grants access either via a user-specific rule OR via membership
-    // in a privileged group (sudo/wheel). Check the explicit rule first so
-    // users granted a single command via sudoers don't need to be in %sudo.
+    // Grupos del usuario (miembro explícito o grupo primario): necesarios
+    // para resolver reglas %grupo del sudoers.
     const groups = getGroups(machine);
-    const inSudoGroup = groups.some(g =>
-      (g.name === 'sudo' || g.name === 'wheel') &&
-      (g.members.includes(username) || g.gid === currentUser.gid)
-    );
-    if (rules.length === 0 && !inSudoGroup) {
+    const userGroupNames = groups
+      .filter(g => g.members.includes(username) || g.gid === currentUser.gid)
+      .map(g => g.name);
+
+    const rules = parseSudoers(sudoersFile.content, username, userGroupNames);
+
+    if (rules.length === 0) {
       return {
         output: `${username} is not in the sudoers file.  This incident will be reported.`,
         isError: true,

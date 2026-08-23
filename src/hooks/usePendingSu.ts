@@ -43,10 +43,13 @@ export function usePendingSu({ machine, currentDir, setCurrentDir, pushIdentity 
         const sudoCwd = pendingSu.sudoCwd ?? currentDir;
         setCurrentDir(sudoCwd);
         pushIdentity({ machineId: machine.id, suUser: 'root', cwd: sudoCwd });
-      } else {
-        useScenarioStore.getState().setSuUser(machine.id, target);
-        pushIdentity({ machineId: machine.id, suUser: target, cwd: currentDir });
+        setPendingSu(null);
+        // Metadata para que LabValidator detecte la escalada (mismo contrato
+        // que `sudo <shell>` en modo NOPASSWD).
+        return { type: 'hybrid', output: '', privescCompleted: machine.id };
       }
+      useScenarioStore.getState().setSuUser(machine.id, target);
+      pushIdentity({ machineId: machine.id, suUser: target, cwd: currentDir });
       setPendingSu(null);
       return { type: 'hybrid', output: '' };
     }

@@ -43,13 +43,13 @@ export class ShellManager {
     return { output: '' };
   }
 
-  /** Cerrar el shell actual (pop del stack) */
+  /** Cerrar el shell actual (pop del stack). Devuelve el frame CERRADO. */
   closeCurrentSession(): ShellFrame | null {
-    const current = this.stack.pop();
-    if (current?.shell.destroy) {
-      current.shell.destroy(current.state);
+    const closed = this.stack.pop();
+    if (closed?.shell.destroy) {
+      closed.shell.destroy(closed.state);
     }
-    return this.current();
+    return closed ?? null;
   }
 
   /** Shell actual (tope del stack) */

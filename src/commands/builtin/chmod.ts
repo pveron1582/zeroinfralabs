@@ -7,39 +7,60 @@ import { getCurrentUser } from '../../utils/users';
 import { findFile } from '../../utils/fs';
 
 function parseSymbolicMode(expr: string, currentMode: number): number | null {
-  // Formato: [ugoa][+-=][rwx]
-  const match = expr.match(/^([ugoa]+)?([+\-=])([rwx]+)$/);
-  if (!match) return null;
-
-  const who = match[1] || 'a';
-  const op = match[2];
-  const perms = match[3];
-
-  let bits = 0;
-  if (perms.includes('r')) bits |= 4;
-  if (perms.includes('w')) bits |= 2;
-  if (perms.includes('x')) bits |= 1;
-
+  // Formato POSIX simplificado: cláusulas [ugoa]*[+-=][rwxst]* separadas
+  // por comas. Bits especiales: `s` = SUID en u / SGID en g, `t` = sticky
+  // en o/a. Ej: `u+s`, `g-w,o=t`, `a+x,u=rw`.
   let result = currentMode;
-  const applyTo = (shift: number) => {
-    const shifted = bits << shift;
-    if (op === '+') result |= shifted;
-    else if (op === '-') result &= ~shifted;
-    else if (op === '=') {
-      // Clear the bits for this scope first
-      const mask = 7 << shift;
-      result &= ~mask;
-      result |= shifted;
-    }
-  };
 
-  if (who.includes('u')) applyTo(6);
-  if (who.includes('g')) applyTo(3);
-  if (who.includes('o')) applyTo(0);
-  if (who.includes('a')) {
-    applyTo(6);
-    applyTo(3);
-    applyTo(0);
+  for (const rawClause of expr.split(',')) {
+    const match = rawClause.match(/^([ugoa]*)([+\-=])([rwxst]*)$/);
+    // Solo se aceptan permisos vacíos con '=' (limpia los bits del scope).
+    if (!match || (!match[3] && match[2] !== '=')) return null;
+
+    const whoRaw = match[1];
+    const who = whoRaw || 'a';
+    const op = match[2];
+    const perms = match[3];
+
+    const applyScope = (shift: number) => {
+      let bits = 0;
+      if (perms.includes('r')) bits |= 4;
+      if (perms.includes('w')) bits |= 2;
+      if (perms.includes('x')) bits |= 1;
+      if (op === '+') result |= bits << shift;
+      else if (op === '-') result &= ~(bits << shift);
+      else {
+        result &= ~(7 << shift);
+        result |= bits << shift;
+      }
+    };
+
+    if (who.includes('u')) applyScope(6);
+    if (who.includes('g')) applyScope(3);
+    if (who.includes('o')) applyScope(0);
+    if (who.includes('a')) {
+      applyScope(6);
+      applyScope(3);
+      applyScope(0);
+    }
+
+    // Los bits especiales SOLO se tocan si la cláusula los menciona:
+    // así `u+x` sobre un binario SUID preserva el bit (como chmod real).
+    if (perms.includes('s')) {
+      const touchSuid = who.includes('u') || who.includes('a');
+      const touchSgid = who.includes('g') || who.includes('a');
+      if (op === '-') {
+        if (touchSuid) result &= ~0o4000;
+        if (touchSgid) result &= ~0o2000;
+      } else {
+        if (touchSuid) result |= 0o4000;
+        if (touchSgid) result |= 0o2000;
+      }
+    }
+    if (perms.includes('t')) {
+      if (op === '-') result &= ~0o1000;
+      else result |= 0o1000;
+    }
   }
 
   return result;
@@ -120,10 +141,13 @@ export const cmd_chmod = {
       if (fileIdx !== -1) newFiles[fileIdx] = { ...newFiles[fileIdx], mode: newMode };
 
       if (recursive && file.path.endsWith('.dir')) {
+        // El prefijo necesita el '/' final: sin él, `chmod -R /home`
+        // también modificaría paths hermanos como /homebackup/...
         const dirPrefix = file.path.slice(0, -4);
+        const childPrefix = dirPrefix.endsWith('/') ? dirPrefix : `${dirPrefix}/`;
         for (let i = 0; i < newFiles.length; i++) {
           const f = newFiles[i];
-          if (f.path.startsWith(dirPrefix) && f.path !== file.path) {
+          if (f.path.startsWith(childPrefix) && f.path !== file.path) {
             if (!isRoot && f.owner !== currentUser.username) continue;
             newFiles[i] = { ...f, mode: newMode };
           }

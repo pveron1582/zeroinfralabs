@@ -125,7 +125,11 @@ export function useCommandRunner({
     scrollDeps: [history, busy, input],
   });
 
-  // ── Reset al cambiar de escenario ────────────────────────────────
+  // ── Reset LOCAL al montar cada terminal ──────────────────────────
+  // Cada ventana arranca limpia (historial, cwd, env, msf aislado) sin
+  // tocar estado GLOBAL compartido: sesiones SSH/FTP, shells apiladas,
+  // managers de red/procesos/cron/mounts e identidad. Así abrir una
+  // segunda terminal no reinicia el laboratorio de la primera.
   useEffect(() => {
     setHistory([makeWelcome(allMachines)]);
     setCmdHistory([]); setHistIdx(-1); setInput(''); setBusy(false);
@@ -134,25 +138,37 @@ export function useCommandRunner({
     setCurrentDir('/root');
     setMsfState(null);
     executor.resetMsfState();
-    useScenarioStore.getState().setFtpSession(null);
-    useScenarioStore.getState().setSshSession(null);
+    setUmask(0o022);
+    setEnv(DEFAULT_ENV(machine));
+    const timer = setTimeout(() => inputRef.current?.focus(), 150);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenarioId]);
+
+  // ── Reset GLOBAL una sola vez por escenario ─────────────────────
+  // Lo dispara la PRIMERA terminal que monta con este scenarioId.
+  // Tampoco se re-dispara al ganar máquinas nuevas (antes,
+  // `allMachines.length` en las deps mataba firewall/servicios/cron
+  // configurados justo después de un exploit).
+  useEffect(() => {
+    const store = useScenarioStore.getState();
+    if (store.globalResetDoneForScenario === scenarioId) return;
+    store.markGlobalResetDone(scenarioId);
+    store.setFtpSession(null);
+    store.setSshSession(null);
     resetShellManager();
     resetProcessManager();
     resetNetworkState();
     resetPackageManager();
     resetCron();
     resetMounts();
-    setUmask(0o022);
-    setEnv(DEFAULT_ENV(machine));
-    useScenarioStore.getState().resetIdentity({
+    store.resetIdentity({
       machineId: machine.id,
       suUser: machine.su_user,
       cwd: '/root',
     });
-    const timer = setTimeout(() => inputRef.current?.focus(), 150);
-    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioId, allMachines.length]);
+  }, [scenarioId]);
 
   // ── Entorno por máquina/usuario ──────────────────────────────────
   // Re-deriva las variables por defecto (PATH/HOME/USER/SHELL...) cuando
@@ -214,6 +230,7 @@ export function useCommandRunner({
           prompt,
           timestamp: Date.now()
         }]);
+        checkMissionCompletion(suResult);
       }
       setInput('');
       setHistIdx(-1);

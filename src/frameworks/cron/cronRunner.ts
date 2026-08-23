@@ -45,6 +45,12 @@ export function virtualTime(machine: Machine): Date {
 // ── Parseo de crontabs ──────────────────────────────────────────────
 export function parseCrontab(content: string, source: string): CronJob[] {
   const jobs: CronJob[] = [];
+  // Los crontabs de usuario (/var/spool/cron/crontabs/<user>) no llevan
+  // columna de usuario: el dueño es quien está en el nombre del archivo.
+  const SPOOL_PREFIX = '/var/spool/cron/crontabs/';
+  const spoolUser = source.startsWith(SPOOL_PREFIX)
+    ? source.slice(SPOOL_PREFIX.length) || null
+    : null;
   for (const raw of content.split('\n')) {
     const line = raw.trim();
     if (!line || line.startsWith('#') || line.startsWith('SHELL=') || line.startsWith('PATH=')) continue;
@@ -53,8 +59,12 @@ export function parseCrontab(content: string, source: string): CronJob[] {
     const [minute, hour, dom, month, dow, ...rest] = parts;
     let user = 'root';
     let command: string;
+    if (spoolUser) {
+      user = spoolUser;
+      command = rest.join(' ');
+    }
     // /etc/crontab (sistema) incluye columna de usuario
-    if (source === '/etc/crontab' && rest.length >= 2 && /^[a-z_][a-z0-9_-]*$/.test(rest[0])) {
+    else if (source === '/etc/crontab' && rest.length >= 2 && /^[a-z_][a-z0-9_-]*$/.test(rest[0])) {
       user = rest[0];
       command = rest.slice(1).join(' ');
     } else {
@@ -99,10 +109,13 @@ function fieldMatches(field: string, value: number): boolean {
 function isDue(job: CronJob, d: Date): boolean {
   if (!fieldMatches(job.minute, d.getUTCMinutes())) return false;
   if (!fieldMatches(job.hour, d.getUTCHours())) return false;
-  if (!fieldMatches(job.dom, d.getUTCDate())) return false;
   if (!fieldMatches(job.month, d.getUTCMonth() + 1)) return false;
-  if (!fieldMatches(job.dow, d.getUTCDay())) return false;
-  return true;
+  // POSIX: si dom Y dow están restringidos (no *), basta con que UNO
+  // coincida; si solo uno está restringido, debe coincidir ese.
+  const domOk = fieldMatches(job.dom, d.getUTCDate());
+  const dowOk = fieldMatches(job.dow, d.getUTCDay());
+  const bothRestricted = job.dom !== '*' && job.dow !== '*';
+  return bothRestricted ? (domOk || dowOk) : (domOk && dowOk);
 }
 
 // ── Efectos de la ejecución ─────────────────────────────────────────
@@ -144,21 +157,26 @@ function applyJobEffect(machine: Machine, job: CronJob): void {
     return;
   }
 
-  // Redirección simple: <algo> [>>|>] <archivo>
-  const redir = rest.match(/(\S+)\s*(>>|>)\s*(\S+)/);
+  // Redirección simple: <texto> [>>|>] <archivo>. El texto puede ir
+  // entre comillas (`echo "a b" > f` escribe `a b`, no `a`).
+  const redir = rest.match(/^(.+?)\s*(>>|>)\s*(\S+)\s*$/);
   if (redir) {
-    const [_, text, op, file] = redir;
-    ensureFile(machine, file, `${text}\n`, op === '>>');
+    const rawText = redir[1].trim();
+    const unwrapped = rawText.match(/^"(.*)"$/) ?? rawText.match(/^'(.*)'$/);
+    const text = unwrapped ? unwrapped[1] : rawText;
+    ensureFile(machine, redir[3], `${text}\n`, redir[2] === '>>');
   }
 }
 
 // ── Ejecución (avance del reloj virtual) ────────────────────────────
 function cronLine(machine: Machine, job: CronJob, d: Date): string {
   const hostname = machine.machine_info?.hostname || 'target-server';
+  const mon = MONTHS[d.getUTCMonth()];
+  const day = String(d.getUTCDate()).padStart(2, '0');
   const hh = String(d.getUTCHours()).padStart(2, '0');
   const mm = String(d.getUTCMinutes()).padStart(2, '0');
   const pid = 3000 + (ticks.get(machine.id) ?? 0) % 1000;
-  return `Mar 19 ${hh}:${mm}:01 ${hostname} CRON[${pid}]: (${job.user}) CMD (${job.command})`;
+  return `${mon} ${day} ${hh}:${mm}:01 ${hostname} CRON[${pid}]: (${job.user}) CMD (${job.command})`;
 }
 
 function appendToSyslog(machine: Machine, logLines: string[]): void {
