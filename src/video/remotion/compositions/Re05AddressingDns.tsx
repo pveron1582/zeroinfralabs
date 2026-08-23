@@ -25,13 +25,13 @@ const CENTERED: React.CSSProperties = {
 
 // ── Escena 1: las 3 piezas de la configuración ─────────────────────
 const PIECES = [
-  { name: 'IP', icon: '🪪', color: THEME.cyan, desc: 'identidad del equipo en la red', ex: '192.168.1.10', at: 3 },
-  { name: 'MÁSCARA', icon: '📐', color: THEME.amber, desc: 'qué parte es red, qué parte es equipo', ex: '255.255.255.0', at: 6 },
-  { name: 'GATEWAY', icon: '🌉', color: THEME.green, desc: 'la IP del router: el puente hacia afuera', ex: '192.168.1.1', at: 9.5 },
+  { name: 'IP', icon: '🪪', color: THEME.cyan, desc: 'identidad del equipo en la red', ex: '192.168.1.10', at: 0.1 },
+  { name: 'MÁSCARA', icon: '📐', color: THEME.amber, desc: 'qué parte es red, qué parte es equipo', ex: '255.255.255.0', at: 3 },
+  { name: 'GATEWAY', icon: '🌉', color: THEME.green, desc: 'la IP del router: el puente hacia afuera', ex: '192.168.1.1', at: 6.5 },
 ];
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const panelAt = Math.round(5 * fps);
+  const panelAt = Math.round(3 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={panelAt}>

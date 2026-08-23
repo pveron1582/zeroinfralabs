@@ -38,9 +38,9 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 16 }}>🔒 SSH — PUERTO 22</div>
           <div style={{ background: THEME.panel, border: `1px solid ${THEME.green}60`, borderRadius: 16, padding: '20px 28px', width: 820, textAlign: 'left' }}>
-            <RevealLine at={0} fps={fps} mark="▸" color={THEME.green}>administración remota cifrada de punta a punta</RevealLine>
-            <RevealLine at={3.13} fps={fps} mark="▸" color={THEME.red}>ataques: fuerza bruta y robo de claves</RevealLine>
-            <RevealLine at={5.73} fps={fps} mark="✓" color={THEME.green}>22 abierto = empieza la adivinación de claves</RevealLine>
+            <RevealLine at={3.13} fps={fps} mark="▸" color={THEME.green}>administración remota cifrada de punta a punta</RevealLine>
+            <RevealLine at={5.73} fps={fps} mark="▸" color={THEME.red}>ataques: fuerza bruta y robo de claves</RevealLine>
+            <RevealLine at={8.07} fps={fps} mark="✓" color={THEME.green}>22 abierto = empieza la adivinación de claves</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -62,7 +62,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
     </div>
     <div style={{ display: 'flex', gap: 22, width: 1120 }}>
       {OTHERS.map((s, i) => {
-        const at = [0, 12.49, 22.9][i];
+        const at = [0, 8.57, 16.22][i];
         return (
         <div key={s.name} style={{
           flex: 1, background: THEME.panel, border: `1px solid ${s.color}60`,
@@ -83,7 +83,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 
 // ── Escena 3: nmap -sV + cierre ───────────────────────────────────
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(18.5 * fps);
+  const closeAt = Math.round(15.57 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>

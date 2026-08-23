@@ -5,7 +5,7 @@
 // a silencedetect (-50dB) de voicebox-scripts/re1-05-scene*.wav.
 
 import React from 'react';
-import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
+import { AbsoluteFill, interpolate, Sequence, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
 import { sceneStartFrames, AUDIO_TIMINGS, hasAudio } from '../audioTimings';
 import { THEME, MONO } from '../theme';
@@ -38,9 +38,9 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
         <AbsoluteFill style={CENTERED}>
           <div style={{ display: 'flex', gap: 20, marginBottom: 24 }}>
             {[
-              { icon: '🖨️', name: 'CONTABILIDAD', color: THEME.cyan },
-              { icon: '🛡️', name: 'SERVIDORES', color: THEME.green },
-              { icon: '📷', name: 'CÁMARAS', color: THEME.amber },
+              { icon: '💰', name: 'CONTABILIDAD', color: THEME.cyan },
+              { icon: '🖥️', name: 'SERVIDORES', color: THEME.green },
+              { icon: '📹', name: 'CÁMARAS', color: THEME.amber },
               { icon: '📱', name: 'INVITADOS', color: THEME.purple },
             ].map((v) => (
               <div key={v.name} style={{
@@ -102,27 +102,90 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 );
 
 // ── Escena 3: el tag 802.1Q + trunk + seguridad + cierre ───────────
+// Topología visual: switch central + cables de color por VLAN hacia los
+// equipos (mismos colores de VLAN 10/20/30).
+const NODES = [
+  { label: 'PC', at: 9.5, color: THEME.cyan },
+  { label: 'PC', at: 11, color: THEME.cyan },
+  { label: 'SRV', at: 12.5, color: THEME.green },
+  { label: 'CAM', at: 14, color: THEME.amber },
+];
+
+const SWITCH_W = 110;
+const SWITCH_Y = 120;
+const NODE_Y = 28;
+const NODE_R = 26;
+const W = NODES.length * 130 + SWITCH_W; // ancho del canvas
+
+const VlanTopology: React.FC<{ fps: number }> = ({ fps }) => {
+  const frame = useCurrentFrame();
+  const enter = interpolate(frame - Math.round(9 * fps), [0, 14], [0, 1], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+  const cx = W / 2;
+  return (
+    <div style={{ opacity: enter, transform: `translateY(${(1 - enter) * 12}px)`, display: 'flex', justifyContent: 'center' }}>
+      <svg width={W} height={SWITCH_Y + NODE_R + 30} viewBox={`0 0 ${W} ${SWITCH_Y + NODE_R + 30}`}>
+        {/* cables por VLAN al switch */}
+        {NODES.map((d, i) => {
+          const nx = i * 130 + 65;
+          const t = interpolate(frame - Math.round(d.at * fps), [0, 10], [0, 1], {
+            extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+          });
+          return (
+            <React.Fragment key={i}>
+              <line x1={nx} y1={NODE_Y + NODE_R} x2={nx + (cx - nx) * t} y2={NODE_Y + NODE_R + (SWITCH_Y - NODE_Y - NODE_R) * t}
+                stroke={d.color} strokeWidth={4} strokeLinecap="round" />
+              <circle cx={nx} cy={NODE_Y} r={NODE_R} fill={THEME.panel} stroke={d.color} strokeWidth={1.5} />
+              <text x={nx} y={NODE_Y + 5} textAnchor="middle" fill={d.color} fontFamily={MONO} fontSize={13} fontWeight={800}>{d.label}</text>
+            </React.Fragment>
+          );
+        })}
+        {/* switch */}
+        <rect x={cx - SWITCH_W / 2} y={SWITCH_Y} width={SWITCH_W} height={26} rx={6} fill={THEME.panel} stroke={THEME.text} strokeWidth={1.5} />
+        {[0, 1, 2, 3, 4, 5].map(i => (
+          <rect key={i} x={cx - 46 + i * 13} y={SWITCH_Y + 9} width={8} height={8} rx={1} fill={THEME.purple} opacity={0.8} />
+        ))}
+        <text x={cx} y={SWITCH_Y + 40} textAnchor="middle" fill={THEME.muted} fontFamily={MONO} fontSize={13}>switch</text>
+      </svg>
+    </div>
+  );
+};
+
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
   const closeAt = Math.round(31.53 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
-        <AbsoluteFill style={CENTERED}>
-          <div style={{ fontSize: 28, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 20 }}>
+        <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 14 }}>
             EL <span style={{ color: THEME.purple }}>TAG 802.1Q</span>: 4 BYTES QUE DICEN EL PISO
           </div>
-          <TerminalWindow title="switch# show vlan brief" width={680} delay={Math.round(8.57 * fps)}>
-            <div style={{ fontSize: 15, whiteSpace: 'pre', lineHeight: 1.8 }}>
-              <span style={{ color: THEME.dim }}>10</span>   EMPLEADOS     Fa0/1-8
-              {'\n'}<span style={{ color: THEME.dim }}>20</span>   SERVIDORES    Fa0/9-10
-              {'\n'}<span style={{ color: THEME.dim }}>30</span>   CAMARAS       Fa0/11-16
-              {'\n'}Port     Mode     Vlans allowed on trunk
-              {'\n'}<span style={{ color: THEME.green }}>Fa0/24   trunk    10,20,30 (802.1Q)</span>
-            </div>
-          </TerminalWindow>
-          <div style={{ marginTop: 18, width: 860, textAlign: 'left' }}>
-            <RevealLine at={15.73} fps={fps} mark="🔒" color={THEME.green}>contención: el atacante queda en su propio segmento</RevealLine>
-            <RevealLine at={28.71} fps={fps} mark="✗" color={THEME.red}>segmentación, no cifrado: el VLAN hopping intenta saltar</RevealLine>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+            <TerminalWindow title="switch# show vlan brief" width={540} delay={Math.round(8.57 * fps)}>
+              <div style={{ fontSize: 14, whiteSpace: 'pre', lineHeight: 1.8 }}>
+                <span style={{ color: THEME.amber }}>VLAN  Name        Status  Ports</span>
+                {'\n'}<span style={{ color: THEME.dim }}>----  ----------  ------  ----------</span>
+                {'\n'}<span style={{ color: THEME.cyan }}>10    EMPLEADOS   active  Fa0/1-8</span>
+                {'\n'}<span style={{ color: THEME.green }}>20    SERVIDORES  active  Fa0/9-10</span>
+                {'\n'}<span style={{ color: THEME.amber }}>30    CAMARAS     active  Fa0/11-16</span>
+                {'\n'}<span style={{ color: THEME.red }}>40    INVITADOS   active  Fa0/17-24</span>
+              </div>
+            </TerminalWindow>
+            <TerminalWindow title="switch# show interfaces trunk" width={540} delay={Math.round(9.4 * fps)}>
+              <div style={{ fontSize: 14, whiteSpace: 'pre', lineHeight: 1.8 }}>
+                <span style={{ color: THEME.amber }}>Port   Mode  Encapsulation  Status     Native</span>
+                {'\n'}<span style={{ color: THEME.green }}>Fa0/24 on    802.1q         trunking   1</span>
+                {'\n'}
+                {'\n'}<span style={{ color: THEME.amber }}>Port   Vlans allowed on trunk</span>
+                {'\n'}<span style={{ color: THEME.green }}>Fa0/24 10,20,30</span>
+              </div>
+            </TerminalWindow>
+          </div>
+          <VlanTopology fps={fps} />
+          <div style={{ position: 'absolute', bottom: 34, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <RevealLine at={21.01} fps={fps} mark="🔒" color={THEME.green}>contención: el atacante queda en su propio segmento</RevealLine>
+            <RevealLine at={30.6} fps={fps} mark="✗" color={THEME.red}>segmentación, no cifrado: el VLAN hopping intenta saltar</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>

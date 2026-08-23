@@ -12,6 +12,7 @@ import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
 import { RevealLine } from '../primitives/RevealLine';
+import { PatchCord } from '../primitives/NetworkIcons';
 
 const CENTERED: React.CSSProperties = {
   display: 'flex',
@@ -24,7 +25,7 @@ const CENTERED: React.CSSProperties = {
 
 // ── Escena 1: ¿por qué capas? analogía del correo ──────────────────
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const panelAt = Math.round(6 * fps);
+  const panelAt = Math.round(4.5 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={panelAt}>
@@ -40,9 +41,9 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
           </div>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
             {[
-              { icon: '✍️', label: 'escribís la carta', sub: 'capa de aplicación', at: 8 },
-              { icon: '📮', label: 'clasifican y viaja', sub: 'capas inferiores', at: 10.5 },
-              { icon: '📖', label: 'alguien la lee', sub: 'en destino', at: 14 },
+              { icon: '✍️', label: 'escribís la carta', sub: 'capa de aplicación', at: 1.5 },
+              { icon: '📮', label: 'clasifican y viaja', sub: 'capas inferiores', at: 3.5 },
+              { icon: '📖', label: 'alguien la lee', sub: 'en destino', at: 5 },
             ].map((step, i) => (
               <React.Fragment key={step.sub}>
                 {i > 0 && <span style={{ fontSize: 30, color: THEME.dim }}>→</span>}
@@ -67,13 +68,13 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
 
 // ── Escena 2: las 7 capas OSI de arriba a abajo ────────────────────
 const OSI_LAYERS = [
-  { n: 7, name: 'APLICACIÓN', detail: 'HTTP · DNS · SSH', color: THEME.purple, at: 1.2 },
-  { n: 6, name: 'PRESENTACIÓN', detail: 'formato · cifrado', color: THEME.purple, at: 7.5 },
-  { n: 5, name: 'SESIÓN', detail: 'mantener la conversación', color: THEME.cyan, at: 9.3 },
-  { n: 4, name: 'TRANSPORTE', detail: 'TCP/UDP · puertos', color: THEME.cyan, at: 11 },
-  { n: 3, name: 'RED', detail: 'IP · rutas', color: THEME.green, at: 14.1 },
-  { n: 2, name: 'ENLACE', detail: 'MAC · ethernet (switch)', color: THEME.green, at: 18.4 },
-  { n: 1, name: 'FÍSICA', detail: 'cables · fibra · wifi', color: THEME.amber, at: 21.2 },
+  { n: 7, name: 'APLICACIÓN', icon: '🌐', detail: 'HTTP · DNS · SSH', color: THEME.purple, at: 1.2 },
+  { n: 6, name: 'PRESENTACIÓN', icon: '🔐', detail: 'formato · cifrado', color: THEME.purple, at: 7.5 },
+  { n: 5, name: 'SESIÓN', icon: '💬', detail: 'mantener la conversación', color: THEME.cyan, at: 9.3 },
+  { n: 4, name: 'TRANSPORTE', icon: '📦', detail: 'TCP/UDP · puertos', color: THEME.cyan, at: 11 },
+  { n: 3, name: 'RED', icon: '🧭', detail: 'IP · rutas', color: THEME.green, at: 12.5 },
+  { n: 2, name: 'ENLACE', icon: '🔀', detail: 'MAC · ethernet (switch)', color: THEME.green, at: 14.2 },
+  { n: 1, name: 'FÍSICA', icon: <PatchCord width={52} />, detail: 'cables · fibra · wifi', color: THEME.amber, at: 18.5 },
 ];
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
@@ -81,19 +82,19 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
     <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 22 }}>
       LAS <span style={{ color: THEME.cyan }}>7 CAPAS</span> DE OSI
     </div>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 860 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: 560 }}>
       {OSI_LAYERS.map(l => (
         <div key={l.n} style={{
-          display: 'flex', alignItems: 'center', gap: 18,
+          display: 'flex', alignItems: 'center',
           background: THEME.panel, border: `1px solid ${l.color}50`,
-          borderLeft: `6px solid ${l.color}`, borderRadius: 8, padding: '10px 20px',
-          opacity: undefined,
+          borderLeft: `5px solid ${l.color}`, borderRadius: 8, padding: '7px 16px',
         }}>
           <RevealLine at={l.at} fps={fps} mark="" color={l.color}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18, width: '100%' }}>
-              <span style={{ fontSize: 22, fontWeight: 800, color: l.color, fontFamily: MONO, minWidth: 30 }}>{l.n}</span>
-              <span style={{ fontSize: 19, fontWeight: 700, color: THEME.text, fontFamily: MONO, minWidth: 190 }}>{l.name}</span>
-              <span style={{ fontSize: 15, color: THEME.muted, fontFamily: MONO }}>{l.detail}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 22, minWidth: 28, display: 'flex', alignItems: 'center' }}>{l.icon}</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: l.color, fontFamily: MONO, minWidth: 26 }}>{l.n}</span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: THEME.text, fontFamily: MONO, minWidth: 140 }}>{l.name}</span>
+              <span style={{ fontSize: 14, color: THEME.muted, fontFamily: MONO }}>{l.detail}</span>
             </div>
           </RevealLine>
         </div>
@@ -106,10 +107,10 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
   const closeAt = Math.round(10.5 * fps);
   const TCP = [
-    { name: 'APLICACIÓN', detail: 'HTTP · DNS · SSH', color: THEME.purple, at: 1 },
-    { name: 'TRANSPORTE', detail: 'TCP / UDP', color: THEME.cyan, at: 2 },
-    { name: 'INTERNET', detail: 'IP', color: THEME.green, at: 3 },
-    { name: 'ACCESO A RED', detail: 'ethernet / wifi', color: THEME.amber, at: 3.7 },
+    { name: 'APLICACIÓN', detail: 'HTTP · DNS · SSH', color: THEME.purple, at: 2.9 },
+    { name: 'TRANSPORTE', detail: 'TCP / UDP', color: THEME.cyan, at: 3.3 },
+    { name: 'INTERNET', detail: 'IP', color: THEME.green, at: 3.7 },
+    { name: 'ACCESO A RED', detail: 'ethernet / wifi', color: THEME.amber, at: 4 },
   ];
   return (
     <AbsoluteFill>

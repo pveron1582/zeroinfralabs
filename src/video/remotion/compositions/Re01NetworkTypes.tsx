@@ -25,7 +25,7 @@ const CENTERED: React.CSSProperties = {
 const NODES = ['💻 compu', '📱 celu', '🗄️ servidor', '🖨️ impresora'];
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const panelAt = Math.round(6 * fps);
+  const panelAt = Math.round(5 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={panelAt}>
@@ -50,9 +50,9 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
             CADA EQUIPO = <span style={{ color: THEME.green }}>UN NODO</span>
           </div>
           <div style={{ background: THEME.panel, border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '22px 30px', textAlign: 'left', width: 760 }}>
-            <RevealLine at={10.2} fps={fps} mark="▸" color={THEME.cyan}>por cable: ethernet, fibra óptica</RevealLine>
-            <RevealLine at={12.5} fps={fps} mark="▸" color={THEME.cyan}>sin cable: wifi</RevealLine>
-            <RevealLine at={14.7} fps={fps} mark="✓" color={THEME.green}>existe para compartir: archivos, impresoras, internet</RevealLine>
+            <RevealLine at={2.0} fps={fps} mark="▸" color={THEME.cyan}>por cable: ethernet, fibra óptica</RevealLine>
+            <RevealLine at={3.8} fps={fps} mark="▸" color={THEME.cyan}>sin cable: wifi</RevealLine>
+            <RevealLine at={5.4} fps={fps} mark="✓" color={THEME.green}>existe para compartir: archivos, impresoras, internet</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -97,7 +97,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 
 // ── Escena 3: la VPN + cierre ──────────────────────────────────────
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(13.2 * fps);
+  const closeAt = Math.round(14.2 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
@@ -111,7 +111,7 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
             <span style={{ fontSize: 40 }}>🏢</span>
           </div>
           <div style={{ background: THEME.panel, border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '20px 28px', width: 820, textAlign: 'left' }}>
-            <RevealLine at={4} fps={fps} mark="🔒" color={THEME.purple}>cifrado sobre internet: parecés estar adentro de otra red</RevealLine>
+            <RevealLine at={2.6} fps={fps} mark="🔒" color={THEME.purple}>cifrado sobre internet: parecés estar adentro de otra red</RevealLine>
             <RevealLine at={7} fps={fps} mark="▸" color={THEME.cyan}>el empleado remoto entra a la oficina sin estar sentado ahí</RevealLine>
           </div>
         </AbsoluteFill>

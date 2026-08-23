@@ -39,15 +39,15 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
         <AbsoluteFill style={CENTERED}>
           <div style={{ display: 'flex', gap: 16, marginBottom: 28 }}>
             {['192', '168', '1', '10'].map((part, i) => (
-              <KeyCapsule key={part + i} label={`octeto ${i + 1} (0-255)`} value={part} accent={THEME.cyan} delay={7 + i * 1.5} size={40} />
+              <KeyCapsule key={part + i} label={`octeto ${i + 1} (0-255)`} value={part} accent={THEME.cyan} delay={2.2 + i * 0.8} size={40} />
             ))}
           </div>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 22 }}>
             4 NÚMEROS, DE <span style={{ color: THEME.amber }}>0 A 255</span>, SEPARADOS POR PUNTOS
           </div>
           <div style={{ background: THEME.panel, border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '20px 28px', width: 760, textAlign: 'left' }}>
-            <RevealLine at={6.5} fps={fps} mark="▸" color={THEME.cyan}>número único dentro de la red: a quién entregarle datos</RevealLine>
-            <RevealLine at={11.6} fps={fps} mark="✗" color={THEME.red}>dos equipos con la misma IP = conflicto de IP</RevealLine>
+            <RevealLine at={0.4} fps={fps} mark="▸" color={THEME.cyan}>número único dentro de la red: a quién entregarle datos</RevealLine>
+            <RevealLine at={5.8} fps={fps} mark="✗" color={THEME.red}>dos equipos con la misma IP = conflicto de IP</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -91,7 +91,7 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
           <div style={{ fontSize: 28, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }}>
             <span style={{ color: THEME.cyan }}>NAT</span>: TODA TU CASA SALE CON UNA IP
           </div>
-          <TerminalWindow title="kali@attacker-01:~$ ip addr" width={700} delay={Math.round(5 * fps)}>
+          <TerminalWindow title="kali@attacker-01:~$ ip addr" width={700} delay={Math.round(11 * fps)}>
             <div style={{ fontSize: 15, whiteSpace: 'pre', lineHeight: 1.7 }}>
               <span style={{ color: THEME.dim }}>2: eth0: &lt;BROADCAST,MULTICAST,UP&gt;</span>
               {'\n'}    inet <span style={{ color: THEME.green }}>192.168.1.10</span>/24 scope global eth0

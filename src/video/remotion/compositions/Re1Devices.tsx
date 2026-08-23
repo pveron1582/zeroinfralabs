@@ -12,6 +12,7 @@ import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
 import { RevealLine } from '../primitives/RevealLine';
+import { FiberCable, PatchCord, RouterDisc } from '../primitives/NetworkIcons';
 
 const CENTERED: React.CSSProperties = {
   display: 'flex',
@@ -40,7 +41,7 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
             CAPA 1 · UNA SOLA FUNCIÓN
           </div>
           <div style={{ background: THEME.panel, border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '20px 28px', width: 820, textAlign: 'left' }}>
-            <RevealLine at={1.95} fps={fps} mark="▸" color={THEME.red}>repite todo lo que recibe a TODOS los puertos</RevealLine>
+            <RevealLine at={1.75} fps={fps} mark="▸" color={THEME.red}>repite todo lo que recibe a TODOS los puertos</RevealLine>
             <RevealLine at={4.5} fps={fps} mark="✗" color={THEME.red}>no entiende MAC ni toma decisiones</RevealLine>
             <RevealLine at={7.04} fps={fps} mark="✓" color={THEME.amber}>con hubs, sniffear era trivial</RevealLine>
           </div>
@@ -58,13 +59,13 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
     </div>
     <div style={{ display: 'flex', gap: 24, width: 1080 }}>
       <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.cyan}60`, borderRadius: 16, padding: '24px 22px', textAlign: 'left' }}>
-        <div style={{ fontSize: 24, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 12 }}>🖧 SWITCH · CAPA 2</div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 12 }}>🔀 SWITCH · CAPA 2</div>
         <RevealLine at={1.71} fps={fps} mark="▸" color={THEME.cyan}>aprende qué MAC vive en cada puerto</RevealLine>
         <RevealLine at={3.1} fps={fps} mark="▸" color={THEME.cyan}>entrega solo al destino</RevealLine>
         <RevealLine at={7.91} fps={fps} mark="▸" color={THEME.cyan}>VLANs, monitoreo, seguridad de puertos</RevealLine>
       </div>
       <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.green}60`, borderRadius: 16, padding: '24px 22px', textAlign: 'left' }}>
-        <div style={{ fontSize: 24, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 12 }}>📡 ROUTER · CAPA 3</div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><RouterDisc /> ROUTER · CAPA 3</div>
         <RevealLine at={10.83} fps={fps} mark="▸" color={THEME.green}>conecta redes distintas por IP</RevealLine>
         <RevealLine at={13.16} fps={fps} mark="▸" color={THEME.green}>tabla de rutas: estática o dinámica (OSPF, BGP)</RevealLine>
         <RevealLine at={17.06} fps={fps} mark="▸" color={THEME.green}>NAT + DHCP + puertos WAN y LAN</RevealLine>
@@ -77,14 +78,18 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 );
 
 // ── Escena 3: el cableado + AP + cierre ────────────────────────────
-const MEDIA = [
-  { name: 'COBRE', icon: '🔌', color: THEME.amber, desc: 'UTP/RJ45 · barato y universal · hasta ~100 m' },
-  { name: 'FIBRA', icon: '💡', color: THEME.cyan, desc: 'luz en vez de electricidad · velocidad y distancia' },
-  { name: 'WIFI (AP)', icon: '📶', color: THEME.green, desc: 'sin cables · laptops y celulares' },
+const COPPER = '#c97a3d';
+
+const MEDIA: {
+  name: string; color: string; desc: string; at: number; visual: React.ReactNode;
+}[] = [
+  { name: 'COBRE', color: THEME.amber, desc: 'UTP/RJ45 · barato y universal · hasta ~100 m', at: 2.09, visual: <PatchCord width={210} color={COPPER} /> },
+  { name: 'FIBRA', color: THEME.cyan, desc: 'luz en vez de electricidad · velocidad y distancia', at: 5.9, visual: <FiberCable /> },
+  { name: 'WIFI (AP)', color: THEME.green, desc: 'sin cables · laptops y celulares', at: 10.77, visual: <span style={{ fontSize: 34 }}>📶</span> },
 ];
 
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(14.59 * fps);
+  const closeAt = Math.round(22.7 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
@@ -93,21 +98,18 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
             Y EL <span style={{ color: THEME.cyan }}>CABLEADO</span>
           </div>
           <div style={{ display: 'flex', gap: 22, width: 1000 }}>
-{MEDIA.map((m, i) => {
-        const at = [2.09, 5.9, 10.77][i];
-        return (
+{MEDIA.map((m) => (
         <div key={m.name} style={{
           flex: 1, background: THEME.panel, border: `1px solid ${m.color}60`,
           borderRadius: 16, padding: '22px 20px', textAlign: 'center',
         }}>
-          <div style={{ fontSize: 34, marginBottom: 8 }}>{m.icon}</div>
-          <RevealLine at={at} fps={fps} mark="◆" color={m.color}>
+          <div style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>{m.visual}</div>
+          <RevealLine at={m.at} fps={fps} mark="◆" color={m.color}>
             <span style={{ fontSize: 18, fontWeight: 800 }}>{m.name}</span>
           </RevealLine>
           <div style={{ fontSize: 13, color: THEME.muted, fontFamily: MONO, marginTop: 10, lineHeight: 1.5 }}>{m.desc}</div>
         </div>
-        );
-      })}
+      ))}
           </div>
         </AbsoluteFill>
       </Sequence>

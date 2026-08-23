@@ -39,9 +39,9 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
             LOS EQUIPOS NO HABLAN <span style={{ color: THEME.cyan }}>CUALQUIER IDIOMA</span>
           </div>
           <div style={{ background: THEME.panel, border: `1px solid ${THEME.border}`, borderRadius: 16, padding: '22px 30px', width: 820, textAlign: 'left' }}>
-            <RevealLine at={0} fps={fps} mark="▸" color={THEME.cyan}>formato de los datos: cómo se escriben</RevealLine>
-            <RevealLine at={2.62} fps={fps} mark="▸" color={THEME.cyan}>cómo se inicia y termina la conversación</RevealLine>
-            <RevealLine at={6.4} fps={fps} mark="✗" color={THEME.red}>distintos protocolos = no se entienden</RevealLine>
+            <RevealLine at={2.62} fps={fps} mark="▸" color={THEME.cyan}>formato de los datos: cómo se escriben</RevealLine>
+            <RevealLine at={4.16} fps={fps} mark="▸" color={THEME.cyan}>cómo se inicia y termina la conversación</RevealLine>
+            <RevealLine at={8.28} fps={fps} mark="✗" color={THEME.red}>distintos protocolos = no se entienden</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -64,7 +64,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, width: 1000 }}>
       {L2L3.map((p, i) => {
-        const at = [1.32, 5.68, 11.44, 15.13][i];
+        const at = [1.32, 2.79, 5.68, 8.52][i];
         return (
         <div key={p.name} style={{
           background: THEME.panel, border: `1px solid ${p.color}60`,
@@ -84,7 +84,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 
 // ── Escena 3: capa 4 (TCP/UDP) + capa 7 + cierre ──────────────────
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(16.03 * fps);
+  const closeAt = Math.round(18.51 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
@@ -101,9 +101,9 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
             </div>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.amber}60`, borderRadius: 16, padding: '22px 18px', textAlign: 'left' }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: THEME.amber, fontFamily: MONO, marginBottom: 10 }}>UDP</div>
-              <RevealLine at={8.71} fps={fps} mark="▸" color={THEME.amber}>sin conexión, rápido</RevealLine>
-              <RevealLine at={10.86} fps={fps} mark="▸" color={THEME.amber}>no garantiza la entrega</RevealLine>
-              <RevealLine at={12.42} fps={fps} mark="▸" color={THEME.amber}>streaming · juegos · DNS</RevealLine>
+              <RevealLine at={2.88} fps={fps} mark="▸" color={THEME.amber}>sin conexión, rápido</RevealLine>
+              <RevealLine at={8.71} fps={fps} mark="▸" color={THEME.amber}>no garantiza la entrega</RevealLine>
+              <RevealLine at={10.86} fps={fps} mark="▸" color={THEME.amber}>streaming · juegos · DNS</RevealLine>
             </div>
           </div>
           <div style={{ marginTop: 22, fontSize: 16, color: THEME.muted, fontFamily: MONO }}>

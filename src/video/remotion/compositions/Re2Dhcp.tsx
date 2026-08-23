@@ -5,7 +5,7 @@
 // a silencedetect (-50dB) de voicebox-scripts/re2-01-scene*.wav.
 
 import React from 'react';
-import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
+import { AbsoluteFill, interpolate, Sequence, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
 import { sceneStartFrames, AUDIO_TIMINGS, hasAudio } from '../audioTimings';
 import { THEME, MONO } from '../theme';
@@ -103,27 +103,67 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 );
 
 // ── Escena 3: estática vs DHCP + rogue DHCP + cierre ───────────────
+// Syncs alineados a transcripción con word-timestamps (faster-whisper)
+// del wav de escena 3; rogueAt tras «no autentica a los servidores» (20.5s)
+// y la pantalla final cuando termina la narración (32.2s).
+const TermRow: React.FC<{ at: number; fps: number; children: React.ReactNode }> = ({ at, fps, children }) => {
+  const f = useCurrentFrame();
+  const o = interpolate(f - Math.round(at * fps), [0, 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  return <div style={{ opacity: o, whiteSpace: 'pre' }}>{children}</div>;
+};
+
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(27.75 * fps);
+  const rogueAt = Math.round(20.9 * fps);
+  const closeAt = Math.round(32.1 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
-        <AbsoluteFill style={CENTERED}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 18 }}>
-            DHCP NO AUTENTICA: <span style={{ color: THEME.red }}>ROGUE DHCP</span>
-          </div>
-          <TerminalWindow title="kali@attacker-01:~$ dhclient -v eth0" width={700} delay={Math.round(15.52 * fps)}>
-            <div style={{ fontSize: 14, whiteSpace: 'pre', lineHeight: 1.7 }}>
-              <span style={{ color: THEME.cyan }}>DHCPDISCOVER</span> on eth0 to 255.255.255.255
-              {'\n'}<span style={{ color: THEME.green }}>DHCPOFFER</span> of 192.168.1.34 from 192.168.1.1
-              {'\n'}<span style={{ color: THEME.amber }}>DHCPREQUEST</span> for 192.168.1.34
-              {'\n'}<span style={{ color: THEME.purple }}>DHCPACK</span> of 192.168.1.34
-            </div>
-          </TerminalWindow>
-          <div style={{ width: 880, textAlign: 'left', marginTop: 16 }}>
-            <RevealLine at={18.42} fps={fps} mark="🕳️" color={THEME.red}>un servidor falso reparte gateway/DNS maliciosos → MITM sin pelear por ARP</RevealLine>
-            <RevealLine at={26.23} fps={fps} mark="🛡️" color={THEME.green}>defensa: DHCP snooping (solo puertos autorizados)</RevealLine>
-          </div>
+        <AbsoluteFill>
+          {/* Parte A: estática vs DHCP — lo que narra antes del ataque */}
+          <Sequence from={0} durationInFrames={rogueAt}>
+            <AbsoluteFill style={CENTERED}>
+              <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 22 }}>
+                SI NADIE RESPONDE → <span style={{ color: THEME.amber }}>IP ESTÁTICA</span> vs <span style={{ color: THEME.cyan }}>DHCP</span>
+              </div>
+              <div style={{ display: 'flex', gap: 20, width: 1040 }}>
+                <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.amber}60`, borderTop: `5px solid ${THEME.amber}`, borderRadius: 12, padding: '22px 20px', textAlign: 'left' }}>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: THEME.amber, fontFamily: MONO, marginBottom: 10 }}>IP ESTÁTICA</div>
+                  <RevealLine at={0} fps={fps} mark="▸" color={THEME.amber}>si nadie responde → configurar a mano</RevealLine>
+                  <RevealLine at={5.2} fps={fps} mark="▸" color={THEME.amber}>estable · predecible · servidores / impresoras / routers</RevealLine>
+                  <RevealLine at={9.7} fps={fps} mark="✗" color={THEME.red}>no escala: 300 PCs a mano</RevealLine>
+                </div>
+                <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.cyan}60`, borderTop: `5px solid ${THEME.cyan}`, borderRadius: 12, padding: '22px 20px', textAlign: 'left' }}>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 10 }}>DHCP</div>
+                  <RevealLine at={13.06} fps={fps} mark="✓" color={THEME.cyan}>automático · escala solo</RevealLine>
+                  <RevealLine at={15.58} fps={fps} mark="▸" color={THEME.cyan}>pero depende de un servicio</RevealLine>
+                  <RevealLine at={17.28} fps={fps} mark="⚠️" color={THEME.red}>y acá está el problema: no autentica a los servidores</RevealLine>
+                </div>
+              </div>
+            </AbsoluteFill>
+          </Sequence>
+          {/* Parte B: rogue DHCP */}
+          <Sequence from={rogueAt}>
+            <AbsoluteFill style={CENTERED}>
+              <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 18 }}>
+                DHCP NO AUTENTICA: <span style={{ color: THEME.red }}>ROGUE DHCP</span>
+              </div>
+              <TerminalWindow title="kali@attacker-01:~$ dhclient -v eth0" width={780} delay={0}>
+                <div style={{ fontSize: 14, lineHeight: 1.7 }}>
+                  <TermRow at={0} fps={fps}><span style={{ color: THEME.cyan }}>DHCPDISCOVER</span> on eth0 to 255.255.255.255</TermRow>
+                  <TermRow at={3.6} fps={fps}><span style={{ color: THEME.green }}>DHCPOFFER</span> of 192.168.1.34 from <span style={{ color: THEME.red }}>192.168.1.99 (falso)</span></TermRow>
+                  <TermRow at={4.4} fps={fps}><span style={{ color: THEME.amber }}>DHCPREQUEST</span> for 192.168.1.34</TermRow>
+                  <TermRow at={5.4} fps={fps}><span style={{ color: THEME.purple }}>DHCPACK</span> of 192.168.1.34 from <span style={{ color: THEME.red }}>192.168.1.99</span></TermRow>
+                  <TermRow at={6.6} fps={fps}><span style={{ color: THEME.dim }}>bound to 192.168.1.34 -- renewal in 3600 seconds</span></TermRow>
+                  <TermRow at={7.3} fps={fps}><span style={{ color: THEME.dim }}>routers (gateway)   : <span style={{ color: THEME.red }}>192.168.1.99</span></span></TermRow>
+                  <TermRow at={7.9} fps={fps}><span style={{ color: THEME.dim }}>dns nameservers     : <span style={{ color: THEME.red }}>192.168.1.99</span></span></TermRow>
+                </div>
+              </TerminalWindow>
+              <div style={{ width: 880, textAlign: 'left', marginTop: 16 }}>
+                <RevealLine at={6.6} fps={fps} mark="🕳️" color={THEME.red}>un servidor falso reparte gateway/DNS maliciosos → MITM sin pelear por ARP</RevealLine>
+                <RevealLine at={8.8} fps={fps} mark="🛡️" color={THEME.green}>defensa: DHCP snooping (solo puertos autorizados)</RevealLine>
+              </div>
+            </AbsoluteFill>
+          </Sequence>
         </AbsoluteFill>
       </Sequence>
       <Sequence from={closeAt}>

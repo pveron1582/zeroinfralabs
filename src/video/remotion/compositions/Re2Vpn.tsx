@@ -111,7 +111,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 
 // ── Escena 3: qué protege y qué no + cierre ────────────────────────
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(23.32 * fps);
+  const closeAt = Math.round(28.2 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
@@ -133,7 +133,7 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
           </div>
           <div style={{ marginTop: 22, width: 900, textAlign: 'left' }}>
             <RevealLine at={13.99} fps={fps} mark="🎯" color={THEME.amber}>pentester: credencial de VPN comprometida = entrada directa a la red</RevealLine>
-            <RevealLine at={20.36} fps={fps} mark="🛡️" color={THEME.green}>defensas: MFA · certificados de cliente · parcharlo</RevealLine>
+            <RevealLine at={23.34} fps={fps} mark="🛡️" color={THEME.green}>defensas: MFA · certificados de cliente · parcharlo</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>

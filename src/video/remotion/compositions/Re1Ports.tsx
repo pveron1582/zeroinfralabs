@@ -68,7 +68,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
     </div>
     <div style={{ display: 'flex', gap: 22, width: 1120 }}>
       {RANGES.map((r, i) => {
-        const at = [20.50, 24.12, 28.36][i];
+        const at = [16.21, 18.94, 20.54][i];
         return (
         <div key={r.name} style={{
           flex: 1, background: THEME.panel, border: `1px solid ${r.color}60`,
@@ -103,10 +103,10 @@ const CLASSICS = [
   { p: '8080', s: 'HTTP ALT', c: THEME.cyan },
 ];
 
-const CHIP_AT = [2.30, 3.52, 5.16, 8.14, 9.50, 10.76, 12.36, 13.66, 15.12, 17.38, 19.78, 21.96, 24.46];
+const CHIP_AT = [2.11, 2.8, 3.37, 5.23, 5.7, 6.37, 7.2, 9.45, 11.02, 13.63, 17.47, 19.8, 21.99];
 
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(26.4 * fps);
+  const closeAt = Math.round(27.01 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>

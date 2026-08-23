@@ -12,6 +12,7 @@ import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
 import { RevealLine } from '../primitives/RevealLine';
+import { RouterDisc } from '../primitives/NetworkIcons';
 
 const CENTERED: React.CSSProperties = {
   display: 'flex',
@@ -23,10 +24,10 @@ const CENTERED: React.CSSProperties = {
 };
 
 // ── Escena 1: hub / switch / router por capa ───────────────────────
-const DEVICES = [
-  { name: 'HUB', icon: '🔌', layer: 'capa 1', color: THEME.dim, desc: 'repite todo a todos — obsoleto, solo en textos viejos', at: 2.5 },
-  { name: 'SWITCH', icon: '🖧', layer: 'capa 2', color: THEME.cyan, desc: 'aprende MACs por puerto, entrega solo al destino', at: 8.5 },
-  { name: 'ROUTER', icon: '📡', layer: 'capa 3', color: THEME.green, desc: 'une redes, hace NAT, reparte IPs (DHCP)', at: 12 },
+const DEVICES: { name: string; icon: React.ReactNode; layer: string; color: string; desc: string; at: number }[] = [
+  { name: 'HUB', icon: '🔌', layer: 'capa 1', color: THEME.dim, desc: 'repite todo a todos — obsoleto, solo en textos viejos', at: 0.3 },
+  { name: 'SWITCH', icon: '🔀', layer: 'capa 2', color: THEME.cyan, desc: 'aprende MACs por puerto, entrega solo al destino', at: 3.5 },
+  { name: 'ROUTER', icon: <RouterDisc width={54} />, layer: 'capa 3', color: THEME.green, desc: 'une redes, hace NAT, reparte IPs (DHCP)', at: 7.2 },
 ];
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
@@ -47,7 +48,7 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
                 flex: 1, background: THEME.panel, border: `1px solid ${d.color}60`,
                 borderRadius: 16, padding: '24px 22px', textAlign: 'center',
               }}>
-                <div style={{ fontSize: 40, marginBottom: 10 }}>{d.icon}</div>
+                <div style={{ fontSize: 40, marginBottom: 10, display: 'flex', justifyContent: 'center' }}>{d.icon}</div>
                 <div style={{ fontSize: 24, fontWeight: 800, color: d.color, fontFamily: MONO }}>{d.name}</div>
                 <RevealLine at={d.at} fps={fps} mark="◆" color={d.color}>{d.layer}</RevealLine>
                 <div style={{ fontSize: 14, color: THEME.muted, fontFamily: MONO, marginTop: 12, lineHeight: 1.55 }}>{d.desc}</div>
@@ -62,11 +63,70 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
 
 // ── Escena 2: topologías con mini-diagramas ────────────────────────
 const TOPOS = [
-  { name: 'BUS', color: THEME.amber, shape: '─○─○─○─', desc: 'un cable compartido · si se corta cae todo', at: 2 },
-  { name: 'ESTRELLA', color: THEME.green, shape: '○ ╲│╱ ○', desc: 'todo al centro (switch) · la más usada hoy', at: 7.5 },
-  { name: 'ANILLO', color: THEME.cyan, shape: '○─○─○ ↻', desc: 'los datos giran en un solo sentido', at: 11.2 },
-  { name: 'MALLA', color: THEME.purple, shape: '◉╳◉╳◉', desc: 'resistente pero cara · la base de internet', at: 14.6 },
+  { name: 'BUS', color: THEME.amber, shape: 'bus', desc: 'un cable compartido · si se corta cae todo', at: 2 },
+  { name: 'ESTRELLA', color: THEME.green, shape: 'estrella', desc: 'todo al centro (switch) · la más usada hoy', at: 5.8 },
+  { name: 'ANILLO', color: THEME.cyan, shape: 'anillo', desc: 'los datos giran en un solo sentido', at: 10 },
+  { name: 'MALLA', color: THEME.purple, shape: 'malla', desc: 'resistente pero cara · la base de internet', at: 11.3 },
 ];
+
+const TopoShape: React.FC<{ shape: string; color: string }> = ({ shape, color }) => {
+  const line = { stroke: color, strokeWidth: 2, fill: 'none' };
+  const node = (x: number, y: number, r = 3.5) => <circle cx={x} cy={y} r={r} fill={color} />;
+  switch (shape) {
+    case 'bus':
+      return (
+        <svg width={150} height={40} viewBox="0 0 150 40">
+          <line x1={10} y1={20} x2={140} y2={20} {...line} />
+          {node(35, 20)}
+          {node(75, 20)}
+          {node(115, 20)}
+        </svg>
+      );
+    case 'estrella': {
+      const cx = 75, cy = 45, R = 34;
+      const pts = Array.from({ length: 6 }, (_, i) => {
+        const a = (Math.PI / 3) * i - Math.PI / 2;
+        return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
+      });
+      return (
+        <svg width={150} height={90} viewBox="0 0 150 90">
+          {pts.map((p, i) => <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} {...line} />)}
+          {node(cx, cy, 4.5)}
+          {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={3.5} fill={color} />)}
+        </svg>
+      );
+    }
+    case 'anillo': {
+      const cx = 75, cy = 45, R = 30;
+      const pts = Array.from({ length: 5 }, (_, i) => {
+        const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+        return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
+      });
+      return (
+        <svg width={150} height={90} viewBox="0 0 150 90">
+          <circle cx={cx} cy={cy} r={R} {...line} strokeWidth={3} />
+          {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={3.5} fill={color} />)}
+        </svg>
+      );
+    }
+    case 'malla':
+      return (
+        <svg width={150} height={90} viewBox="0 0 150 90">
+          <line x1={75} y1={14} x2={75} y2={34} {...line} />
+          <line x1={38} y1={34} x2={112} y2={34} {...line} />
+          <line x1={38} y1={34} x2={38} y2={56} {...line} />
+          <line x1={75} y1={34} x2={75} y2={56} {...line} />
+          <line x1={112} y1={34} x2={112} y2={56} {...line} />
+          {node(75, 10, 4.5)}
+          {node(38, 62)}
+          {node(75, 62)}
+          {node(112, 62)}
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
   <AbsoluteFill style={CENTERED}>
@@ -79,7 +139,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
           background: THEME.panel, border: `1px solid ${t.color}60`,
           borderRadius: 16, padding: '18px 22px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 18,
         }}>
-          <span style={{ fontSize: 26, color: t.color, fontFamily: MONO, whiteSpace: 'nowrap' }}>{t.shape}</span>
+          <TopoShape shape={t.shape} color={t.color} />
           <div style={{ flex: 1 }}>
             <RevealLine at={t.at} fps={fps} mark="◆" color={t.color}>
               <span style={{ fontSize: 20, fontWeight: 800 }}>{t.name}</span>
@@ -94,7 +154,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
 
 // ── Escena 3: por qué importa + cierre ─────────────────────────────
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(12.2 * fps);
+  const closeAt = Math.round(11 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
