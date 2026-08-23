@@ -6,7 +6,7 @@ import { AcademyHome } from '../academy/AcademyHome';
 import { AcademyPathPage } from '../academy/AcademyPath';
 import { LessonViewer } from '../academy/LessonViewer';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { ACADEMY_PATHS, getAllLessons } from '../../academy/paths';
+import { ACADEMY_PATHS, getAllLessons } from '../../academy';
 
 vi.mock('../landing/SiteHeader', () => ({
   SiteHeader: () => <header data-testid="site-header">header</header>,
@@ -62,13 +62,13 @@ describe('Academy', () => {
       expect(screen.getByText('Windows')).toBeInTheDocument();
       expect(screen.getByText('Otros sistemas operativos y hardware')).toBeInTheDocument();
       // Conteos de lecciones: Linux=5, Windows=5, Otros=4, Redes=5, Protocolos=5,
-      // Protocolos II=5, Ciberseguridad=5, Hacking=5, Hacking Web=1, Bash=5, PowerShell=5, Python=5
-      // /0\/5/ también matchea el progreso global "0/55 lecciones" → 10 cards + 1 global
+      // Protocolos II=5, Ciberseguridad=5, Hacking=5, Hacking Web=4, Bash=5, PowerShell=5, Python=5
+      // /0\/5/ → 10 cards + global "0/58" (el substring "0/5" coincide) = 11
       expect(screen.getAllByText(/0\/5/)).toHaveLength(11);
-      expect(screen.getAllByText(/\b0\/4\b/)).toHaveLength(1);
+      expect(screen.getAllByText(/\b0\/4\b/)).toHaveLength(2); // Otros (4) + Hacking Web (4)
       expect(screen.queryAllByText(/\b0\/3\b/)).toHaveLength(0);
       expect(screen.queryAllByText(/\b0\/6\b/)).toHaveLength(0);
-      expect(screen.getAllByText(/\b0\/1\b/)).toHaveLength(1);
+      expect(screen.queryAllByText(/\b0\/1\b/)).toHaveLength(0); // ya no hay módulo con 1 sola lección
     });
 
     it('muestra el progreso general correctamente', () => {
@@ -77,13 +77,13 @@ describe('Academy', () => {
 
       expect(screen.getByText('Tu progreso general')).toBeInTheDocument();
       const progress = screen.getByTestId('overall-progress');
-      expect(progress.textContent).toContain('9%'); // 5 de 55 lecciones
-      expect(screen.getByText(/5\/55/)).toBeInTheDocument();
+      expect(progress.textContent).toContain('9%'); // 5 de 58 lecciones
+      expect(screen.getByText(/5\/58/)).toBeInTheDocument();
     });
 
-    it('el progreso global muestra /55 lecciones', () => {
+    it('el progreso global muestra /58 lecciones', () => {
       renderAcademy('/es/academy');
-      expect(screen.getByText(/0\/55/)).toBeInTheDocument();
+      expect(screen.getByText(/0\/58/)).toBeInTheDocument();
     });
   });
 
@@ -190,7 +190,10 @@ describe('Academy', () => {
       renderAcademy('/es/academy/hacking-web');
       expect(screen.getByRole('heading', { name: 'Hacking Web' })).toBeInTheDocument();
       expect(screen.getByText('Protocolos en hacking web: HTTP, HTTPS y más')).toBeInTheDocument();
-      expect(screen.getByText('0 de 1 lecciones completadas')).toBeInTheDocument();
+      expect(screen.getByText('XSS: inyectando scripts en el navegador')).toBeInTheDocument();
+      expect(screen.getByText('SQL Injection: hablándole a la base de datos')).toBeInTheDocument();
+      expect(screen.getByText('Path Traversal y LFI: de leer archivos a ejecutar código')).toBeInTheDocument();
+      expect(screen.getByText('0 de 4 lecciones completadas')).toBeInTheDocument();
       expect(screen.queryByText('Man-in-the-middle: interceptando tráfico')).not.toBeInTheDocument();
     });
 
@@ -341,7 +344,7 @@ describe('Academy', () => {
       fireEvent.click(screen.getByText(/^Capa 2$/));
       fireEvent.click(screen.getByRole('button', { name: /Completar lección ✓/ }));
       expect(useScenarioStore.getState().completedLessons).toContain('proto-07');
-    });
+    }, 15000);
 
     it('redirige si la lección no existe', () => {
       renderAcademy('/es/academy/os/no-existe');

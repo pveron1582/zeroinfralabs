@@ -6,7 +6,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { getPath } from '../../academy/paths';
+import { getPath } from '../../academy';
 import type { Lesson, AcademySubSection } from '../../types';
 import { PageHero } from '../landing/PageHero';
 import { useColors, FONT_MONO, FONT_SANS } from '../landing/constants';

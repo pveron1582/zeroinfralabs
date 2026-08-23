@@ -110,7 +110,7 @@ export function AcademyAnnouncement() {
           {/* Contenido descriptivo estilo Landing */}
           <div className="md:col-span-7 p-6 sm:p-7 flex flex-col justify-between">
             <div>
-              {/* Badge "NUEVO" */}
+              {/* Badges "NUEVO" + "Beta" */}
               <div className="flex items-center gap-2 mb-3">
                 <span
                   className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
@@ -118,6 +118,13 @@ export function AcademyAnnouncement() {
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                   {isEs ? 'NUEVA SECCIÓN' : 'NEW FEATURE'}
+                </span>
+                <span
+                  data-testid="academy-beta-badge"
+                  className="inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-sky-500/10 text-sky-300 border border-sky-500/40"
+                  style={{ fontFamily: FONT_MONO }}
+                >
+                  Beta
                 </span>
               </div>
 

@@ -6,7 +6,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { ACADEMY_PATHS } from '../../academy/paths';
+import { ACADEMY_PATHS } from '../../academy';
 import type { Lesson } from '../../types';
 import { SiteHeader } from '../landing/SiteHeader';
 import { PageHero } from '../landing/PageHero';
@@ -111,6 +111,7 @@ export function AcademyHome() {
 
       <PageHero
         eyebrow={isEs ? 'Academia · Ciberseguridad' : 'Cybersecurity Academy'}
+        badge="Beta"
         title={isEs ? 'Aprendé antes de entrar al lab' : 'Learn before entering the lab'}
         subtitle={isEs
           ? 'Cada módulo tiene lecciones cortas con ejemplos reales del simulador y práctica guiada.'
