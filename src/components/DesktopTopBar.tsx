@@ -1,4 +1,9 @@
 import type { DesktopWindow } from '../hooks/useDesktopWindows';
+import { FONT_DESKTOP } from './landing/constants';
+import {
+  TerminalAppIcon, ChromeAppIcon, BurpAppIcon,
+  ManualAppIcon, WallpaperAppIcon, FoxyAppIcon, InfoIcon,
+} from './desktop/icons';
 
 interface DesktopTopBarProps {
   windows: DesktopWindow[];
@@ -36,7 +41,7 @@ export function DesktopTopBar({
   onRequestExit, onOpenTour, onShowAbout,
 }: DesktopTopBarProps) {
   return (
-    <div data-desktop-topbar className="relative z-40 w-full h-8 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between px-3 text-xs text-slate-300 font-sans backdrop-blur-md">      <div className="flex items-center gap-1.5 relative">
+    <div data-desktop-topbar style={{ fontFamily: FONT_DESKTOP }} className="relative z-40 w-full h-8 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between px-3 text-xs text-slate-300 font-sans backdrop-blur-md">      <div className="flex items-center gap-1.5 relative">
         <button
           onClick={(e) => { e.stopPropagation(); onToggleAppMenu(); }}
           data-tour="apps-btn"
@@ -50,37 +55,35 @@ export function DesktopTopBar({
           <div className="absolute top-7 left-0 w-52 bg-slate-900/95 border border-slate-700/60 rounded-lg shadow-2xl py-1 text-slate-300 backdrop-blur-md animate-fadeIn">
             <button onClick={() => { onAddTerminal(); onCloseAppMenu(); }}
               className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
-              <span className="text-emerald-400 font-mono text-sm font-bold">&gt;_</span>
+              <TerminalAppIcon size={15} />
               <span>{isEs ? 'Abrir Terminal' : 'Open Terminal'}</span>
             </button>
             <button onClick={() => { onOpenWallpaperPicker(); onCloseAppMenu(); }}
               className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
-              <span>🖼️</span>
+              <WallpaperAppIcon size={15} />
               <span>{isEs ? 'Cambiar Fondo' : 'Change Wallpaper'}</span>
             </button>
             <button onClick={() => { onOpenGuide(); onCloseAppMenu(); }}
               className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
-              <span className="text-red-400 text-sm">📄</span>
+              <ManualAppIcon size={15} />
               <span>{isEs ? 'Ver Manual de uso' : 'View User Manual'}</span>
             </button>
             <button onClick={() => { onOpenTour?.(); onCloseAppMenu(); }}
               className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
-              <span className="text-amber-400 text-sm">🦊</span>
+              <FoxyAppIcon size={15} />
               <span>{isEs ? 'Guía con Foxy' : 'Guide with Foxy'}</span>
             </button>
             {currentScenarioCategory === 'Web' && (
               <button onClick={() => { onAddBrowser(); onCloseAppMenu(); }}
                 className="w-full text-left px-3 py-2 hover:bg-emerald-500/10 hover:text-emerald-400 flex items-center gap-2 border-b border-slate-800/40">
-                <svg className="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
-                </svg>
+                <ChromeAppIcon size={15} />
                 <span>Chrome</span>
               </button>
             )}
             {currentScenarioCategory === 'Web' && (
               <button onClick={() => { onAddBurp(); onCloseAppMenu(); }}
                 className="w-full text-left px-3 py-2 hover:bg-orange-500/10 hover:text-orange-400 flex items-center gap-2 border-b border-slate-800/40">
-                <div className="w-3.5 h-3.5 rounded-sm bg-orange-500 flex items-center justify-center text-slate-950 font-bold text-[9px]">B</div>
+                <BurpAppIcon size={15} />
                 <span>Burp Suite</span>
               </button>
             )}
@@ -89,7 +92,7 @@ export function DesktopTopBar({
             </div>
             <button onClick={() => { onShowAbout(); onCloseAppMenu(); }}
               className="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-xs">
-              <span>ℹ️</span>
+              <InfoIcon size={14} />
               <span>{isEs ? 'Acerca de Kali' : 'About Kali'}</span>
             </button>
           </div>
@@ -110,7 +113,7 @@ export function DesktopTopBar({
             <button key={tw.id}
               onClick={() => { if (tw.minimized) { onRestoreWindow(tw.id); onBringToFront(tw.id); } else if (tw.id !== topWindowId) { onBringToFront(tw.id); } else { onMinimizeWindow(tw.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-emerald-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-emerald-400'}`}>
-              <span className="text-emerald-400 font-mono font-bold text-sm">&gt;_</span>
+              <TerminalAppIcon size={14} />
               <span>Terminal {termNum}</span>
             </button>
           );
@@ -122,9 +125,7 @@ export function DesktopTopBar({
             <button key={bw.id}
               onClick={() => { if (bw.minimized) { onRestoreWindow(bw.id); onBringToFront(bw.id); } else if (bw.id !== topWindowId) { onBringToFront(bw.id); } else { onMinimizeWindow(bw.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-orange-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-orange-400'}`}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
-              </svg>
+              <ChromeAppIcon size={14} />
               <span>{bw.title}</span>
             </button>
           );
@@ -136,7 +137,7 @@ export function DesktopTopBar({
             <button key={ww.id}
               onClick={() => { if (ww.minimized) { onRestoreWindow(ww.id); onBringToFront(ww.id); } else if (ww.id !== topWindowId) { onBringToFront(ww.id); } else { onMinimizeWindow(ww.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-rose-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-rose-400'}`}>
-              <span>🖼️</span>
+              <WallpaperAppIcon size={14} />
               <span>{ww.title}</span>
             </button>
           );
@@ -148,7 +149,7 @@ export function DesktopTopBar({
             <button key={gw.id}
               onClick={() => { if (gw.minimized) { onRestoreWindow(gw.id); onBringToFront(gw.id); } else if (gw.id !== topWindowId) { onBringToFront(gw.id); } else { onMinimizeWindow(gw.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-red-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-red-400'}`}>
-              <span className="text-red-400">📄</span>
+              <ManualAppIcon size={14} />
               <span>Manual</span>
             </button>
           );
@@ -160,7 +161,7 @@ export function DesktopTopBar({
             <button key={bw.id}
               onClick={() => { if (bw.minimized) { onRestoreWindow(bw.id); onBringToFront(bw.id); } else if (bw.id !== topWindowId) { onBringToFront(bw.id); } else { onMinimizeWindow(bw.id); } }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-orange-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-orange-400'}`}>
-              <span className="w-3.5 h-3.5 rounded-sm bg-orange-500 flex items-center justify-center text-slate-950 font-bold text-[9px]">B</span>
+              <BurpAppIcon size={14} />
               <span>{bw.title}</span>
             </button>
           );

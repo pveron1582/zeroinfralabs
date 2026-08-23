@@ -1,6 +1,23 @@
 import { useEffect, useRef } from 'react';
 import type { DesktopWindow } from '../hooks/useDesktopWindows';
 import { TERM_COLORS } from './termColors';
+import { FONT_DESKTOP } from './landing/constants';
+import {
+  TerminalAppIcon, ChromeAppIcon, BurpAppIcon,
+  ManualAppIcon, WallpaperAppIcon,
+} from './desktop/icons';
+
+/** Ícono mini de la app en la titlebar, según el tipo de ventana */
+function TitleBarAppIcon({ type }: { type: DesktopWindow['type'] }) {
+  const size = 14;
+  switch (type) {
+    case 'terminal': return <TerminalAppIcon size={size} />;
+    case 'browser': return <ChromeAppIcon size={size} />;
+    case 'burpsuite': return <BurpAppIcon size={size} />;
+    case 'guide': return <ManualAppIcon size={size} />;
+    default: return <WallpaperAppIcon size={size} />;
+  }
+}
 
 interface WindowFrameProps {
   window: DesktopWindow;
@@ -60,12 +77,11 @@ export function WindowFrame({
     >
       <div
         onPointerDown={(e) => onStartDrag(w.id, e)}
+        style={{ fontFamily: FONT_DESKTOP }}
         className="h-8 bg-slate-950 border-b border-slate-800 px-3 flex items-center justify-between cursor-move select-none flex-shrink-0"
       >
         <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-          <span className={w.type === 'burpsuite' ? 'text-orange-500 font-bold' : 'text-emerald-500 font-mono'}>
-            {w.type === 'terminal' ? '>' : w.type === 'browser' ? '🌐' : w.type === 'guide' ? '📄' : w.type === 'burpsuite' ? 'B' : '⚙'}
-          </span>
+          <TitleBarAppIcon type={w.type} />
           <span>{w.title}</span>
         </div>
 

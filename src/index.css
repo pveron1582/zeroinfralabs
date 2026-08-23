@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* ── Tipografía estilo Linux ──────────────────────────────────────── */
+/* JetBrains Mono self-hosted (public/fonts/jetbrains-mono/): la fuente
+   de terminal estándar en setups modernos, idéntica en todos los SO. */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono/jetbrains-mono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono/jetbrains-mono-700.woff2') format('woff2');
+}
+
+/* Override del stack mono de Tailwind v4: sin esto, la clase font-mono
+   cae a SF Mono/Menlo/Consolas según el SO del visitante. */
+@theme {
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
 @keyframes fadeInEntry {
   from { opacity: 0; transform: translateY(3px); }
   to { opacity: 1; transform: none; }

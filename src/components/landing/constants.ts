@@ -3,7 +3,12 @@
 import { useScenarioStore } from '../../store/scenarioStore';
 
 export const FONT_SANS = "'Inter', system-ui, -apple-system, sans-serif";
-export const FONT_MONO = "'Cascadia Code', 'Fira Code', 'Consolas', monospace";
+// JetBrains Mono self-hosted (ver index.css): terminal con look Linux real
+// en cualquier SO del visitante.
+export const FONT_MONO = "'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace";
+// Chrome del escritorio simulado (topbar, titlebars, menús): Ubuntu es la
+// fuente de UI más reconocible de una distro Linux.
+export const FONT_DESKTOP = "'Ubuntu', 'Inter', system-ui, -apple-system, sans-serif";
 
 // ── Color tokens ────────────────────────────────────────────────
 export interface ColorTokens {
