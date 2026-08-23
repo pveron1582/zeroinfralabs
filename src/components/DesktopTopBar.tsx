@@ -3,6 +3,7 @@ import { FONT_DESKTOP } from './landing/constants';
 import {
   TerminalAppIcon, ChromeAppIcon, BurpAppIcon,
   ManualAppIcon, WallpaperAppIcon, FoxyAppIcon, InfoIcon,
+  WifiIcon, VolumeIcon, BatteryIcon, PowerIcon,
 } from './desktop/icons';
 
 interface DesktopTopBarProps {
@@ -169,41 +170,31 @@ export function DesktopTopBar({
       </div>
 
       <div className="flex items-center gap-3 relative">
-        <div className="flex items-center gap-1 text-emerald-500" title={isEs ? 'Red Conectada' : 'Network Connected'}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
-          </svg>
+        <div className="flex items-center text-emerald-400" title={isEs ? 'Red Conectada' : 'Network Connected'}>
+          <WifiIcon size={14} />
         </div>
 
         <div className="text-slate-400 hover:text-slate-200 cursor-pointer">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-          </svg>
+          <VolumeIcon size={14} />
         </div>
 
-        <div className="text-slate-400 flex items-center gap-0.5">
-          <span className="text-[10px]">100%</span>
-          <svg width="14" height="10" viewBox="0 0 24 16" fill="currentColor" className="rotate-0 text-emerald-500">
-            <rect x="1" y="2" width="18" height="12" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2"/>
-            <rect x="3" y="4" width="14" height="8" rx="0.5"/>
-            <rect x="20" y="5" width="2" height="6" rx="0.5"/>
-          </svg>
+        <div className="text-slate-400 flex items-center gap-1.5">
+          <span className="text-[10px] tabular-nums">100%</span>
+          <BatteryIcon size={19} />
         </div>
 
         <div className="w-px h-4 bg-slate-800 mx-0.5" />
 
-        <div className="font-medium text-slate-400 tracking-wide select-none pointer-events-none tabular-nums">
+        <div className="font-medium text-slate-300 tracking-wide select-none pointer-events-none tabular-nums">
           {time.toLocaleTimeString(isEs ? 'es-AR' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
         </div>
 
         <button
           onClick={(e) => { e.stopPropagation(); onRequestExit?.(); }}
           title={isEs ? 'Apagar' : 'Power off'}
-          className="p-1.5 rounded transition-colors duration-150 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+          className="p-1.5 rounded-full transition-colors duration-150 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/>
-          </svg>
+          <PowerIcon size={13} />
         </button>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { FONT_DESKTOP } from './landing/constants';
 import {
   TerminalAppIcon, ChromeAppIcon, BurpAppIcon,
   ManualAppIcon, WallpaperAppIcon,
+  MinimizeSymbol, MaximizeSymbol, RestoreSymbol, CloseSymbol,
 } from './desktop/icons';
 
 /** Ícono mini de la app en la titlebar, según el tipo de ventana */
@@ -100,17 +101,21 @@ export function WindowFrame({
 
           <button onClick={() => onMinimize(w.id)}
             title={isEs ? 'Minimizar' : 'Minimize'}
-            className="w-4 h-4 rounded-full bg-green-500/20 hover:bg-green-500 text-green-400 hover:text-white flex items-center justify-center text-[10px] transition-colors font-bold">−</button>
+            className="w-[18px] h-[18px] rounded-full bg-slate-700/60 hover:bg-emerald-500 text-slate-300 hover:text-slate-950 flex items-center justify-center transition-colors">
+            <MinimizeSymbol size={9} />
+          </button>
 
           <button onClick={() => onMaximize(w.id)}
             title={w.maximized ? (isEs ? 'Restaurar' : 'Restore') : (isEs ? 'Maximizar' : 'Maximize')}
-            className="w-4 h-4 rounded-full bg-yellow-500/20 hover:bg-yellow-500 text-yellow-400 hover:text-white flex items-center justify-center text-[8px] transition-colors">
-            {w.maximized ? '⧉' : '□'}
+            className="w-[18px] h-[18px] rounded-full bg-slate-700/60 hover:bg-amber-500 text-slate-300 hover:text-slate-950 flex items-center justify-center transition-colors">
+            {w.maximized ? <RestoreSymbol size={11} /> : <MaximizeSymbol size={9} />}
           </button>
 
           <button onClick={() => onClose(w.id)}
             title={isEs ? 'Cerrar' : 'Close'}
-            className="w-4 h-4 rounded-full bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white flex items-center justify-center text-[10px] transition-colors font-bold">×</button>
+            className="w-[18px] h-[18px] rounded-full bg-slate-700/60 hover:bg-red-500 text-slate-300 hover:text-white flex items-center justify-center transition-colors">
+            <CloseSymbol size={9} />
+          </button>
         </div>
       </div>
 

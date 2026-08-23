@@ -110,3 +110,72 @@ export const InfoIcon: React.FC<IconProps> = ({ size = 16 }) => (
     <circle cx="12" cy="8" r="0.5" fill="currentColor" />
   </svg>
 );
+
+// ── Símbolos de controles de ventana (estilo Adwaita/GTK) ──────────
+
+/** Minimizar: línea horizontal */
+export const MinimizeSymbol: React.FC<IconProps> = ({ size = 10 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
+    <line x1="3.5" y1="8" x2="12.5" y2="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+/** Maximizar: cuadrado */
+export const MaximizeSymbol: React.FC<IconProps> = ({ size = 10 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
+    <rect x="4" y="4" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+  </svg>
+);
+
+/** Restaurar: dos cuadrados superpuestos */
+export const RestoreSymbol: React.FC<IconProps> = ({ size = 10 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
+    <rect x="3" y="6" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M6 3h4.5A2.5 2.5 0 0 1 13 5.5V10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+/** Cerrar: cruz */
+export const CloseSymbol: React.FC<IconProps> = ({ size = 10 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
+    <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+// ── Indicadores de la barra superior ───────────────────────────────
+
+/** WiFi: punto + arcos */
+export const WifiIcon: React.FC<IconProps> = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+    <circle cx="12" cy="18.5" r="1.4" fill="currentColor" stroke="none" />
+    <path d="M8.5 15a5 5 0 0 1 7 0" />
+    <path d="M5.6 11.9a9.2 9.2 0 0 1 12.8 0" />
+    <path d="M2.8 8.9a13.4 13.4 0 0 1 18.4 0" opacity="0.55" />
+  </svg>
+);
+
+/** Volumen: parlante con ondas */
+export const VolumeIcon: React.FC<IconProps> = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M11 5L6.5 9H3v6h3.5L11 19V5z" fill="currentColor" stroke="currentColor" strokeWidth="1" />
+    <path d="M15 9.5a4 4 0 0 1 0 5" />
+    <path d="M17.8 7a8 8 0 0 1 0 10" opacity="0.55" />
+  </svg>
+);
+
+/** Batería: cuerpo con nivel de carga completo */
+export const BatteryIcon: React.FC<IconProps> = ({ size = 18 }) => (
+  <svg width={size} height={(size * 12) / 20} viewBox="0 0 24 14" aria-hidden="true">
+    <rect x="1" y="1.5" width="18.5" height="11" rx="2.5" fill="none" stroke="#34d399" strokeWidth="1.8" />
+    <rect x="3.2" y="3.7" width="11" height="6.6" rx="1" fill="#34d399" />
+    <rect x="21" y="4.5" width="2" height="5" rx="1" fill="#34d399" opacity="0.7" />
+  </svg>
+);
+
+/** Apagado: símbolo estándar IEC (línea sobre arco) */
+export const PowerIcon: React.FC<IconProps> = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+    <path d="M17.65 6.35A8 8 0 1 1 6.35 6.35" />
+    <line x1="12" y1="2.5" x2="12" y2="11" />
+  </svg>
+);
