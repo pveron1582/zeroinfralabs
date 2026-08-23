@@ -10,3 +10,6 @@ coverage/
 .continue/
 *.mcp.json
 push.sh
+
+# Documentos internos de sesiones de IA (auditorías, checklists)
+glm_mejoras.md

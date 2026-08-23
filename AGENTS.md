@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 5 visible labs + 1 hidden test scenario. 1488 tests across 111 files.
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 5 visible labs + 1 hidden test scenario. 1918 tests across 147 files.
 
 ## Commands
 

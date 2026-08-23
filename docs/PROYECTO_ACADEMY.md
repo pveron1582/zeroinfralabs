@@ -1,7 +1,13 @@
 # PROYECTO: Academy — contenido educativo guiado
 
-> Plan de diseño. Estado: **propuesta aprobada, pendiente de implementación**.
-> Decidido el 2026-08-08 como prioridad tras el Admin Panel UI.
+> Plan de diseño. Estado: **IMPLEMENTADO** (actualizado 2026-08-22).
+> Decidido el 2026-08-08 como prioridad tras el Admin Panel UI; desarrollado
+> durante agosto 2026. Estado real: **7 paths / 58 lecciones** bilingües ES/EN,
+> con quizzes + progreso persistido (`completedLessons`/`quizResults` en
+> `partialize`), videos Remotion (`public/videos/`), FoxyNarrator, simuladores
+> de red interactivos y LessonBuilder en el AdminPanel. Diseño visual unificado
+> con el landing (ver `docs/ACADEMY_DESIGN.md`). Suite academy verde.
+> Este documento conserva el plan original como referencia histórica.
 
 ## Por qué ahora
 

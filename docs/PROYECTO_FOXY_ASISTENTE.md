@@ -1,8 +1,13 @@
 # PROYECTO: Foxy como Asistente por Misión (integra los hints)
 
-> Proyecto pendiente de implementación. Plan aprobado el 2026-08-03.
-> **Estado: NO implementado todavía.** Este documento describe el diseño acordado
-> para retomarlo cuando se decida construir.
+> Plan aprobado el 2026-08-03. **Estado actualizado 2026-08-22:**
+> el diseño de ESTE documento —Foxy como asistente por misión en el
+> `MissionPanel` reemplazando los botones de hint— sigue **sin implementar**
+> (los hints siguen siendo botones via `revealNextHint` + `hintLevel`).
+> Lo que SÍ se construyó con Foxy en otros frentes: tour guiado del workspace
+> (`src/components/tour/`: FoxyTour, FoxyFox) y narrador/asistente de la
+> Academy (`FoxyNarrator`, `FoxyAssistantBubble`). Este plan queda como
+> referencia para cuando se decida integrarlo al MissionPanel.
 
 ## Objetivo
 
