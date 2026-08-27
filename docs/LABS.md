@@ -85,7 +85,7 @@
 
 **Descripción:** Enumeración FTP anónima, fuerza bruta SSH y escalada con sudo vim.
 
-### Misiones (8)
+### Misiones (9)
 
 1. **Host Discovery** — Descubre hosts
 2. **Port Scanning** — Identifica FTP (21) y SSH (22)

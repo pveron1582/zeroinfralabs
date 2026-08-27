@@ -24,7 +24,8 @@ Comandos (libres) → Metadata → LabValidator → validationCriteria → Misi�
 - `uidChecked` — getuid verificó privilegios
 - `ncListener` — netcat listener iniciado
 - `blockingCommand` — comando bloqueante ejecutado
-- `custom` — validación especial manejada externamente
+- `browserAction` — navegación web (validada por FakeBrowser)
+- `httpRequest` — transacción HTTP capturada (Burp Suite / motor HTTP)
 
 **Beneficios:**
 - Comandos 100% libres — Ningún comando conoce los labs
@@ -63,7 +64,8 @@ src/
 │       ├── WordPressSite.tsx          #     Lab 01 — WordPress vulnerable
 │       ├── ConsultancySite.tsx        #     Lab 02 — Consultoría
 │       ├── InclusionSIte.tsx          #     Lab 04 — LFI
-│       └── SqlInjectionSite.tsx       #     Lab 06 — SQLi
+│       ├── SqlInjectionSite.tsx       #     Lab 06 — SQLi
+│       └── CasinoVeoSite.tsx           #     Lab 07 — Burp Suite (CasinoVeo)
 │
 ├── frameworks/                        # Frameworks de simulación
 │   ├── metasploit/                    #   Metasploit Framework completo
@@ -107,27 +109,37 @@ src/
 │   ├── useKeyboardShortcuts.ts       #   Atajos de teclado, autocomplete, historial
 │   └── useTerminalIdentity.ts        #   Identidad SSH (usuario, root, prompt)
 │
-├── laboratorios/                     # Definición de 6 escenarios de laboratorio
+├── laboratorios/                     # Definición de 7 escenarios de laboratorio
 │   ├── laboratorio01.ts              #   Lab 01 — WordPress (medium)
 │   ├── laboratorio02.ts              #   Lab 02 — Web OSINT & SSH (easy)
 │   ├── laboratorio03.ts              #   Lab 03 — EternalBlue MS17-010 (easy)
 │   ├── laboratorio04.ts              #   Lab 04 — LFI to RCE (medium)
 │   ├── laboratorio05.ts              #   Lab 05 — FTP Enum & PrivEsc (medium)
 │   ├── laboratorio06.ts              #   Lab 06 — SQL Injection (medium)
+│   ├── laboratorio07.ts              #   Lab 07 — Burp Suite (medium)
 │   ├── attackers/                    #   Máquinas atacantes (Kali)
 │   └── templates.ts                  #   Plantillas reutilizables
 │
 ├── store/                            # Estado global (Zustand + localStorage)
 │   ├── scenarioStore.ts              #   Store principal (escenarios, máquinas, misiones)
+│   ├── slices/                       #   5 slices: ui, terminal, scenario, identity, academy
 │   ├── selectors.ts                  #   Selectores derivados
 │   └── types.ts                      #   Tipos del store
+│
+├── academy/                          # Sistema de aprendizaje
+│   ├── paths.ts                      #   8 paths con metadata y lecciones
+│   ├── path-*.ts                     #   Definiciones por path (redes, protocolos, hacking...)
+│   └── *-lessons.ts                  #   Lecciones compartidas (linux, windows, bash, python...)
+│
+├── video/                            # Video-lecciones Remotion
+│   └── remotion/compositions/        #   39 composiciones animadas (li-, wi-, re-, ci-, pe-, hk-, ot-*)
 │
 ├── fs-models/                        # Filesystems virtuales
 │   ├── fs-linux.ts                   #   Sistema de archivos Linux base (/etc, /home, /root…)
 │   └── fs-windows.ts                 #   Sistema de archivos Windows (C:\Users, C:\Windows…)
 │
 ├── utils/                            # Utilidades
-│   ├── labValidator.ts               #   Validador universal (16 criteria types)
+│   ├── labValidator.ts               #   Validador universal (17 criteria types)
 │   ├── users.ts                      #   Parseo /etc/passwd y /etc/group, getCurrentUser()
 │   ├── permissions.ts                #   Sistema de permisos Unix (rwx, SUID, sticky)
 │   ├── path.ts                       #   Normalización de rutas, resolvePath, SYSTEM_DIRS
@@ -147,7 +159,12 @@ src/
 ├── test/                             # Configuración de tests
 │   └── setup.ts                      #   Mocks globales (matchMedia, history, localStorage)
 │
-└── types.ts                          # Tipos globales (Machine, CommandResponse, FileEntry, User, Group)
+└── types/                            # Tipos compartidos por dominio
+    ├── command.ts                    #   CommandResponse (16 variantes), CmdResponseBase
+    ├── machine.ts                    #   Machine, FileEntry, User, Group
+    ├── mission.ts                    #   Mission, ValidationCriteria, MissionCriteriaType (17 tipos)
+    ├── academy.ts                    #   AcademyPath, Lesson, AcademySubSection
+    └── index.ts                      #   Barrel re-export
 ```
 
 ## Componentes Principales
@@ -170,13 +187,13 @@ validationCriteria: {
 ```
 
 ### Store (Zustand)
-- Estado global modularizado en 4 slices (`uiSlice`, `terminalSlice`, `scenarioSlice`, `identitySlice`) en `src/store/slices/`.
+- Estado global modularizado en 5 slices (`uiSlice`, `terminalSlice`, `scenarioSlice`, `identitySlice`, `academySlice`) en `src/store/slices/`.
 - Fachada unificada `useScenarioStore` en `src/store/scenarioStore.ts`.
 - Acciones centralizadas como `resetWorkspace()` para reiniciar el workspace de forma atómica.
-- **Persistencia Segura**: `partialize` almacena únicamente preferencias de UI (`theme`, `language`, `termColor`, `view`) en `localStorage`. El estado de escenarios, máquinas y credenciales se mantiene en memoria y se reinicia al recargar la página, garantizando que no se guarden credenciales en texto plano.
+- **Persistencia Segura**: `partialize` almacena preferencias de UI y progreso Academy (`theme`, `language`, `termColor`, `view`, `completedLessons`, `quizResults`) en `localStorage`. El estado de escenarios, máquinas y credenciales se mantiene en memoria y se reinicia al recargar la página, garantizando que no se guarden credenciales en texto plano.
 
 ### CommandResponse (Discriminated Union)
-- `CommandResponse` en `src/types.ts` está definido como una **Discriminated Union** con 15 variantes fuertemente tipadas (`type: 'foundCredentials' | 'scanResults' | 'fileRead' | ...`).
+- `CommandResponse` en `src/types/command.ts` está definido como una **Discriminated Union** con 16 variantes fuertemente tipadas (`type: 'foundCredentials' | 'scanResults' | 'fileRead' | ...`), incluyendo `http` para Burp Suite.
 - Elimina campos opcionales ambiguos y permite al compilador de TypeScript verificar metadatos de comandos en tiempo de compilación.
 
 ### Sistema de Archivos Virtual

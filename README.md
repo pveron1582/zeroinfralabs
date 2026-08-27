@@ -19,9 +19,9 @@ pnpm exec tsc --noEmit    # Type check
 
 Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
-> Nota: TypeScript configurado en modo `strict: true` (con `noUnusedLocals` y `noUnusedParameters`). Sin errores en `tsc --noEmit`. No se usa ESLint ni Prettier.
+> Nota: TypeScript configurado en modo `strict: true` (con `noUnusedLocals` y `noUnusedParameters`). Sin errores en `tsc --noEmit`. ESLint con flat config (`pnpm lint`) en modo orientativo; no se usa Prettier.
 
-## 🧪 Laboratorios Disponibles (6)
+## 🧪 Laboratorios Disponibles (7)
 
 | Lab | Nombre | Dificultad | Skills |
 |-----|--------|------------|--------|
@@ -31,17 +31,21 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 | 04 | **LFI to RCE** | Medium | File inclusion, reverse shell |
 | 05 | **FTP Enum & PrivEsc** | Medium | FTP, sudo vim privilege escalation |
 | 06 | **SQL Injection** | Medium | SQLi, database exfiltration |
+| 07 | **Burp Suite Web Pentesting** | Medium | SQLi manual, Burp Proxy + Repeater |
 
 > 📖 Ver [docs/LABS.md](docs/LABS.md) para guías detalladas de cada laboratorio.
 
 ## 🎯 Características Principales
 
-- **Terminal Linux realista** — 70 comandos funcionales con auto-registro (ls, cd, cat, nano, sudo, nmap, hydra, ssh, msfconsole, iptables, cron...)
+- **Academy** — 8 paths de estudio con 58 lecciones (SO, Redes I/II, Protocolos, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
+- **Video-lecciones Remotion** — 39 composiciones animadas que acompañan las lecciones de la Academy
+- **Terminal Linux realista** — 71 comandos funcionales con auto-registro (ls, cd, cat, nano, sudo, nmap, hydra, ssh, msfconsole, iptables, cron...)
 - **Modelo de permisos Linux avanzado** — Simulación de SUID, SGID, Sticky bit, umask y ownership por usuario
-- **6 Laboratorios progresivos** — De reconocimiento a privilege escalation
-- **Sistema de Validación Universal** — Comandos libres, 16 criteria types de validación
-- **CommandResponse fuertemente tipado** — Discriminated Union de 15 variantes en TypeScript
+- **7 Laboratorios progresivos** — De reconocimiento a Burp Suite (Proxy + Repeater)
+- **Sistema de Validación Universal** — Comandos libres, 17 criteria types de validación
+- **CommandResponse fuertemente tipado** — Discriminated Union de 16 variantes en TypeScript
 - **Metasploit Framework simulado** — msfconsole con sesiones, módulos aux/exploit, contexto-aware prompts
+- **Burp Suite simulado** — Proxy interceptor + Repeater para repetir/modificar requests HTTP
 - **Shells interactivas** — SSH, FTP, Netcat con manejo de sesiones unificado
 - **Navegador web simulado** — Para ataques web (WordPress, LFI, SQLi)
 - **Desktop Mode** — Ventanas flotantes en cascada, wallpaper picker, entorno tipo escritorio
@@ -53,15 +57,16 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **1680 Tests** — Vitest + React Testing Library (128 archivos de prueba)
+- **1918 Tests** — Vitest + React Testing Library (147 archivos de prueba)
 
 ## 🏗️ Tech Stack
 
 - **Frontend:** React ^18.3 + TypeScript (`strict: true`) + Vite 7
 - **Styling:** Tailwind CSS v4
-- **State:** Zustand 5 (4 slices modulares + persistencia segura solo para UI preferences)
+- **State:** Zustand 5 (5 slices modulares + persistencia segura solo para UI preferences y progreso Academy)
 - **Testing:** Vitest 4.x + React Testing Library + jsdom
 - **Router:** React Router DOM v7
+- **Video:** Remotion 4 (composiciones de video-lecciones)
 - **Analytics:** Vercel Analytics + Speed Insights
 - **Gestor de Paquetes:** pnpm
 
@@ -71,29 +76,39 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ```
 src/
+├── academy/          # 8 paths / 58 lecciones: path-*.ts + *-lessons.ts
+├── video/            # Composiciones Remotion de video-lecciones (39)
 ├── commands/
 │   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, etc. (59)
-│   └── tools/       # nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, msfconsole, curl, apt, dpkg (11)
+│   └── tools/       # nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg (12)
 ├── components/
 │   ├── landing/     # SiteHeader, PageHero, LandingLabPreview, MarketingFooter
+│   ├── academy/     # Pantallas de la Academy (paths, lecciones, quizzes, simulador de red)
+│   ├── tour/        # FoxyTour (guía interactiva)
 │   ├── BlogListPage.tsx, BlogArticlePage.tsx
 │   ├── DesktopTerminal.tsx, DesktopTopBar.tsx, AnimatedDesktop.tsx
 │   ├── NetworkMap.tsx, EnumerationPanel.tsx
 │   ├── Terminal.tsx, FakeBrowser.tsx, StreamingOutput.tsx
 │   ├── AdminPanel.tsx, FeedbackModal.tsx, SurveyModal.tsx
-│   └── ... (30+ componentes)
+│   └── ... (100+ componentes)
 ├── frameworks/
 │   ├── metasploit/  # MSF console state machine + módulos (aux, exploit, post)
-│   └── shells/      # Shells interactivas (SSH, FTP, Netcat)
-├── hooks/           # 12 hooks especializados: useCommandRunner (orquestador),
+│   ├── shells/      # Shells interactivas (SSH, FTP, Netcat)
+│   ├── process/     # ProcessManager (ps, kill, systemctl)
+│   ├── network/     # NetworkState (iptables, ufw, interfaces)
+│   ├── packages/    # PackageManager (apt, dpkg)
+│   ├── cron/        # CronRunner (reloj virtual + cron jobs → syslog)
+│   └── fs/          # mounts.ts (fstab + estado de montajes)
+├── hooks/           # 14 hooks especializados: useCommandRunner (orquestador),
 │                    # useIdentityStack, useFtpSession, useSshSession, usePendingSu,
 │                    # useReverseShell, useAutoRefresh, useDownloadedFile, useTerminalEffects,
 │                    # useNanoSave, useMissionCompletion, streamingConfig
 ├── i18n/            # Traducciones español/inglés
-├── laboratorios/    # Definición de labs (01-06) + templates + attackers (Kali)
+├── laboratorios/    # Definición de labs (01-07) + templates + attackers (Kali)
 ├── fs-models/       # Modelos de filesystem (Linux, Windows, Kali)
-├── store/           # Zustand: 4 slices (ui, terminal, scenario, identity) + persistencia segura de UI
+├── store/           # Zustand: 5 slices (ui, terminal, scenario, identity, academy) + persistencia segura
 ├── blog/            # Datos de artículos del blog
+├── types/           # Tipos compartidos por dominio (command, machine, mission, academy)
 ├── utils/           # labValidator, permissions, fs, path, autocomplete, network, analytics, logger
 └── test/            # Setup global de tests (Vitest mocks, matchMedia, history)
 
@@ -111,23 +126,25 @@ docs/
 
 ## 📊 Estado del Proyecto
 
-- ✅ 6 Laboratorios funcionales
-- ✅ 1680 tests pasando (128 test files)
+- ✅ 7 Laboratorios funcionales
+- ✅ 1918 tests pasando (147 test files)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
-- ✅ Persistencia segura en `localStorage` (solo UI preferences; secrets no expuestos)
-- ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 15 variantes)
+- ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
+- ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)
+- ✅ Validación universal (17 criteria types, 17 validators)
 - ✅ Permisos de sistema de archivos (SUID, SGID, Sticky bit, umask, ownership)
-- ✅ Manual de uso del simulador en ES/EN (lector PDF en el escritorio)
-- ✅ Validación universal (16 criteria types)
 - ✅ Metasploit simulado (sesiones, módulos aux/exploit/post)
+- ✅ Burp Suite simulado (Proxy interceptor + Repeater)
 - ✅ Shells interactivas (SSH, FTP, Netcat)
 - ✅ Desktop mode con ventanas flotantes y wallpapers
 - ✅ Network map con panel de enumeración
+- ✅ Academy: 8 paths / 58 lecciones con quizzes y progreso persistente
+- ✅ Video-lecciones Remotion (39 composiciones)
 - ✅ Blog con artículos ES/EN
 - ✅ Landing page + selección de labs
 - ✅ Dark/Light theme
 - ✅ Sistema de feedback, analytics y donaciones
-- ✅ **Arquitectura refactorizada** — `useCommandRunner` (orquestador), 4 slices en store, auto-registro de comandos
+- ✅ **Arquitectura refactorizada** — `useCommandRunner` (orquestador), 5 slices en store, auto-registro de comandos
 
 ## 📚 Documentación
 
@@ -138,6 +155,7 @@ docs/
 - **[docs/ROADMAP.md](docs/ROADMAP.md)** — Plan de implementación futura
 - **[docs/OVERVIEW.md](docs/OVERVIEW.md)** — Detalle de analytics (webhook, Google Sheets) y visión de producto
 - **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Historial de cambios
+- **[docs/PROYECTO_ACADEMY.md](docs/PROYECTO_ACADEMY.md)** — Diseño de la Academy (paths, lecciones, quizzes)
 - **[docs/archive/MEJORAS.md](docs/archive/MEJORAS.md)** — Plan unificado de mejoras y refactorización técnica completado
 - **[CLAUDE.md](CLAUDE.md)** — Guía completa para desarrollo asistido
 

@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 5 visible labs + 1 hidden test scenario. 1918 tests across 147 files.
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 7 visible labs (laboratorio01-07), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 1918 tests across 147 files.
 
 ## Commands
 
@@ -14,20 +14,21 @@ pnpm test:coverage       # Coverage report (v8 provider)
 pnpm test:ui             # Interactive Vitest UI
 pnpm test -- -t "name"   # Run tests by name filter
 pnpm test -- src/path/to/foo.test.ts  # Run one test file
+pnpm lint                # ESLint (flat config, advisory warns)
 pnpm exec tsc --noEmit   # Type check (strict: true, noUnusedLocals, noUnusedParameters)
 ```
 
-No ESLint/Prettier. Only `tsc` and Vite build enforce correctness. Keep files < 300 lines.
+ESLint exists (`eslint.config.mjs`: react-hooks errors, unused-vars/no-explicit-any/no-console as warns). No Prettier — formatting is manual. Hard correctness is enforced by `tsc` + Vitest; ESLint is advisory. Keep files < 300 lines.
 
 ## Architecture: Universal Validation System
 
 Commands are completely decoupled from labs. Commands emit metadata on `CommandResponse` → `LabValidator` (`src/utils/labValidator.ts`) checks metadata against `mission.validationCriteria` → mission auto-completes if criteria match.
 
-The `CommandResponse` metadata fields are the contract (`src/types.ts:182-280`): `discoveredHosts`, `scanResults`, `foundCredentials`, `foundDirectories`, `fileRead`, `fileDownloaded`, `privesc`, `sshLogin`, `ftpLogin`, `vulnerabilityFound`, `exploit`, `uidChecked`, `ncListener`, `blockingCommand`, `sudoPrivileges`, `custom` — 16 criteria types, 15 validators (`custom` returns false).
+The `CommandResponse` metadata fields are the contract (`src/types/command.ts`; `MissionCriteriaType` union in `src/types/mission.ts:28`): `discoveredHosts`, `scanResults`, `foundCredentials`, `foundDirectories`, `fileRead`, `fileDownloaded`, `privesc`, `sshLogin`, `ftpLogin`, `vulnerabilityFound`, `exploit`, `uidChecked`, `ncListener`, `blockingCommand`, `sudoPrivileges`, `browserAction`, `httpRequest` — 17 criteria types, 17 validators. `httpRequest` powers the Burp Suite lab (07); `browserAction` covers FakeBrowser navigation.
 
 ## State Management
 
-Zustand (`src/store/scenarioStore.ts`) with localStorage persistence. Four slices: `uiSlice`, `terminalSlice`, `scenarioSlice`, `identitySlice`. Only UI preferences are persisted via `partialize()` + `merge` (view, language, theme, uiMode, activeApp, termColor). **`machines`/`missions`/`msfState`/`identityStack` etc. are NOT persisted** — reloading resets the lab to its initial state and never rehydrates credentials (see `docs/archive/MEJORAS.md` 7.1).
+Zustand (`src/store/scenarioStore.ts`) with localStorage persistence. Five slices: `uiSlice`, `terminalSlice`, `scenarioSlice`, `identitySlice`, `academySlice`. Only UI preferences and Academy progress are persisted via `partialize()` + `merge` (view, language, theme, uiMode, activeApp, termColor, completedLessons, quizResults). **`machines`/`missions`/`msfState`/`identityStack` etc. are NOT persisted** — reloading resets the lab to its initial state and never rehydrates credentials (see `docs/archive/MEJORAS.md` 7.1).
 
 In tests, reset with:
 ```typescript
@@ -40,7 +41,7 @@ Two stateful systems live outside the store:
 - **ShellManager** (`src/frameworks/shells/ShellManager.ts`) — SSH/FTP/NC sessions (stack-based, nested shells). `shellManager` singleton.
 - **MSF state en Zustand store** — El estado de Metasploit vive en `useScenarioStore.getState().msfState`. `src/commands/index.ts` expone `resetMsfState()`, `isMsfActive()`, `getMsfPrompt()`, `getMsfState()` que leen del store. Los comandos MSF emiten `msfStateUpdate?: MsfState | null` en `CommandResponse` (tipo explícito desde 4.2).
 
-`createIsolatedExecutor()` (`src/commands/index.ts:~437`) crea un executor con estado MSF aislado por terminal — cada terminal puede tener su propio `msfconsole` sin afectar a otras. El estado se guarda en un closure privado, no en el store global.
+`createIsolatedExecutor()` (`src/commands/index.ts:106`) crea un executor con estado MSF aislado por terminal — cada terminal puede tener su propio `msfconsole` sin afectar a otras. El estado se guarda en un closure privado, no en el store global.
 
 `blockingCommand` on `CommandResponse` flags commands that pause the prompt (e.g., `nc -lvnp 4444`). The Terminal component detects this and switches UI mode.
 
@@ -68,7 +69,7 @@ The `COMMANDS` Map in `src/commands/index.ts` auto-registers by iterating barrel
 
 ## Lab Pattern
 
-Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. `SCENARIOS` (`src/laboratorios/laboratorios.ts`) has 5 visible labs; `TEST_SCENARIO` (laboratorio06) is hidden. `SCENARIOS_META` drives dynamic LandingPage cards.
+Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. `SCENARIOS` (`src/laboratorios/laboratorios.ts`) has 7 visible labs (laboratorio01-07); `TEST_SCENARIO` is a legacy alias of laboratorio_06, not a hidden lab. `SCENARIOS_META` drives dynamic LandingPage cards.
 
 To add a lab:
 1. Create `src/laboratorios/laboratorioXX.ts` with a `scenarioXXData` object
@@ -127,9 +128,11 @@ Resumen rápido:
 src/
 ├── commands/
 │   ├── builtin/        # 59 system commands (ls, cd, cat, sudo, ps, kill, systemctl, iptables, ufw, ip, ss, export, grep, crontab, mount, df, du, ln, find, ...)
-│   ├── tools/          # 11 pentest/system tools (nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, msfconsole, apt, dpkg, ...)
+│   ├── tools/          # 12 pentest/system tools (nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg; ssh/nc/ftp live in frameworks/shells and are re-exported)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
-├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid
+├── academy/            # 8 paths / 58 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
+├── video/              # Remotion video lessons (remotion/compositions/ — 39 compositions li-/wi-/re-/ci-/pe-/hk-/ot-*)
+├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid, academy/, tour/, ...
 ├── frameworks/
 │   ├── metasploit/     # core/ (module DB, ContextRegistry, types) + orchestrators/ (MSF + meterpreter commands)
 │   ├── shells/         # ShellManager + SSH/FTP/NC sessions (stack-based, nested)
@@ -138,14 +141,14 @@ src/
 │   ├── packages/       # PackageManager (apt/dpkg DB + installed set per machine)
 │   ├── cron/           # CronRunner (virtual clock, parse/list/run cron jobs → syslog)
 │   └── fs/             # mounts.ts (fstab parsing + mount state per machine)
-├── laboratorios/       # 6 labs (laboratorio01-06.ts) + templates.ts (buildScenario, COMMON_PORTS)
-├── store/              # Zustand: scenarioStore.ts + slices/{ui,terminal,scenario} + selectors.ts
+├── laboratorios/       # 7 labs (laboratorio01-07.ts) + templates.ts (buildScenario, COMMON_PORTS) + attackers/
+├── store/              # Zustand: scenarioStore.ts + slices/{ui,terminal,scenario,identity,academy} + selectors.ts
 ├── fs-models/          # Virtual Linux/Windows/Kali filesystems
 ├── i18n/               # ES/EN translations
-├── hooks/              # useKeyboardShortcuts, useTerminalIdentity, useDesktopWindows
+├── hooks/              # useCommandRunner, useKeyboardShortcuts, useTerminalIdentity, useDesktopWindows, ...
 ├── blog/               # Educational articles (ES/EN)
 ├── test/setup.ts       # Vitest setup: mocks + store reset
-└── types.ts            # All shared types: Machine, Scenario, Mission, CommandResponse, ValidationCriteria
+└── types/              # Shared types split by domain: command.ts, machine.ts, mission.ts, academy.ts (barrel: index.ts)
 ```
 
 ## Deployment
@@ -169,4 +172,5 @@ Vercel SPA. `vercel.json` rewrites `/es/:path*` and `/en/:path*` to `/index.html
 - `docs/ROADMAP.md` — Future implementation plan
 - `docs/CHANGELOG.md` — Change history
 - `docs/HAPPY_PATH_TEST.md` — Manual verification checklist with red flags
+- `docs/PROYECTO_ACADEMY.md` — Academy design (paths, lessons, quizzes)
 - `CLAUDE.md` — Full reference (commands, code style, known issues)

@@ -3,7 +3,7 @@
 Plan de implementación para un sistema virtual lo más realista posible.
 Dividido en fases con tareas concretas, ordenadas por dependencias.
 
-> ✅ = Completado | Fecha última actualización: 2026-07-31
+> ✅ = Completado | ⏳ = En progreso / Próximo | Fecha última actualización: 2026-08-24
 
 ---
 
@@ -11,13 +11,10 @@ Dividido en fases con tareas concretas, ordenadas por dependencias.
 
 - **`docs/PERMISSIONS.md`** — patrón transversal para comandos que tocan el filesystem
   (helpers `canRead`/`canCreateInDir`/`canDeleteInDir`/`canEditFile`, lookup de archivos,
-  anti-patrones, tabla operación → helper). Cualquier comando nuevo que lea, cree, edite,
-  borre o liste archivos debe seguir este contrato. Reemplaza las reglas dispersas que
-  existían en Fases 1, 2, 3 y 4 con una guía unificada.
-- **`docs/arreglos_minimax_m3.md`** — plan ejecutado (2026-07-29) que generalizó el
-  sistema de permisos Unix en 5 etapas. Cita `PERMISSIONS.md` como entregable principal.
-- **`docs/MEJORAS.md`** — hygiene del codebase (consolidación de docs, `console.log`,
-  `vitest.config.ts`, `.gitignore`, etc.).
+  anti-patrones, tabla operación → helper).
+- **`docs/PROYECTO_ACADEMY.md`** — arquitectura pedagógica de la Academy (8 paths, 58 lecciones, quizzes).
+- **`docs/ARCHITECTURE.md`** — arquitectura general del simulador, validadores y ciclo de comandos.
+- **`docs/MEJORAS.md`** — hygiene del codebase y plan unificado completado.
 
 ---
 
@@ -799,91 +796,142 @@ Registro en: `src/commands/builtin/index.ts` y `src/commands/index.ts`
 
 ---
 
-## BACKLOG — Fuera de la secuencia principal (sin prioridad actual)
+## FASE 10 — Web Pentesting & Proxy Framework (Burp Suite) ✅
 
-### Docker (simulación de contenedores)
+### 10.1 `ProxyBus` y framework de interceptación ✅
+**Archivos:** `src/frameworks/proxy/ProxyBus.ts`, `src/types/proxy.ts`
+- Arquitectura de bus desacoplada para requests/responses HTTP.
+- Modo Intercept On/Off, historial de peticiones (Proxy History), y visor de headers/body.
+- **Repeater**: modificación y reenvío interactivo de requests HTTP con renderizado de respuestas.
 
-**Archivo nuevo:** `src/commands/tools/docker.ts`
+### 10.2 Laboratorio 07: Burp Suite Web Pentesting ✅
+**Archivo:** `src/laboratorios/laboratorio07.ts`
+- Target: `192.168.1.75` (CasinoVeo portal).
+- Vector de ataque: Bypass de autenticación con comilla simple (`' OR '1'='1`) e inyección SQL UNION en Repeater para extraer credenciales del backend.
+- 8 misiones con validación de requests (`httpRequest`).
 
-- `docker ps` — lista contenedores
-- `docker exec -it container bash` — ejecutar comando en contenedor
-- `docker run` — iniciar contenedor
-- Los contenedores son sub-máquinas dentro de una máquina
-
-> Se saca deliberadamente de la secuencia numerada de fases. Implica modelar "máquinas dentro de máquinas", que es un salto de complejidad grande comparado con el resto del roadmap. No es prioridad ahora — queda anotado acá para el día que se retome, pero no bloquea ni depende de ninguna otra fase.
+### 10.3 Criterio de validación `httpRequest` (17º validador universal) ✅
+**Archivos:** `src/types/mission.ts`, `src/types/command.ts`, `src/utils/labValidator.ts`
+- Validador que coteja method (`GET`/`POST`), path, payload en body/headers y status codes.
 
 ---
 
-## Notas de implementación
+## FASE 11 — Academy & Interactive Learning Engine ✅
 
-### Orden sugerido para abordar las fases
+### 11.1 8 Rutas formativas con 58 lecciones interactivas ✅
+**Archivos:** `src/academy/paths.ts`, `src/academy/path-*.ts`, `src/academy/*-lessons.ts`
+- **Paths**: Fundamentos de redes, Linux, Windows, Protocolos I, Protocolos II, Bash scripting, Python para pentesting, Conceptos avanzados.
+- Componentes pedagógicos: Narrador explicativo, bloques teóricos interactivos, matching questions y terminales de práctica aisladas.
+
+### 11.2 Mini-simuladores visuales (`NetworkTopologyLab`) ✅
+**Archivos:** `src/components/academy/NetworkTopologyLab.tsx`, `src/components/academy/NetworkSimCore.tsx`
+- Mini "Packet Tracer" con soporte de validación de cableado (UTP Cobre 🟧, Fibra Óptica 🟦, WiFi 📶).
+- Reglas pedagógicas de conexión entre 8 nodos (Internet, Router, Switch, AP, Servidor, PC, Laptop, Celular).
+
+### 11.3 Persistencia de progreso en Zustand ✅
+**Archivos:** `src/store/slices/academySlice.ts`, `src/store/scenarioStore.ts`
+- Persistencia segura de `completedLessons` y `quizResults` en `localStorage` sin comprometer credenciales de labs.
+
+---
+
+## FASE 12 — Video-Lecciones Remotion & Multimedia ✅
+
+### 12.1 39 Composiciones animadas Remotion ✅
+**Archivos:** `src/video/remotion/compositions/`
+- Series de video: Linux (`li-*`), Windows (`wi-*`), Redes (`re-*`), Ciberseguridad (`ci-*`), Pentesting (`pe-*`), Hacking (`hk-*`), Otros (`ot-*`).
+- Integración de reproductor Remotion responsivo directamente dentro de las lecciones de la Academy.
+
+---
+
+## FASE 13 — UI/UX Desktop Environment & Usabilidad ✅
+
+### 13.1 Entorno de escritorio interactivo ✅
+**Archivos:** `src/components/DesktopTerminal.tsx`, `src/components/DesktopTopBar.tsx`, `src/components/AnimatedDesktop.tsx`
+- Ventanas flotantes en cascada con controles estilo GTK, selector de fondos de pantalla y terminal con tipografía optimizada.
+- Manual del simulador en PDF integrado y FoxyTour para onboarding guiado.
+- Soporte completo i18n (Español / Inglés) y modo Dark / Light.
+
+---
+
+## FASE 14 — Active Directory & Kerberos Simulation ⏳ (Prioridad Alta)
+
+### 14.1 Simulación de Dominio Active Directory y LDAP
+**Archivos propuestos:** `src/frameworks/activedirectory/`, `src/commands/tools/ldapsearch.ts`
+- Modelado virtual de Domain Controller (`DC01.corp.local`), usuarios de dominio, grupos (`Domain Admins`, `Enterprise Admins`) y Service Principal Names (SPNs).
+- `ldapsearch`: consulta de objetos de dominio, cuentas desprotegidas y descripciones de usuario.
+
+### 14.2 Kerberos & Ataques de Autenticación
+**Archivos propuestos:** `src/commands/tools/kerbrute.ts`, `src/commands/tools/GetNPUsers.ts`, `src/commands/tools/GetUserSPNs.ts`
+- `kerbrute userenum`: enumeración de usuarios válidos contra el KDC (puerto 88).
+- **AS-REP Roasting** (`GetNPUsers.py`): extracción de hashes TGT de cuentas con `DONT_REQ_PREAUTH` y posterior crackeo con `hashcat` o `john`.
+- **Kerberoasting** (`GetUserSPNs.py`): solicitud de tickets TGS para cuentas de servicio.
+
+### 14.3 Laboratorio 08: Active Directory Enumeration & Exploitation
+**Archivo propuesto:** `src/laboratorios/laboratorio08.ts`
+- Escenario corporativo con DC Windows y máquina Linux pivote.
+- 8-10 misiones guiadas de reconocimiento de dominio, AS-REP roasting y escalada a Domain Admin.
+
+---
+
+## FASE 15 — Docker & Container Escape ⏳ (Prioridad Media)
+
+### 15.1 Simulación de Docker CLI y Engine
+**Archivo propuesto:** `src/commands/tools/docker.ts`
+- `docker ps`, `docker images`, `docker exec -it <container> sh`, `docker logs`.
+- Modelo de sub-máquina / namespace aislado dentro de la máquina virtual anfitriona.
+
+### 15.2 Laboratorio 09: Container Escape
+**Archivo propuesto:** `src/laboratorios/laboratorio09.ts`
+- Vector 1: Docker socket montado (`/var/run/docker.sock`) para spawnear contenedor con volumen `/` del host.
+- Vector 2: Contenedor con `--privileged` o `CAP_SYS_ADMIN` para escapar vía `cgroup` release_agent.
+
+---
+
+## FASE 16 — Wireless Pentesting (WiFi / 802.11) ⏳ (Prioridad Media)
+
+### 16.1 Suite Aircrack-ng simulada
+**Archivos propuestos:** `src/commands/tools/aircrack.ts`, `src/commands/tools/airodump.ts`, `src/commands/tools/aireplay.ts`
+- `airmon-ng start wlan0`: habilitar modo monitor virtual (`wlan0mon`).
+- `airodump-ng`: escaneo de BSSIDs, ESSIDs, canales, cifrado (WPA2-PSK) y clientes conectados.
+- `aireplay-ng --deauth`: ataque de desautenticación para forzar reconexión y captura del 4-way handshake.
+- `aircrack-ng -w wordlist.txt capture.cap`: ataque por diccionario sobre el handshake capturado.
+
+### 16.2 Laboratorio 10: Wireless Security Assessment
+**Archivo propuesto:** `src/laboratorios/laboratorio10.ts`
+- Escenario de auditoría WiFi corporativa con captura de handshake y bypass de portal cautivo.
+
+---
+
+## FASE 17 — CTF Challenge Mode & Certificaciones ⏳ (Futuro)
+
+### 17.1 Modo Desafío (CTF Timed Mode)
+- Desafíos con temporizador (ej. 30 o 45 minutos) y puntuación dinámica sin hints automáticos.
+- Tabla de puntuación (Scoreboard) y estadísticas de rendimiento del estudiante.
+
+### 17.2 Certificados de Finalización y Reportes
+- Generación de certificado descargable en PDF con hash de verificación al completar la Academy o un path completo.
+- Generador interactivo de Executive Pentest Report en PDF desde el desktop.
+
+---
+
+## Resumen del Orden de Implementación
 
 ```
-FASE 0 → FASE 1 → FASE 2 → FASE 3 → FASE 4
-                                           ↓
-                                    FASE 5 → FASE 6
-                                           ↓
-                                    FASE 7 → FASE 8 → FASE 9
+[FASE 0 a FASE 9: Core Unix Engine & Utilities] ✅
+                       ↓
+[FASE 10: Web Proxy & Burp Suite] ✅
+                       ↓
+[FASE 11: Academy & Interactive Network Sims] ✅
+                       ↓
+[FASE 12: Remotion Video Lessons] ✅
+                       ↓
+[FASE 13: UI/UX Desktop & Accessibility] ✅
+                       ↓
+[FASE 14: Active Directory & Kerberos (Lab 08)] ⏳ (Próximo)
+                       ↓
+[FASE 15: Docker & Container Escape (Lab 09)] ⏳
+                       ↓
+[FASE 16: Wireless Pentesting (Lab 10)] ⏳
+                       ↓
+[FASE 17: CTF Challenge Mode & Certificaciones] ⏳
 ```
-
-Cada fase puede trabajarse de forma independiente una vez completada la Fase 0.
-
-Docker queda fuera de esta secuencia (ver sección BACKLOG al final) — no es prioridad actual y no bloquea nada.
-
-### Estrategia para no romper tests existentes
-
-1. Extender `FileEntry` con campos opcionales (`owner?`, `group?`, `mode?`)
-2. Valores por defecto en los lugares de lectura (si no hay mode, asumir 644/755)
-3. Actualizar `createFile()` primero, después los fs-models, después los laboratorios
-4. Ejecutar `pnpm test:run` después de cada tarea
-
-### Resumen de archivos nuevos
-
-| Archivo | Propósito |
-|---|---|
-| `src/utils/users.ts` | Parseo de passwd/group, getCurrentUser |
-| `src/utils/permissions.ts` | checkPermission, formatMode, canRead/Write/Execute |
-| `src/commands/builtin/chmod.ts` | Cambiar permisos |
-| `src/commands/builtin/chown.ts` | Cambiar dueño |
-| `src/commands/builtin/chgrp.ts` | Cambiar grupo |
-| `src/commands/builtin/umask.ts` | Máscara de permisos |
-| `src/commands/builtin/id.ts` | Mostrar identidad |
-| `src/commands/builtin/groups.ts` | Mostrar grupos |
-| `src/commands/builtin/__tests__/chmod.test.ts` | Tests de chmod |
-| `src/commands/builtin/__tests__/chown.test.ts` | Tests de chown |
-| `src/commands/builtin/__tests__/chgrp.test.ts` | Tests de chgrp |
-| `src/commands/builtin/__tests__/umask.test.ts` | Tests de umask |
-| `src/commands/builtin/__tests__/id.test.ts` | Tests de id |
-| `src/commands/builtin/__tests__/groups.test.ts` | Tests de groups |
-| `src/commands/builtin/nano.ts` | Editor de texto |
-| `src/components/EditorModal.tsx` | UI del editor |
-| `src/commands/builtin/echo.ts` | Echo con redirección |
-| `src/commands/builtin/touch.ts` | Crear archivos |
-| `src/commands/builtin/rm.ts` | Eliminar archivos |
-| `src/commands/builtin/cp.ts` | Copiar archivos |
-| `src/commands/builtin/mv.ts` | Mover archivos |
-| `src/commands/builtin/kill.ts` | Matar procesos |
-| `src/commands/builtin/systemctl.ts` | Gestión de servicios |
-| `src/commands/builtin/journalctl.ts` | Logs |
-| `src/frameworks/process/processManager.ts` | Procesos |
-| `src/commands/builtin/ss.ts` | Conexiones de red |
-| `src/commands/builtin/mount.ts` | Montajes |
-| `src/commands/builtin/df.ts` | Espacio en disco |
-| `src/commands/builtin/du.ts` | Uso de disco |
-| `src/commands/builtin/ln.ts` | Enlaces simbólicos |
-| `src/commands/builtin/find.ts` | Buscar archivos |
-| `src/commands/builtin/grep.ts` | Buscar texto |
-| `src/commands/builtin/crontab.ts` | Tareas programadas |
-| `src/commands/tools/iptables.ts` | Firewall |
-| `src/commands/tools/ufw.ts` | Firewall simplificado |
-| `src/commands/tools/apt.ts` | Gestor de paquetes |
-| `src/commands/tools/dpkg.ts` | Paquetes deb |
-| `src/frameworks/process/processManager.ts` | Procesos |
-| `src/frameworks/cron/cronRunner.ts` | Cron jobs |
-| `src/utils/environment.ts` | Variables de entorno |
-| `src/utils/redirection.ts` | Parseo compartido de `>` / `>>` (reutilizado por `echo`, `cat`, `nano`) |
-| `docs/ROADMAP.md` | Este archivo |
-
-### Docker — fuera de la secuencia principal
-
-Ver sección **BACKLOG** al final del documento. No forma parte del orden de fases 0-9 y no tiene prioridad asignada por ahora.
