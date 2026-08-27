@@ -62,6 +62,10 @@ function ctx(machine: Machine) {
   return { machine, allMachines: [machine], currentMissionId: 1, currentDir: '/', language: 'es' as const };
 }
 
+function applyResult(machine: Machine, r: { filesChanged?: Machine['files'] }) {
+  if (r.filesChanged) machine.files = r.filesChanged;
+}
+
 beforeEach(() => {
   resetMounts();
 });
@@ -155,6 +159,7 @@ describe('Fase 9 - ln/symlinks', () => {
     const machine = makeRootMachine();
     const r = cmd_ln.execute(['-s', '/etc/passwd', '/home/admin/passwd_link'], ctx(machine));
     expect(r.isError).not.toBe(true);
+    applyResult(machine, r);
     const link = machine.files.find(f => f.path === '/home/admin/passwd_link');
     expect(link?.type).toBe('symlink');
     expect(link?.linkTarget).toBe('/etc/passwd');
@@ -176,7 +181,7 @@ describe('Fase 9 - ln/symlinks', () => {
 
   it('ls -l: muestra el enlace como name -> target', () => {
     const machine = makeRootMachine();
-    cmd_ln.execute(['-s', '/etc/passwd', '/home/admin/passwd_link'], ctx(machine));
+    applyResult(machine, cmd_ln.execute(['-s', '/etc/passwd', '/home/admin/passwd_link'], ctx(machine)));
     const r = cmd_ls.execute(['-l', '/home/admin'], ctx(machine));
     expect(r.output).toContain('passwd_link -> /etc/passwd');
     expect(r.output).toContain('lrwxrwxrwx');
@@ -184,7 +189,7 @@ describe('Fase 9 - ln/symlinks', () => {
 
   it('cat: sigue el enlace simbólico', () => {
     const machine = makeRootMachine();
-    cmd_ln.execute(['-s', '/etc/passwd', '/home/admin/passwd_link'], ctx(machine));
+    applyResult(machine, cmd_ln.execute(['-s', '/etc/passwd', '/home/admin/passwd_link'], ctx(machine)));
     const r = cmd_cat.execute(['/home/admin/passwd_link'], ctx(machine));
     expect(r.isError).not.toBe(true);
     expect(r.output).toContain('root:x:0:0');
@@ -204,6 +209,7 @@ describe('Fase 9 - ln/symlinks', () => {
     const machine = makeRootMachine();
     const r = executeCommand('ln -s /etc/passwd /home/admin/pwlink', machine, [machine], 1);
     expect(r.isError).not.toBe(true);
+    applyResult(machine, r);
     expect(machine.files.some(f => f.path === '/home/admin/pwlink' && f.type === 'symlink')).toBe(true);
   });
 });

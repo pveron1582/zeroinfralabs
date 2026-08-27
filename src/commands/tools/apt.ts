@@ -109,7 +109,7 @@ Preparing to unpack .../${pkg}_${info.version}_amd64.deb ...
 Unpacking ${pkg} (${info.version}) ...
 Setting up ${pkg} (${info.version}) ...
 ${addResult.error ? '\n' + addResult.error : ''}`,
-        filesChanged: [...machine.files],
+        filesChanged: [...machine.files, ...addResult.createdFiles],
       };
     }
 
@@ -133,10 +133,11 @@ function addBinaries(
   currentDir: string | undefined,
   umask: number,
   binaries: string[]
-): { error?: string } {
+): { error?: string; createdFiles: FileEntry[] } {
   const user = getCurrentUser(machine);
   const currentDirClean = (currentDir || '/').replace(/\/$/, '');
   let error: string | undefined;
+  const createdFiles: FileEntry[] = [];
   for (const bin of binaries) {
     const fullPath = bin.startsWith('/') ? bin : `${currentDirClean}/${bin}`;
     if (machine.files.some(f => f.path === fullPath)) continue;
@@ -147,9 +148,9 @@ function addBinaries(
     }
     const ownership = defaultOwnership(machine, user, applyUmask(0o755, umask));
     const entry: FileEntry = buildNewFile(fullPath, `ELF 64-bit LSB executable, x86-64 (package binary)\n`, 'binary', ownership);
-    machine.files.push(entry);
+    createdFiles.push(entry);
   }
-  return error ? { error } : {};
+  return error ? { error, createdFiles } : { createdFiles };
 }
 
 function removeBinaries(machine: Machine, pkg: string): string {

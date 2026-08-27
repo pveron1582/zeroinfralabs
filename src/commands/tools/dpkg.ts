@@ -62,10 +62,9 @@ export const cmd_dpkg = {
           if (!parentDir || !canCreateInDir(machine, parentDir, getCurrentUser(machine))) continue;
           newEntries.push(buildNewFile(bin, `ELF 64-bit LSB executable, x86-64 (package binary)\n`, 'binary', ownership));
         }
-        machine.files.push(...newEntries);
         return {
           output: `(Reading database ... 310000 files and directories currently installed.)\nPreparing to unpack ${fileArg} ...\nUnpacking ${name} (${version}) ...\nSetting up ${name} (${version}) ...`,
-          filesChanged: [...machine.files],
+          filesChanged: [...machine.files, ...newEntries],
         };
       }
 

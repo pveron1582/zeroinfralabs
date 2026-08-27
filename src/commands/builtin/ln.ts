@@ -59,8 +59,7 @@ export const cmd_ln = {
       const ownership = defaultOwnership(machine, user, applyUmask(0o777, ctx.umask ?? 0o022));
       const entry: FileEntry = buildNewFile(cleanLinkPath, linkTarget, 'symlink', ownership);
       entry.linkTarget = linkTarget;
-      machine.files.push(entry);
-      return { output: '', isError: false, filesChanged: [...machine.files] };
+      return { output: '', isError: false, filesChanged: [...machine.files, entry] };
     }
 
     // ln sin -s: hard link (solo puede referenciar archivos del mismo FS)
@@ -80,7 +79,7 @@ export const cmd_ln = {
     if (findFile(machine, cleanLinkPath)) {
       return { output: `ln: failed to create hard link '${linkName}': File exists`, isError: true };
     }
-    machine.files.push({ ...source, path: cleanLinkPath, content: source.content });
-    return { output: '', isError: false, filesChanged: [...machine.files] };
+    const hardLink: FileEntry = { ...source, path: cleanLinkPath, content: source.content };
+    return { output: '', isError: false, filesChanged: [...machine.files, hardLink] };
   }
 };

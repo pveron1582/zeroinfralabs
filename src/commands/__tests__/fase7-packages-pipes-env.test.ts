@@ -51,6 +51,10 @@ function ctx(machine: Machine) {
   return { machine, allMachines: [machine], currentMissionId: 1, currentDir: '/', language: 'es' as const };
 }
 
+function applyResult(machine: Machine, r: { filesChanged?: Machine['files'] }) {
+  if (r.filesChanged) machine.files = r.filesChanged;
+}
+
 beforeEach(() => {
   resetPackageManager();
 });
@@ -68,6 +72,7 @@ describe('Fase 7 - apt', () => {
     const r = cmd_apt.execute(['install', 'git'], ctx(machine));
     expect(r.isError).not.toBe(true);
     expect(isInstalled(machine, 'git')).toBe(true);
+    applyResult(machine, r);
     expect(machine.files.some(f => f.path === '/usr/bin/git')).toBe(true);
     expect(r.filesChanged).toBeDefined();
   });

@@ -127,33 +127,42 @@ function findParentDirEntry(machine: Machine, fullPath: string): FileEntry | nul
   return findDirEntry(machine, parentPath);
 }
 
-function ensureFile(machine: Machine, rawPath: string, content: string, append: boolean): void {
-  const fullPath = rawPath.startsWith('/') ? rawPath : `/tmp/${rawPath}`;
-  const existing = findFile(machine, fullPath);
-  if (existing) {
-    const idx = machine.files.findIndex(f => f.path === existing.path);
-    if (idx !== -1) {
-      machine.files[idx] = {
-        ...machine.files[idx],
-        content: append ? (machine.files[idx].content ?? '') + content : content,
-      };
-    }
-    return;
-  }
-  const parent = findParentDirEntry(machine, fullPath);
-  if (!parent) return;
-  const ownership = defaultOwnership(machine, ROOT_USER, 0o644);
-  machine.files.push(buildNewFile(fullPath, content, 'text', ownership));
+/**
+ * Resuelve un archivo consultando primero el overlay local (cambios de ESTA
+ * ejecución) y luego el filesystem de la máquina. Sin esto, dos efectos
+ * sobre el mismo archivo en un mismo tick (touch + append) no se encadenan.
+ */
+function resolveFile(machine: Machine, overlay: Map<string, FileEntry>, path: string): FileEntry | null {
+  const local = overlay.get(path);
+  if (local) return local;
+  return findFile(machine, path);
 }
 
-function applyJobEffect(machine: Machine, job: CronJob): void {
+/** Aplica un efecto de archivo sobre el overlay (nunca muta machine.files). */
+function ensureFile(machine: Machine, overlay: Map<string, FileEntry>, rawPath: string, content: string, append: boolean): void {
+  const fullPath = rawPath.startsWith('/') ? rawPath : `/tmp/${rawPath}`;
+  const parent = findParentDirEntry(machine, fullPath);
+  if (!parent) return;
+  const existing = resolveFile(machine, overlay, fullPath);
+  const ownership = defaultOwnership(machine, ROOT_USER, 0o644);
+  if (existing) {
+    overlay.set(fullPath, {
+      ...existing,
+      content: append ? (existing.content ?? '') + content : content,
+    });
+    return;
+  }
+  overlay.set(fullPath, buildNewFile(fullPath, content, 'text', ownership));
+}
+
+function applyJobEffect(machine: Machine, overlay: Map<string, FileEntry>, job: CronJob): void {
   const cmd = job.command.trim();
   const m = cmd.match(/^(\S+)(?:\s+(.*))?$/);
   const prog = m?.[1] ?? cmd;
   const rest = (m?.[2] ?? '').trim();
 
   if (prog === 'touch') {
-    for (const p of rest.split(/\s+/).filter(Boolean)) ensureFile(machine, p, '', false);
+    for (const p of rest.split(/\s+/).filter(Boolean)) ensureFile(machine, overlay, p, '', false);
     return;
   }
 
@@ -164,7 +173,7 @@ function applyJobEffect(machine: Machine, job: CronJob): void {
     const rawText = redir[1].trim();
     const unwrapped = rawText.match(/^"(.*)"$/) ?? rawText.match(/^'(.*)'$/);
     const text = unwrapped ? unwrapped[1] : rawText;
-    ensureFile(machine, redir[3], `${text}\n`, redir[2] === '>>');
+    ensureFile(machine, overlay, redir[3], `${text}\n`, redir[2] === '>>');
   }
 }
 
@@ -179,22 +188,17 @@ function cronLine(machine: Machine, job: CronJob, d: Date): string {
   return `${mon} ${day} ${hh}:${mm}:01 ${hostname} CRON[${pid}]: (${job.user}) CMD (${job.command})`;
 }
 
-function appendToSyslog(machine: Machine, logLines: string[]): void {
+function appendToSyslog(machine: Machine, overlay: Map<string, FileEntry>, logLines: string[]): void {
   const path = '/var/log/syslog';
   const hostname = machine.machine_info?.hostname || 'target-server';
-  const existing = findFile(machine, path);
+  const existing = resolveFile(machine, overlay, path);
   const newContent = logLines.map(l => l + '\n').join('');
+  const parent = findParentDirEntry(machine, path);
   if (existing) {
-    const idx = machine.files.findIndex(f => f.path === existing.path);
-    if (idx !== -1) {
-      machine.files[idx] = { ...machine.files[idx], content: (machine.files[idx].content ?? '') + newContent };
-    }
-  } else {
-    const parent = findParentDirEntry(machine, path);
-    if (parent) {
-      const ownership = { owner: 'root', group: 'adm', mode: 0o640 };
-      machine.files.push(buildNewFile(path, `${hostname} syslog: cron started\n${newContent}`, 'text', ownership));
-    }
+    overlay.set(path, { ...existing, content: (existing.content ?? '') + newContent });
+  } else if (parent) {
+    const ownership = { owner: 'root', group: 'adm', mode: 0o640 };
+    overlay.set(path, buildNewFile(path, `${hostname} syslog: cron started\n${newContent}`, 'text', ownership));
   }
 }
 
@@ -207,6 +211,10 @@ function appendToSyslog(machine: Machine, logLines: string[]): void {
 export function runCron(machine: Machine, minutes = 1): CronRunResult {
   const ran: CronJob[] = [];
   const logLines: string[] = [];
+  // Overlay local de cambios de archivo: los efectos cron se acumulan acá y
+  // NO mutan machine.files; runCron devuelve el filesChanged consolidado para
+  // que el comando lo emita como metadata (patrón canónico, M1).
+  const overlay = new Map<string, FileEntry>();
   const daemonUp = isServiceRunning(machine, 'cron');
   const jobs = listCronJobs(machine);
 
@@ -218,7 +226,7 @@ export function runCron(machine: Machine, minutes = 1): CronRunResult {
         if (isDue(job, d)) {
           ran.push(job);
           logLines.push(cronLine(machine, job, d));
-          applyJobEffect(machine, job);
+          applyJobEffect(machine, overlay, job);
         }
       }
     }
@@ -227,8 +235,16 @@ export function runCron(machine: Machine, minutes = 1): CronRunResult {
 
   let filesChanged: FileEntry[] | null = null;
   if (logLines.length > 0) {
-    appendToSyslog(machine, logLines);
-    filesChanged = [...machine.files];
+    appendToSyslog(machine, overlay, logLines);
+  }
+  if (overlay.size > 0) {
+    // Consolidar: reemplaza los archivos tocados del FS y agrega los nuevos,
+    // preservando el orden de machine.files (Map mantiene inserción).
+    const byPath = new Map<string, FileEntry>(machine.files.map(f => [f.path, f]));
+    for (const [path, entry] of overlay) {
+      byPath.set(path, entry);
+    }
+    filesChanged = [...byPath.values()];
   }
   return { ran, filesChanged, logLines };
 }

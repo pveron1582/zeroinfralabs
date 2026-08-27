@@ -2,7 +2,7 @@
 // Simulador de crontab (ROADMAP Fase 8.1). Lee/escribe tareas en
 // /var/spool/cron/crontabs/<user>. `crontab -e` abre el editor (nano).
 
-import type { CommandContext, CommandResponse } from '../../types';
+import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { getCurrentUser, isRoot } from '../../utils/users';
 import { canEditFile, canDeleteInDir } from '../../utils/permissions';
 import { findFile, findDirEntry, defaultOwnership, buildNewFile } from '../../utils/fs';
@@ -16,23 +16,22 @@ function spoolPath(user: string): string {
   return `${SPOOL_DIR}/${user}`;
 }
 
-function ensureSpoolDirs(machine: CommandContext['machine']): boolean {
+function ensureSpoolDirs(machine: CommandContext['machine']): FileEntry[] {
   const dirs = [
     { path: '/var/spool', mode: 0o755 },
     { path: '/var/spool/cron', mode: 0o755 },
     { path: SPOOL_DIR, mode: 0o700 },
   ];
-  let changed = false;
+  const created: FileEntry[] = [];
   for (const d of dirs) {
     if (!findDirEntry(machine, d.path)) {
-      machine.files.push({
+      created.push({
         path: `${d.path}/.dir`, content: '', type: 'text',
         owner: 'root', group: 'root', mode: d.mode,
       });
-      changed = true;
     }
   }
-  return changed;
+  return created;
 }
 
 export const cmd_crontab = {
@@ -86,10 +85,10 @@ export const cmd_crontab = {
     }
 
     // ── crontab -e ──
-    const dirsCreated = ensureSpoolDirs(machine);
+    const newDirs = ensureSpoolDirs(machine);
     const path = spoolPath(subject);
     const existing = findFile(machine, path);
-    const filesChanged = dirsCreated ? [...machine.files] : undefined;
+    const newFiles: FileEntry[] = [...newDirs];
 
     if (existing) {
       if (subject !== currentUser.username && !isRoot(currentUser) && !canEditFile(machine, existing, currentUser)) {
@@ -106,7 +105,7 @@ export const cmd_crontab = {
             mode: existing.mode ?? 0o600,
           },
         },
-        filesChanged,
+        ...(newFiles.length > 0 ? { filesChanged: [...machine.files, ...newFiles] } : {}),
       };
     }
 
@@ -115,8 +114,7 @@ export const cmd_crontab = {
     }
 
     const ownership = defaultOwnership(machine, subject === 'root' ? { username: 'root', uid: 0, gid: 0, home: '/root', shell: '/bin/bash', groups: [0] } : currentUser, 0o600);
-    const newFile = buildNewFile(path, TEMPLATE, 'text', ownership);
-    machine.files.push(newFile);
+    newFiles.push(buildNewFile(path, TEMPLATE, 'text', ownership));
     return {
       output: '',
       nanoFile: {
@@ -124,7 +122,7 @@ export const cmd_crontab = {
         content: TEMPLATE,
         existingSnapshot: { owner: ownership.owner, group: ownership.group, mode: ownership.mode },
       },
-      filesChanged: [...machine.files],
+      filesChanged: [...machine.files, ...newFiles],
     };
   }
 };

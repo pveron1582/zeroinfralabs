@@ -61,7 +61,7 @@ function ctx(machine: Machine) {
   return { machine, allMachines: [machine], currentMissionId: 1, currentDir: '/', language: 'es' as const };
 }
 
-function applyResult(machine: Machine, r: { filesChanged?: Machine['files'] }) {
+function applyResult(machine: Machine, r: { filesChanged?: Machine['files'] | null }) {
   if (r.filesChanged) machine.files = r.filesChanged;
 }
 
@@ -108,6 +108,7 @@ describe('Fase 8 - runCron (ejecución)', () => {
     expect(res.ran.length).toBeGreaterThanOrEqual(2);
     expect(res.logLines.some(l => l.includes('CRON') && l.includes('backup.sh'))).toBe(true);
     expect(res.filesChanged).toBeDefined();
+    applyResult(machine, res);
     const syslog = machine.files.find(f => f.path === '/var/log/syslog');
     expect(syslog?.content).toContain('CRON[3');
     expect(syslog?.content).toContain('CMD (/usr/local/bin/backup.sh)');
@@ -115,17 +116,21 @@ describe('Fase 8 - runCron (ejecución)', () => {
 
   it('runCron: los jobs con */2 solo corren en ticks pares', () => {
     const machine = makeMachine();
-    runCron(machine, 1); // tick 0 → minuto 0, par → heartbeat corre
+    let res = runCron(machine, 1); // tick 0 → minuto 0, par → heartbeat corre
+    applyResult(machine, res);
     expect(machine.files.some(f => f.path === '/tmp/heartbeat')).toBe(true);
-    runCron(machine, 1); // tick 1 → minuto 1, impar → no corre
+    res = runCron(machine, 1); // tick 1 → minuto 1, impar → no corre
+    applyResult(machine, res);
     const before = machine.files.filter(f => f.path === '/tmp/heartbeat').length;
-    runCron(machine, 1); // tick 2 → minuto 2, par → toca
+    res = runCron(machine, 1); // tick 2 → minuto 2, par → toca
+    applyResult(machine, res);
     expect(before).toBe(1);
   });
 
   it('runCron: efectos sobre el filesystem (echo > y >>)', () => {
     const machine = makeMachine();
-    runCron(machine, 1);
+    const res = runCron(machine, 1);
+    applyResult(machine, res);
     const f = machine.files.find(f => f.path === '/tmp/admin_backup.txt');
     expect(f?.content).toContain('backup');
     const syslog = machine.files.find(f => f.path === '/var/log/syslog');
@@ -151,7 +156,8 @@ describe('Fase 8 - runCron (ejecución)', () => {
 
   it('runCron: el log de un job de spool muestra al dueño (no root)', () => {
     const machine = makeMachine();
-    runCron(machine, 1);
+    const res = runCron(machine, 1);
+    applyResult(machine, res);
     const syslog = machine.files.find(f => f.path === '/var/log/syslog');
     expect(syslog?.content).toMatch(/\(admin\) CMD \(\/usr\/bin\/echo backup > \/tmp\/admin_backup\.txt\)/);
   });
@@ -163,7 +169,8 @@ describe('Fase 8 - runCron (ejecución)', () => {
         ? { ...f, content: '* * * * * root /usr/bin/echo "hola mundo cron" > /tmp/frase.txt\n' }
         : f
     );
-    runCron(machine, 1);
+    const res = runCron(machine, 1);
+    applyResult(machine, res);
     const f = machine.files.find(f2 => f2.path === '/tmp/frase.txt');
     expect(f?.content).toBe('hola mundo cron\n');
   });
@@ -235,6 +242,7 @@ describe('Fase 8 - date y sleep', () => {
     expect(r.isError).not.toBe(true);
     expect(r.filesChanged).toBeDefined();
     expect(formatDate(virtualTime(machine))).toMatch(/10:01:00/);
+    applyResult(machine, r);
     const syslog = machine.files.find(f => f.path === '/var/log/syslog');
     expect(syslog?.content).toContain('CMD (touch /tmp/heartbeat)');
   });
