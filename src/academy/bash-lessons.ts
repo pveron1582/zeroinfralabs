@@ -25,6 +25,13 @@ export const BASH_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/sl01-bash-intro.mp4',
+        durationSec: 68,
+        caption: 'Bash is the shell that became a language: it is everywhere and automates what you would do by hand. Your first script in three steps — nano, chmod +x and ./script.sh.',
+        captionEs: 'Bash es la shell que se volvió lenguaje: está en todos lados y automatiza lo que harías a mano. Tu primer script en tres pasos — nano, chmod +x y ./script.sh.',
+      },
+      {
         type: 'content',
         title: 'A shell that is also a language',
         titleEs: 'Una shell que también es lenguaje',
@@ -86,6 +93,13 @@ export const BASH_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/sl02-variables-conditionals.mp4',
+        durationSec: 76,
+        caption: 'Variables that store data, arguments ($1, $2…) and conditionals that pick the path: a script that adapts to the target.',
+        captionEs: 'Variables que guardan datos, argumentos ($1, $2…) y condicionales que eligen el camino: un script que se adapta al objetivo.',
+      },
+      {
         type: 'content',
         title: 'Variables',
         titleEs: 'Variables',
@@ -139,6 +153,13 @@ export const BASH_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/sl03-loops-functions.mp4',
+        durationSec: 72,
+        caption: 'Loops to repeat at scale, functions to organize, and grep/awk/sed filters to keep only what matters.',
+        captionEs: 'Bucles para repetir a escala, funciones para organizar y filtros grep/awk/sed para quedarte solo con lo que importa.',
+      },
+      {
         type: 'content',
         title: 'Loops',
         titleEs: 'Bucles',
@@ -190,6 +211,13 @@ export const BASH_LESSONS: Lesson[] = [
             en: "Now for the real deal: a recon script gathers in seconds what you'd do by hand in ten minutes: live hosts, open ports and services.",
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/sl04-enumeration.mp4',
+        durationSec: 69,
+        caption: 'Your first real case: ping sweep, nmap and grep/awk to parse. Scan once, parse many times.',
+        captionEs: 'Tu primer caso real: ping sweep, nmap y grep/awk para parsear. Escaneás una vez y parseás muchas.',
       },
       {
         type: 'content',
@@ -251,6 +279,13 @@ export const BASH_LESSONS: Lesson[] = [
             en: "Two final plays with bash: automating an attack against a wordlist, and raising a reverse shell once you already got access. That closes the loop.",
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/sl05-reverse-shells.mp4',
+        durationSec: 68,
+        caption: 'From scripts that recon to scripts that attack: wordlist fuzzing and a reverse shell with bash.',
+        captionEs: 'De scripts que reconocen a scripts que atacan: fuzzing con wordlist y una reverse shell con bash.',
       },
       {
         type: 'content',

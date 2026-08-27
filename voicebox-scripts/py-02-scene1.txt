@@ -1,0 +1,1 @@
+Python tiene pocos tipos y muy intuitivos: números, textos, listas y diccionarios. Con esos cuatro y un if, ya podés modelar casi cualquier cosa de un pentest. Es la parte del lenguaje que más vas a usar, así que conviene tenerla clara desde el arranque.

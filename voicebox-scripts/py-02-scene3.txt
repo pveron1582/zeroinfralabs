@@ -1,0 +1,1 @@
+Las condiciones usan if, elif y else. Ojo con los dos puntos después del if, y el bloque indentado abajo. Las comparaciones son los símbolos clásicos: doble igual, distinto, menor, mayor, and, or, not. Un detalle importante: input siempre devuelve texto, así que si necesitás un número, convertilo con int entre paréntesis. Esa es la base de cualquier script que decide algo.

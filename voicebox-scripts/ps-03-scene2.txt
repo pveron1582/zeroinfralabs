@@ -1,0 +1,1 @@
+El foreach itera una colección: foreach dólar p in dólar lista, y adentro tus comandos. En el pipeline usás ForEach Object, y ahí aparece la estrella: dólar guion bajo, que es el objeto actual. Get Process pipe ForEach Object, y dólar guion bajo punto Name, te da el nombre de cada proceso. También tenés el for para rangos numéricos, y el while mientras se cumpla una condición.

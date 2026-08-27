@@ -1,0 +1,1 @@
+Dentro de un Windows, el lenguaje con el que se mueven los atacantes es PowerShell. Es la shell oficial del sistema, y viene en todos los Windows modernos. A diferencia de bash, hay una diferencia clave: su pipeline no pasa texto, pasa objetos. Eso cambia todo, porque en vez de parsear líneas con grep y awk, manipulás objetos con propiedades directamente.

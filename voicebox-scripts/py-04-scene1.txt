@@ -1,0 +1,1 @@
+Ahora el caso real: un scanner de puertos en Python. El objetivo del lab espera. Escribís el script, lo corrés, y ves qué puertas tiene abiertas. Este es el primer script de red que arma todo pentester, porque entender cómo conectar a un puerto es la base de todo lo demás.

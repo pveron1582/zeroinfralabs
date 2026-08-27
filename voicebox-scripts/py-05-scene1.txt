@@ -1,0 +1,1 @@
+La web es el blanco número uno. Con la librería requests automatizás ataques HTTP: probar logins, descubrir rutas, mandar payloads. Es el cierre perfecto del módulo, porque junta todo lo que viste: bucles para repetir, condiciones para decidir, y una librería que hace el trabajo pesado de la red.

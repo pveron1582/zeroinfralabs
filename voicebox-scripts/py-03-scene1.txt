@@ -1,0 +1,1 @@
+El ochenta por ciento de tus scripts van a ser bucles sobre IPs y puertos, funciones para no repetirte, e imports para traer poder externo. Acá ves las tres piezas. Son las mismas ideas que en bash, pero con la claridad de Python, que se lee casi como pseudocódigo.

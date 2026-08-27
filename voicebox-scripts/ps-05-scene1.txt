@@ -1,0 +1,1 @@
+PowerShell es el favorito en la post explotación de Windows por una razón: toca todo lo que hay que tocar, memoria, credenciales, red. Y también es el más vigilado. Las credenciales de una sesión Windows viven en memoria, dentro del proceso LSASS, y son botín esperando que alguien las agarre.

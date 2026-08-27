@@ -1,0 +1,1 @@
+Los arrays guardan listas: arroba paréntesis con veintidós, ochenta y cuatro cuarenta y tres, o dólar puertos igual veintidós punto punto ochenta para un rango. Las hashtables guardan clave y valor: dólar servidor igual arroba llaves, ip igual tal, puerto igual tal, y leés dólar servidor punto ip. Y armás strings interpolando: dólar nombre en dólar paréntesis servidor punto ip.

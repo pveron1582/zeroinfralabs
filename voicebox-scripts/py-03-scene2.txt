@@ -1,0 +1,1 @@
+El for itera de tres formas. Con range, como for i in range uno doscientos cincuenta y cinco, recorrés un rango numérico. Con una lista, for p entre corchetes, recorrés sus elementos. Y con un archivo, for linea in open, lo leés línea por línea. También tenés el while True para bucles infinitos, con un break adentro para salir.

@@ -25,6 +25,13 @@ export const PYTHON_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/py01-python-intro.mp4',
+        durationSec: 60,
+        caption: 'Python is the hacking language: readable, powerful and with libraries for almost everything. print, input and your first one-liner.',
+        captionEs: 'Python es el lenguaje del hacking: legible, poderoso y con librerías para casi todo. print, input y tu primer one-liner.',
+      },
+      {
         type: 'content',
         title: 'Interpreted, readable, everywhere',
         titleEs: 'Interpretado, legible, en todos lados',
@@ -86,6 +93,13 @@ export const PYTHON_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/py02-types-conditions.mp4',
+        durationSec: 58,
+        caption: 'Four types — int, str, list, dict — and an if: with that you can model almost anything in a pentest. F-strings to format.',
+        captionEs: 'Cuatro tipos — int, str, list, dict — y un if: con eso modelás casi cualquier cosa de un pentest. F-strings para formatear.',
+      },
+      {
         type: 'content',
         title: 'Types: int, str, list, dict',
         titleEs: 'Tipos: int, str, list, dict',
@@ -139,6 +153,13 @@ export const PYTHON_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/py03-loops-libraries.mp4',
+        durationSec: 55,
+        caption: '80% of your scripts: loops over IPs and ports, functions with def and imports to bring in external power.',
+        captionEs: 'El 80% de tus scripts: bucles sobre IPs y puertos, funciones con def e imports para traer poder externo.',
+      },
+      {
         type: 'content',
         title: 'Loops',
         titleEs: 'Bucles',
@@ -190,6 +211,13 @@ export const PYTHON_LESSONS: Lesson[] = [
             en: "Now the real case: a port scanner in Python. The lab target (10.0.0.11) is waiting. You write the script, run it and see which doors are open.",
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/py04-socket-networking.mp4',
+        durationSec: 49,
+        caption: 'Your first network script: a port scanner with socket, try/except and banner grabbing.',
+        captionEs: 'Tu primer script de red: un scanner de puertos con socket, try/except y banner grabbing.',
       },
       {
         type: 'content',
@@ -251,6 +279,13 @@ export const PYTHON_LESSONS: Lesson[] = [
             en: "The web is target number one. With the requests library you automate HTTP attacks: testing logins, discovering paths, sending payloads. Perfect closure for the module.",
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/py05-http-requests.mp4',
+        durationSec: 60,
+        caption: 'HTTP in three lines with requests, and a login brute force that decides by the response. The module closer.',
+        captionEs: 'HTTP en tres líneas con requests y un brute force de login que decide por la respuesta. El cierre del módulo.',
       },
       {
         type: 'content',

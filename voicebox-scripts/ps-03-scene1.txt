@@ -1,0 +1,1 @@
+Con bucles, funciones y un puñado de cmdlets, ya podés automatizar casi cualquier tarea de administración, y también de ataque. Acá van las piezas que más vas a usar. La idea es la misma que en bash, pero con la potencia de los objetos: cada elemento del pipeline es algo con propiedades que podés filtrar y transformar.

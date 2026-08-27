@@ -1,0 +1,1 @@
+Windows guarda las credenciales en el proceso LSASS. Herramientas como Mimikatz, y su puerto PowerShell Invoke Mimikatz, las vuelcan: contraseñas en claro, hashes y tickets Kerberos. Hoy los antivirus y EDR detectan a Mimikatz rápido, así que los ataques modernos usan variantes como Rubeus. El concepto no cambia: la memoria de una sesión es oro.

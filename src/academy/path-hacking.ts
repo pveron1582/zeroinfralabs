@@ -143,8 +143,8 @@ export const HACKING_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/hk05-offline-cracking.mp4',
-        durationSec: 68,
+        src: '/videos/pe03-offline-cracking.mp4',
+        durationSec: 78,
         caption: 'Offline cracking: you own the hash, so you crack it at your own pace — no lockouts, no alerts. john the ripper runs on CPU with a wordlist (rockyou); hashcat runs on GPU with rules and millions of combinations per second.',
         captionEs: 'Cracking offline: vos tenés el hash, así que lo crackeás a tu ritmo — sin bloqueos ni alertas. john the ripper corre en CPU con una wordlist (rockyou); hashcat corre en GPU con reglas y millones de combinaciones por segundo.',
       },
@@ -224,8 +224,8 @@ export const HACKING_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/hk06-online-cracking.mp4',
-        durationSec: 68,
+        src: '/videos/pe04-online-cracking.mp4',
+        durationSec: 90,
         caption: 'Online cracking attacks the live service: no hash needed, every attempt is a real connection. hydra (the classic), medusa (lighter) and ncrack (from the Nmap family, integrates with scans). Slower and noisier — the network and lockout policies set your limits.',
         captionEs: 'El cracking online ataca el servicio vivo: no hace falta el hash, cada intento es una conexión real. hydra (el clásico), medusa (más liviana) y ncrack (de la familia Nmap, se integra con los escaneos). Más lento y ruidoso — la red y las políticas de bloqueo ponen tus límites.',
       },
@@ -304,6 +304,13 @@ export const HACKING_LESSONS: Lesson[] = [
             en: "A network doesn't lie: every packet has an origin and a destination. But what if someone steps into the middle and says 'the path goes through here'? That's the Man-in-the-Middle attack, and ARP spoofing is the classic way to pull it off on a LAN.",
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/pe05-man-in-the-middle.mp4',
+        durationSec: 93,
+        caption: 'Man-in-the-middle in action: the attacker floods the victim with forged ARP replies, becomes the fake gateway and relays every packet with ip_forward — reading the traffic while the victim keeps browsing normally.',
+        captionEs: 'El man-in-the-middle en acción: el atacante inunda a la víctima con respuestas ARP falsas, pasa a ser el gateway falso y retransmite cada paquete con ip_forward — leyendo el tráfico mientras la víctima sigue navegando normal.',
       },
       {
         type: 'content',

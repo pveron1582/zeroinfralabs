@@ -54,12 +54,46 @@ export const AUDIO_TIMINGS: Record<string, number[]> = {
   're-03-devices-topologies': [21.04, 21.84, 12.40],
   're-04-osi-layers': [16.48, 27.12, 15.84],
   're-05-addressing-dns': [15.68, 17.60, 16.72],
-  // ⚠️ ESTIMADOS (hk-*): cracking offline/online (Pentesting, hacking-05/06).
-  // Sin wavs todavía (guiones en voicebox-scripts/hk-*.txt). Se reemplazan
-  // con las reales (ffprobe) cuando lleguen los audios; mientras tanto las
-  // composiciones omiten el <Audio> (ver hasAudio()).
-  'hk-05-offline-cracking': [22, 21, 20],
-  'hk-06-online-cracking': [20, 22, 21],
+  // pe-03/04/05: duraciones reales de los wavs (ffprobe, 2026-08-25).
+  // Clases 3/4/5 de Pentesting. Los syncs internos (RevealLine/KeyCapsule/
+  // TitleScene) están alineados a los segmentos de habla medidos con
+  // silencedetect (-50dB). Guiones: voicebox-scripts/pe-0{3,4,5}-*.txt.
+  'pe-03-offline-cracking': [26.64, 23.04, 27.60],
+  'pe-04-online-cracking': [29.84, 28.32, 30.88],
+  'pe-05-man-in-the-middle': [28.96, 34.32, 29.04],
+  // hw-*: duraciones reales de los wavs (ffprobe, 2026-08-25).
+  // Clases 1..5 de Hacking Web. Los syncs internos (RevealLine/KeyCapsule/
+  // TerminalWindow) están alineados a los segmentos de habla medidos con
+  // silencedetect (-50dB). Guiones: voicebox-scripts/hw-0{1..5}-*.txt.
+  'hw-01-web-protocols': [30.32, 26.88, 34.96],
+  'hw-02-domains-subdirectories': [34.40, 37.04, 37.52],
+  'hw-03-xss': [28.64, 35.20, 27.76],
+  'hw-04-sql-injection': [26.96, 29.76, 31.60],
+  'hw-05-path-traversal-lfi': [34.08, 31.44, 32.80],
+  // sl-*: duraciones reales de los wavs (ffprobe, 2026-08-26).
+  // Clases 1..5 de Scripting Bash. Los syncs internos (RevealLine/KeyCapsule/
+  // TerminalWindow) están alineados a los segmentos de habla medidos con
+  // silencedetect (-50dB). Guiones: voicebox-scripts/sl-0{1..5}-*.txt.
+  'sl-01-bash-intro': [22.40, 21.76, 22.32],
+  'sl-02-variables-conditionals': [20.16, 25.36, 28.80],
+  'sl-03-loops-functions': [19.68, 25.20, 25.36],
+  'sl-04-enumeration': [20.40, 22.72, 24.56],
+  'sl-05-reverse-shells': [18.72, 23.52, 24.24],
+  // ps-* / py-*: duraciones reales de los wavs (ffprobe, 2026-08-26).
+  // Clases 1..5 de Scripting PowerShell y Python. Los syncs internos
+  // (RevealLine/KeyCapsule/TerminalWindow) están alineados a los segmentos de
+  // habla medidos con silencedetect (-50dB). Guiones:
+  // voicebox-scripts/ps-0{1..5}-*.txt y py-0{1..5}-*.txt.
+  'ps-01-objects-pipeline': [18.88, 22.72, 19.36],
+  'ps-02-variables-conditionals': [16.48, 20.88, 23.20],
+  'ps-03-loops-cmdlets': [16.96, 21.36, 20.64],
+  'ps-04-windows-enumeration': [16.56, 20.08, 21.12],
+  'ps-05-credentials-obfuscation': [16.32, 20.08, 22.80],
+  'py-01-python-intro': [16.72, 22.88, 19.20],
+  'py-02-types-conditions': [13.36, 21.44, 21.12],
+  'py-03-loops-libraries': [13.44, 18.24, 21.52],
+  'py-04-socket-networking': [14.88, 16.00, 16.56],
+  'py-05-http-requests': [16.16, 19.52, 22.64],
   // re1-*: duraciones reales de los wavs (ffprobe, 2026-08-18).
   // Los syncs internos (RevealLine/KeyCapsule/TitleScene) están alineados
   // a los segmentos de habla medidos con silencedetect (-50dB).
@@ -85,8 +119,6 @@ const AUDIO_PENDING: Record<string, boolean> = {
   'ci-03-information-gathering': true,
   'ci-04-cryptography': true,
   'ci-05-owasp-top-ten': true,
-  'hk-05-offline-cracking': true,
-  'hk-06-online-cracking': true,
 };
 
 export function hasAudio(videoId: string): boolean {

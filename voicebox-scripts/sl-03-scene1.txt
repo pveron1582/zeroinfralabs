@@ -1,0 +1,1 @@
+El pentesting es repetir cosas a escala: probar doscientos cincuenta y cuatro hosts, recorrer una wordlist entera, parsear la salida de un escaneo. Hacerlo a mano es inviable. Ahí entran los bucles para repetir, las funciones para organizar, y los filtros de texto para quedarte solo con lo que importa. Con estas tres herramientas, un barrido que tardaría horas queda en segundos.

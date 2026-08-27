@@ -1,0 +1,1 @@
+Si hay un lenguaje que domina el hacking, es Python. Es legible, poderoso, y tiene librerías para casi todo: redes, HTTP, explotación. La mayoría de los exploits públicos están escritos en Python. Esta clase te muestra cómo correr tu primer script, y por qué este lenguaje es el favorito de los atacantes.

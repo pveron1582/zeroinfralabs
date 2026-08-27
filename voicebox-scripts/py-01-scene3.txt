@@ -1,0 +1,1 @@
+Tu primer script usa tres funciones que cubren un montón. print, entre paréntesis y comillas, imprime. El numeral arranca un comentario. E input, con un texto, le pide entrada al usuario. Mostrar, comentar, preguntar: con eso ya tenés la base. Los one liners sirven para pruebas rápidas, pero los archivos son mejores para scripts reales.

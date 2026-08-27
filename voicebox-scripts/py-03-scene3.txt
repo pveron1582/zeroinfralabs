@@ -1,0 +1,1 @@
+Una función se define con def, el nombre y los parámetros: def escanear, host, puerto, dos puntos, y abajo el bloque indentado. La llamás con escanear y los valores. Los imports traen librerías: import socket, o from socket import socket. Las esenciales para pentesting: socket para TCP y UDP crudo, sys para los argumentos, subprocess para correr comandos, y time para pausas.

@@ -1,0 +1,1 @@
+El patrón del scanner: el host viene de sys argv uno, bucle sobre los puertos, y cada conexión envuelta en try except para tragar los timeouts. Con set timeout le das velocidad. Un scanner real hace esto para que un puerto cerrado no tumbe toda la corrida. Esa es la diferencia entre una demo y una herramienta.

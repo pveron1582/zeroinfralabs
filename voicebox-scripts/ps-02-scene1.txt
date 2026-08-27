@@ -1,0 +1,1 @@
+Las variables en PowerShell se escriben con un dólar adelante: dólar nombre igual kali. Se nota que nació pensando en la consola. Con variables, arrays, hashtables y condiciones, armás la lógica de tus scripts. Son las mismas ideas que en bash, pero con una sintaxis orientada a objetos que vas a ver una y otra vez.

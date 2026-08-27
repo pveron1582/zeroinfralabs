@@ -1,0 +1,1 @@
+Con requests, el HTTP entra en tres líneas. r igual requests punto get con la URL, y la respuesta queda en r. La leés con r punto status code para el código, r punto headers para las cabeceras, y r punto text para el cuerpo. El post manda datos, y una Session mantiene las cookies entre peticiones, como un navegador que sigue logueado.

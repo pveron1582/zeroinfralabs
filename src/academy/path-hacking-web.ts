@@ -25,6 +25,13 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/hw01-web-protocols.mp4',
+        durationSec: 94,
+        caption: 'The web is the battlefield: HTTP sends everything in clear text, HTTPS encrypts the channel but not the app, and more protocols are in play — WebSocket, WebDAV, REST/API, even DNS.',
+        captionEs: 'La web es el campo de batalla: HTTP manda todo en texto plano, HTTPS cifra el canal pero no la app, y hay más protocolos en juego — WebSocket, WebDAV, REST/API e incluso DNS.',
+      },
+      {
         type: 'content',
         title: 'HTTP: the unencrypted web',
         titleEs: 'HTTP: la web sin cifrar',
@@ -67,9 +74,75 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'web-01',
+    id: 'web-04',
     pathId: 'hacking-web',
     order: 2,
+    title: 'Domains, subdomains and subdirectories: mapping the target',
+    titleEs: 'Dominios, subdominios y subdirectorios: mapeando el objetivo',
+    readingMinutes: 8,
+    steps: [
+      {
+        type: 'foxy-narrator',
+        messages: [
+          {
+            es: 'Antes de dispararle a una web hay que mapearla: qué dominio tiene, qué subdominios le cuelgan y qué rutas esconde la aplicación. Ese mapa se dibuja con enumeración y fuzzing — y casi siempre revela más de lo que el dueño cree.',
+            en: 'Before shooting at a website you have to map it: which domain it owns, which subdomains hang from it, and which routes the application hides. That map gets drawn with enumeration and fuzzing — and it almost always reveals more than the owner expects.',
+          },
+        ],
+      },
+      {
+        type: 'video',
+        src: '/videos/hw02-domains-subdirectories.mp4',
+        durationSec: 111,
+        caption: 'Map the target: domain, subdomain and subdirectory are three different things. Fuzzing reveals what nobody links — stale panels, hidden backups, forgotten subdomains.',
+        captionEs: 'Mapeá el objetivo: dominio, subdominio y subdirectorio son cosas distintas. El fuzzing revela lo que nadie linkea — paneles viejos, backups ocultos, subdominios olvidados.',
+      },
+      {
+        type: 'content',
+        title: 'The anatomy of a URL: three different things',
+        titleEs: 'Anatomía de una URL: tres cosas distintas',
+        body: 'Take `https://blog.ejemplo.com/panel/login` apart. The **domain** (`ejemplo.com`) is the registered name that DNS points at a server. The **subdomain** (`blog.`) goes in front of it: DNS can resolve it to a different server running a completely separate app. The **subdirectory** (`/panel/login`) is a route *inside* the same application — same server, same codebase. Mental model: the domain is the land, subdomains are separate buildings on that land, subdirectories are rooms inside one building.',
+        bodyEs: 'Desarmá `https://blog.ejemplo.com/panel/login`. El **dominio** (`ejemplo.com`) es el nombre registrado que el DNS apunta a un servidor. El **subdominio** (`blog.`) va adelante: el DNS puede resolverlo a otro servidor corriendo una aplicación totalmente distinta. El **subdirectorio** (`/panel/login`) es una ruta *dentro* de la misma aplicación — mismo servidor, mismo código. Modelo mental: el dominio es el terreno, los subdominios son edificios separados sobre ese terreno, y los subdirectorios son habitaciones dentro de un edificio.',
+      },
+      {
+        type: 'content',
+        title: 'Why each layer matters to an attacker',
+        titleEs: 'Por qué cada capa le importa al atacante',
+        body: '**Subdomains expand the attack surface**: `dev.ejemplo.com`, `staging.` or `old-app.` often run outdated versions without authentication, and nobody remembers them because no link points there — but DNS still resolves them. **Subdirectories hide the sensitive parts of an app**: `/admin`, `/phpmyadmin`, `/backup.zip`, `/.git`. None of this shows up in a port scan — everything rides on the same port 80 or 443. You find it by asking the server directly, one guess at a time.',
+        bodyEs: '**Los subdominios agrandan la superficie de ataque**: `dev.ejemplo.com`, `staging.` u `old-app.` suelen correr versiones viejas sin autenticación, y nadie se acuerda de ellos porque ningún link apunta ahí — pero el DNS sigue resolviéndolos. **Los subdirectorios esconden las partes sensibles de la app**: `/admin`, `/phpmyadmin`, `/backup.zip`, `/.git`. Nada de esto aparece en un escaneo de puertos — todo viaja por el mismo puerto 80 o 443. Lo encontrás preguntándole directo al servidor, una suposición por vez.',
+      },
+      {
+        type: 'terminal-demo',
+        command: 'gobuster dir -u http://10.0.0.11 -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt',
+        output: '===============================================================\nGobuster v3.1.0\n===============================================================\n[+] Url: http://10.0.0.11\n[+] Wordlist: /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt\n[+] Threads: 10\n===============================================================\n/admin                (Status: 301) [Size: 312]\n/backup               (Status: 200) [Size: 1845]\n/uploads              (Status: 301) [Size: 310]\n===============================================================',
+        explanation: '`gobuster dir` requests every word in the wordlist as a route under the target and keeps the answers that are not 404. An `/admin` panel, a `/backup` folder readable with 200... none of them linked from the home page, all reachable by guessing.',
+        explanationEs: '`gobuster dir` pide cada palabra de la wordlist como ruta del objetivo y se queda con las respuestas que no son 404. Un panel `/admin`, una carpeta `/backup` legible con 200... ninguno aparece linkeado en la home, todos alcanzables a fuerza de probar.',
+      },
+      {
+        type: 'content',
+        title: 'Fuzzing: guessing routes at scale',
+        titleEs: 'Fuzzing: adivinar rutas a escala',
+        body: '**Fuzzing** is throwing thousands of candidate words at the server and keeping what makes sense. Tools: `gobuster` (fast, simple), `ffuf` (filters by size, regex and status), `dirb` and `dirsearch`. The fuel is the **wordlist** — SecLists is the classic collection — and results are read by status code: `200` exists, `301/302` redirects (follow them), `403` exists but forbids you — also interesting! — `404` does not. The same trick applies one level up: subdomain fuzzing with `dnsrecon`, `subfinder` or `amass` brute-forces `palabra.ejemplo.com` against DNS. Defense: take staging off public DNS, protect admin panels with auth, return generic 404s instead of 403s where you can, and watch your logs — fuzzing is loud.',
+        bodyEs: '**Fuzzing** es tirarle miles de palabras candidatas al servidor y quedarse con lo que tiene sentido. Herramientas: `gobuster` (rápido y simple), `ffuf` (filtra por tamaño, regex y status), `dirb` y `dirsearch`. El combustible es la **wordlist** — SecLists es la colección clásica — y los resultados se leen por código de estado: `200` existe, `301/302` redirige (seguilo), `403` existe pero te prohíbe — ¡también interesa!, `404` no existe. El mismo truco aplica un nivel arriba: el fuzzing de subdominios con `dnsrecon`, `subfinder` o `amass` prueba `palabra.ejemplo.com` contra el DNS a toda velocidad. Defensa: sacar staging del DNS público, proteger los paneles admin con login, responder 404 genérico en vez de 403 donde se pueda y mirar los logs — el fuzzing hace ruido.',
+      },
+      {
+        type: 'quiz',
+        question: 'What is the difference between a subdomain and a subdirectory?',
+        questionEs: '¿Cuál es la diferencia entre un subdominio y un subdirectorio?',
+        options: [
+          { es: 'El subdominio puede resolver vía DNS a otro servidor; el subdirectorio es una ruta dentro de la misma app', en: 'A subdomain can resolve via DNS to another server; a subdirectory is a route inside the same app' },
+          { es: 'Son lo mismo con distinto nombre', en: 'They are the same thing with different names' },
+          { es: 'El subdirectorio siempre requiere autenticación', en: 'A subdirectory always requires authentication' },
+          { es: 'Los subdominios solo funcionan sobre HTTPS', en: 'Subdomains only work over HTTPS' },
+        ],
+        correctIndex: 0,
+      },
+    ],
+  },
+  {
+    id: 'web-01',
+    pathId: 'hacking-web',
+    order: 3,
     title: 'XSS: injecting scripts into the browser',
     titleEs: 'XSS: inyectando scripts en el navegador',
     readingMinutes: 8,
@@ -82,6 +155,13 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
             en: 'There is a vulnerability that does not run on the server, but in the victim\u2019s browser. XSS lets you run JavaScript where you should not. Let\u2019s get the basics.',
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/hw03-xss.mp4',
+        durationSec: 93,
+        caption: 'XSS runs JavaScript in the victim’s browser: it reads cookies, hijacks sessions and is stopped by always escaping output.',
+        captionEs: 'XSS ejecuta JavaScript en el navegador de la víctima: lee cookies, secuestra sesiones y se frena escapando siempre la salida.',
       },
       {
         type: 'content',
@@ -128,7 +208,7 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
   {
     id: 'web-02',
     pathId: 'hacking-web',
-    order: 3,
+    order: 4,
     title: 'SQL Injection: talking to the database',
     titleEs: 'SQL Injection: hablándole a la base de datos',
     readingMinutes: 8,
@@ -142,6 +222,13 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
             en: 'If an app builds its database query by concatenating your input without filtering it, you stop typing text and start speaking SQL straight to the server. That is SQL injection.',
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/hw04-sql-injection.mp4',
+        durationSec: 90,
+        caption: 'SQL injection makes you speak directly to the database: an OR \'1\'=\'1\' skips the login; parameterized queries stop it.',
+        captionEs: 'La inyección SQL te hace hablar directo con la base: un OR \'1\'=\'1\' salta el login; las consultas parametrizadas lo frenan.',
       },
       {
         type: 'content',
@@ -188,7 +275,7 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
   {
     id: 'web-03',
     pathId: 'hacking-web',
-    order: 4,
+    order: 5,
     title: 'Path Traversal & LFI: reading files to get code execution',
     titleEs: 'Path Traversal y LFI: de leer archivos a ejecutar código',
     readingMinutes: 9,
@@ -202,6 +289,13 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
             en: 'If the app uses your input to pick which file to include, you control the file... and sometimes much more. Path traversal lets you escape the web directory; LFI goes further and reads server files in the worst possible place.',
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/hw05-path-traversal-lfi.mp4',
+        durationSec: 100,
+        caption: 'Path traversal escapes the web root and LFI reads the source code; with log poisoning you reach remote code execution.',
+        captionEs: 'Path traversal escapa de la raíz web y el LFI lee el código fuente; con log poisoning llegás a ejecutar código remoto.',
       },
       {
         type: 'content',

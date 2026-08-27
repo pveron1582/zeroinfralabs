@@ -1,0 +1,1 @@
+Las condiciones usan if, elseif y else, pero los operadores son tipo palabra: menos e q para igual, menos n e para distinto, menos g t y menos l t para mayor y menor, menos and y menos or. Para texto, menos match usa expresiones regulares, y menos like usa comodines, como dólar name menos like asterisco admin asterisco. Son palabras, no símbolos: esa es la marca de PowerShell.

@@ -1,0 +1,1 @@
+Python es interpretado: no hay paso de compilación, lo ejecutás directo. Con python tres y el nombre del archivo corrés un script; con python tres menos c y una línea, corrés un one liner. La indentación define los bloques, no hay llaves. Y las librerías que lo hacen letal: socket para redes, requests para HTTP, subprocess para comandos, scapy para paquetes, y paramiko para SSH.

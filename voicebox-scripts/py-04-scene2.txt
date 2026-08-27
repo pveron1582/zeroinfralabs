@@ -1,0 +1,1 @@
+Conectar es el paso uno; leer lo que dice el servicio es el paso dos. Con ese punto recv mil veinticuatro leés el banner que un servicio manda al conectar: el FTP saluda, el SSH manda su versión. Ese banner te dice el servicio y la versión exacta, que son los datos que buscás para elegir un exploit.

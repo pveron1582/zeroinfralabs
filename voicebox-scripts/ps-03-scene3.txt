@@ -1,0 +1,1 @@
+Una función agrupa lógica: function Escanear, llaves, param, y adentro tus comandos. Para entrada y salida tenés cmdlets: Get Content lee un archivo, Out File lo escribe, Add Content agrega. Invoke Web Request, alias i w r, hace peticiones HTTP. Y Convert To Json y Convert From Json serializan objetos, perfecto para hablar con APIs.

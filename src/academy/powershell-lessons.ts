@@ -26,6 +26,13 @@ export const POWERSHELL_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/ps01-objects-pipeline.mp4',
+        durationSec: 63,
+        caption: 'PowerShell passes objects, not text: Verb-Noun cmdlets, the pipeline, .ps1 scripts and the Execution Policy bypass.',
+        captionEs: 'PowerShell pasa objetos, no texto: cmdlets Verbo-Sustantivo, el pipeline, scripts .ps1 y el bypass de Execution Policy.',
+      },
+      {
         type: 'content',
         title: 'Shell + language, with objects',
         titleEs: 'Shell + lenguaje, con objetos',
@@ -76,6 +83,13 @@ export const POWERSHELL_LESSONS: Lesson[] = [
             en: "Variables in PowerShell are written with a leading $ — you can tell it was born thinking about the console. With arrays, hashtables and conditions you build your scripts' logic.",
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/ps02-variables-conditionals.mp4',
+        durationSec: 62,
+        caption: 'Variables with $, arrays, hashtables and conditions with word operators like -eq and -match.',
+        captionEs: 'Variables con $, arrays, hashtables y condiciones con operadores palabra como -eq y -match.',
       },
       {
         type: 'content',
@@ -130,6 +144,13 @@ export const POWERSHELL_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/ps03-loops-cmdlets.mp4',
+        durationSec: 61,
+        caption: 'Loops, functions and the cmdlets you will use the most: $_, Where-Object, ForEach-Object and the I/O ones.',
+        captionEs: 'Bucles, funciones y los cmdlets que más vas a usar: $_, Where-Object, ForEach-Object y los de I/O.',
+      },
+      {
         type: 'content',
         title: 'Loops',
         titleEs: 'Bucles',
@@ -182,6 +203,13 @@ export const POWERSHELL_LESSONS: Lesson[] = [
         ],
       },
       {
+        type: 'video',
+        src: '/videos/ps04-windows-enumeration.mp4',
+        durationSec: 59,
+        caption: 'Your Swiss army knife on Windows: whoami /priv, Get-Process, net localgroup and the registry. SeDebugPrivilege is gold.',
+        captionEs: 'Tu navaja suiza en Windows: whoami /priv, Get-Process, net localgroup y el registro. SeDebugPrivilege es oro.',
+      },
+      {
         type: 'content',
         title: 'Local enumeration',
         titleEs: 'Enumeración local',
@@ -232,6 +260,13 @@ export const POWERSHELL_LESSONS: Lesson[] = [
             en: "PowerShell is the favorite language in Windows post-exploitation for a reason: it touches everything worth touching — memory, credentials, network. And it's also the most watched. Here's the why and how attackers hide it.",
           },
         ],
+      },
+      {
+        type: 'video',
+        src: '/videos/ps05-credentials-obfuscation.mp4',
+        durationSec: 61,
+        caption: 'Credentials live in LSASS: Mimikatz dumps them, and base64 obfuscation with -EncodedCommand slips past the filters.',
+        captionEs: 'Las credenciales viven en LSASS: Mimikatz las vuelca y la ofuscación base64 con -EncodedCommand esquiva los filtros.',
       },
       {
         type: 'content',

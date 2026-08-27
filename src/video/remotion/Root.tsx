@@ -40,8 +40,29 @@ import { Re02IpAddresses } from './compositions/Re02IpAddresses';
 import { Re03DevicesTopologies } from './compositions/Re03DevicesTopologies';
 import { Re04OsiLayers } from './compositions/Re04OsiLayers';
 import { Re05AddressingDns } from './compositions/Re05AddressingDns';
-import { Hk05OfflineCracking } from './compositions/Hk05OfflineCracking';
-import { Hk06OnlineCracking } from './compositions/Hk06OnlineCracking';
+import { Pe03OfflineCracking } from './compositions/Pe03OfflineCracking';
+import { Pe04OnlineCracking } from './compositions/Pe04OnlineCracking';
+import { Pe05ManInTheMiddle } from './compositions/Pe05ManInTheMiddle';
+import { Hw01WebProtocols } from './compositions/Hw01WebProtocols';
+import { Hw02DomainsSubdirectories } from './compositions/Hw02DomainsSubdirectories';
+import { Hw03Xss } from './compositions/Hw03Xss';
+import { Hw04SqlInjection } from './compositions/Hw04SqlInjection';
+import { Hw05PathTraversalLfi } from './compositions/Hw05PathTraversalLfi';
+import { Sl01BashIntro } from './compositions/Sl01BashIntro';
+import { Sl02VariablesConditionals } from './compositions/Sl02VariablesConditionals';
+import { Sl03LoopsFunctions } from './compositions/Sl03LoopsFunctions';
+import { Sl04Enumeration } from './compositions/Sl04Enumeration';
+import { Sl05ReverseShells } from './compositions/Sl05ReverseShells';
+import { Ps01ObjectsPipeline } from './compositions/Ps01ObjectsPipeline';
+import { Ps02VariablesConditions } from './compositions/Ps02VariablesConditions';
+import { Ps03LoopsCmdlets } from './compositions/Ps03LoopsCmdlets';
+import { Ps04WindowsEnumeration } from './compositions/Ps04WindowsEnumeration';
+import { Ps05CredentialsObfuscation } from './compositions/Ps05CredentialsObfuscation';
+import { Py01PythonIntro } from './compositions/Py01PythonIntro';
+import { Py02TypesConditions } from './compositions/Py02TypesConditions';
+import { Py03LoopsLibraries } from './compositions/Py03LoopsLibraries';
+import { Py04SocketNetworking } from './compositions/Py04SocketNetworking';
+import { Py05HttpRequests } from './compositions/Py05HttpRequests';
 import { totalDurationFrames } from './audioTimings';
 
 const FPS = 30;
@@ -338,17 +359,185 @@ export const RemotionRoot: React.FC = () => {
         height={720}
       />
       <Composition
-        id="hk-05-offline-cracking"
-        component={Hk05OfflineCracking}
-        durationInFrames={totalDurationFrames('hk-05-offline-cracking', FPS)}
+        id="pe-03-offline-cracking"
+        component={Pe03OfflineCracking}
+        durationInFrames={totalDurationFrames('pe-03-offline-cracking', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hk-06-online-cracking"
-        component={Hk06OnlineCracking}
-        durationInFrames={totalDurationFrames('hk-06-online-cracking', FPS)}
+        id="pe-04-online-cracking"
+        component={Pe04OnlineCracking}
+        durationInFrames={totalDurationFrames('pe-04-online-cracking', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="pe-05-man-in-the-middle"
+        component={Pe05ManInTheMiddle}
+        durationInFrames={totalDurationFrames('pe-05-man-in-the-middle', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="hw-01-web-protocols"
+        component={Hw01WebProtocols}
+        durationInFrames={totalDurationFrames('hw-01-web-protocols', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="hw-02-domains-subdirectories"
+        component={Hw02DomainsSubdirectories}
+        durationInFrames={totalDurationFrames('hw-02-domains-subdirectories', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="hw-03-xss"
+        component={Hw03Xss}
+        durationInFrames={totalDurationFrames('hw-03-xss', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="hw-04-sql-injection"
+        component={Hw04SqlInjection}
+        durationInFrames={totalDurationFrames('hw-04-sql-injection', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="hw-05-path-traversal-lfi"
+        component={Hw05PathTraversalLfi}
+        durationInFrames={totalDurationFrames('hw-05-path-traversal-lfi', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="sl-01-bash-intro"
+        component={Sl01BashIntro}
+        durationInFrames={totalDurationFrames('sl-01-bash-intro', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="sl-02-variables-conditionals"
+        component={Sl02VariablesConditionals}
+        durationInFrames={totalDurationFrames('sl-02-variables-conditionals', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="sl-03-loops-functions"
+        component={Sl03LoopsFunctions}
+        durationInFrames={totalDurationFrames('sl-03-loops-functions', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="sl-04-enumeration"
+        component={Sl04Enumeration}
+        durationInFrames={totalDurationFrames('sl-04-enumeration', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="sl-05-reverse-shells"
+        component={Sl05ReverseShells}
+        durationInFrames={totalDurationFrames('sl-05-reverse-shells', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="ps-01-objects-pipeline"
+        component={Ps01ObjectsPipeline}
+        durationInFrames={totalDurationFrames('ps-01-objects-pipeline', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="ps-02-variables-conditionals"
+        component={Ps02VariablesConditions}
+        durationInFrames={totalDurationFrames('ps-02-variables-conditionals', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="ps-03-loops-cmdlets"
+        component={Ps03LoopsCmdlets}
+        durationInFrames={totalDurationFrames('ps-03-loops-cmdlets', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="ps-04-windows-enumeration"
+        component={Ps04WindowsEnumeration}
+        durationInFrames={totalDurationFrames('ps-04-windows-enumeration', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="ps-05-credentials-obfuscation"
+        component={Ps05CredentialsObfuscation}
+        durationInFrames={totalDurationFrames('ps-05-credentials-obfuscation', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="py-01-python-intro"
+        component={Py01PythonIntro}
+        durationInFrames={totalDurationFrames('py-01-python-intro', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="py-02-types-conditions"
+        component={Py02TypesConditions}
+        durationInFrames={totalDurationFrames('py-02-types-conditions', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="py-03-loops-libraries"
+        component={Py03LoopsLibraries}
+        durationInFrames={totalDurationFrames('py-03-loops-libraries', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="py-04-socket-networking"
+        component={Py04SocketNetworking}
+        durationInFrames={totalDurationFrames('py-04-socket-networking', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="py-05-http-requests"
+        component={Py05HttpRequests}
+        durationInFrames={totalDurationFrames('py-05-http-requests', FPS)}
         fps={FPS}
         width={1280}
         height={720}

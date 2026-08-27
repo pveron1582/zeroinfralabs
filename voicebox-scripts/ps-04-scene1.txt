@@ -1,0 +1,1 @@
+Cuando aterrizás en un Windows, PowerShell es tu navaja suiza para enumerar: procesos, servicios, usuarios, permisos. Todo lo que en Linux enumerás con comandos, acá se hace con cmdlets. Es el primer paso de la post explotación, porque antes de moverte tenés que saber dónde estás parado.

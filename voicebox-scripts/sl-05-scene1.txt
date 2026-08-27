@@ -1,0 +1,1 @@
+Dos jugadas finales con bash para cerrar el círculo. La primera: automatizar un ataque contra una wordlist, probando candidato por candidato sin cansarte. La segunda: levantar una reverse shell cuando ya conseguiste acceso, para manejar el objetivo desde tu máquina. Con esto pasás de escribir scripts que reconocen, a scripts que atacan y te dan control.

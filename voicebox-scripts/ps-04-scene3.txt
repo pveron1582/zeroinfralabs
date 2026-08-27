@@ -1,0 +1,1 @@
+La Execution Policy bloquea tus scripts; la salteás con powershell menos e pe bypass, menos File. Y cuando tenés ejecución remota pero no una shell, usás un download cradle: IEX, New Object Net WebClient, DownloadString con la URL de tu script. Descarga y ejecuta en memoria, sin tocar disco. Ese es el patrón de casi todo payload de PowerShell.

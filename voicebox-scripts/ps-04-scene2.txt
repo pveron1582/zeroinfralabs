@@ -1,0 +1,1 @@
+whoami barra priv te muestra tus privilegios, y SeDebugPrivilege es oro. Get Process lista los procesos, Get Service los servicios, y ojo que algunos corren como SYSTEM. Get ChildItem con Recurse y Force caza archivos en la carpeta Users. net user lista las cuentas, net localgroup Administrators muestra los admins, y Get ItemProperty lee el registro.

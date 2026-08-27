@@ -1,0 +1,1 @@
+Los scripts son archivos punto ese uno, y se corren con punto barra script punto ese uno. Pero Windows los bloquea por defecto con la Execution Policy. Para saltearla por ejecución usás powershell menos e pe bypass, menos File, y el nombre del script. Vas a ver ese flag constantemente en guías de pentest, porque es lo primero que usan los atacantes para correr sus herramientas.
