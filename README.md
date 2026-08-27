@@ -57,7 +57,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **1918 Tests** — Vitest + React Testing Library (147 archivos de prueba)
+- **1939 Tests** — Vitest + React Testing Library (147 archivos de prueba)
 
 ## 🏗️ Tech Stack
 
@@ -127,7 +127,7 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales
-- ✅ 1918 tests pasando (147 test files)
+- ✅ 1939 tests pasando (147 test files)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
 - ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)
