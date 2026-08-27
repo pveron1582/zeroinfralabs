@@ -99,8 +99,8 @@ export const HACKING_LESSONS: Lesson[] = [
         type: 'content',
         title: 'Windows: scattered but consistent',
         titleEs: 'Windows: disperso pero consistente',
-        body: 'Windows spreads it across drives: C:\Users holds profiles (Desktop, Documents, Downloads), the SAM hive in C:\Windows\System32\config stores local password hashes, the Event Logs record everything, C:\inetpub hosts IIS websites and Program Files holds the apps. Different names, same ideas: users, logs, configs, web roots.',
-        bodyEs: 'Windows lo reparte por discos: C:\Users guarda los perfiles (Desktop, Documents, Downloads), el hive SAM en C:\Windows\System32\config almacena los hashes de contraseñas locales, los Event Logs registran todo, C:\inetpub aloja los sitios IIS y Program Files las aplicaciones. Distintos nombres, mismas ideas: usuarios, logs, configs, raíces web.',
+        body: 'Windows spreads it across drives: C:\\Users holds profiles (Desktop, Documents, Downloads), the SAM hive in C:\\Windows\\System32\\config stores local password hashes, the Event Logs record everything, C:\\inetpub hosts IIS websites and Program Files holds the apps. Different names, same ideas: users, logs, configs, web roots.',
+        bodyEs: 'Windows lo reparte por discos: C:\\Users guarda los perfiles (Desktop, Documents, Downloads), el hive SAM en C:\\Windows\\System32\\config almacena los hashes de contraseñas locales, los Event Logs registran todo, C:\\inetpub aloja los sitios IIS y Program Files las aplicaciones. Distintos nombres, mismas ideas: usuarios, logs, configs, raíces web.',
       },
       {
         type: 'terminal-demo',

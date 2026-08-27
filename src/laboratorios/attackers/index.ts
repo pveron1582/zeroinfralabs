@@ -4,7 +4,7 @@
 
 export { createKaliMachine, createKaliFilesystem, resetKaliCounter } from './kali';
 export type { KaliMachineOptions } from './kali';
-export { ROCKYOU_CONTENT, COMMON_TXT_CONTENT, PASSWORDS_LIST_CONTENT } from './kali';
+export { ROCKYOU_CONTENT, COMMON_TXT_CONTENT, PASSWORDS_LIST_CONTENT } from './dictionaries';
 
 // Future attackers:
 // export { createParrotMachine } from './parrot';

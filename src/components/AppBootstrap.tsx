@@ -22,7 +22,7 @@ export function RootRedirect() {
     if (storedLanguage && storedLanguage !== 'en') {
       return storedLanguage;
     }
-    const browserLang = navigator.language || (navigator as any).userLanguage || 'en';
+    const browserLang = navigator.language || (navigator as Navigator & { userLanguage?: string }).userLanguage || 'en';
     if (browserLang.toLowerCase().startsWith('es')) {
       return 'es';
     }

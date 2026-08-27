@@ -3,7 +3,7 @@
 // Soporta autocompletado de comandos y archivos/directorios
 // Similar al comportamiento de bash/zsh en Linux
 
-import type { Machine } from '../types';
+import type { Machine, MsfState } from '../types';
 import type { MsfModule } from '../frameworks/metasploit/core/msfModules';
 import { AVAILABLE_COMMAND_NAMES } from '../commands';
 
@@ -100,7 +100,7 @@ export function autocompleteCommand(partial: string): string[] {
 /**
  * Autocompleta dentro de Metasploit
  */
-export function autocompleteMsf(word: string, input: string, isFirstWord: boolean, msfState?: any, modules?: MsfModule[]): string[] {
+export function autocompleteMsf(word: string, input: string, isFirstWord: boolean, msfState?: MsfState | null, modules?: MsfModule[]): string[] {
   const lowerWord = word.toLowerCase();
   
   if (isFirstWord) {
@@ -203,7 +203,7 @@ export function getAutocompleteSuggestions(
   cursorPos: number,
   machine: Machine,
   currentDir: string,
-  msfState?: any,
+  msfState?: MsfState | null,
   modules?: MsfModule[]
 ): { suggestions: string[]; completedText: string; replaceStart: number; replaceEnd: number } {
   // Extraer la parte del input hasta el cursor

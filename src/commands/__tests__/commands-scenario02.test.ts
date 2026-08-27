@@ -119,7 +119,7 @@ describe('Happy Path: Scenario 02 - Web OSINT & SSH Compromise', () => {
     expect(fc2?.verified).toBe(true);
     machines = evolveState(machines, result);
 
-    result = exec('ssh gonzalo@10.10.10.10', attacker, machines, 5);
+    exec('ssh gonzalo@10.10.10.10', attacker, machines, 5);
     result = exec('Quier0unaument0', attacker, machines, 5);
     // ssh ya no completa misiones - verificar metadata
     const nmid2 = 'newMachineId' in result ? result.newMachineId : undefined;

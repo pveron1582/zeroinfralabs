@@ -121,7 +121,7 @@ export const cmd_chmod = {
 
       const currentMode = file.mode ?? (fullPath.endsWith('.dir') ? 0o755 : 0o644);
 
-      let newMode: number | null = null;
+      let newMode: number | null;
 
       // Try octal mode first
       const octalMatch = modeArg.match(/^0?([0-7]{1,4})$/);

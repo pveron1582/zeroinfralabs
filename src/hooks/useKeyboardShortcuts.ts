@@ -1,9 +1,10 @@
 // ── hooks/useKeyboardShortcuts.ts ──────────────────────────────────
 import { useState } from 'react';
-import type { Machine } from '../types';
+import type { Machine, BlockingCommand } from '../types';
 import type { MsfState } from '../commands';
 import { MSF_MODULES } from '../frameworks/metasploit/core/msfModules';
 import { getAutocompleteSuggestions, findCommonPrefix } from '../utils/autocomplete';
+import type { HistoryEntry } from './processCommandResult';
 
 interface UseKeyboardShortcutsOptions {
   input: string;
@@ -17,13 +18,13 @@ interface UseKeyboardShortcutsOptions {
   setHistIdx: (value: number) => void;
   busy: boolean;
   setBusy: (value: boolean) => void;
-  blockingCommand: any;
-  setBlockingCommand: (value: any) => void;
+  blockingCommand: BlockingCommand | null;
+  setBlockingCommand: (value: BlockingCommand | null) => void;
   setListeningPort: (value: number | null) => void;
-  setHistory: (fn: ((prev: any[]) => any[]) | any[]) => void;
+  setHistory: (fn: ((prev: HistoryEntry[]) => HistoryEntry[]) | HistoryEntry[]) => void;
   prompt: string;
   runCommand: (cmd: string) => void;
-  makeWelcome: (machines: Machine[]) => any;
+  makeWelcome: (machines: Machine[]) => HistoryEntry;
   allMachines: Machine[];
   goHome: () => void;
   setMsfState: (state: MsfState | null) => void;

@@ -52,7 +52,7 @@ export const cmd_grep = {
     let re: RegExp;
     try {
       re = new RegExp(pattern, ignoreCase ? 'i' : '');
-    } catch (e) {
+    } catch {
       return { output: `grep: invalid pattern '${pattern}'`, isError: true };
     }
 

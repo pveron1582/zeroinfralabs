@@ -1,9 +1,9 @@
-import type { Machine } from '../types';
+import type { Machine, MsfState } from '../types';
 
 interface EnumerationPanelProps {
   machine: Machine;
   onClose?: () => void;
-  msfState?: any;
+  msfState?: MsfState | null;
   inline?: boolean;
 }
 

@@ -38,6 +38,7 @@ function TerminalInput({
       value={value}
       onChange={onChange}
       onKeyDown={onKeyDown}
+      aria-label="Terminal command input"
       className={`flex-1 bg-transparent border-none outline-none text-sm ${className}`}
       style={{ color, caretColor: color, minWidth: '50px' }}
       autoFocus
@@ -64,6 +65,8 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
   return (
     <div 
       className="flex flex-col h-full font-mono custom-term" 
+      role="application"
+      aria-label="Terminal"
       style={{ 
         backgroundColor: isWindowed ? 'transparent' : `rgba(3, 7, 18, ${opacity})`,
         '--term-font-size': fontSize ? `${fontSize}px` : 'inherit'
@@ -105,6 +108,8 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
       ) : (
         <div
           ref={scrollRef}
+          role="log"
+          aria-label="Terminal output"
           className="flex-1 overflow-y-auto p-5 space-y-3 cursor-text select-text"
           style={{ scrollbarWidth: 'thin', scrollbarColor: '#374151 transparent' }}
           onClick={() => inputRef.current?.focus()}

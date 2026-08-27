@@ -10,6 +10,7 @@ import type { MsfState, MsfSession } from './msfTypes';
 
 // NOTE: SessionManager type was referenced from './SessionManager' but that module
 // doesn't exist on disk. Defining a local stub as a stopgap — see MEJORAS.md Fase 5.7.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SessionManager {
   // Marker interface — methods to be defined when SessionManager module is created
 }

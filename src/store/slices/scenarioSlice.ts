@@ -4,6 +4,12 @@ import type { Machine, Scenario, Mission, FileEntry } from '../../types';
 import { SCENARIOS, TEST_SCENARIO } from '../../laboratorios/laboratorios';
 import { createEnumerationSnapshot, hasEnumerationChanged, type EnumerationSnapshot } from '../../utils/networkAlert';
 import { shellManager } from '../../frameworks/shells/ShellManager';
+import {
+  updateMachine, bumpDiscoveryLevel, addFoundCredential, verifyCredentials,
+  setPossibleUsers, addFailedUser, setSudoPrivileges,
+  addFileToMachine, setMachineFiles, setPrivescCompleted, resetPrivescCompleted,
+  setSuUser, addExploredDirectory, confirmRCE, reportVulnerability,
+} from './machineMutations';
 
 export interface ScenarioSlice {
   currentScenario: Scenario;
@@ -110,12 +116,9 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
     });
 
     const updatedMachines = mission?.targetMachineId
-      ? machines.map(m => {
-          if (m.id !== mission.targetMachineId) return m;
-          const prevLevel = m.discovery_level || 0;
-          const newLevel = Math.max(prevLevel, mission.discoveryLevel || 0);
-          return { ...m, discovery_level: newLevel };
-        })
+      ? updateMachine(machines, mission.targetMachineId, m =>
+          bumpDiscoveryLevel(m, mission.discoveryLevel || 0)
+        )
       : machines;
 
     set({
@@ -124,7 +127,6 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
       currentMissionId: id === currentMissionId ? currentMissionId + 1 : currentMissionId,
     });
 
-    // Detect network changes
     const state = get();
     const prevSnapshot = state._prevMachinesSnapshot || [];
     const newSnapshot = createEnumerationSnapshot(state.machines);
@@ -134,7 +136,6 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
       set({ _prevMachinesSnapshot: newSnapshot });
     }
 
-    // Check completion
     const allComplete = updatedMissions.every(m => m.status === 'completed');
     if (allComplete) {
       set({ showCompletionOverlay: true });
@@ -155,197 +156,63 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
     const maxHints = 2;
     if (mission.hintLevel >= maxHints) return;
 
-    const updatedMissions = missions.map(m => {
-      if (m.id !== missionId) return m;
-      return { ...m, hintLevel: m.hintLevel + 1 };
+    set({
+      missions: missions.map(m =>
+        m.id !== missionId ? m : { ...m, hintLevel: m.hintLevel + 1 }
+      ),
     });
-
-    set({ missions: updatedMissions });
   },
 
   findCredentials: (machineId, user, pass, file, service = 'unknown') => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m => {
-        if (m.id !== machineId) return m;
-        const existing = m.found_credentials || [];
-        const filtered = existing.filter(c => c.service !== service);
-        return {
-          ...m,
-          discovery_level: Math.max(m.discovery_level || 0, 3),
-          found_credentials: [...filtered, {
-            file: file || '/etc/passwd',
-            user,
-            pass,
-            verified: false,
-            service
-          }]
-        };
-      }),
-    });
+    set({ machines: addFoundCredential(get().machines, machineId, { file, user, pass, verified: false, service }) });
   },
 
   verifyCredentials: (machineId, service) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m => {
-        if (m.id !== machineId || !m.found_credentials) return m;
-        return {
-          ...m,
-          found_credentials: m.found_credentials.map(c =>
-            (!service || c.service === service) ? { ...c, verified: true } : c
-          )
-        };
-      })
-    });
+    set({ machines: verifyCredentials(get().machines, machineId, service) });
   },
 
   setPossibleUsers: (machineId, users) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m =>
-        m.id === machineId ? { ...m, possible_ssh_users: users } : m
-      )
-    });
+    set({ machines: setPossibleUsers(get().machines, machineId, users) });
   },
 
   addFailedUser: (machineId, user) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m => {
-        if (m.id !== machineId) return m;
-        const failed = m.failed_ssh_users || [];
-        return { ...m, failed_ssh_users: [...failed, user] };
-      })
-    });
+    set({ machines: addFailedUser(get().machines, machineId, user) });
   },
 
   setSudoPrivileges: (machineId, user, commands, canSudo) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m =>
-        m.id === machineId ? {
-          ...m,
-          sudo_privileges: { user, commands, canSudo }
-        } : m
-      )
-    });
+    set({ machines: setSudoPrivileges(get().machines, machineId, user, commands, canSudo) });
   },
 
-  addFileToMachine: (machineId: string, file: FileEntry) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m => {
-        if (m.id !== machineId) return m;
-        const filtered = (m.files || []).filter(f => f.path !== file.path);
-        return {
-          ...m,
-          files: [...filtered, file]
-        };
-      })
-    });
+  addFileToMachine: (machineId, file) => {
+    set({ machines: addFileToMachine(get().machines, machineId, file) });
   },
 
-  setMachineFiles: (machineId: string, files: FileEntry[]) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m =>
-        m.id === machineId ? { ...m, files } : m
-      )
-    });
+  setMachineFiles: (machineId, files) => {
+    set({ machines: setMachineFiles(get().machines, machineId, files) });
   },
 
-  setPrivescCompleted: (machineId: string) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m =>
-        m.id === machineId ? { ...m, privesc_completed: true, discovery_level: Math.max(m.discovery_level || 0, 4) } : m
-      )
-    });
+  setPrivescCompleted: (machineId) => {
+    set({ machines: setPrivescCompleted(get().machines, machineId) });
   },
 
-  // Cambia el usuario actual de una máquina (su). Recrea la máquina para que
-  // el Terminal re-renderice y el prompt refleje el nuevo usuario (su_user).
-  setSuUser: (machineId: string, suUser?: string) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m =>
-        m.id === machineId ? { ...m, su_user: suUser } : m
-      ),
-    });
+  resetPrivescCompleted: (machineId) => {
+    set({ machines: resetPrivescCompleted(get().machines, machineId) });
   },
 
-  // Quita la escalada de root de una máquina. Se usa al salir de una shell
-  // root (exit): vuelves a tu usuario anterior y no quedas "root fantasma".
-  resetPrivescCompleted: (machineId: string) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m =>
-        m.id === machineId ? { ...m, privesc_completed: false } : m
-      ),
-    });
+  setSuUser: (machineId, suUser) => {
+    set({ machines: setSuUser(get().machines, machineId, suUser) });
   },
 
-  addExploredDirectory: (machineId: string, path: string) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m => {
-        if (m.id !== machineId) return m;
-        const dirs = m.web_enumeration?.directories || [];
-        if (dirs.some(d => d.path === path)) return m;
-        return {
-          ...m,
-          web_enumeration: {
-            ...m.web_enumeration!,
-            directories: [...dirs, { path, status: 200, description: 'Navegación' }]
-          }
-        };
-      }),
-    });
+  addExploredDirectory: (machineId, path) => {
+    set({ machines: addExploredDirectory(get().machines, machineId, path) });
   },
 
-  confirmRCE: (machineId: string, user: string, method: string) => {
-    const { machines } = get();
-    const targetMachine = machines.find(m => m.id === machineId);
-    const alreadyHasRCE = targetMachine?.found_credentials?.some(c => c.service === 'reverse-shell');
-    if (alreadyHasRCE) return;
-
-    set({
-      machines: machines.map(m => {
-        if (m.id !== machineId) return m;
-        const creds = m.found_credentials || [];
-        if (creds.some(c => c.user === user && c.service === 'reverse-shell')) return m;
-        return {
-          ...m,
-          found_credentials: [
-            ...creds,
-            { user, pass: 'vía shell', file: method, verified: true, service: 'reverse-shell' }
-          ]
-        };
-      }),
-    });
+  confirmRCE: (machineId, user, method) => {
+    set({ machines: confirmRCE(get().machines, machineId, user, method) });
   },
 
   reportVulnerability: (machineId, vulnId, status) => {
-    const { machines } = get();
-    set({
-      machines: machines.map(m => {
-        if (m.id !== machineId) return m;
-        const vulnerabilities = m.vulnerabilities || [];
-        const existingIdx = vulnerabilities.findIndex(v => v.id === vulnId);
-
-        if (existingIdx >= 0) {
-          const updated = [...vulnerabilities];
-          updated[existingIdx] = { ...updated[existingIdx], status };
-          return { ...m, vulnerabilities: updated };
-        }
-
-        return {
-          ...m,
-          vulnerabilities: [...vulnerabilities, { id: vulnId, name: vulnId, status }]
-        };
-      }),
-    });
+    set({ machines: reportVulnerability(get().machines, machineId, vulnId, status) });
   },
 
   changeMachine: (machineId) => set({ activeMachineId: machineId }),

@@ -62,8 +62,6 @@ export interface ValidationCriteria {
   // Browser action criteria (FakeBrowser navigation)
   url?: string;                   // URL that must be visited
   action?: 'navigate' | 'login' | 'viewPage'; // Type of browser interaction
-  // For complex conditions
-  conditions?: Record<string, any>;
 }
 
 export interface Mission {

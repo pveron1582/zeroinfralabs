@@ -5,9 +5,10 @@
 
 import { useScenarioStore } from '../store/scenarioStore';
 import { validateMission } from '../utils/labValidator';
+import type { CommandResponse } from '../types';
 
 export function useMissionCompletion(onMissionComplete: (id: number) => void) {
-  const checkMissionCompletion = (result: any) => {
+  const checkMissionCompletion = (result: CommandResponse) => {
     const { missions } = useScenarioStore.getState();
     const activeMission = missions.find(m => m.status === 'active');
     if (activeMission?.validationCriteria && validateMission(result, activeMission)) {

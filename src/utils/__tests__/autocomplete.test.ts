@@ -215,7 +215,7 @@ describe('getAutocompleteSuggestions', () => {
 
   it('debe usar comandos MSF cuando msfState está activo (dentro de msfconsole)', () => {
     const machine = createMachine([]);
-    const msfState = { active: true };
+    const msfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false };
     const result = getAutocompleteSuggestions('us', 2, machine, '/', msfState);
     expect(result.suggestions).toContain('use');
     // No deben aparecer comandos del sistema que empiecen con 'us'
@@ -225,7 +225,7 @@ describe('getAutocompleteSuggestions', () => {
 
   it('debe autocompletar módulos tras "use" dentro de msfconsole', () => {
     const machine = createMachine([]);
-    const msfState = { active: true };
+    const msfState = { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false };
     const result = getAutocompleteSuggestions('use explo', 9, machine, '/', msfState, MSF_MODULES);
     expect(result.suggestions.length).toBeGreaterThan(0);
     expect(result.suggestions.every(s => s.startsWith('explo'))).toBe(true);

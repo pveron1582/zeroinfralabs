@@ -16,7 +16,7 @@ export interface HistoryEntry {
   streaming: boolean;
   prompt?: string;
   timestamp: number;
-  result?: any;
+  result?: CommandResponse;
   lineDelays?: number[];
 }
 

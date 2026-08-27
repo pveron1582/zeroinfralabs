@@ -19,13 +19,13 @@ describe('cierre de sesiones interactivas (SSH/FTP)', () => {
     const attacker = machines.find(m => m.id.includes('attacker'))!;
     const t = machines.find(m => !m.id.includes('attacker'))!;
 
-    let r = executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
-    r = executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
-    r = executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
+    executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
+    executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
+    executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
     expect(isShellSessionActive()).toBe(true);
     expect(getCurrentShellName()).toBe('ftp');
 
-    r = executeCommand('exit', attacker, machines, 6, undefined, '/root');
+    const r = executeCommand('exit', attacker, machines, 6, undefined, '/root');
     // El exit dentro de la sesión lo maneja FtpSession (221) y el
     // executor enruta por hybrid con metadatos ftpSession inactivos.
     expect(r.output).toContain('221 Goodbye');
@@ -43,11 +43,11 @@ describe('cierre de sesiones interactivas (SSH/FTP)', () => {
     const cred = t.scan_results?.ports?.find(p => p.service === 'ssh')?.credentials;
     if (!cred) return; // el lab no modela ssh: nada que probar acá
 
-    let r = executeCommand(`ssh ${cred.user}@${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
-    r = executeCommand(cred.pass ?? '', attacker, machines, 6, undefined, '/root');
+    executeCommand(`ssh ${cred.user}@${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
+    executeCommand(cred.pass ?? '', attacker, machines, 6, undefined, '/root');
     expect(getCurrentShellName()).toBe('ssh');
 
-    r = executeCommand('exit', attacker, machines, 6, undefined, '/root');
+    const r = executeCommand('exit', attacker, machines, 6, undefined, '/root');
     expect('type' in r ? r.type : undefined).toBe('ssh');
     expect(r.output).not.toContain('221');
     expect(!isShellSessionActive()).toBe(true);

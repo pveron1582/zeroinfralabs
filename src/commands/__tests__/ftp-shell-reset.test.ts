@@ -10,9 +10,9 @@ describe('repro: sesion FTP se limpia al resetear workspace', () => {
     const attacker = machines.find(m => m.id.includes('attacker'))!;
     const t = machines.find(m => !m.id.includes('attacker'))!;
 
-    let r = executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
-    r = executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
-    r = executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
+    executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
+    executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
+    let r = executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
     expect('ftpSession' in r && r.ftpSession?.loggedIn).toBe(true);
 
     // reset workspace sin quit previo
@@ -23,7 +23,7 @@ describe('repro: sesion FTP se limpia al resetear workspace', () => {
     expect(r.output).not.toContain('?Invalid command');
     expect('ftpSession' in r && r.ftpSession?.active).toBe(true);
 
-    r = executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
+    executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
     r = executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
     expect('ftpSession' in r && r.ftpSession?.loggedIn).toBe(true);
   });

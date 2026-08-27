@@ -102,9 +102,9 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
     const target = machines.find(m => !m.id.includes('attacker'))!;
     resetShellSessions();
 
-    let r = executeCommand(`ftp ${target.machine_info.ip}`, attacker, machines, 1, undefined, '/root');
-    r = executeCommand('anonymous', attacker, machines, 1, undefined, '/root');
-    r = executeCommand('pass@', attacker, machines, 1, undefined, '/root');
+    executeCommand(`ftp ${target.machine_info.ip}`, attacker, machines, 1, undefined, '/root');
+    executeCommand('anonymous', attacker, machines, 1, undefined, '/root');
+    let r = executeCommand('pass@', attacker, machines, 1, undefined, '/root');
     expect('ftpSession' in r && r.ftpSession?.loggedIn).toBe(true);
 
     r = executeCommand('get database_dump.sql', attacker, machines, 1, undefined, '/root');

@@ -28,12 +28,10 @@ afterEach(() => {
 
 // Helper: agrega una terminal y un manual, devolviendo sus ids
 function openDefaultWindows(result: { current: ReturnType<typeof useDesktopWindows> }) {
-  let termId = '';
-  let guideId = '';
   act(() => { result.current.addTerminal(); });
-  termId = result.current.windows[0].id;
+  const termId = result.current.windows[0].id;
   act(() => { result.current.addGuide(); });
-  guideId = result.current.windows[1].id;
+  const guideId = result.current.windows[1].id;
   return { termId, guideId };
 }
 

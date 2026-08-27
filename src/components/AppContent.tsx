@@ -3,7 +3,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../store/scenarioStore';
 import { Terminal } from './Terminal';
 import { DesktopTerminal } from './DesktopTerminal';
@@ -19,6 +18,7 @@ import { useHistorySync, useAnalyticsEffects } from './appContent/useAppContentE
 import { WorkspaceTopBar } from './appContent/WorkspaceTopBar';
 import { WorkspaceOverlays } from './appContent/WorkspaceOverlays';
 import { LandingView } from './appContent/LandingView';
+import { useAppContentState, useAppContentActions } from './appContent/useAppContentStore';
 import { useMissionCompletion } from '../hooks/useMissionCompletion';
 
 export function AppContent() {
@@ -51,29 +51,7 @@ export function AppContent() {
     uiMode,
     currentMissionId,
     foxyTourOpen,
-  } = useScenarioStore(useShallow(s => ({
-    view: s.view,
-    currentScenario: s.currentScenario,
-    machines: s.machines,
-    missions: s.missions,
-    activeMachineId: s.activeMachineId,
-    activeApp: s.activeApp,
-    browserKey: s.browserKey,
-    showNetworkMap: s.showNetworkMap,
-    notification: s.notification,
-    termColor: s.termColor,
-    showMachineLoader: s.showMachineLoader,
-    loadingMachine: s.loadingMachine,
-    msfState: s.msfState,
-    ftpSession: s.ftpSession,
-    showSurvey: s.showSurvey,
-    pendingSurveyScenario: s.pendingSurveyScenario,
-    showCompletionOverlay: s.showCompletionOverlay,
-    language: s.language,
-    uiMode: s.uiMode,
-    currentMissionId: s.currentMissionId,
-    foxyTourOpen: s.foxyTourOpen,
-  })));
+  } = useAppContentState();
 
   const {
     setActiveApp,
@@ -91,23 +69,7 @@ export function AppContent() {
     setShowCompletionOverlay,
     openFoxyTour,
     closeFoxyTour,
-  } = useScenarioStore(useShallow(s => ({
-    setActiveApp: s.setActiveApp,
-    refreshBrowser: s.refreshBrowser,
-    toggleNetworkMap: s.toggleNetworkMap,
-    completeMission: s.completeMission,
-    findCredentials: s.findCredentials,
-    verifyCredentials: s.verifyCredentials,
-    changeMachine: s.changeMachine,
-    setView: s.setView,
-    setPossibleUsers: s.setPossibleUsers,
-    addFailedUser: s.addFailedUser,
-    setSudoPrivileges: s.setSudoPrivileges,
-    reportVulnerability: s.reportVulnerability,
-    setShowCompletionOverlay: s.setShowCompletionOverlay,
-    openFoxyTour: s.openFoxyTour,
-    closeFoxyTour: s.closeFoxyTour,
-  })));
+  } = useAppContentActions();
 
   const activeMachine = machines.find(m => m.id === activeMachineId) || machines[0];
 
@@ -115,10 +77,6 @@ export function AppContent() {
   useAnalyticsEffects(view, currentScenario, missions, openFoxyTour, foxyTourOpen);
 
   const { checkMissionCompletion } = useMissionCompletion(completeMission);
-
-  const wpMachine = machines.find(m => m.web_enumeration?.cms?.toLowerCase().includes('wordpress'));
-  const wpDiscoveryLevel = wpMachine?.discovery_level ?? 0;
-  const mission3Already = missions.some(m => m.id === 3 && m.status === 'completed');
 
   const handleGoHome = () => {
     const completedCount = missions.filter(m => m.status === 'completed').length;
@@ -209,8 +167,6 @@ export function AppContent() {
                   onCredentialsFound={findCredentials}
                   onVerifyCredentials={verifyCredentials}
                   scenarioHasWeb={true}
-                  wpDiscoveryLevel={wpDiscoveryLevel}
-                  mission3Already={mission3Already}
                   onSetPossibleUsers={setPossibleUsers}
                   onReportVulnerability={reportVulnerability}
                   checkMissionCompletion={checkMissionCompletion}

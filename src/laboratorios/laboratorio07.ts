@@ -178,12 +178,12 @@ export const scenario_07: Scenario = buildScenario({
 <?php
 // CasinoVeo 2.0 — Generador de imágenes con IA (login vulnerable)
 // El formulario de login concatena el input directo en la query.
-\$username = isset(\$_POST['username']) ? \$_POST['username'] : '';
-\$password = isset(\$_POST['password']) ? \$_POST['password'] : '';
+$username = isset($_POST['username']) ? $_POST['username'] : '';
+$password = isset($_POST['password']) ? $_POST['password'] : '';
 
-if (\$username && \$password) {
+if ($username && $password) {
   // VULNERABLE: interpolación directa — sin prepared statements.
-  \$query = "SELECT * FROM users WHERE username = '\$username' AND password = '\$password'";
+  $query = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
   echo "Consultando la base de datos (directamente, sin sanitizar)...";
 }
 ?>
@@ -191,10 +191,10 @@ if (\$username && \$password) {
       createFile('/var/www/html/config.php', `
 <?php
 // Database configuration — DO NOT EXPOSE
-\$db_host = 'localhost';
-\$db_user = 'root';
-\$db_pass = '${scenario07Data.credentials.database.pass}';
-\$db_name = 'casinoveo';
+$db_host = 'localhost';
+$db_user = 'root';
+$db_pass = '${scenario07Data.credentials.database.pass}';
+$db_name = 'casinoveo';
 ?>
       `.trim(), 'text', 'root', 'www-data', 0o640),
       createFile('/home/www-data/flag.txt', scenario07Data.flags.user, 'text', 'www-data', 'www-data', 0o400),

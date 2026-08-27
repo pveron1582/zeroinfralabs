@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FoxyFox } from './FoxyFox';
 import { getTourSteps } from './tourSteps';
 import type { Language } from '../../i18n/translations';
-
+import { computeBubblePosition } from './bubblePosition';
 interface FoxyTourProps {
   open: boolean;
   isEs: boolean;
@@ -15,8 +15,6 @@ interface TargetRect {
   width: number;
   height: number;
 }
-
-const BUBBLE_W = 400;
 
 export function FoxyTour({ open, isEs, onClose }: FoxyTourProps) {
   const [stepIndex, setStepIndex] = useState(0);
@@ -34,7 +32,9 @@ export function FoxyTour({ open, isEs, onClose }: FoxyTourProps) {
   }, [open]);
 
   // getTourSteps() depende del DOM: al abrirse el tour el escritorio ya
-  // está montado y committeado, por eso se recalcula con `open`.
+  // está montado y committeado, por eso se recalcula con `open` (intencional,
+  // getTourSteps no lo recibe como argumento).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const steps = useMemo(() => getTourSteps(), [open]);
   const step = steps[stepIndex];
   const isLast = stepIndex === steps.length - 1;
@@ -95,61 +95,11 @@ export function FoxyTour({ open, isEs, onClose }: FoxyTourProps) {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [open, step.waitFor, step.waitForHidden, stepIndex]);
+  }, [open, step.waitFor, step.waitForHidden, stepIndex, steps.length]);
 
   // Posición de la burbuja de diálogo
   const bubble = useMemo(() => {
-    const width = Math.min(BUBBLE_W, window.innerWidth - 24);
-    const h = 200;
-    const margin = 16;
-    if (!rect) {
-      // Sin objetivo: centrada en el escritorio (vertical y horizontalmente).
-      // Con align: 'right' se desplaza a la derecha (p. ej. el panel de
-      // enumeración que todavía no existe al inicio del lab).
-      const top = (window.innerHeight - h) / 2;
-      const left = step.align === 'right'
-        ? window.innerWidth - width - 48
-        : (window.innerWidth - width) / 2;
-      return {
-        left,
-        top,
-        width,
-        placement: 'bottom' as const,
-        arrowLeft: '50%',
-      };
-    }
-    const spaceBelow = window.innerHeight - rect.top - rect.height;
-    const spaceAbove = rect.top;
-    const spaceRight = window.innerWidth - rect.left - rect.width;
-    const spaceLeft = rect.left;
-
-    let placement: 'below' | 'above' | 'right' | 'left' = 'below';
-    if (spaceBelow >= h + margin) placement = 'below';
-    else if (spaceAbove >= h + margin) placement = 'above';
-    else if (spaceRight >= width + margin) placement = 'right';
-    else if (spaceLeft >= width + margin) placement = 'left';
-    else placement = spaceBelow >= spaceAbove ? 'below' : 'above';
-
-    let left = 0;
-    let top = 0;
-    if (placement === 'below') {
-      top = rect.top + rect.height + 24;
-      left = rect.left + rect.width / 2 - width / 2;
-    } else if (placement === 'above') {
-      top = rect.top - h - 24;
-      left = rect.left + rect.width / 2 - width / 2;
-    } else if (placement === 'right') {
-      left = rect.left + rect.width + 24;
-      top = rect.top + rect.height / 2 - h / 2;
-    } else {
-      left = rect.left - width - 24;
-      top = rect.top + rect.height / 2 - h / 2;
-    }
-
-    left = Math.max(12, Math.min(left, window.innerWidth - width - 12));
-    top = Math.max(12, Math.min(top, window.innerHeight - h - 12));
-    const arrowLeft = `${Math.min(90, Math.max(10, rect.left + rect.width / 2 - left))}px`;
-    return { left, top, width, placement, arrowLeft };
+    return computeBubblePosition(rect, step.align);
   }, [rect, step.align]);
 
   const t = (es: string, en: string) => (isEs ? es : en);

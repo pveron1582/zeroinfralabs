@@ -43,8 +43,8 @@ export const POWERSHELL_LESSONS: Lesson[] = [
         type: 'content',
         title: 'First steps and scripts',
         titleEs: 'Primeros pasos y scripts',
-        body: '`Get-Command` lists the cmdlets, `Get-Help Get-Process` explains one. Scripts are `.ps1` files run with `.\script.ps1`. Windows blocks scripts by default (Execution Policy); you bypass it per-run with `powershell -ep bypass -File script.ps1`. You will see that flag constantly in pentest guides — it is the first thing attackers use.',
-        bodyEs: '`Get-Command` lista los cmdlets, `Get-Help Get-Process` explica uno. Los scripts son archivos `.ps1` que se corren con `.\script.ps1`. Windows bloquea los scripts por defecto (Execution Policy); lo salteás por ejecución con `powershell -ep bypass -File script.ps1`. Vas a ver ese flag constantemente en guías de pentest — es lo primero que usan los atacantes.',
+        body: '`Get-Command` lists the cmdlets, `Get-Help Get-Process` explains one. Scripts are `.ps1` files run with `.\\script.ps1`. Windows blocks scripts by default (Execution Policy); you bypass it per-run with `powershell -ep bypass -File script.ps1`. You will see that flag constantly in pentest guides — it is the first thing attackers use.',
+        bodyEs: '`Get-Command` lista los cmdlets, `Get-Help Get-Process` explica uno. Los scripts son archivos `.ps1` que se corren con `.\\script.ps1`. Windows bloquea los scripts por defecto (Execution Policy); lo salteás por ejecución con `powershell -ep bypass -File script.ps1`. Vas a ver ese flag constantemente en guías de pentest — es lo primero que usan los atacantes.',
       },
       {
         type: 'terminal-demo',
