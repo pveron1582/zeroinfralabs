@@ -25,6 +25,8 @@ export interface SessionRunnerDeps {
   setEnv: (e: Record<string, string> | undefined) => void;
   language: 'es' | 'en';
   setMsfState: (s: MsfState | null) => void;
+  // Id de terminal que aísla las sesiones de shell (P2-13/C1).
+  terminalId?: string;
 }
 
 export interface SessionRunResult {
@@ -54,12 +56,13 @@ export function useFtpSession() {
 
   /** Ejecuta un comando dentro de la sesión FTP activa. */
   const runFtpCommand = (cmd: string, deps: SessionRunnerDeps): SessionRunResult => {
-    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState } = deps;
-    const result = executor.executeCommand(
-      cmd, machine as any, allMachines as any, currentMissionId,
-      setMsfState, currentDir, setCurrentDir, undefined, language,
-      umask, setUmask, env, setEnv,
-    );
+    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState, terminalId } = deps;
+    const result = executor.executeCommand({
+      line: cmd,
+      machine, allMachines, currentMissionId, terminalId,
+      onMsfStateChange: setMsfState, currentDir, setCurrentDir,
+      language, umask, setUmask, env, setEnv,
+    });
 
     let updatedSession: FtpSessionData | null = ftpSession;
     if (hasFtpSession(result)) {
@@ -82,12 +85,13 @@ export function useFtpSession() {
    * Inicia una sesión FTP a partir de la respuesta del comando `ftp <ip>`.
    */
   const startFtpSession = (ftpResult: FtpSessionData, deps: SessionRunnerDeps): void => {
-    const { machine, allMachines, currentMissionId, currentDir, setCurrentDir, language } = deps;
+    const { machine, allMachines, currentMissionId, currentDir, setCurrentDir, language, terminalId } = deps;
     const targetIp = ftpResult.targetIp;
-    if (targetIp && !isShellSessionActive()) {
+    if (targetIp && !isShellSessionActive(terminalId)) {
       startShellSession('ftp', [targetIp], {
         machine, allMachines, currentMissionId, currentDir, setCurrentDir, language,
-      });
+        terminalId,
+      }, terminalId);
     }
     setFtpSession({
       active: true,

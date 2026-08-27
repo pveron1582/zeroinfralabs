@@ -1,8 +1,7 @@
 // ── store/types.ts ─────────────────────────────────────────────────
 // Type definitions for the scenario store
 
-import type { Machine, Scenario, Mission, FileEntry, BlockingCommand, FtpSessionData, SshSessionData } from '../types';
-import type { MsfState } from '../commands/tools/msfconsole';
+import type { Machine, Scenario, Mission, FileEntry, BlockingCommand, FtpSessionData, SshSessionData, MsfState } from '../types';
 import type { EnumerationSnapshot } from '../utils/networkAlert';
 import type { IdentitySlice } from './slices/identitySlice';
 import type { AcademySlice } from './slices/academySlice';

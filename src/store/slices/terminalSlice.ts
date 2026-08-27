@@ -1,7 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { ScenarioState, FtpSessionState, SshSessionState } from '../types';
-import type { BlockingCommand } from '../../types';
-import type { MsfState } from '../../commands/tools/msfconsole';
+import type { BlockingCommand, MsfState } from '../../types';
 
 export interface TerminalSlice {
   listeningPort: number | null;

@@ -3,6 +3,7 @@
 // canales de metadata), CommandContext y datos de sesiones auxiliares
 
 import type { FileEntry, Machine } from './machine';
+import type { MsfState } from './msf';
 
 export interface BlockingCommand {
   message: string;
@@ -99,6 +100,14 @@ export interface PossibleUsersData {
 
 // ── HTTP request/response (Burp Suite) ────────────────────────────
 // Modelo sintético de transacciones HTTP para el proxy/Repeater.
+export interface BrowserActionData {
+  action: 'navigate' | 'login' | 'viewPage';
+  url: string;
+  // Máquina cuyo sitio se está visitando. El validador la cruza con
+  // mission.targetMachineId para que la acción cuente solo en el objetivo.
+  machineId?: string;
+}
+
 export interface HttpRequestData {
   method: string;
   url: string;
@@ -157,7 +166,10 @@ interface CmdResponseBase {
   // Estado actualizado de Metasploit (msfconsole y sus sub-comandos).
   // Reemplaza al antiguo prefijo `MSF_STATE:` en el output: los comandos MSF
   // lo emiten explícitamente y el dispatcher lo aplica al estado global.
-  msfStateUpdate?: import('../frameworks/metasploit/core/msfTypes').MsfState | null;
+  msfStateUpdate?: MsfState | null;
+  // Acción del navegador simulado (FakeBrowser). El componente emite la
+  // acción y LabValidator la evalúa contra el criterio browserAction.
+  browserAction?: BrowserActionData;
   // Transacción HTTP sintética emitida por Burp Suite (Repeater/Proxy).
   // El store la usa para alimentar el historial del proxy y la pestaña Target.
   httpRequest?: HttpRequestData;
@@ -165,6 +177,7 @@ interface CmdResponseBase {
 }
 
 export type CommandResponse = CmdResponseBase & (
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | { /* simple — no extra metadata */ }
   | { type: 'creds'; foundCredentials: FoundCredentialsData; failedUser?: FailedUserData }
   | { type: 'scan'; scanResults: ScanResultsData; discoveredPorts?: string; createdFiles?: FileEntry[]; discoveredHosts?: Array<{ip: string; mac: string; hostname: string}> }
@@ -188,6 +201,9 @@ export interface CommandContext {
   allMachines: Machine[];
   currentMissionId: number;
   currentDir: string;
+  // Id único del terminal que ejecuta (P2-13/C1): aísla las sesiones de shell
+  // interactivas por terminal (cada terminal tiene su propio stack de shells).
+  terminalId?: string;
   setCurrentDir?: (dir: string) => void;
   listeningPort?: number | null;
   isSshSession?: boolean;
@@ -220,4 +236,25 @@ export interface CommandContext {
   // `sudo <editor>` marca el contexto como elevado: los editores (nano) usan
   // la identidad root para abrir/guardar archivos restringidos.
   elevatedEdit?: boolean;
+}
+
+// ── CommandRequest ────────────────────────────────────────────────
+// Solicitud de ejecución como objeto de opciones. Alternativa a la firma
+// posicional de 13 argumentos de executeCommand (ver mejoras_glm.md P1-9):
+// evita repetir la lista de parámetros en hooks y call sites.
+export interface CommandRequest {
+  line: string;
+  machine: Machine;
+  allMachines: Machine[];
+  currentMissionId: number;
+  terminalId?: string;
+  onMsfStateChange?: (state: MsfState | null) => void;
+  currentDir?: string;
+  setCurrentDir?: (dir: string) => void;
+  ftpSession?: CommandContext['ftpSession'];
+  language?: 'en' | 'es';
+  umask?: number;
+  setUmask?: (mask: number) => void;
+  env?: Record<string, string>;
+  setEnv?: (env: Record<string, string>) => void;
 }

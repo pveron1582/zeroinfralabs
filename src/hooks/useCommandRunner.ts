@@ -32,6 +32,8 @@ export interface CommandRunnerProps {
   machine: Machine;
   allMachines: Machine[];
   currentMissionId: number;
+  // Id único de la terminal (P2-13/C1): aísla las sesiones de shell por ventana.
+  terminalId?: string;
   onMissionComplete: (id: number) => void;
   onChangeMachine: (id: string) => void;
   onCredentialsFound: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
@@ -47,7 +49,7 @@ export interface CommandRunnerProps {
 type NanoFileState = { path: string; content: string; readOnly?: boolean; elevated?: boolean; existingSnapshot?: { owner: string; group: string; mode: number } };
 
 export function useCommandRunner({
-  scenarioId, machine, allMachines, currentMissionId,
+  scenarioId, machine, allMachines, currentMissionId, terminalId,
   onMissionComplete, onChangeMachine, onCredentialsFound,
   onVerifyCredentials, onFailedUser, onSudoPrivileges,
   onExitTerminal, termColor = '#10b981'
@@ -183,6 +185,7 @@ export function useCommandRunner({
   const sessionDeps: SessionRunnerDeps = {
     executor, machine, allMachines, currentMissionId, currentDir,
     setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState,
+    terminalId,
   };
 
   const { checkMissionCompletion } = useMissionCompletion(onMissionComplete);
@@ -286,11 +289,12 @@ export function useCommandRunner({
     }
 
     // ── Comando normal ─────────────────────────────────────────────
-    const result = executor.executeCommand(
-      trimmed, machine as any, allMachines as any, currentMissionId,
-      setMsfState, currentDir, setCurrentDir, undefined, language,
-      umask, setUmask, env, setEnv,
-    );
+    const result = executor.executeCommand({
+      line: trimmed,
+      machine, allMachines, currentMissionId, terminalId,
+      onMsfStateChange: setMsfState, currentDir, setCurrentDir,
+      language, umask, setUmask, env, setEnv,
+    });
 
     // Inicio de sesión FTP nuevo
     if ('ftpSession' in result && result.ftpSession?.connected && !ftpSession?.active) {

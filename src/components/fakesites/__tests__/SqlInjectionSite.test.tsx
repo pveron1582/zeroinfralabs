@@ -48,7 +48,6 @@ describe('SqlInjectionSite - Main Site', () => {
         onLogout={vi.fn()}
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     
@@ -69,7 +68,6 @@ describe('SqlInjectionSite - Main Site', () => {
         onLogout={vi.fn()}
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     
@@ -90,7 +88,6 @@ describe('SqlInjectionSite - Main Site', () => {
         onLogout={vi.fn()}
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     
@@ -112,7 +109,6 @@ describe('SqlInjectionSite - Main Site', () => {
         onLogout={vi.fn()}
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     
@@ -132,7 +128,6 @@ describe('SqlInjectionSite - Main Site', () => {
         onLogout={vi.fn()}
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     

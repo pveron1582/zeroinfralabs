@@ -1,8 +1,8 @@
-// ── frameworks/shells/ssh/sshCommand.ts ────────────────────────────
+// ── commands/tools/ssh.ts ──────────────────────────────────────────
 // Wrapper para iniciar sesión SSH interactiva via ShellManager
 
-import type { CommandContext, CommandResponse } from '../../../types';
-import { startShellSession } from '../../../commands';
+import type { CommandContext, CommandResponse } from '../../types';
+import { startShellSession } from '../shellIntegration';
 
 export const cmd_ssh = {
   name: 'ssh',

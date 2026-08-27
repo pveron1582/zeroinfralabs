@@ -1,7 +1,7 @@
-// ── frameworks/shells/nc/ncCommand.ts ──────────────────────────────
+// ── commands/tools/nc.ts ───────────────────────────────────────────
 // Netcat (nc) - Network utility for reading and writing data across networks
 
-import type { CommandContext, CommandResponse } from '../../../types';
+import type { CommandContext, CommandResponse } from '../../types';
 
 // Función helper para parsear argumentos de forma flexible
 function parseListenerMode(args: string[]): { isListener: boolean; port?: string; error?: string } {

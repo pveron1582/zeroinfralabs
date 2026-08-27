@@ -30,12 +30,13 @@ export function useSshSession() {
 
   /** Ejecuta el password dentro de una sesión SSH en estado `password`. */
   const runSshPassword = (password: string, deps: SessionRunnerDeps): SshRunResult => {
-    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState } = deps;
-    const result = executor.executeCommand(
-      password, machine as any, allMachines as any, currentMissionId,
-      setMsfState, currentDir, setCurrentDir, undefined, language,
-      umask, setUmask, env, setEnv,
-    );
+    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState, terminalId } = deps;
+    const result = executor.executeCommand({
+      line: password,
+      machine, allMachines, currentMissionId, terminalId,
+      onMsfStateChange: setMsfState, currentDir, setCurrentDir,
+      language, umask, setUmask, env, setEnv,
+    });
 
     let updatedSession: SshSessionData | null = sshSession;
     if (hasSshSession(result)) {

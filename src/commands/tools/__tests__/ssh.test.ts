@@ -1,9 +1,9 @@
-// ── frameworks/shells/ssh/__tests__/sshCommand.test.ts ──────────────
+// ── commands/tools/__tests__/ssh.test.ts ──────────────
 import { describe, it, expect, beforeEach } from 'vitest';
-import { cmd_ssh } from '../sshCommand';
-import { sshSession } from '../SshSession';
-import { shellManager } from '../../../shells';
-import type { Machine } from '../../../../types';
+import { cmd_ssh } from '../ssh';
+import { sshSession } from '../../../frameworks/shells';
+import { shellManager } from '../../../frameworks/shells';
+import type { Machine } from '../../../types';
 
 describe('cmd_ssh (wrapper)', () => {
   const createMockMachine = (discoveryLevel: number = 3, withSSH: boolean = true): Machine => ({

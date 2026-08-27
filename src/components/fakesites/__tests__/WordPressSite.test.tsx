@@ -24,7 +24,6 @@ const defaultProps = {
   onLogout: vi.fn(),
   onCredentialsFound: vi.fn(),
   onVerifyCredentials: vi.fn(),
-  onMissionComplete: vi.fn(),
 };
 
 describe('WordPressSite', () => {

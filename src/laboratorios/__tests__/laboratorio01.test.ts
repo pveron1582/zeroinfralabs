@@ -30,9 +30,9 @@ describe('Laboratorio 01 - WordPress Vulnerable Lab', () => {
   });
 
   it('debe tener targetMachine con info correcta', () => {
-    expect(scenario01Data.targetMachine.hostname).toBe('vulnerable-wp-lab');
-    expect(scenario01Data.targetMachine.os).toBe('Ubuntu 20.04 LTS');
-    expect(scenario01Data.targetMachine.type).toBe('server');
+    expect(scenario01Data.targetMachine.machine_info.hostname).toBe('vulnerable-wp-lab');
+    expect(scenario01Data.targetMachine.machine_info.os).toBe('Ubuntu 20.04 LTS');
+    expect(scenario01Data.targetMachine.machine_info.type).toBe('server');
   });
 
   it('debe tener puertos SSH, HTTP y MySQL', () => {
@@ -47,7 +47,7 @@ describe('Laboratorio 01 - WordPress Vulnerable Lab', () => {
   });
 
   it('debe tener directorios web configurados', () => {
-    const dirs = scenario01Data.targetMachine.directories;
+    const dirs = scenario01Data.targetMachine.web_enumeration.directories;
     expect(dirs.some(d => d.path === '/wp-admin')).toBe(true);
     expect(dirs.some(d => d.path === '/uploads')).toBe(true);
     expect(dirs.some(d => d.path === '/backup')).toBe(true);
@@ -74,8 +74,14 @@ describe('Laboratorio 01 - WordPress Vulnerable Lab', () => {
   });
 
   it('debe tener WordPress 6.0 como CMS', () => {
-    expect(scenario01Data.targetMachine.cms).toBe('WordPress 6.0');
-    expect(scenario01Data.targetMachine.webServer).toBe('Apache/2.4.41');
+    expect(scenario01Data.targetMachine.web_enumeration.cms).toBe('WordPress 6.0');
+    expect(scenario01Data.targetMachine.web_enumeration.web_server).toBe('Apache/2.4.41');
+  });
+
+  it('debe inyectar las credenciales SSH en el puerto 22 vía portCredentials (P1-10)', () => {
+    const target = scenario_01.machines.find(m => m.id === 'lab-scenario-01-wp');
+    const sshPort = target?.scan_results.ports.find(p => p.service === 'ssh');
+    expect(sshPort?.credentials).toEqual({ user: 'root', pass: 'R00t@SSH2024!' });
   });
 
   it('scenario_01 debe estar construido correctamente', () => {

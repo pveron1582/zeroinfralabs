@@ -9,7 +9,6 @@ describe('VulnerableLogin - SQL Injection Lab', () => {
       <VulnerableLogin
         ip="192.168.40.11"
         onLoginSuccess={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     
@@ -24,7 +23,6 @@ describe('VulnerableLogin - SQL Injection Lab', () => {
       <VulnerableLogin
         ip="192.168.40.11"
         onLoginSuccess={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     
@@ -41,13 +39,11 @@ describe('VulnerableLogin - SQL Injection Lab', () => {
 
   it('debe explotar SQL injection con payload OR 1=1', () => {
     const mockLoginSuccess = vi.fn();
-    const mockMissionComplete = vi.fn();
     
     render(
       <VulnerableLogin
         ip="192.168.40.11"
         onLoginSuccess={mockLoginSuccess}
-        onMissionComplete={mockMissionComplete}
       />
     );
     
@@ -84,7 +80,6 @@ describe('VulnerableLogin - SQL Injection Lab', () => {
       <VulnerableLogin
         ip="192.168.40.11"
         onLoginSuccess={vi.fn()}
-        onMissionComplete={vi.fn()}
       />
     );
     
@@ -92,13 +87,11 @@ describe('VulnerableLogin - SQL Injection Lab', () => {
   });
 
   it('debe aceptar payload OR 1=1--', () => {
-    const mockMissionComplete = vi.fn();
     
     render(
       <VulnerableLogin
         ip="192.168.40.11"
         onLoginSuccess={vi.fn()}
-        onMissionComplete={mockMissionComplete}
       />
     );
     

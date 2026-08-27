@@ -3,11 +3,13 @@ import { useState } from 'react';
 
 interface VulnerableLoginProps {
   ip: string;
-  onLoginSuccess: (missionId: number) => void;
-  onMissionComplete: (id: number) => void;
+  onLoginSuccess: () => void;
+  // Disparada cuando el login SQLi confirma la vulnerabilidad: FakeBrowser la
+  // conecta con el validador universal (criterio vulnerabilityFound del lab06).
+  onVulnerabilityDetected?: () => void;
 }
 
-export function VulnerableLogin({ onLoginSuccess, onMissionComplete }: VulnerableLoginProps) {
+export function VulnerableLogin({ onLoginSuccess, onVulnerabilityDetected }: VulnerableLoginProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -22,8 +24,10 @@ export function VulnerableLogin({ onLoginSuccess, onMissionComplete }: Vulnerabl
       setTimeout(() => {
         setMessage('Login successful! Welcome admin.');
         setIsLoggedIn(true);
-        onLoginSuccess(3); // Mission 3: SQL Injection Found
-        onMissionComplete(3);
+        // La vulnerabilidad viaja como metadata (criterio vulnerabilityFound del
+        // lab06) y el validador universal completa la misión — sin IDs mágicos.
+        onLoginSuccess();
+        onVulnerabilityDetected?.();
       }, 1000);
     } else if (username === 'admin' && password === 'admin123') {
       setTimeout(() => {

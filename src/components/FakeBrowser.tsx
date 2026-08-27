@@ -14,6 +14,7 @@ import { CasinoVeoSite } from './fakesites/casinoveo/CasinoVeoSite';
 import { ZeroInfraLabs } from './fakesites/ZeroInfraLabs';
 import { GoogleHome, GoogleSearch, HttpSecurityError, PageNotFound, DinoGame } from './fakebrowser/pages';
 import { useLfiRceEffect, useLfiUploadHandler } from './fakebrowser/lfiRce';
+import { emitBrowserAction } from './fakebrowser/browserMission';
 
 // ── Componente Principal FakeBrowser ────────────────────────────────
 
@@ -26,8 +27,6 @@ interface FakeBrowserProps {
   onCredentialsFound: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
   onVerifyCredentials: (machineId: string, service?: string) => void;
   scenarioHasWeb: boolean;
-  wpDiscoveryLevel: number;
-  mission3Already: boolean;
   onSetPossibleUsers: (machineId: string, users: string[]) => void;
   onReportVulnerability?: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
   // CasinoVeo (Lab 07): cada submit del login emite un CommandResponse tipo
@@ -38,7 +37,7 @@ interface FakeBrowserProps {
 export function FakeBrowser({
   allMachines, onClose, onMinimize, onMaximizeToggle, onMissionComplete,
   onCredentialsFound, onVerifyCredentials,
-  scenarioHasWeb, wpDiscoveryLevel, mission3Already,
+  scenarioHasWeb,
   onSetPossibleUsers, onReportVulnerability, checkMissionCompletion
 }: FakeBrowserProps) {
 
@@ -103,21 +102,25 @@ export function FakeBrowser({
       });
     }
 
-    if (scenarioHasWeb && !mission3Already && wpMachine && wpDiscoveryLevel >= 2 && clean.includes(wpMachine.machine_info.ip)) {
-      onMissionComplete(3);
+    // Acción de navegación → validación universal (criterio browserAction).
+    // La máquina objetivo se resuelve por IP y el validador la cruza con
+    // mission.targetMachineId; action/url son los que declara cada lab.
+    // Reemplaza los onMissionComplete(3) hardcodeados por escenario.
+    const targetMachine = allMachines.find(m => m.machine_info.ip && clean.includes(m.machine_info.ip));
+    if (scenarioHasWeb && targetMachine) {
+      // Se emiten ambos tipos: los criterios deciden cuál aplica ('viewPage'
+      // para visitar una página, 'navigate' para llegar a una URL puntual).
+      const missionId = emitBrowserAction('viewPage', { url: clean, machineId: targetMachine.id })
+        ?? emitBrowserAction('navigate', { url: clean, machineId: targetMachine.id });
+      if (missionId !== null) {
+        onMissionComplete(missionId);
+      }
     }
     if (lfiMachine && clean.includes(lfiMachine.machine_info.ip)) {
       const fullPath = clean.replace(`http://${lfiMachine.machine_info.ip}`, '');
       if (fullPath.includes('etc/passwd')) {
-        onMissionComplete(3);
         onReportVulnerability?.(lfiMachine.id, 'LFI', 'detected');
       }
-    }
-    if (sshMachine && clean.includes(sshMachine.machine_info.ip)) {
-      onMissionComplete(3);
-    }
-    if (scenarioHasWeb && !mission3Already && casinoMachine && casinoMachine.discovery_level >= 2 && clean.includes(casinoMachine.machine_info.ip)) {
-      onMissionComplete(3);
     }
   };
 
@@ -139,13 +142,12 @@ export function FakeBrowser({
     }
   };
 
-  useLfiRceEffect(allMachines, lfiMachine, currentUrl, onReportVulnerability);
+  useLfiRceEffect(allMachines, lfiMachine, currentUrl, onReportVulnerability, checkMissionCompletion);
 
   const handleLFIUploadSuccess = useLfiUploadHandler({
     lfiMachine,
     allMachines,
     addFileToMachine,
-    onMissionComplete,
     confirmRCE,
     onReportVulnerability,
   });
@@ -178,9 +180,12 @@ export function FakeBrowser({
           currentUrl={currentUrl}
           browserIsLoggedIn={isLoggedIn}
           onNavigate={navigate}
-          onLoginSuccess={(id) => {
+          onLoginSuccess={() => {
             setIsLoggedIn(true);
-            onMissionComplete(id);
+            // Criterio browserAction { action: 'login', url: '/wp-admin' } (lab01):
+            // la acción se valida contra la misión activa, sin IDs mágicos.
+            const missionId = emitBrowserAction('login', { url: currentUrl, machineId: wpMachine.id });
+            if (missionId !== null) onMissionComplete(missionId);
           }}
           onLogout={() => {
             setIsLoggedIn(false);
@@ -188,7 +193,6 @@ export function FakeBrowser({
           }}
           onCredentialsFound={onCredentialsFound}
           onVerifyCredentials={onVerifyCredentials}
-          onMissionComplete={onMissionComplete}
         />
       );
     }
@@ -219,9 +223,15 @@ export function FakeBrowser({
           currentUrl={currentUrl}
           browserIsLoggedIn={isLoggedIn}
           onNavigate={navigate}
-          onLoginSuccess={(id) => {
-            setIsLoggedIn(true);
-            onMissionComplete(id);
+          onLoginSuccess={() => setIsLoggedIn(true)}
+          onVulnerabilityDetected={() => {
+            // Criterio vulnerabilityFound { vulnId: 'SQLi', status: 'detected' } (lab06):
+            // el login con SQLi emite la vulnerabilidad y el validador completa la misión.
+            checkMissionCompletion?.({
+              output: '',
+              type: 'vuln',
+              foundVulnerability: { machineId: sqliMachine.id, vulnId: 'SQLi', status: 'detected' },
+            });
           }}
           onLogout={() => {
             setIsLoggedIn(false);
@@ -229,7 +239,6 @@ export function FakeBrowser({
           }}
           onCredentialsFound={onCredentialsFound}
           onVerifyCredentials={onVerifyCredentials}
-          onMissionComplete={onMissionComplete}
         />
       );
     }

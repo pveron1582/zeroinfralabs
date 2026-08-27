@@ -1,9 +1,9 @@
-// ── frameworks/shells/ftp/ftpCommand.ts ────────────────────────────
+// ── commands/tools/ftp.ts ──────────────────────────────────────────
 // Simulador de cliente FTP - inicia sesión de shell interactiva
 // Este es el comando inicial que arranca FtpSession
 
-import type { CommandContext, CommandResponse } from '../../../types';
-import { startShellSession } from '../../../commands';
+import type { CommandContext, CommandResponse } from '../../types';
+import { startShellSession } from '../shellIntegration';
 
 // Estado global de sesiones FTP (legacy - mantenido para compatibilidad)
 const ftpSessions = new Map<string, { connected: boolean; anonymous: boolean; loggedIn: boolean; currentDir: string; targetId?: string }>();

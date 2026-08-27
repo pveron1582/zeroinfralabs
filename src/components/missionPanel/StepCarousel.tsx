@@ -119,7 +119,7 @@ export function StepCarousel({ missions, resolve, language }: { missions: Missio
         }, 500);
       }
     }
-  }, [visibleMissions.length, currentIndex, isAnimating, goTo]);
+  }, [visibleMissions, currentIndex, isAnimating, goTo]);
 
   if (!currentMission) return null;
 

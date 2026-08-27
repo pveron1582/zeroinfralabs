@@ -36,25 +36,32 @@ const scenario06Data = {
       pass: 'ftp_dump_2024',
     },
   },
+  // Máquina objetivo en forma de Machine (P1-10): definición única; los campos
+  // discovery_level/scan_results/learning_steps los completa buildScenario.
   targetMachine: {
     id: 'lab-scenario-06-sqli',
-    hostname: 'sql-injection-web',
-    mac: '08:00:27:D5:E6:F7',
-    os: 'Ubuntu 18.04 LTS',
-    type: 'server',
+    machine_info: {
+      hostname: 'sql-injection-web',
+      mac: '08:00:27:D5:E6:F7',
+      os: 'Ubuntu 18.04 LTS',
+      status: 'up',
+      type: 'server',
+    },
     ports: [
       { port: 21, protocol: 'tcp', state: 'open', service: 'ftp', version: 'ProFTPD 1.3.5e' },
       { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache httpd 2.4.29' },
       { port: 3306, protocol: 'tcp', state: 'open', service: 'mysql', version: 'MySQL 5.7.26' },
     ],
-    webServer: 'Apache/2.4.29',
-    application: 'PHP 7.2 - Vulnerable Login Form',
-    directories: [
-      { path: '/', status: 200, description: 'Página de inicio' },
-      { path: '/login', status: 200, description: 'Formulario de login (VULNERABLE)' },
-      { path: '/admin', status: 403, description: 'Panel de administración' },
-      { path: '/backup', status: 200, description: 'Directorio de respaldo' },
-    ],
+    web_enumeration: {
+      web_server: 'Apache/2.4.29',
+      cms: 'PHP 7.2 - Vulnerable Login Form',
+      directories: [
+        { path: '/', status: 200, description: 'Página de inicio' },
+        { path: '/login', status: 200, description: 'Formulario de login (VULNERABLE)' },
+        { path: '/admin', status: 403, description: 'Panel de administración' },
+        { path: '/backup', status: 200, description: 'Directorio de respaldo' },
+      ],
+    },
   },
   learningSteps: [
     { 
@@ -165,27 +172,9 @@ export const scenario_06: Scenario = buildScenario({
   difficulty: 'Medium',
   category: 'Web' as const,
   networkRange: scenario06Data.networkRange,
+  // Máquina objetivo consumida directa de scenario06Data (definición única, P1-10).
   targetMachine: {
-    id: scenario06Data.targetMachine.id,
-    machine_info: {
-      hostname: scenario06Data.targetMachine.hostname,
-      mac: scenario06Data.targetMachine.mac,
-      os: scenario06Data.targetMachine.os,
-      status: 'up',
-      type: scenario06Data.targetMachine.type,
-    },
-    discovery_level: 0,
-    scan_results: { ports: [] },
-    ports: [
-      { ...scenario06Data.targetMachine.ports[0], credentials: { user: scenario06Data.credentials.ftp.user, pass: scenario06Data.credentials.ftp.pass } },
-      scenario06Data.targetMachine.ports[1],
-      scenario06Data.targetMachine.ports[2],
-    ],
-    web_enumeration: {
-      web_server: scenario06Data.targetMachine.webServer,
-      cms: scenario06Data.targetMachine.application,
-      directories: scenario06Data.targetMachine.directories,
-    },
+    ...scenario06Data.targetMachine,
     files: [
       ...createLinuxFileSystem({ username: 'www-data', extraUsers: [{ username: 'ftpuser', gecos: 'FTP Backup Account' }, { username: 'nuria', gecos: 'Nuria Campos' }, { username: 'raul', gecos: 'Raúl Díaz' }] }),
       createFile('/var/www/html/index.php', `
@@ -193,12 +182,12 @@ export const scenario_06: Scenario = buildScenario({
 // Vulnerable PHP Login Form (Intentionally Vulnerable for Learning)
 // DO NOT USE IN PRODUCTION
 
-\$username = isset(\$_POST['username']) ? \$_POST['username'] : '';
-\$password = isset(\$_POST['password']) ? \$_POST['password'] : '';
+$username = isset($_POST['username']) ? $_POST['username'] : '';
+$password = isset($_POST['password']) ? $_POST['password'] : '';
 
-if (\$username && \$password) {
+if ($username && $password) {
   // VULNERABLE: No prepared statements!
-  \$query = "SELECT * FROM users WHERE username = '\$username' AND password = '\$password'";
+  $query = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
   // Database would execute: SELECT * FROM users WHERE username = ' OR '1'='1
   echo "Checking credentials...";
 }
@@ -238,6 +227,8 @@ INSERT INTO users VALUES
       raul: 'hunter',
     },
   },
+  // Credenciales del puerto FTP, única fuente: credentials.ftp (P1-10)
+  portCredentials: { ftp: scenario06Data.credentials.ftp },
   learningSteps: scenario06Data.learningSteps,
 });
 

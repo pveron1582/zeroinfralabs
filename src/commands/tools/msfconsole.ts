@@ -11,8 +11,7 @@
 // Los sub-comandos (use, set, show, search, etc.) están en
 // src/frameworks/metasploit/commands/.
 
-import type { CommandContext, CommandResponse } from '../../types';
-import type { MsfState } from '../../frameworks/metasploit/core/msfTypes';
+import type { CommandContext, CommandResponse, MsfState } from '../../types';
 import { INITIAL_STATE } from '../../frameworks/metasploit/core/msfTypes';
 import { withState } from '../../frameworks/metasploit/core/msfHelpers';
 import { executeBaseCommand } from '../../frameworks/metasploit/orchestrators/msfBase';
@@ -115,7 +114,7 @@ Metasploit tip: Use the 'check' command to verify a vulnerability before exploit
         | |            |  |  |
         | |____________|  |  |
         |________________|  |
-         \_______________\|/
+         \\_______________\\|/
 
        =[ metasploit v6.3.5-dev                          ]
 + -- --=[ 2298 exploits - 1204 auxiliary - 410 post       ]
@@ -161,4 +160,4 @@ export const cmd_msfconsole = {
 };
 
 // Re-export types for convenience (consumido por store/)
-export type { MsfState } from '../../frameworks/metasploit/core/msfTypes';
+export type { MsfState } from '../../types';

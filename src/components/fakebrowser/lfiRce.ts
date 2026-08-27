@@ -4,7 +4,7 @@
 // Extraída de FakeBrowser.tsx para mantener el componente bajo 300 líneas.
 
 import { useEffect, useRef, useCallback } from 'react';
-import type { Machine, FileEntry } from '../../types';
+import type { Machine, CommandResponse, FileEntry } from '../../types';
 import { useScenarioStore } from '../../store/scenarioStore';
 import { findDirEntry, defaultOwnership, buildNewFile } from '../../utils/fs';
 import { getUser } from '../../utils/users';
@@ -14,6 +14,7 @@ export function useLfiRceEffect(
   lfiMachine: Machine | undefined,
   currentUrl: string,
   onReportVulnerability?: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void,
+  checkMissionCompletion?: (result: CommandResponse) => void,
 ) {
   const rceCompletedRef = useRef(false);
   const confirmRCE = useScenarioStore(state => state.confirmRCE);
@@ -30,14 +31,18 @@ export function useLfiRceEffect(
     if (!isPayloadPage) return;
     if (!listeningPort) return;
     rceCompletedRef.current = true;
-    setBlockingCommand({
+    const blockingState = {
       message: '[*] Connection received from ' + lfiMachine.machine_info.ip + ' : shell opened!',
       listeningPort: 4444,
       connected: true
-    });
+    };
+    setBlockingCommand(blockingState);
+    // Misión 'Remote Code Execution' (criterio blockingCommand, lab04): el RCE
+    // se emite como CommandResponse para el validador universal (sin IDs mágicos).
+    checkMissionCompletion?.({ output: '', type: 'blocking', blockingCommand: blockingState });
     confirmRCE(lfiMachine.id, 'www-data', '/var/www/html/uploads/payload.php');
     onReportVulnerability?.(lfiMachine.id, 'LFI', 'confirmed');
-  }, [currentUrl, lfiMachine, setBlockingCommand, listeningPort, confirmRCE, onReportVulnerability]);
+  }, [currentUrl, lfiMachine, setBlockingCommand, listeningPort, confirmRCE, onReportVulnerability, checkMissionCompletion]);
 
   useEffect(() => {
     rceCompletedRef.current = false;
@@ -48,15 +53,13 @@ interface LfiUploadDeps {
   lfiMachine: Machine | undefined;
   allMachines: Machine[];
   addFileToMachine: (machineId: string, file: FileEntry) => void;
-  onMissionComplete: (id: number) => void;
   confirmRCE: (machineId: string, user: string, file: string) => void;
   onReportVulnerability?: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 }
 
-export function useLfiUploadHandler({ lfiMachine, allMachines, addFileToMachine, onMissionComplete, confirmRCE, onReportVulnerability }: LfiUploadDeps) {
+export function useLfiUploadHandler({ lfiMachine, allMachines, addFileToMachine, confirmRCE, onReportVulnerability }: LfiUploadDeps) {
   return useCallback((fileName: string) => {
     if (fileName === 'reverse_shell_triggered' || fileName === 'CHECKPOINT_RCE') {
-      onMissionComplete(5);
       if (lfiMachine) {
         confirmRCE(lfiMachine.id, 'www-data', '/var/www/html/uploads/payload.php');
         onReportVulnerability?.(lfiMachine.id, 'LFI', 'confirmed');
@@ -75,5 +78,5 @@ export function useLfiUploadHandler({ lfiMachine, allMachines, addFileToMachine,
         addFileToMachine(lfiMachine.id, buildNewFile(`/var/www/html/uploads/${fileName}`, originalFile.content, originalFile.type as 'text' | 'binary' | 'hash' | 'symlink', defaultOwnership(lfiMachine, wwwDataUser, 0o644)));
       }
     }
-  }, [lfiMachine, allMachines, addFileToMachine, onMissionComplete, confirmRCE, onReportVulnerability]);
+  }, [lfiMachine, allMachines, addFileToMachine, confirmRCE, onReportVulnerability]);
 }

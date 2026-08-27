@@ -194,7 +194,7 @@ describe('ShellManager', () => {
     });
   });
 
-  describe('Errores', () => {
+  describe('Error handling sin sesión', () => {
     it('debe manejar shell inexistente', () => {
       const result = manager.startSession('nonexistent', [], mockCtx);
       expect(result.isError).toBe(true);
@@ -203,6 +203,46 @@ describe('ShellManager', () => {
     it('debe manejar ejecución sin sesión activa', () => {
       const result = manager.execute('test', mockCtx);
       expect(result.isError).toBe(true);
+    });
+  });
+
+  describe('Aislamiento por propietario (P2-13 / C1)', () => {
+    it('debe mantener stacks separados por ownerId', () => {
+      // Una sesión en la terminal 'A' no aparece como activa para 'B'
+      manager.startSession('mock', [], mockCtx, 'A');
+      expect(manager.isActive('A')).toBe(true);
+      expect(manager.isActive('B')).toBe(false);
+      expect(manager.getCurrentShellName('A')).toBe('mock');
+      expect(manager.getCurrentShellName('B')).toBe(null);
+    });
+
+    it('debe ejecutar comandos solo en la stack del propietario', () => {
+      manager.startSession('mock', [], mockCtx, 'A');
+      manager.startSession('mock', [], mockCtx, 'B');
+
+      const rA = manager.execute('count', mockCtx, 'A');
+      const rB = manager.execute('count', mockCtx, 'B');
+      expect(rA.output).toBe('Count: 1');
+      expect(rB.output).toBe('Count: 1');
+
+      // Cerrar solo la de B: la de A continúa activa
+      manager.execute('exit', mockCtx, 'B');
+      expect(manager.isActive('B')).toBe(false);
+      expect(manager.isActive('A')).toBe(true);
+    });
+
+    it('getActiveOwners debe listar los propietarios con sesión', () => {
+      manager.startSession('mock', [], mockCtx, 'A');
+      manager.startSession('mock', [], mockCtx, 'C');
+      expect(manager.getActiveOwners()).toEqual(['A', 'C']);
+    });
+
+    it('reset limpia todos los propietarios', () => {
+      manager.startSession('mock', [], mockCtx, 'A');
+      manager.startSession('mock', [], mockCtx, 'B');
+      manager.reset();
+      expect(manager.getActiveOwners()).toEqual([]);
+      expect(manager.getDepth()).toBe(0);
     });
   });
 });

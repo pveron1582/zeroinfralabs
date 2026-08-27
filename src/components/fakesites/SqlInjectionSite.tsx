@@ -7,11 +7,11 @@ interface SqlInjectionSiteProps {
   currentUrl: string;
   browserIsLoggedIn: boolean;
   onNavigate: (url: string) => void;
-  onLoginSuccess: (missionId: number) => void;
+  onLoginSuccess: () => void;
+  onVulnerabilityDetected?: () => void;
   onLogout: () => void;
   onCredentialsFound: (machineId: string, user: string, pass: string, file: string, service: string) => void;
   onVerifyCredentials: (machineId: string, service: string) => void;
-  onMissionComplete: (id: number) => void;
 }
 
 export function SqlInjectionSite({
@@ -19,7 +19,7 @@ export function SqlInjectionSite({
   currentUrl,
   onNavigate,
   onLoginSuccess,
-  onMissionComplete,
+  onVulnerabilityDetected,
 }: SqlInjectionSiteProps) {
   const ip = machine.machine_info.ip;
   const path = currentUrl.replace(`http://${ip}`, '').split('?')[0] || '/';
@@ -30,7 +30,7 @@ export function SqlInjectionSite({
       <VulnerableLogin
         ip={ip}
         onLoginSuccess={onLoginSuccess}
-        onMissionComplete={onMissionComplete}
+        onVulnerabilityDetected={onVulnerabilityDetected}
       />
     );
   }

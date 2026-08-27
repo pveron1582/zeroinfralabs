@@ -21,7 +21,6 @@ export { ftpSession } from './ftp/FtpSession';
 export { sshSession } from './ssh/SshSession';
 export { ncSession } from './nc/NcSession';
 
-// Exportar comandos iniciales (arrancan las sesiones)
-export { cmd_ftp, resetFtpSessions } from './ftp/ftpCommand';
-export { cmd_ssh } from './ssh/sshCommand';
-export { cmd_nc } from './nc/ncCommand';
+// NOTA: los comandos cmd_ssh/cmd_ftp/cmd_nc viven en src/commands/tools/
+// (ssh.ts, ftp.ts, nc.ts) — el framework de shells no exporta comandos
+// para evitar la dependencia circular commands ↔ frameworks/shells.

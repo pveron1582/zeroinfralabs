@@ -8,7 +8,8 @@ import { getCurrentUser } from '../utils/users';
 import { writeOutputToFile } from '../utils/redirection';
 import { splitTopLevel, extractRedirection, expandCommandLine, splitArgs } from '../utils/shellParse';
 import { getSuidEffectiveUser } from './suid';
-import { cmd_msfconsole, executeMsfCommand, type MsfState } from './tools';
+import { cmd_msfconsole, executeMsfCommand } from './tools';
+import type { MsfState } from '../types';
 import { executeShellCommand } from './shellIntegration';
 
 export interface Command {
@@ -86,7 +87,7 @@ export function executeCommandInternal(
   getMsfState: MsfStateGetter,
   onMsfStateChange?: (state: MsfState | null) => void
 ): CommandResponse {
-  if (shellManager.isActive()) {
+  if (shellManager.isActive(ctx.terminalId)) {
     // executeShellCommand emite los metadatos de cierre del tipo correcto
     // (ftp/ssh): no sobrescribir con un estado FTP genérico.
     return executeShellCommand(line, ctx);

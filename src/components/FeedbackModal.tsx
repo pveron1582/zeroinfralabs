@@ -44,9 +44,10 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
         }
       }
     }
-  }, [isOpen]);
+  }, [isOpen, COOLDOWN_MS]);
 
   // Update countdown timer
+  const cooldownActive = cooldownRemaining > 0;
   useEffect(() => {
     if (cooldownRemaining <= 0) return;
     const timer = setInterval(() => {
@@ -59,7 +60,7 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [cooldownRemaining > 0]);
+  }, [cooldownActive, cooldownRemaining]);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -86,7 +87,7 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
       setCaptchaQuestion(generateCaptchaQuestion(isSpanish));
       setTimeout(() => setWrongAnswer(false), 1500);
     }
-  }, [captchaQuestion]);
+  }, [captchaQuestion, isSpanish]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,7 +134,7 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [name, email, comment, captchaPassed, language, onClose]);
+  }, [name, email, comment, captchaPassed, language, isSpanish, onClose, COOLDOWN_MS]);
 
   const handleResetCaptcha = useCallback(() => {
     setCaptchaQuestion(generateCaptchaQuestion(isSpanish));

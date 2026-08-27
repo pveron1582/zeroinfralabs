@@ -27,9 +27,9 @@ describe('Laboratorio 06 - SQL Injection & Database Exfiltration', () => {
   });
 
   it('debe tener targetMachine con info correcta', () => {
-    expect(scenario06Data.targetMachine.hostname).toBe('sql-injection-web');
-    expect(scenario06Data.targetMachine.os).toBe('Ubuntu 18.04 LTS');
-    expect(scenario06Data.targetMachine.type).toBe('server');
+    expect(scenario06Data.targetMachine.machine_info.hostname).toBe('sql-injection-web');
+    expect(scenario06Data.targetMachine.machine_info.os).toBe('Ubuntu 18.04 LTS');
+    expect(scenario06Data.targetMachine.machine_info.type).toBe('server');
   });
 
   it('debe tener puertos FTP, HTTP y MySQL abiertos', () => {
@@ -44,10 +44,16 @@ describe('Laboratorio 06 - SQL Injection & Database Exfiltration', () => {
   });
 
   it('debe tener directorios web configurados', () => {
-    const dirs = scenario06Data.targetMachine.directories;
+    const dirs = scenario06Data.targetMachine.web_enumeration.directories;
     expect(dirs.length).toBeGreaterThanOrEqual(4);
     expect(dirs.some(d => d.path === '/login')).toBe(true);
     expect(dirs.some(d => d.path === '/backup')).toBe(true);
+  });
+
+  it('debe inyectar las credenciales FTP en el puerto 21 vía portCredentials (P1-10)', () => {
+    const target = scenario_06.machines.find(m => m.id === 'lab-scenario-06-sqli');
+    const ftpPort = target?.scan_results.ports.find(p => p.service === 'ftp');
+    expect(ftpPort?.credentials).toEqual({ user: 'ftpuser', pass: 'ftp_dump_2024' });
   });
 
   it('debe tener 8 learning steps', () => {

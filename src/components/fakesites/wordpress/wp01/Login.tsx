@@ -5,7 +5,7 @@ interface Props {
   ip: string;
   credentials: { user: string; pass: string } | null;
   onNavigate: (url: string) => void;
-  onLoginSuccess: (missionId: number) => void;
+  onLoginSuccess: () => void;
 }
 
 export function WPLogin({ ip, credentials, onNavigate, onLoginSuccess }: Props) {
@@ -20,7 +20,7 @@ export function WPLogin({ ip, credentials, onNavigate, onLoginSuccess }: Props) 
     setTimeout(() => {
       setLoading(false);
       if (credentials && user === credentials.user && pass === credentials.pass) {
-        onLoginSuccess(6);
+        onLoginSuccess();
         // onLoginSuccess (doLogin) already navigates to /wp-admin/dashboard — no extra navigate needed
       } else {
         setError('ERROR: incorrect username or password.');

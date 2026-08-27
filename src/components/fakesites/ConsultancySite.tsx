@@ -1,4 +1,4 @@
-import { useEffect, useRef, type FC } from 'react';
+import { useEffect, useMemo, useRef, type FC } from 'react';
 
 interface TeamMember {
   name: string;
@@ -21,7 +21,7 @@ export const ConsultancySite: FC<ConsultancySiteProps> = ({onViewTeam }) => {
   ];
 
   // Extract usernames from emails (pedro, gonzalo, arturo, lucia)
-  const usernames = ['pedro', 'gonzalo', 'arturo', 'lucia'];
+  const usernames = useMemo(() => ['pedro', 'gonzalo', 'arturo', 'lucia'], []);
   const informedRef = useRef(false);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export const ConsultancySite: FC<ConsultancySiteProps> = ({onViewTeam }) => {
       onViewTeam(usernames);
       informedRef.current = true;
     }
-  }, [onViewTeam]);
+  }, [onViewTeam, usernames]);
 
   return (
     <div className="min-h-full bg-slate-50 font-sans text-slate-900">

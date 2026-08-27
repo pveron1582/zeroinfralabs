@@ -27,11 +27,10 @@ interface WordPressSiteProps {
   currentUrl: string;
   browserIsLoggedIn: boolean;
   onNavigate: (url: string) => void;
-  onLoginSuccess: (missionId: number) => void;
+  onLoginSuccess: () => void;
   onLogout: () => void;
   onCredentialsFound: (machineId: string, user: string, pass: string, file: string, service: string) => void;
   onVerifyCredentials: (machineId: string, service: string) => void;
-  onMissionComplete: (id: number) => void;
 }
 
 export function WordPressSite({
@@ -43,7 +42,6 @@ export function WordPressSite({
   onLogout,
   onCredentialsFound,
   onVerifyCredentials,
-  onMissionComplete,
 }: WordPressSiteProps) {
   const ip = machine.machine_info.ip;
   const path = currentUrl.replace(`http://${ip}`, '').split('?')[0] || '/';
@@ -53,7 +51,7 @@ export function WordPressSite({
   const dynamicCreds = configFile ? parseWPConfig(configFile.content) : null;
 
   const doLogin = () => {
-    onLoginSuccess(6);
+    onLoginSuccess();
     onVerifyCredentials(machine.id, 'wp-admin');
     onNavigate(`http://${ip}/wp-admin/dashboard`);
   };
@@ -108,7 +106,6 @@ export function WordPressSite({
           ip={ip}
           onNavigate={onNavigate}
           onCredentialsFound={(u, p, f, s) => onCredentialsFound(machine.id, u, p, f || '/uploads/config.bak', s || 'wp-admin')}
-          onMissionComplete={onMissionComplete}
         />
       );
     }

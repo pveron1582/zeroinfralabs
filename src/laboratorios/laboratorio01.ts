@@ -32,25 +32,32 @@ const scenario01Data = {
       pass: 'R00t@SSH2024!',
     },
   },
+  // Máquina objetivo en forma de Machine (P1-10): definición única; los campos
+  // discovery_level/scan_results/learning_steps los completa buildScenario.
   targetMachine: {
     id: 'lab-scenario-01-wp',
-    hostname: 'vulnerable-wp-lab',
-    mac: '08:00:27:A1:B2:C3',
-    os: 'Ubuntu 20.04 LTS',
-    type: 'server',
+    machine_info: {
+      hostname: 'vulnerable-wp-lab',
+      mac: '08:00:27:A1:B2:C3',
+      os: 'Ubuntu 20.04 LTS',
+      status: 'up',
+      type: 'server',
+    },
     ports: [
       { port: 22, protocol: 'tcp', state: 'open', service: 'ssh', version: 'OpenSSH 8.2p1 Ubuntu' },
       { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache httpd 2.4.41' },
       { port: 3306, protocol: 'tcp', state: 'filtered', service: 'mysql', version: 'unknown' },
     ],
-    webServer: 'Apache/2.4.41',
-    cms: 'WordPress 6.0',
-    directories: [
-      { path: '/', status: 200, description: 'Página principal' },
-      { path: '/wp-admin', status: 200, description: 'Panel de administración' },
-      { path: '/uploads', status: 200, description: 'Directorio de archivos subidos' },
-      { path: '/backup', status: 403, description: 'Copia de seguridad (Acceso denegado)' },
-    ],
+    web_enumeration: {
+      web_server: 'Apache/2.4.41',
+      cms: 'WordPress 6.0',
+      directories: [
+        { path: '/', status: 200, description: 'Página principal' },
+        { path: '/wp-admin', status: 200, description: 'Panel de administración' },
+        { path: '/uploads', status: 200, description: 'Directorio de archivos subidos' },
+        { path: '/backup', status: 403, description: 'Copia de seguridad (Acceso denegado)' },
+      ],
+    },
   },
   learningSteps: [
     { task: 'Network Reconnaissance', taskEs: 'Reconocimiento de red', text: 'Discover the active hosts on the network', textEs: 'Descubrí los hosts activos en la red', discoveryLevel: 1, hints: { hint1: { en: 'Use arp-scan', es: 'Usá arp-scan' }, hint2: { en: 'arp-scan <network_range>', es: 'arp-scan <rango-de-red>' } }, validationCriteria: { type: 'discoveredHosts' as const, minHosts: 1 } },
@@ -72,27 +79,9 @@ export const scenario_01: Scenario = buildScenario({
   difficulty: 'Medium',
   category: 'Web',
   networkRange: scenario01Data.networkRange,
+  // Máquina objetivo consumida directa de scenario01Data (definición única, P1-10).
   targetMachine: {
-    id: scenario01Data.targetMachine.id,
-    machine_info: {
-      hostname: scenario01Data.targetMachine.hostname,
-      mac: scenario01Data.targetMachine.mac,
-      os: scenario01Data.targetMachine.os,
-      status: 'up',
-      type: scenario01Data.targetMachine.type,
-    },
-    discovery_level: 0,
-    scan_results: { ports: [] },
-    ports: [
-      { ...scenario01Data.targetMachine.ports[0], credentials: { user: 'root', pass: scenario01Data.credentials.ssh.pass } },
-      scenario01Data.targetMachine.ports[1],
-      scenario01Data.targetMachine.ports[2],
-    ],
-    web_enumeration: {
-      web_server: scenario01Data.targetMachine.webServer,
-      cms: scenario01Data.targetMachine.cms,
-      directories: scenario01Data.targetMachine.directories,
-    },
+    ...scenario01Data.targetMachine,
     files: [
       ...createLinuxFileSystem({ username: 'admin', extraUsers: [{ username: 'mario', gecos: 'Mario García' }, { username: 'sara', gecos: 'Sara López' }] }),
       createFile('/home/admin/.bashrc', '# ~/.bashrc: executed by bash(1) for non-login shells.\n\ncase $- in\n    *i*) ;;\n      *) return;;\nesac\nHISTCONTROL=ignoreboth\nshopt -s histappend\nHISTSIZE=1000\nHISTFILESIZE=2000\nshopt -s checkwinsize\nalias ll=\'ls -l\'\nalias la=\'ls -la\'\nexport PATH="$HOME/bin:$HOME/.local/bin:$PATH"\nexport EDITOR=nano', 'text'),
@@ -194,6 +183,8 @@ WP_ROOT = /var/www/html
       sara: 'sunshine',
     },
   },
+  // Credenciales del puerto SSH, única fuente: credentials.ssh (P1-10)
+  portCredentials: { ssh: scenario01Data.credentials.ssh },
   learningSteps: scenario01Data.learningSteps,
 });
 

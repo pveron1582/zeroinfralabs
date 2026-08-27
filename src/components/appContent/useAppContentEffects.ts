@@ -56,7 +56,9 @@ export function useAnalyticsEffects(
         details: { missionCount: currentScenario.missions.length },
       });
     }
-  }, [currentScenario.id]);
+    // Se re-ejecuta también al (re)entrar al workspace: view es parte del
+    // disparador real de lab_started. Solo analítica, idempotente.
+  }, [view, currentScenario.id, currentScenario.name, currentScenario.missions.length]);
 
   // Auto-apertura del tour al entrar al workspace. El flag vive en
   // sessionStorage (claveada por escenario) y NO en un ref: AppContent puede
@@ -72,6 +74,7 @@ export function useAnalyticsEffects(
     }
   }, [view, foxyTourOpen, openFoxyTour, currentScenario.id]);
 
+  const missionStatusesKey = missions.map(m => m.status).join(',');
   useEffect(() => {
     const completedCount = missions.filter(m => m.status === 'completed').length;
     if (completedCount > 0 && view === 'workspace') {
@@ -85,7 +88,7 @@ export function useAnalyticsEffects(
         });
       }
     }
-  }, [missions.map(m => m.status).join(',')]);
+  }, [missionStatusesKey, currentScenario.id, currentScenario.name, missions, view]);
 
   const prevViewRef = useRef(view);
   useEffect(() => {
@@ -118,5 +121,5 @@ export function useAnalyticsEffects(
       }
     }
     prevViewRef.current = view;
-  }, [view]);
+  }, [view, currentScenario.id, currentScenario.name, missions]);
 }

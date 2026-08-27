@@ -55,6 +55,7 @@ export interface ShellResult {
 }
 
 // ── Interfaz que debe implementar cada shell ──────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ShellSession<TState = any> {
   /** Nombre único del shell (ftp, ssh, msfconsole, meterpreter, etc.) */
   name: string;

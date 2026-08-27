@@ -7,26 +7,30 @@ import { FakeBrowser } from '../FakeBrowser';
 // Mock dinámico del store para simular la navegación real
 let currentUrl = 'https://www.google.com';
 const mockAddFile = vi.fn();
+let mockMissions: any[] = [];
+
+const mockState = () => ({
+  browserCurrentUrl: currentUrl,
+  browserIsLoggedIn: false,
+  browserNavHistory: [currentUrl],
+  browserNavIdx: 0,
+  setBrowserUrl: vi.fn((url) => { currentUrl = url; }),
+  setBrowserLoggedIn: vi.fn(),
+  setBrowserNavHistory: vi.fn(),
+  refreshBrowser: vi.fn(),
+  setActiveApp: vi.fn(),
+  addFileToMachine: mockAddFile,
+  confirmRCE: vi.fn(),
+  listeningPort: null,
+  setBlockingCommand: vi.fn(),
+  missions: mockMissions,
+});
 
 vi.mock('../../store/scenarioStore', () => ({
-  useScenarioStore: vi.fn((selector) => {
-    const state = {
-      browserCurrentUrl: currentUrl,
-      browserIsLoggedIn: false,
-      browserNavHistory: [currentUrl],
-      browserNavIdx: 0,
-      setBrowserUrl: vi.fn((url) => { currentUrl = url; }),
-      setBrowserLoggedIn: vi.fn(),
-      setBrowserNavHistory: vi.fn(),
-      refreshBrowser: vi.fn(),
-      setActiveApp: vi.fn(),
-      addFileToMachine: mockAddFile,
-      confirmRCE: vi.fn(),
-      listeningPort: null,
-      setBlockingCommand: vi.fn(),
-    };
-    return selector(state as any);
-  })
+  useScenarioStore: Object.assign(
+    vi.fn((selector) => selector(mockState() as any)),
+    { getState: vi.fn(() => mockState() as any) }
+  ),
 }));
 
 describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () => {
@@ -80,8 +84,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -90,7 +92,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     const input = screen.getByDisplayValue('https://www.google.com');
     fireEvent.change(input, { target: { value: 'http://10.10.20.11/upload.php' } });
     fireEvent.keyDown(input, { key: 'Enter' });
-    rerender(<FakeBrowser allMachines={[mockWpMachine, mockLfiMachine, mockKaliMachine]} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={[mockWpMachine, mockLfiMachine, mockKaliMachine]} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Subir el payload
     fireEvent.change(screen.getByRole('combobox'), { target: { value: '/root/payload.php' } });
@@ -115,8 +117,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={0}
-        mission3Already={false}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -136,8 +136,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={1}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -148,7 +146,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.keyDown(input, { key: 'Enter' });
 
     // Re-render para que tome el cambio de URL del mock
-    rerender(<FakeBrowser allMachines={machinesLow} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={1} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={machinesLow} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verificamos el mensaje de bloqueo "Realizá un escaneo nmap"
     expect(screen.getByText((content) => content.includes('escaneo nmap'))).toBeInTheDocument();
@@ -163,8 +161,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -173,7 +169,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: 'http://192.168.1.15' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     expect(screen.getByText(/My WordPress Blog/i)).toBeInTheDocument();
   });
@@ -187,8 +183,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -209,8 +203,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={onVerifyCredentials}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -219,7 +211,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: 'http://10.10.20.11/?page=uploads/shell.php' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={onMissionComplete} onCredentialsFound={vi.fn()} onVerifyCredentials={onVerifyCredentials} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={onMissionComplete} onCredentialsFound={vi.fn()} onVerifyCredentials={onVerifyCredentials} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra la página de error 404 (shell.php no existe en SERVER_FILES)
     expect(screen.getByText(/404 NOT FOUND/i)).toBeInTheDocument();
@@ -235,8 +227,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -245,7 +235,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: 'http://192.168.1.15/' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra el sitio WordPress
     expect(screen.getByText(/My WordPress Blog/i)).toBeInTheDocument();
@@ -260,8 +250,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -270,7 +258,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: 'http://192.168.1.15/uploads' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra el mensaje de bloqueo
     expect(screen.getByText(/Directorio no enumerado/i)).toBeInTheDocument();
@@ -287,8 +275,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={3}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -297,7 +283,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: 'http://192.168.1.15/uploads' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={machinesWithLevel3} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={3} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={machinesWithLevel3} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra el directorio de uploads
     expect(screen.getByText(/Index of/i)).toBeInTheDocument();
@@ -314,8 +300,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={3}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -324,7 +308,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: 'http://192.168.1.15/uploads/config.bak' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={machinesWithLevel3} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={3} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={machinesWithLevel3} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra el archivo config.bak (puede haber múltiples elementos)
     expect(screen.getAllByText(/config.bak/i).length).toBeGreaterThan(0);
@@ -339,8 +323,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -349,7 +331,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: 'http://99.99.99.99/unknown' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra la página 404
     expect(screen.getByText(/404/i)).toBeInTheDocument();
@@ -367,8 +349,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -413,8 +393,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
           onCredentialsFound={vi.fn()}
           onVerifyCredentials={vi.fn()}
           scenarioHasWeb={true}
-          wpDiscoveryLevel={0}
-          mission3Already={false}
           onSetPossibleUsers={vi.fn()}
           onReportVulnerability={vi.fn()}
         />
@@ -422,16 +400,27 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     };
   }
 
-  it('debe renderizar la landing de CasinoVeo al navegar a la IP (Escenario 7)', () => {
+  it('debe completar la misión activa al navegar a /login (criterio browserAction del lab07)', () => {
+    // Misión activa con criterio browserAction declarado por el lab07
+    mockMissions = [{
+      id: 3,
+      title: 'Browse CasinoVeo',
+      description: 'Browse the CasinoVeo site',
+      status: 'active',
+      targetMachineId: mockCasinoMachine.id,
+      discoveryLevel: 2,
+      hintLevel: 0,
+      validationCriteria: { type: 'browserAction', action: 'viewPage', url: '/login' },
+    }];
     const { rerender, onMissionComplete } = renderCasinoBrowser();
 
     const input = screen.getByDisplayValue('https://www.google.com');
-    fireEvent.change(input, { target: { value: 'http://192.168.50.11/' } });
+    fireEvent.change(input, { target: { value: 'http://192.168.50.11/login' } });
     fireEvent.keyDown(input, { key: 'Enter' });
-    rerender(<FakeBrowser allMachines={[mockCasinoMachine]} onClose={vi.fn()} onMissionComplete={onMissionComplete} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={0} mission3Already={false} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={[mockCasinoMachine]} onClose={vi.fn()} onMissionComplete={onMissionComplete} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     expect(screen.getByText(/CasinoVeo/)).toBeInTheDocument();
-    // Visita a la IP con discovery_level >= 2 completa la misión 3
+    // El criterio browserAction declarado por el lab completa la misión activa
     expect(onMissionComplete).toHaveBeenCalledWith(3);
   });
 
@@ -443,7 +432,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
       const input = screen.getByDisplayValue('https://www.google.com');
       fireEvent.change(input, { target: { value: 'http://192.168.50.11/login' } });
       fireEvent.keyDown(input, { key: 'Enter' });
-      rerender(<FakeBrowser allMachines={[mockCasinoMachine]} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={0} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+      rerender(<FakeBrowser allMachines={[mockCasinoMachine]} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
       expect(screen.getByLabelText('Usuario')).toBeInTheDocument();
       expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
@@ -470,8 +459,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -492,8 +479,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={2}
-        mission3Already={true}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -502,7 +487,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(searchInput, { target: { value: 'nmap tutorial' } });
     fireEvent.keyDown(searchInput, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={2} mission3Already={true} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={allMachines} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra la página de resultados
     expect(screen.getByText(/nmap tutorial - Wikipedia/i)).toBeInTheDocument();
@@ -529,8 +514,6 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
         onCredentialsFound={vi.fn()}
         onVerifyCredentials={vi.fn()}
         scenarioHasWeb={true}
-        wpDiscoveryLevel={0}
-        mission3Already={false}
         onSetPossibleUsers={vi.fn()}
       />
     );
@@ -539,7 +522,7 @@ describe('FakeBrowser - Integración de Navegación y Lógica de Hacking', () =>
     fireEvent.change(input, { target: { value: `http://${mockSshIp}` } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    rerender(<FakeBrowser allMachines={machinesWithSsh} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} wpDiscoveryLevel={0} mission3Already={false} onSetPossibleUsers={vi.fn()} />);
+    rerender(<FakeBrowser allMachines={machinesWithSsh} onClose={vi.fn()} onMissionComplete={vi.fn()} onCredentialsFound={vi.fn()} onVerifyCredentials={vi.fn()} scenarioHasWeb={true} onSetPossibleUsers={vi.fn()} />);
 
     // Verifica que se muestra el sitio de consultoría (múltiples ocurrencias: logo, footer, etc.)
     expect(screen.getAllByText(/DevConsultancy/i).length).toBeGreaterThan(0);

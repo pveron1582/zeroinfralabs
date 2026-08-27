@@ -46,6 +46,11 @@ function ScenarioLauncher() {
 
     logger.debug(`[ScenarioLauncher] Loading scenario: ${id}, lang: ${validLang}`);
     selectScenario(scenario.id);
+    // Deps intencionalmente acotadas: este efecto sincroniza ruta → escenario
+    // y SOLO debe dispararse cuando cambia el id/lang de la URL. Agregar
+    // currentScenarioId/view re-dispararía selectScenario al volver a la
+    // landing y reabriría el loader de máquina (ver mejoras_glm.md P1-12).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validLang, id]);
 
   if (showMachineLoader && loadingMachine) {

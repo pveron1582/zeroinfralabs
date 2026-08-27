@@ -1,7 +1,7 @@
-// ── frameworks/shells/nc/__tests__/ncCommand.test.ts ────────────────
+// ── commands/tools/__tests__/nc.test.ts ────────────────
 import { describe, it, expect } from 'vitest';
-import { cmd_nc } from '../ncCommand';
-import type { Machine, CommandContext } from '../../../../types';
+import { cmd_nc } from '../nc';
+import type { Machine, CommandContext } from '../../../types';
 
 describe('cmd_nc', () => {
   const mockMachine: Machine = {

@@ -2,6 +2,10 @@
 // Integración del executor de comandos con el ShellManager
 // (sesiones interactivas SSH/FTP/NC apiladas)
 
+// ── commands/shellIntegration.ts ─────────────────────────────────
+// Integración del executor de comandos con el ShellManager
+// (sesiones interactivas SSH/FTP/NC apiladas)
+
 import type { CommandContext, CommandResponse } from '../types';
 import { shellManager, type ShellContext as ManagerContext } from '../frameworks/shells';
 
@@ -18,25 +22,29 @@ export function toShellContext(ctx: CommandContext): ManagerContext {
 }
 
 // ── Shell Manager Integration ─────────────────────────────────────
+// Todas estas funciones son POR PROPIETARIO de terminal (P2-13/C1). Las que
+// reciben ctx derivan ownerId de ctx.terminalId; el resto recibe ownerId por
+// parámetro. Si no se pasa ownerId, se usa el stack compartido 'default'
+// (comportamiento previo, retrocompatible con terminales sin id).
 
-/** Verifica si hay una sesión de shell activa */
-export const isShellSessionActive = () => shellManager.isActive();
+/** Verifica si hay una sesión de shell activa para el propietario. */
+export const isShellSessionActive = (ownerId?: string) => shellManager.isActive(ownerId);
 
-/** Obtiene el nombre del shell activo */
-export const getCurrentShellName = () => shellManager.getCurrentShellName();
+/** Obtiene el nombre del shell activo del propietario. */
+export const getCurrentShellName = (ownerId?: string) => shellManager.getCurrentShellName(ownerId);
 
-/** Obtiene el prompt del shell activo */
-export const getShellPrompt = () => shellManager.getPrompt();
+/** Obtiene el prompt del shell activo del propietario. */
+export const getShellPrompt = (ownerId?: string) => shellManager.getPrompt(ownerId);
 
 /** Iniciar una sesión de shell (llamado desde comandos como ftp, ssh -i, etc.) */
-export const startShellSession = (shellName: string, args: string[], ctx: CommandContext): CommandResponse => {
+export const startShellSession = (shellName: string, args: string[], ctx: CommandContext, ownerId: string = ctx.terminalId || 'default'): CommandResponse => {
   const shellCtx = toShellContext(ctx);
-  const result = shellManager.startSession(shellName, args, shellCtx);
+  const result = shellManager.startSession(shellName, args, shellCtx, ownerId);
 
   if (result.isError) return result;
 
-  const prompt = shellManager.getPrompt();
-  const current = shellManager.current();
+  const prompt = shellManager.getPrompt(ownerId);
+  const current = shellManager.current(ownerId);
 
   if (shellName === 'ftp' && current) {
     const state = current.state;
@@ -68,16 +76,16 @@ export const startShellSession = (shellName: string, args: string[], ctx: Comman
   return { output: prompt || '' };
 };
 
-/** Ejecutar un comando en el shell activo */
-export const executeShellCommand = (line: string, ctx: CommandContext): CommandResponse => {
-  if (!shellManager.isActive()) {
+/** Ejecutar un comando en el shell activo del propietario. */
+export const executeShellCommand = (line: string, ctx: CommandContext, ownerId: string = ctx.terminalId || 'default'): CommandResponse => {
+  if (!shellManager.isActive(ownerId)) {
     return { output: 'No active shell session', isError: true };
   }
 
   const shellCtx = toShellContext(ctx);
-  const preExecName = shellManager.getCurrentShellName();
-  const result = shellManager.execute(line, shellCtx);
-  const current = shellManager.current();
+  const preExecName = shellManager.getCurrentShellName(ownerId);
+  const result = shellManager.execute(line, shellCtx, ownerId);
+  const current = shellManager.current(ownerId);
 
   // Nombre del shell para los metadatos: el vigente DESPUÉS de ejecutar
   // (si el comando anidó otro shell); si la sesión se cerró con este
@@ -85,6 +93,7 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
   const effectiveName = current?.shell.name ?? preExecName;
 
   const state = current?.state;
+  const activeNow = shellManager.isActive(ownerId);
 
   const response: CommandResponse = {
     type: 'hybrid',
@@ -100,14 +109,14 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
     sshLoginUser: result.sshLoginUser,
     ...(effectiveName === 'ftp' ? {
       ftpSession: {
-        active: shellManager.isActive(), connected: state?.connected,
+        active: activeNow, connected: state?.connected,
         targetIp: state?.targetIp, targetId: state?.targetId,
         username: state?.username, loggedIn: state?.loggedIn, step: state?.step,
       }
     } : {}),
     ...(effectiveName === 'ssh' ? {
       sshSession: {
-        active: shellManager.isActive(), connected: state?.connected,
+        active: activeNow, connected: state?.connected,
         targetIp: state?.targetIp, targetId: state?.targetId,
         username: state?.username, authenticated: state?.authenticated, step: state?.step,
       }
@@ -117,13 +126,13 @@ export const executeShellCommand = (line: string, ctx: CommandContext): CommandR
   return response;
 };
 
-/** Cerrar la sesión de shell actual, con respuesta según el TIPO de sesión
- *  (antes siempre respondía como FTP: "221 Goodbye." incluso para SSH/NC). */
-export const closeShellSession = (): CommandResponse => {
-  const closing = shellManager.current();
+/** Cerrar la sesión de shell del propietario, con respuesta según el TIPO de
+ *  sesión (antes siempre respondía como FTP: "221 Goodbye." incluso para SSH/NC). */
+export const closeShellSession = (ownerId?: string): CommandResponse => {
+  const closing = shellManager.current(ownerId);
   const closingName = closing?.shell.name;
   const targetIp = (closing?.state as { targetIp?: string } | undefined)?.targetIp;
-  shellManager.closeCurrentSession();
+  shellManager.closeCurrentSession(ownerId);
 
   if (closingName === 'ssh') {
     return {

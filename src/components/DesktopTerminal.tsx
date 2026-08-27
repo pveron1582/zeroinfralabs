@@ -27,14 +27,8 @@ export function DesktopTerminal(props: CommandRunnerProps) {
     termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows,
     topWindowId, addTerminal, addBrowser, addGuide, addBurp, openWallpaperPicker, closeWindow,
     minimizeWindow, restoreWindow, toggleMaximize, bringToFront,
-    startDrag, startResize, desktopRef, isEs, currentScenario, missions, showNotification,
+    startDrag, startResize, desktopRef, isEs, currentScenario, showNotification,
   } = useDesktopWindows();
-
-  const wpMachine = props.allMachines.find(m =>
-    m.scan_results?.ports?.some((p: { port: number }) => p.port === 80 || p.port === 443)
-  );
-  const wpDiscoveryLevel = wpMachine?.discovery_level ?? 0;
-  const mission3Already = missions.some(m => m.id === 3 && m.status === 'completed');
 
   return (
     <div className="relative w-full h-full flex flex-col overflow-hidden bg-slate-950 select-none"
@@ -75,33 +69,38 @@ export function DesktopTerminal(props: CommandRunnerProps) {
 
       <div ref={desktopRef} className="relative flex-1 z-10 w-full h-full overflow-hidden">
         <div style={{ fontFamily: FONT_DESKTOP }} className="absolute top-6 left-6 flex flex-col gap-6 select-none z-0" data-tour="desktop-icons">
-          <div onDoubleClick={addTerminal} onClick={addTerminal}
+          <div onDoubleClick={addTerminal} onClick={addTerminal} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addTerminal(); } }}
+            role="button" tabIndex={0} aria-label={isEs ? 'Abrir terminal' : 'Open terminal'}
             data-tour="desktop-icon-terminal"
             className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-emerald-400/10 border border-transparent hover:border-emerald-500/10 cursor-pointer group transition-all duration-200">
             <div className="w-11 h-11 rounded-xl shadow-md group-hover:scale-105 transition-transform duration-200 drop-shadow-lg"><TerminalAppIcon size={44} /></div>
             <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">{isEs ? 'Terminal' : 'Terminal'}</span>
           </div>
-          <div onDoubleClick={openWallpaperPicker} onClick={openWallpaperPicker}
+          <div onDoubleClick={openWallpaperPicker} onClick={openWallpaperPicker} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWallpaperPicker(); } }}
+            role="button" tabIndex={0} aria-label={isEs ? 'Elegir fondo de pantalla' : 'Choose wallpaper'}
             data-tour="desktop-icon-wallpaper"
             className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-emerald-400/10 border border-transparent hover:border-emerald-500/10 cursor-pointer group transition-all duration-200">
             <div className="w-11 h-11 rounded-xl shadow-md group-hover:scale-105 transition-transform duration-200 drop-shadow-lg"><WallpaperAppIcon size={44} /></div>
             <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">{isEs ? 'Fondos' : 'Wallpapers'}</span>
           </div>
           {currentScenario?.category === 'Web' && (
-            <div onDoubleClick={addBrowser} onClick={addBrowser}
+            <div onDoubleClick={addBrowser} onClick={addBrowser} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addBrowser(); } }}
+              role="button" tabIndex={0} aria-label={isEs ? 'Abrir navegador' : 'Open browser'}
               data-tour="desktop-icon-browser"
               className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-orange-400/10 border border-transparent hover:border-orange-500/10 cursor-pointer group transition-all duration-200">
               <div className="w-11 h-11 rounded-xl group-hover:scale-105 transition-transform duration-200 drop-shadow-lg"><ChromeAppIcon size={44} /></div>
               <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">Chrome</span>
             </div>
           )}
-          <div onDoubleClick={addGuide} onClick={addGuide}
+          <div onDoubleClick={addGuide} onClick={addGuide} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addGuide(); } }}
+            role="button" tabIndex={0} aria-label={isEs ? 'Abrir manual' : 'Open guide'}
             data-tour="desktop-icon-guide"
             className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-red-400/10 border border-transparent hover:border-red-500/10 cursor-pointer group transition-all duration-200">
             <div className="w-11 h-11 rounded-xl shadow-md group-hover:scale-105 transition-transform duration-200 drop-shadow-lg"><ManualAppIcon size={44} /></div>
             <span className="text-[10px] text-slate-300 mt-1 font-sans text-center truncate max-w-full drop-shadow">{isEs ? 'Manual' : 'Manual'}</span>
           </div>
-          <div onClick={props.onOpenTour}
+          <div onClick={props.onOpenTour} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); props.onOpenTour?.(); } }}
+            role="button" tabIndex={0} aria-label={isEs ? 'Abrir guía' : 'Open guide'}
             data-tour="desktop-icon-foxy"
             className="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-amber-400/10 border border-transparent hover:border-amber-500/10 cursor-pointer group transition-all duration-200">
             <div className="w-11 h-11 rounded-xl shadow-md group-hover:scale-105 transition-transform duration-200 drop-shadow-lg"><FoxyAppIcon size={44} /></div>
@@ -143,7 +142,7 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                 onChangeTermColor={setTermColor}
               >
                 {w.type === 'terminal' ? (
-                  <Terminal {...props} opacity={w.opacity} fontSize={w.fontSize} isWindowed={true}
+                  <Terminal {...props} terminalId={`${w.id}`} opacity={w.opacity} fontSize={w.fontSize} isWindowed={true}
                     onExitTerminal={() => closeWindow(w.id)} />
                 ) : w.type === 'browser' ? (
                   <FakeBrowser key={w.id} allMachines={props.allMachines}
@@ -154,8 +153,6 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                     onCredentialsFound={props.onCredentialsFound}
                     onVerifyCredentials={props.onVerifyCredentials ?? (() => {})}
                     scenarioHasWeb={currentScenario?.category === 'Web'}
-                    wpDiscoveryLevel={wpDiscoveryLevel}
-                    mission3Already={mission3Already}
                     onSetPossibleUsers={setPossibleUsers}
                     onReportVulnerability={reportVulnerability}
                     checkMissionCompletion={checkMissionCompletion}

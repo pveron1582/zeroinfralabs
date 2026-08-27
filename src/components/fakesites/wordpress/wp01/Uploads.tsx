@@ -4,10 +4,9 @@ interface Props {
   ip: string;
   onNavigate: (url: string) => void;
   onCredentialsFound: (user: string, pass: string, file?: string, service?: string) => void;
-  onMissionComplete?: (id: number) => void;
 }
 
-export function WPUploads({ ip, onNavigate, onCredentialsFound, onMissionComplete }: Props) {
+export function WPUploads({ ip, onNavigate, onCredentialsFound }: Props) {
   const files = [
     { name: 'image-2023-11.jpg', size: '124 KB', date: '2023-11-14' },
     { name: 'screenshot.png',    size: '98 KB',  date: '2023-11-10' },
@@ -50,7 +49,6 @@ export function WPUploads({ ip, onNavigate, onCredentialsFound, onMissionComplet
                         onClick={() => {
                           if (f.name === 'config.bak') {
                             onCredentialsFound('admin', 'P@ssw0rd123!', '/uploads/config.bak', 'wp-admin');
-                            onMissionComplete?.(5);
                           }
                           onNavigate(`http://${ip}${f.href}`);
                         }}
