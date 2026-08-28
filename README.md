@@ -2,6 +2,49 @@
 
 > Plataforma web para aprender ciberseguridad ofensiva con laboratorios interactivos en el navegador. Sin instalación, sin VMs, solo abrir y hackear.
 
+## 🎓 ZILabs Academy
+
+La **Academy** es el área de formación teórica de la plataforma: **8 paths de estudio con 58 lecciones** (quiz final incluido por lección), progreso persistente por usuario (guardado en `localStorage`, sin datos personales) y navegación ES/EN.
+
+| Path | Tema |
+|------|------|
+| `os` | Operating Systems (Linux/Windows) |
+| `redes` | Network Fundamentals |
+| `protocolos` / `protocolos-ii` | Networking I y II |
+| `ciberseguridad` | Cybersecurity Fundamentals |
+| `hacking` | Pentesting |
+| `hacking-web` | Web Hacking |
+| `scripting` | Pentesting Scripting (Bash / PowerShell / Python) |
+
+Cada lección se compone de pasos de distinto tipo:
+- **`narrator`** — intro hablada del tema
+- **`content`** — bloque de contenido teórico
+- **`terminal-demo`** — demo interactiva (comandos que se pueden copiar/ejecutar)
+- **`video`** — video-lección animada (renderizada con Remotion, ver sección de hosting)
+- **`quiz`** — pregunta de opción múltiple con feedback inmediato
+
+> 📖 Detalle de diseño en [docs/PROYECTO_ACADEMY.md](docs/PROYECTO_ACADEMY.md).
+
+## 🎥 Video-lecciones y hosting (jsDelivr CDN)
+
+Las video-lecciones se renderizan con **Remotion** (39 composiciones) y se exportan a `.mp4`. Los videos **no se sirven desde el dominio de la app** (para no inflar el deploy de Vercel ni gastar su ancho de banda) sino desde un **CDN global y gratuito**.
+
+**Servicio actual:** [jsDelivr](https://www.jsdelivr.com/) sirviendo un repo público de GitHub con los videos:
+- Repo: `https://github.com/pveron1582/zilabs-videos` (público, sin LFS — jsDelivr necesita el archivo crudo)
+- URL base: `https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main`
+- Ejemplo: `https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main/videos/li01-linux-history.mp4`
+
+**Flujo para agregar o actualizar un video:**
+1. Renderizá la composición con Remotion → obtiene el `.mp4` en `public/videos/`
+2. Subí el mp4 al repo `zilabs-videos` (estructura `videos/<nombre>.mp4`, máx. 20MB por archivo)
+3. jsDelivr lo cachea automáticamente (TTL ~7 días) y lo sirve desde el nodo más cercano
+
+**En el código:** la base se define en un solo lugar — `src/utils/videoUrl.ts` (`VIDEO_BASE_URL`). Si algún día se cambia de proveedor (R2, Cloudflare Stream, etc.), es un cambio de 1 línea y las 96 lecciones que referencian `videos/*.mp4` apuntan al nuevo origen sin tocar sus datos.
+
+**Ventajas:** deploy de Vercel liviano (los videos no entran al bundle), CDN global, carga diferida del video (solo se descarga al abrir la lección), y sin costos de ancho de banda para el proyecto.
+
+> ⚠️ Nota: el repo de videos es **público** a propósito (requisito de jsDelivr). Los videos son contenido educativo ficticio — no subas material sensible ahí.
+
 ## 🚀 Quick Start
 
 ```bash
@@ -14,6 +57,7 @@ pnpm test:run             # Tests en single run (CI)
 pnpm test -- -t "filter"  # Tests por nombre
 pnpm test:coverage        # Tests con cobertura
 pnpm test:ui              # Vitest UI mode
+pnpm test:e2e             # Smoke E2E con Playwright (chromium headless)
 pnpm exec tsc --noEmit    # Type check
 ```
 
@@ -57,7 +101,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **1939 Tests** — Vitest + React Testing Library (147 archivos de prueba)
+- **1950 Tests** — Vitest + React Testing Library + Playwright E2E (149 archivos unitarios + 19 E2E)
 
 ## 🏗️ Tech Stack
 
@@ -127,7 +171,7 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales
-- ✅ 1939 tests pasando (147 test files)
+- ✅ 1950 tests pasando (149 test files unitarios + 19 E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
 - ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)
