@@ -24,8 +24,8 @@ import { usePendingSu } from './usePendingSu';
 import { useFtpSession, getFtpPromptFor, type SessionRunnerDeps } from './useFtpSession';
 import { useSshSession, getSshPromptFor } from './useSshSession';
 import { useDownloadedFile } from './useDownloadedFile';
-import { processCommandResult, type ProcessDeps, type HistoryEntry } from './processCommandResult';
-import { getStreamingConfig, computeTotalDelay, shouldStream } from './streamingConfig';
+import type { ProcessDeps, HistoryEntry } from './processCommandResult';
+import { useRunCommand } from './useRunCommand';
 
 export interface CommandRunnerProps {
   scenarioId: string;
@@ -218,155 +218,17 @@ export function useCommandRunner({
     currentMissionId, currentDir, umask, setUmask, env, setEnv, prompt, setHistory,
   });
 
-  // ── Ejecutor principal ───────────────────────────────────────────
-  const runCommand = (cmd: string) => {
-    const trimmed = cmd.trim();
-
-    // `su` esperando password del usuario destino.
-    if (pendingSu) {
-      const suResult = handleSuPassword(trimmed);
-      if (suResult) {
-        setHistory(prev => [...prev, {
-          command: null,
-          output: suResult.output,
-          streaming: false,
-          prompt,
-          timestamp: Date.now()
-        }]);
-        checkMissionCompletion(suResult);
-      }
-      setInput('');
-      setHistIdx(-1);
-      return;
-    }
-
-    if ((!trimmed && !ftpSession?.active && !sshSession?.active) || busy) return;
-    setCmdHistory(prev => [trimmed, ...prev]);
-    setInput(''); setHistIdx(-1);
-    const currentPrompt = prompt;
-
-    // ── FTP session activa ─────────────────────────────────────────
-    if (ftpSession?.active) {
-      const { result, updatedSession } = runFtpCommand(trimmed, sessionDeps);
-      setHistory(prev => [...prev, {
-        command: trimmed,
-        output: result.output,
-        streaming: false,
-        prompt: currentPrompt,
-        timestamp: Date.now()
-      }]);
-      checkMissionCompletion(result);
-      handleDownloadedFile(result, () => getFtpPromptFor(updatedSession) || 'ftp> ');
-      return;
-    }
-
-    // ── SSH session esperando password ─────────────────────────────
-    if (sshSession?.active && sshSession.step === 'password') {
-      const { result } = runSshPassword(trimmed, sessionDeps);
-      setHistory(prev => [...prev, {
-        command: trimmed,
-        output: result.output,
-        streaming: false,
-        prompt: currentPrompt,
-        timestamp: Date.now()
-      }]);
-      checkMissionCompletion(result);
-
-      if ('foundCredentials' in result && result.foundCredentials) {
-        onCredentialsFound(result.foundCredentials.machineId, result.foundCredentials.user, result.foundCredentials.pass, result.foundCredentials.file, result.foundCredentials.service);
-        onVerifyCredentials?.(result.foundCredentials.machineId, result.foundCredentials.service);
-      }
-      if ('newMachineId' in result && result.newMachineId) {
-        onChangeMachine(result.newMachineId);
-        const sshUser = 'sshLoginUser' in result && result.sshLoginUser ? result.sshLoginUser : undefined;
-        const sshCwd = sshUser === 'root' ? '/root' : (sshUser ? `/home/${sshUser}` : '/');
-        pushIdentity({ machineId: result.newMachineId, suUser: sshUser, cwd: sshCwd });
-      }
-      if ('sshLoginUser' in result && result.sshLoginUser) {
-        setCurrentDir(result.sshLoginUser === 'root' ? '/root' : `/home/${result.sshLoginUser}`);
-      }
-      return;
-    }
-
-    // ── Comando normal ─────────────────────────────────────────────
-    const result = executor.executeCommand({
-      line: trimmed,
-      machine, allMachines, currentMissionId, terminalId,
-      onMsfStateChange: setMsfState, currentDir, setCurrentDir,
-      language, umask, setUmask, env, setEnv,
-    });
-
-    // Inicio de sesión FTP nuevo
-    if ('ftpSession' in result && result.ftpSession?.connected && !ftpSession?.active) {
-      startFtpSession(result.ftpSession, sessionDeps);
-      setHistory(prev => [...prev, {
-        command: trimmed,
-        output: result.output,
-        streaming: false,
-        prompt: currentPrompt,
-        timestamp: Date.now()
-      }]);
-      if ('completedMissionId' in result && result.completedMissionId) onMissionComplete(result.completedMissionId);
-      return;
-    }
-
-    // Inicio de sesión SSH nuevo
-    if ('sshSession' in result && result.sshSession?.active && !sshSession?.active) {
-      startSshSession(result.sshSession);
-      setHistory(prev => [...prev, {
-        command: trimmed,
-        output: result.output,
-        streaming: false,
-        prompt: currentPrompt,
-        timestamp: Date.now()
-      }]);
-      return;
-    }
-
-    handleDownloadedFile(result, () => currentPrompt);
-
-    if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
-    if (result.output === 'EXIT_TO_LANDING') {
-      const state = useScenarioStore.getState();
-      const allComplete = state.missions.length > 0 && state.missions.every(m => m.status === 'completed');
-      if (allComplete) {
-        state.triggerSurvey(state.currentScenario);
-      } else {
-        useScenarioStore.getState().resetWorkspace();
-      }
-      return;
-    }
-    if ('exitTerminal' in result && result.exitTerminal) {
-      onExitTerminal?.();
-      return;
-    }
-
-    const cmdName = trimmed.split(/\s+/)[0].toLowerCase();
-    const cfg = getStreamingConfig(cmdName);
-    const customDelays = 'streamingLineDelays' in result ? result.streamingLineDelays : undefined;
-
-    if (!shouldStream(cfg, customDelays)) {
-      setHistory(prev => [...prev, { command: trimmed, output: result.output, streaming: false, prompt: currentPrompt, timestamp: Date.now() }]);
-      processCommandResult(processDeps, result, false);
-      return;
-    }
-
-    // ── Streaming línea por línea ──────────────────────────────────
-    const entryTs = Date.now();
-    setBusy(true);
-    const lines = (result.output as string).split('\n');
-    const totalDelay = computeTotalDelay(lines, cfg, customDelays);
-    setHistory(prev => [...prev, { command: trimmed, streaming: true, lines, prompt: currentPrompt, timestamp: entryTs, result, lineDelays: customDelays }]);
-
-    setTimeout(() => {
-      setBusy(false);
-      processCommandResult(processDeps, result, true);
-      setHistory(prev => prev.map(e =>
-        e.timestamp === entryTs ? { ...e, streaming: false, output: result.output } : e
-      ));
-      setTimeout(() => inputRef.current?.focus(), 60);
-    }, totalDelay);
-  };
+  // ── Ejecutor principal (extraído a useRunCommand) ────────────────
+  const runCommand = useRunCommand({
+    pendingSu, handleSuPassword,
+    ftpSession, runFtpCommand, startFtpSession,
+    sshSession, runSshPassword, startSshSession,
+    busy, setBusy, setHistory, setInput, setHistIdx, setCmdHistory,
+    prompt, checkMissionCompletion, sessionDeps, processDeps, executor,
+    setMsfState, onCredentialsFound, onVerifyCredentials, onChangeMachine,
+    pushIdentity, handleDownloadedFile, onMissionComplete, onExitTerminal,
+    inputRef,
+  });
 
   // ── Ctrl+C sobre un listener: limpiar también el store ───────────
   const cancelListening = (port: number | null) => {
