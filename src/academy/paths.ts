@@ -31,6 +31,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     descriptionEs: 'Qué son las redes, qué formas tienen y el direccionamiento que las hace funcionar.',
     icon: '🌐',
     accentColor: '#06b6d4',
+    illustration: 'redes',
     lessons: REDES_LESSONS,
   },
   {
@@ -41,6 +42,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     descriptionEs: 'Los protocolos que ves en cada escaneo, los dispositivos esenciales que los mueven y las VLANs que los segmentan.',
     icon: '📡',
     accentColor: '#8b5cf6',
+    illustration: 'protocolos',
     lessons: PROTOCOLOS_LESSONS,
   },
   {
@@ -51,6 +53,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     descriptionEs: 'Los servicios y arquitecturas que hacen funcionar una red: DHCP, NAT, DNS, VPN, DMZ.',
     icon: '🖧',
     accentColor: '#64748b',
+    illustration: 'protocolos-ii',
     lessons: PROTOCOLOS2_LESSONS,
   },
   {
@@ -61,6 +64,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     descriptionEs: 'Triada CID, cifrado vs hashing, y cómo se crackean las contraseñas.',
     icon: '🛡️',
     accentColor: '#10b981',
+    illustration: 'ciberseguridad',
     lessons: CIBERSEG_LESSONS,
   },
   {
@@ -71,6 +75,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     descriptionEs: 'La metodología de 5 fases: reconocimiento, escaneo, explotación, post-explotación, reporte.',
     icon: '⚔️',
     accentColor: '#ef4444',
+    illustration: 'hacking',
     lessons: HACKING_LESSONS,
   },
   {
@@ -81,6 +86,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     descriptionEs: 'Las vulnerabilidades web y los protocolos sobre los que viajan: HTTP, HTTPS, cookies, sesiones.',
     icon: '🕸️',
     accentColor: '#d946ef',
+    illustration: 'hacking-web',
     lessons: HACKING_WEB_LESSONS,
   },
   {

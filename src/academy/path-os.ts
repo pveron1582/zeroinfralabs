@@ -14,6 +14,7 @@ export const OS_SUBSECTIONS: AcademySubSection[] = [
     title: 'Linux',
     titleEs: 'Linux',
     icon: '🐧',
+    illustration: 'linux',
     lessons: LINUX_LESSONS,
   },
   {
@@ -21,6 +22,7 @@ export const OS_SUBSECTIONS: AcademySubSection[] = [
     title: 'Windows',
     titleEs: 'Windows',
     icon: '🪟',
+    illustration: 'windows',
     lessons: WINDOWS_LESSONS,
   },
   {
@@ -28,6 +30,7 @@ export const OS_SUBSECTIONS: AcademySubSection[] = [
     title: 'Other operating systems and hardware',
     titleEs: 'Otros sistemas operativos y hardware',
     icon: '📱',
+    illustration: 'others',
     lessons: OTHERS_LESSONS,
   },
 ];

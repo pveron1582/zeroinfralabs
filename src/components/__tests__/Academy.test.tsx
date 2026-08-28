@@ -105,6 +105,17 @@ describe('Academy', () => {
       expect(screen.getByText(/Permisos: rwx, octal/)).toBeInTheDocument();
     });
 
+    it('muestra la ilustración del módulo a la izquierda de las lecciones', () => {
+      renderAcademy('/es/academy/os/module/linux');
+      // La ilustración agrega un badge con el nombre del módulo
+      expect(screen.getByText('Módulo · Linux')).toBeInTheDocument();
+    });
+
+    it('muestra la ilustración correcta para un path sin subsecciones (hacking web)', () => {
+      renderAcademy('/es/academy/hacking-web');
+      expect(screen.getByText('Módulo · Hacking Web')).toBeInTheDocument();
+    });
+
     it('muestra el módulo Windows con sus 5 lecciones en /module/windows', () => {
       renderAcademy('/es/academy/os/module/windows');
       expect(screen.getByRole('heading', { name: 'Windows' })).toBeInTheDocument();

@@ -14,6 +14,7 @@ export const SCRIPTING_SUBSECTIONS: AcademySubSection[] = [
     title: 'Bash',
     titleEs: 'Bash',
     icon: '🐚',
+    illustration: 'bash',
     lessons: BASH_LESSONS,
   },
   {
@@ -21,6 +22,7 @@ export const SCRIPTING_SUBSECTIONS: AcademySubSection[] = [
     title: 'PowerShell',
     titleEs: 'PowerShell',
     icon: '🪟',
+    illustration: 'powershell',
     lessons: POWERSHELL_LESSONS,
   },
   {
@@ -28,6 +30,7 @@ export const SCRIPTING_SUBSECTIONS: AcademySubSection[] = [
     title: 'Python',
     titleEs: 'Python',
     icon: '🐍',
+    illustration: 'python',
     lessons: PYTHON_LESSONS,
   },
 ];

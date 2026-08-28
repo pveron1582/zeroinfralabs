@@ -7,9 +7,10 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
 import { getPath } from '../../academy';
-import type { Lesson, AcademySubSection } from '../../types';
+import type { Lesson, AcademySubSection, ModuleIllustrationKey } from '../../types';
 import { PageHero } from '../landing/PageHero';
 import { useColors, FONT_MONO, FONT_SANS } from '../landing/constants';
+import { ModuleIllustration } from './ModuleIllustration';
 
 function LessonRow({ lesson, pathId, lang, isEs, completed }: {
   lesson: Lesson;
@@ -89,6 +90,10 @@ export function AcademyPathPage() {
   const currentSub = subId ? subSections.find(s => s.id === subId) : undefined;
   const lessonsToShow = currentSub?.lessons ?? path.lessons;
 
+  // Ilustración del módulo activo (path o subsección)
+  const illustrationKey: ModuleIllustrationKey | undefined = currentSub?.illustration ?? path.illustration;
+  const illustrationTitle = isEs ? (currentSub?.titleEs ?? path.titleEs) : (currentSub?.title ?? path.title);
+
   // Progreso global del path: todas las lecciones
   const allLessons = subSections.length > 0 ? subSections.flatMap(s => s.lessons) : path.lessons;
   const done = allLessons.filter(l => completedLessons.includes(l.id)).length;
@@ -103,7 +108,7 @@ export function AcademyPathPage() {
         subtitle={isEs ? path.descriptionEs : path.description}
       />
 
-      <main className="flex-1 w-full max-w-[880px] mx-auto px-4 md:px-8 py-10 md:py-12">
+      <main className="flex-1 w-full max-w-[1040px] mx-auto px-4 md:px-8 py-10 md:py-12">
         <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
           <Link
             to={`/${lang}/academy`}
@@ -128,18 +133,32 @@ export function AcademyPathPage() {
           </div>
         </div>
 
-        {/* Lista de lecciones del módulo activo */}
-        <div className="space-y-3">
-          {lessonsToShow.map(lesson => (
-            <LessonRow
-              key={lesson.id}
-              lesson={lesson}
-              pathId={path.id}
-              lang={lang || 'es'}
-              isEs={isEs}
-              completed={completedLessons.includes(lesson.id)}
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+          {/* Sidebar ilustración */}
+          {illustrationKey && (
+            <div className="md:sticky md:top-6">
+              <ModuleIllustration
+                module={illustrationKey}
+                title={illustrationTitle}
+                accent={path.accentColor}
+                isEs={isEs}
+              />
+            </div>
+          )}
+
+          {/* Lista de lecciones del módulo activo */}
+          <div className="space-y-3">
+            {lessonsToShow.map(lesson => (
+              <LessonRow
+                key={lesson.id}
+                lesson={lesson}
+                pathId={path.id}
+                lang={lang || 'es'}
+                isEs={isEs}
+                completed={completedLessons.includes(lesson.id)}
+              />
+            ))}
+          </div>
         </div>
       </main>
     </div>

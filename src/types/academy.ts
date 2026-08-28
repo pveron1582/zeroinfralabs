@@ -4,6 +4,13 @@
 
 export type AcademyPathId = 'os' | 'redes' | 'protocolos' | 'protocolos-ii' | 'ciberseguridad' | 'hacking' | 'hacking-web' | 'scripting';
 
+/** Claves de ilustración por módulo (linux, windows, redes, bash, etc.). */
+export type ModuleIllustrationKey =
+  | 'linux' | 'windows' | 'others'
+  | 'redes' | 'protocolos' | 'protocolos-ii'
+  | 'ciberseguridad' | 'hacking' | 'hacking-web'
+  | 'bash' | 'powershell' | 'python';
+
 export type LessonStep =
   | {
       type: 'content';
@@ -92,6 +99,8 @@ export interface AcademyPath {
   descriptionEs: string;
   icon: string;
   accentColor: string;
+  /** Clave de la ilustración del módulo (renderizada por ModuleIllustration). */
+  illustration?: ModuleIllustrationKey;
   /** Subsecciones con lecciones agrupadas. Si `lessons` está presente, legacy-flat. */
   subSections?: AcademySubSection[];
   /** Compat: lecciones flat cuando no hay subsecciones */
@@ -103,5 +112,7 @@ export interface AcademySubSection {
   title: string;
   titleEs: string;
   icon: string;
+  /** Clave de la ilustración del módulo (renderizada por ModuleIllustration). */
+  illustration?: ModuleIllustrationKey;
   lessons: Lesson[];
 }
