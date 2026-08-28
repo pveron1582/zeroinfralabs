@@ -11,6 +11,12 @@ coverage/
 *.mcp.json
 push.sh
 
+# Playwright E2E
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # Documentos internos de sesiones de IA (auditorías, checklists)
 glm_mejoras.md
 mejoras_glm.md
