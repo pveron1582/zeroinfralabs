@@ -108,43 +108,32 @@ export function AcademyPathPage() {
         subtitle={isEs ? path.descriptionEs : path.description}
       />
 
-      <main className="flex-1 w-full max-w-[1040px] mx-auto px-4 md:px-8 py-10 md:py-12">
-        <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-          <Link
-            to={`/${lang}/academy`}
-            className="inline-flex items-center gap-2 text-sm font-semibold transition-colors text-emerald-400 hover:text-emerald-300"
-            style={{ color: colors.emerald }}
-          >
-            ← {isEs ? 'Todos los módulos' : 'All modules'}
-          </Link>
-          {/* Progreso del módulo */}
-          <div className="flex items-center gap-3 rounded-xl px-4 py-2.5"
-            style={{ background: colors.sectionBg, border: `1px solid ${colors.border}` }}>
-            <span className="text-xs" style={{ color: colors.textMuted }}>
-              {done} {isEs ? 'de' : 'of'} {total} {isEs ? 'lecciones completadas' : 'lessons completed'}
-            </span>
-            <div className="w-28 h-1.5 rounded-full overflow-hidden" style={{ background: colors.border }}>
-              <div className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${pct}%`, background: colors.emerald }} />
+      <main className="flex-1 w-full max-w-[1440px] mx-auto relative px-4 md:px-8 py-10 md:py-12">
+        {/* Contenido centrado como antes (880px) */}
+        <div className="mx-auto w-full max-w-[880px]">
+          <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+            <Link
+              to={`/${lang}/academy`}
+              className="inline-flex items-center gap-2 text-sm font-semibold transition-colors text-emerald-400 hover:text-emerald-300"
+              style={{ color: colors.emerald }}
+            >
+              ← {isEs ? 'Todos los módulos' : 'All modules'}
+            </Link>
+            {/* Progreso del módulo */}
+            <div className="flex items-center gap-3 rounded-xl px-4 py-2.5"
+              style={{ background: colors.sectionBg, border: `1px solid ${colors.border}` }}>
+              <span className="text-xs" style={{ color: colors.textMuted }}>
+                {done} {isEs ? 'de' : 'of'} {total} {isEs ? 'lecciones completadas' : 'lessons completed'}
+              </span>
+              <div className="w-28 h-1.5 rounded-full overflow-hidden" style={{ background: colors.border }}>
+                <div className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%`, background: colors.emerald }} />
+              </div>
+              <span className="text-xs font-bold" style={{ fontFamily: FONT_MONO, color: done > 0 ? colors.emerald : colors.textMuted }}>
+                {pct}%
+              </span>
             </div>
-            <span className="text-xs font-bold" style={{ fontFamily: FONT_MONO, color: done > 0 ? colors.emerald : colors.textMuted }}>
-              {pct}%
-            </span>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
-          {/* Sidebar ilustración */}
-          {illustrationKey && (
-            <div className="md:sticky md:top-6">
-              <ModuleIllustration
-                module={illustrationKey}
-                title={illustrationTitle}
-                accent={path.accentColor}
-                isEs={isEs}
-              />
-            </div>
-          )}
 
           {/* Lista de lecciones del módulo activo */}
           <div className="space-y-3">
@@ -160,6 +149,21 @@ export function AcademyPathPage() {
             ))}
           </div>
         </div>
+
+        {/* Ilustración fija a la izquierda del contenido centrado (no empuja los bloques) */}
+        {illustrationKey && (
+          <div
+            className="hidden xl:block absolute top-8 w-[220px]"
+            style={{ left: 'calc(50% - 440px - 250px)' }}
+          >
+            <ModuleIllustration
+              module={illustrationKey}
+              title={illustrationTitle}
+              accent={path.accentColor}
+              isEs={isEs}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
