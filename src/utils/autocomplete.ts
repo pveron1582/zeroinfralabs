@@ -5,7 +5,7 @@
 
 import type { Machine, MsfState } from '../types';
 import type { MsfModule } from '../frameworks/metasploit/core/msfModules';
-import { AVAILABLE_COMMAND_NAMES } from '../commands';
+import { COMMAND_NAMES } from '../commands/names';
 
 // Comandos de Metasploit para autocompletar
 const MSF_COMMANDS = [
@@ -75,9 +75,9 @@ function getItemsInDirectory(machine: Machine, targetDir: string): string[] {
  * - autocompleteCommand('xyz') → [] (sin coincidencias)
  */
 export function autocompleteCommand(partial: string): string[] {
-  if (!partial) return [...AVAILABLE_COMMAND_NAMES];
+  if (!partial) return [...COMMAND_NAMES];
 
-  return AVAILABLE_COMMAND_NAMES.filter(cmd => cmd.startsWith(partial));
+  return COMMAND_NAMES.filter(cmd => cmd.startsWith(partial));
 }
 
 /**
