@@ -1,11 +1,9 @@
 // ── utils/videoUrl.ts ─────────────────────────────────────────────
-// URL base para los videos de las lecciones. Cambiar VIDEO_BASE_URL
-// a la URL de tu bucket R2/CDN cuando esté listo.
+// URL base para los videos de las lecciones.
+// Servidos via jsDelivr CDN desde el repo público de videos:
+//   https://github.com/pveron1582/zilabs-videos
+// Resuelve a: https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main/videos/foo.mp4
 //
-// Ejemplo con R2:
-//   export const VIDEO_BASE_URL = 'https://labvideos.<account>.r2.dev';
-//   // Los videos servidos como: https://labvideos.<account>.r2.dev/videos/foo.mp4
-//
-// Por defecto (vacío): los videos se sirven desde el mismo dominio
-// (public/videos/ en el build de Vite).
-export const VIDEO_BASE_URL = '';
+// Para volver a servir desde el propio dominio (public/videos/),
+// dejá VIDEO_BASE_URL como cadena vacía.
+export const VIDEO_BASE_URL = 'https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main';
