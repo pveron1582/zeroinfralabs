@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { FONT_MONO, FONT_SANS } from '../landing/constants';
+import { VIDEO_BASE_URL } from '../../utils/videoUrl';
 
 interface AcademyVideoProps {
   src: string;
@@ -18,6 +19,10 @@ interface AcademyVideoProps {
 export function AcademyVideo({ src, poster, durationSec, caption, captionEs, isEs }: AcademyVideoProps) {
   const [playing, setPlaying] = useState(false);
   const captionText = isEs ? (captionEs || caption) : (caption || captionEs);
+  // Resuelve la URL del video: si VIDEO_BASE_URL está definida (R2/CDN),
+  // los videos se cargan desde ahí; si no, desde el mismo dominio.
+  const resolvedSrc = VIDEO_BASE_URL ? `${VIDEO_BASE_URL}${src}` : src;
+  const resolvedPoster = poster && VIDEO_BASE_URL ? `${VIDEO_BASE_URL}${poster}` : poster;
 
   return (
     <div className="rounded-xl overflow-hidden border shadow-2xl" style={{ borderColor: '#1e293b', fontFamily: FONT_SANS }}>
@@ -37,8 +42,8 @@ export function AcademyVideo({ src, poster, durationSec, caption, captionEs, isE
       {/* Video */}
       <div className="relative" style={{ background: '#050a08' }}>
         <video
-          src={src}
-          poster={poster}
+          src={resolvedSrc}
+          poster={resolvedPoster}
           controls
           className="w-full block"
           style={{ maxHeight: '400px' }}
