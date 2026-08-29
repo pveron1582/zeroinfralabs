@@ -35,12 +35,14 @@ const CENTERED: React.CSSProperties = {
 
 // ── Scene 1: intro — 3 comandos en orden ────────────────────────────
 // Los `at` son RELATIVOS a la secuencia anidada (que arranca en titleEnd,
-// 3.3s). Los momentos absolutos de la narración eran mkdir~4s, touch~7.8s,
-// nano~10s → relativos: 0.7, 4.5, 6.7.
+// 3.3s). Timings remeasured con silencedetect (-50dB, d=0.2) sobre los
+// wavs reales (voz Miguel): "primero... mkdir" arranca en 7.93 abs → 4.6
+// relativo, "después... touch" en 10.13 abs → 6.8, "y por último... nano"
+// en 12.04 abs → 8.7, "Vamos a verlos" en 14.02 abs.
 const ORDER_STEPS = [
-  { n: '1', cmd: 'mkdir', what: 'creás la carpeta', c: THEME.cyan, at: 0.7 },
-  { n: '2', cmd: 'touch', what: 'creás el archivo', c: THEME.amber, at: 4.5 },
-  { n: '3', cmd: 'nano', what: 'lo editás', c: THEME.red, at: 6.7 },
+  { n: '1', cmd: 'mkdir', what: 'creás la carpeta', c: THEME.cyan, at: 4.6 },
+  { n: '2', cmd: 'touch', what: 'creás el archivo', c: THEME.amber, at: 6.8 },
+  { n: '3', cmd: 'nano', what: 'lo editás', c: THEME.red, at: 8.7 },
 ];
 
 const OrderChip: React.FC<{ step: typeof ORDER_STEPS[0]; fps: number }> = ({ step, fps }) => {
@@ -64,6 +66,7 @@ const OrderChip: React.FC<{ step: typeof ORDER_STEPS[0]; fps: number }> = ({ ste
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
   const titleEnd = Math.round(3.3 * fps);
+  const outroAt = Math.round(10.7 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={titleEnd}>
@@ -80,12 +83,22 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
               <OrderChip key={s.n} step={s} fps={fps} />
             ))}
           </div>
-          <div style={{ marginTop: 34, fontSize: 21, color: THEME.muted, fontFamily: MONO }}>
-            un orden muy simple — vamos a verlos
-          </div>
+          <OutroText at={outroAt} />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>
+  );
+};
+
+const OutroText: React.FC<{ at: number }> = ({ at }) => {
+  const frame = useCurrentFrame();
+  return (
+    <div style={{
+      marginTop: 34, fontSize: 21, color: THEME.muted, fontFamily: MONO,
+      opacity: interpolate(frame - at, [0, 12], [0, 1], { extrapolateRight: 'clamp' }),
+    }}>
+      un orden muy simple — vamos a verlos
+    </div>
   );
 };
 
@@ -119,8 +132,11 @@ const StepCard: React.FC<{ step: typeof PIPELINE[0]; fps: number }> = ({ step, f
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
   const frame = useCurrentFrame();
-  const ctrlAt = Math.round(19.0 * fps);
-  const closeAt = Math.round(23.6 * fps);
+  // Remeasured con silencedetect: la explicación de guardar/salir (Ctrl+O,
+  // Ctrl+X) está dentro del segmento [7.1s-14.8s]; el cierre "Carpeta,
+  // archivo, editor" arranca tras el silencio fuerte de 14.81s (→15.2).
+  const ctrlAt = Math.round(11.5 * fps);
+  const closeAt = Math.round(15.2 * fps);
 
   return (
     <AbsoluteFill>
@@ -148,10 +164,14 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Scene 3: dónde podés crear ──────────────────────────────────────
+// Timings remeasured con silencedetect (-50dB): "En /tmp" arranca en 3.79
+// (chip at 3.4, justo antes), "tu home" en 8.27 (at 8.0), "Pero en /etc" en
+// 9.74 (at 9.5), "el sistema te lo va a rechazar" cierra el bloque /etc
+// (~15.5-20.4), "Por eso los atacantes" arranca ~17 tras terminar /etc.
 const LOCATIONS = [
   { path: '/tmp', allowed: true, label: 'siempre — carpeta temporal', c: THEME.cyan, at: 3.4 },
   { path: '/home/tu_usuario', allowed: true, label: 'tu home', c: THEME.green, at: 8.0 },
-  { path: '/etc', allowed: false, label: 'solo root — config del sistema', c: THEME.red, at: 11.5 },
+  { path: '/etc', allowed: false, label: 'solo root — config del sistema', c: THEME.red, at: 9.5 },
 ];
 
 const LocationChip: React.FC<{ loc: typeof LOCATIONS[0]; fps: number }> = ({ loc, fps }) => {
@@ -166,7 +186,11 @@ const LocationChip: React.FC<{ loc: typeof LOCATIONS[0]; fps: number }> = ({ loc
       padding: '24px 22px', minWidth: 210, textAlign: 'center', fontFamily: MONO,
     }}>
       <div style={{ fontSize: 22, color: loc.c, fontWeight: 700 }}>{loc.path}</div>
-      <div style={{ fontSize: 30, margin: '10px 0' }}>{loc.allowed ? '✓' : '✗'}</div>
+      {/* El color es explícito: sin él el glifo hereda el negro del fondo
+          y queda invisible sobre THEME.panel (oscuro). */}
+      <div style={{ fontSize: 34, margin: '10px 0', fontWeight: 800, color: loc.allowed ? THEME.green : THEME.red }}>
+        {loc.allowed ? '✓' : '✗'}
+      </div>
       <div style={{ fontSize: 13, color: THEME.muted }}>{loc.label}</div>
     </div>
   );
@@ -174,9 +198,9 @@ const LocationChip: React.FC<{ loc: typeof LOCATIONS[0]; fps: number }> = ({ loc
 
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
   const frame = useCurrentFrame();
-  const introAt = Math.round(1.7 * fps);
-  const warningAt = Math.round(16.0 * fps);
-  const attackerAt = Math.round(22.9 * fps);
+  const introAt = Math.round(0.3 * fps);
+  const warningAt = Math.round(15.5 * fps);
+  const attackerAt = Math.round(17.0 * fps);
 
   return (
     <AbsoluteFill>
