@@ -35,7 +35,8 @@ function ScenarioLauncher() {
     if (!validLang || !id) return;
 
     const scenario = SCENARIOS.find(s => s.id === id);
-    if (!scenario) {
+    if (!scenario || scenario.hidden) {
+      // Lab inexistente u oculto (incompleto): no accesible por URL.
       navigate(`/${validLang}/labs`, { replace: true });
       return;
     }

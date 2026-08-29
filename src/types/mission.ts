@@ -90,4 +90,7 @@ export interface Scenario {
   initialMachineId: string;
   machines: Machine[];
   missions: Mission[];
+  /** Oculto de la landing/grilla de labs (incompleto o en desarrollo).
+   *  Sigue registrado en SCENARIOS (accesible por URL solo con guard). */
+  hidden?: boolean;
 }

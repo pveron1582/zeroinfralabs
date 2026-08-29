@@ -6,7 +6,15 @@ import { scenario_05 as laboratorio_05, scenario05Data } from './laboratorio05';
 import { scenario_06 as laboratorio_06, scenario06Data } from './laboratorio06';
 import { scenario_07 as laboratorio_07, scenario07Data } from './laboratorio07';
 
-export const SCENARIOS = [laboratorio_01, laboratorio_02, laboratorio_03, laboratorio_04, laboratorio_05, laboratorio_06, laboratorio_07];
+// Lab 07 (Burp Suite) está incompleto: queda registrado en SCENARIOS para
+// tests/desarrollo pero oculto de la landing y NO accesible por URL (el
+// ScenarioLauncher redirige a /labs). Quitar `hidden` cuando esté listo.
+const laboratorio_07_hidden: typeof laboratorio_07 = { ...laboratorio_07, hidden: true };
+
+export const SCENARIOS = [laboratorio_01, laboratorio_02, laboratorio_03, laboratorio_04, laboratorio_05, laboratorio_06, laboratorio_07_hidden];
+
+/** Labs visibles en la landing/grilla (filtra los marcados `hidden`). */
+export const VISIBLE_SCENARIOS = SCENARIOS.filter(s => !s.hidden);
 
 // Alias for backward compatibility (same object as SCENARIOS[5])
 export const TEST_SCENARIO = laboratorio_06;
@@ -22,3 +30,6 @@ export const SCENARIOS_META = [
   { id: scenario06Data.id, tagline: scenario06Data.tagline, taglineEs: scenario06Data.taglineEs, description: scenario06Data.description, descriptionEs: scenario06Data.descriptionEs, tools: scenario06Data.tools, accentColor: scenario06Data.accentColor },
   { id: scenario07Data.id, tagline: scenario07Data.tagline, taglineEs: scenario07Data.taglineEs, description: scenario07Data.description, descriptionEs: scenario07Data.descriptionEs, tools: scenario07Data.tools, accentColor: scenario07Data.accentColor },
 ];
+
+/** META alineado por posición con VISIBLE_SCENARIOS (excluye hidden). */
+export const VISIBLE_SCENARIOS_META = SCENARIOS_META.filter((_, i) => !SCENARIOS[i].hidden);

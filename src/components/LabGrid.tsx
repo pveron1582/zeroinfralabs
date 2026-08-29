@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { SCENARIOS, SCENARIOS_META } from '../laboratorios/laboratorios';
+import { VISIBLE_SCENARIOS, VISIBLE_SCENARIOS_META } from '../laboratorios/laboratorios';
 import { useLanguage, useSetLanguage, useT } from '../i18n/translations';
 import { useColors, FONT_SANS } from './landing/constants';
 import { useScenarioStore } from '../store/scenarioStore';
@@ -66,7 +66,7 @@ export function LabGrid() {
   }, []);
 
   const goNext = useCallback(() => {
-    setModalIndex(i => i !== null && i < SCENARIOS.length - 1 ? i + 1 : i);
+    setModalIndex(i => i !== null && i < VISIBLE_SCENARIOS.length - 1 ? i + 1 : i);
   }, []);
 
   useEffect(() => {
@@ -98,8 +98,8 @@ export function LabGrid() {
 
       <main className="relative z-10 flex-1 px-4 md:px-6 pb-14 -mt-2">
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-[1200px] mx-auto">
-          {SCENARIOS.map((s, i) => {
-            const meta = SCENARIOS_META[i];
+          {VISIBLE_SCENARIOS.map((s, i) => {
+            const meta = VISIBLE_SCENARIOS_META[i];
             const accent = meta?.accentColor ?? '#10b981';
             return (
               <ScenarioCard
@@ -156,10 +156,10 @@ export function LabGrid() {
             className="absolute top-1/2 -translate-y-1/2 right-2 md:right-6 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-colors"
             style={{
               background: 'rgba(15,23,42,0.8)',
-              border: `1px solid ${modalIndex === SCENARIOS.length - 1 ? '#334155' : nextHover ? '#10b98160' : '#334155'}`,
-              color: modalIndex === SCENARIOS.length - 1 ? 'transparent' : nextHover ? '#10b981' : '#94a3b8',
-              pointerEvents: modalIndex === SCENARIOS.length - 1 ? 'none' : 'auto',
-              cursor: modalIndex === SCENARIOS.length - 1 ? 'default' : 'pointer',
+              border: `1px solid ${modalIndex === VISIBLE_SCENARIOS.length - 1 ? '#334155' : nextHover ? '#10b98160' : '#334155'}`,
+              color: modalIndex === VISIBLE_SCENARIOS.length - 1 ? 'transparent' : nextHover ? '#10b981' : '#94a3b8',
+              pointerEvents: modalIndex === VISIBLE_SCENARIOS.length - 1 ? 'none' : 'auto',
+              cursor: modalIndex === VISIBLE_SCENARIOS.length - 1 ? 'default' : 'pointer',
               backdropFilter: 'blur(6px)',
             }}
             onMouseEnter={() => setNextHover(true)}
@@ -182,8 +182,8 @@ export function LabGrid() {
           >
             <ModalContent
               index={modalIndex}
-              scenario={SCENARIOS[modalIndex]}
-              meta={SCENARIOS_META[modalIndex]}
+              scenario={VISIBLE_SCENARIOS[modalIndex]}
+              meta={VISIBLE_SCENARIOS_META[modalIndex]}
               lang={language}
               t={t}
               diffLabel={diffLabel}

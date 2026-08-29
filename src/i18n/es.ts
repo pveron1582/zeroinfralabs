@@ -91,7 +91,7 @@ export const es: Translations = {
     ctaSubtitle: 'Elegí un lab y empezá a practicar en menos de 5 segundos.',
     ctaButton: 'Empezar gratis ahora',
     labsPreviewTitle: 'Elegí tu primer lab',
-    labsPreviewSubtitle: 'Cinco escenarios guiados — de hacking web a Metasploit. Si sos nuevo, empezá por el Lab 01.',
+    labsPreviewSubtitle: 'Seis escenarios guiados — de hacking web a SQL injection. Si sos nuevo, empezá por el Lab 01.',
     labsPreviewAll: 'Ver todos los labs',
     labsPreviewScroll: 'Ver labs abajo',
     featuresMergedTitle: 'Hecho para principiantes, con la potencia de un lab real',

@@ -1,7 +1,7 @@
 // Compact lab cards for landing preview
 
 import { Link } from 'react-router-dom';
-import { SCENARIOS, SCENARIOS_META } from '../../laboratorios/laboratorios';
+import { VISIBLE_SCENARIOS, SCENARIOS_META } from '../../laboratorios/laboratorios';
 import { useLanguage, useT } from '../../i18n/translations';
 import { useColors, FONT_MONO, FONT_SANS } from './constants';
 import { useScenarioStore } from '../../store/scenarioStore';
@@ -22,7 +22,7 @@ export function LandingLabPreview({ language, labsLink }: { language: string; la
           <p className="text-sm md:text-base max-w-xl mx-auto" style={{ color: colors.textMuted }}>{t('labsPreviewSubtitle')}</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          {SCENARIOS.slice(0, PREVIEW_COUNT).map((scenario, i) => {
+          {VISIBLE_SCENARIOS.slice(0, PREVIEW_COUNT).map((scenario, i) => {
             const meta = SCENARIOS_META[i];
             const accent = meta?.accentColor ?? colors.emerald;
             const desc = lang === 'es' ? (meta?.descriptionEs || meta?.description) : meta?.description;
@@ -49,7 +49,7 @@ export function LandingLabPreview({ language, labsLink }: { language: string; la
         <div className="text-center">
           <Link to={labsLink}
             className={`inline-flex items-center gap-2 text-sm font-semibold transition-colors ${isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-700 hover:text-emerald-800'}`}>
-            {t('labsPreviewAll')} ({SCENARIOS.length})
+            {t('labsPreviewAll')} ({VISIBLE_SCENARIOS.length})
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </Link>
         </div>

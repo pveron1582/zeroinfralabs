@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { LabGrid } from '../LabGrid';
-import { SCENARIOS } from '../../laboratorios/laboratorios';
+import { SCENARIOS, VISIBLE_SCENARIOS } from '../../laboratorios/laboratorios';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -41,10 +41,16 @@ describe('LabGrid', () => {
     expect(screen.getByText('Choose a Lab')).toBeInTheDocument();
   });
 
-  it('debe mostrar todos los escenarios disponibles', () => {
+  it('debe mostrar todos los escenarios visibles (los hidden no se muestran)', () => {
     renderWithRouter(<LabGrid />);
-    for (const scenario of SCENARIOS) {
+    for (const scenario of VISIBLE_SCENARIOS) {
       expect(screen.getByText(scenario.name)).toBeInTheDocument();
+    }
+    // Los labs ocultos (incompletos, ej. lab 07) NO aparecen en la grilla
+    for (const scenario of SCENARIOS) {
+      if (scenario.hidden) {
+        expect(screen.queryByText(scenario.name)).not.toBeInTheDocument();
+      }
     }
   });
 
@@ -75,23 +81,23 @@ describe('LabGrid', () => {
     }
   });
 
-  it('debe mostrar el botón START para cada escenario', () => {
+  it('debe mostrar el botón START para cada escenario visible', () => {
     renderWithRouter(<LabGrid />);
     const startButtons = screen.getAllByText('START');
-    expect(startButtons.length).toBe(SCENARIOS.length);
+    expect(startButtons.length).toBe(VISIBLE_SCENARIOS.length);
   });
 
-  it('debe mostrar el network range de los escenarios', () => {
+  it('debe mostrar el network range de los escenarios visibles', () => {
     renderWithRouter(<LabGrid />);
-    for (const scenario of SCENARIOS) {
+    for (const scenario of VISIBLE_SCENARIOS) {
       expect(screen.getAllByText(scenario.network_range).length).toBeGreaterThanOrEqual(1);
     }
   });
 
-  it('debe mostrar el conteo de misiones', () => {
+  it('debe mostrar el conteo de misiones de los visibles', () => {
     renderWithRouter(<LabGrid />);
     const missionTexts = screen.getAllByText(/missions/);
-    expect(missionTexts.length).toBeGreaterThanOrEqual(SCENARIOS.length);
+    expect(missionTexts.length).toBeGreaterThanOrEqual(VISIBLE_SCENARIOS.length);
   });
 
   it('debe abrir un modal al hacer click en un escenario', () => {
