@@ -10,6 +10,7 @@ export { cmd_cat } from './cat';
 export { cmd_hashcat } from './hashcat';
 export { cmd_sudo } from './sudo';
 export { cmd_cd } from './cd';
+export { cmd_pwd } from './pwd';
 export { cmd_mkdir } from './mkdir';
 export { cmd_rmdir } from './rmdir';
 export { cmd_exit } from './exit';

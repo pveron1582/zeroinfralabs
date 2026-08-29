@@ -14,7 +14,8 @@ export const COMMAND_NAMES: readonly string[] = [
   'hashcat', 'head', 'help', 'htop', 'hydra', 'id', 'ifconfig', 'ip',
   'iptables', 'journalctl', 'kill', 'ln', 'ls', 'mkdir', 'mount',
   'msfconsole', 'mv', 'nano', 'nc', 'netdiscover', 'netstat', 'nmap',
-  'ping', 'ps', 'rm', 'rmdir', 'service', 'sleep', 'sort', 'ss', 'ssh',
+  'ping', 'ps', 'pwd', 'rm', 'rmdir', 'service', 'sleep', 'sort', 'ss',
+  'ssh',
   'su', 'sudo', 'systemctl', 'tail', 'top', 'touch', 'traceroute',
   'ufw', 'umask', 'umount', 'uniq', 'unset', 'wc', 'which', 'whoami',
 ] as const;

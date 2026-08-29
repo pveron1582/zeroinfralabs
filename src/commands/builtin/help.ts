@@ -22,6 +22,7 @@ export const cmd_help = {
   ifconfig       - Network configuration
   ls [dir]       - List files
   cd [dir]       - Change directory
+  pwd            - Print working directory
   cat [file]     - Display file contents
   touch file     - Create empty file
   echo           - Display text or write file
