@@ -136,34 +136,37 @@ export function AcademyPathPage() {
           </div>
 
           {/* Lista de lecciones del módulo activo */}
-          <div className="space-y-3">
-            {lessonsToShow.map(lesson => (
-              <LessonRow
-                key={lesson.id}
-                lesson={lesson}
-                pathId={path.id}
-                lang={lang || 'es'}
-                isEs={isEs}
-                completed={completedLessons.includes(lesson.id)}
-              />
-            ))}
+          <div className="relative">
+            <div className="space-y-3">
+              {lessonsToShow.map(lesson => (
+                <LessonRow
+                  key={lesson.id}
+                  lesson={lesson}
+                  pathId={path.id}
+                  lang={lang || 'es'}
+                  isEs={isEs}
+                  completed={completedLessons.includes(lesson.id)}
+                />
+              ))}
+            </div>
+
+            {/* Ilustración alineada al borde superior de la primera lección,
+                a la izquierda de la columna (no empuja los bloques) */}
+            {illustrationKey && (
+              <div
+                className="hidden xl:block absolute top-0 w-[220px]"
+                style={{ right: 'calc(100% + 30px)' }}
+              >
+                <ModuleIllustration
+                  module={illustrationKey}
+                  title={illustrationTitle}
+                  accent={path.accentColor}
+                  isEs={isEs}
+                />
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Ilustración fija a la izquierda del contenido centrado (no empuja los bloques) */}
-        {illustrationKey && (
-          <div
-            className="hidden xl:block absolute top-8 w-[220px]"
-            style={{ left: 'calc(50% - 440px - 250px)' }}
-          >
-            <ModuleIllustration
-              module={illustrationKey}
-              title={illustrationTitle}
-              accent={path.accentColor}
-              isEs={isEs}
-            />
-          </div>
-        )}
       </main>
     </div>
   );
