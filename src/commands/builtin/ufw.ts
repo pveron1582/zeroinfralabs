@@ -6,7 +6,7 @@
 import type { CommandContext, CommandResponse } from '../../types';
 import { getCurrentUser, isRoot } from '../../utils/users';
 import {
-  addRule, deleteRule, flushRules, isUfwEnabled, listRules, setUfwEnabled,
+  addRule, deleteRule, isUfwEnabled, listRules, resetUfw, setUfwEnabled,
 } from '../../frameworks/network/networkState';
 
 const UFW_HELP = `Usage: ufw <command> [options]
@@ -108,7 +108,7 @@ export const cmd_ufw = {
         return { output: 'Rule deleted' };
       }
       case 'reset': {
-        flushRules(machine.id);
+        resetUfw(machine.id);
         return { output: 'Resetting all rules to installed defaults. This can be disruptive.' };
       }
       default:

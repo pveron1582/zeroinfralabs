@@ -1,8 +1,9 @@
 // ── commands/suid.ts ─────────────────────────────────────────────
 // Detección de binarios con bits SUID/SGID y cálculo del usuario efectivo
 
-import type { User } from '../types';
+import type { User, Machine } from '../types';
 import { hasSuid, hasSgid } from '../utils/permissions';
+import { getUser } from '../utils/users';
 
 type MachineLike = { files: Array<{ path: string; mode?: number; owner?: string; group?: string }> };
 
@@ -46,11 +47,19 @@ export function getSuidEffectiveUser(
   const owner = binary.owner ?? 'root';
 
   if (isSuid) {
-    return {
-      effectiveUser: { username: owner, uid: owner === 'root' ? 0 : 1000, gid: 0, home: `/home/${owner}`, shell: '/bin/bash', groups: [0] },
-      isSuid: true,
-      isSgid: false,
-    };
+    // M5: usar el uid/gid REAL del owner desde el passwd (no inventar 1000).
+    const ownerUser = getUser(machine as Machine, owner);
+    const effectiveUser: User = ownerUser
+      ? { ...ownerUser, home: ownerUser.home || `/home/${owner}` }
+      : {
+          username: owner,
+          uid: owner === 'root' ? 0 : 1000,
+          gid: 0,
+          home: owner === 'root' ? '/root' : `/home/${owner}`,
+          shell: '/bin/bash',
+          groups: [0],
+        };
+    return { effectiveUser, isSuid: true, isSgid: false };
   }
 
   // For SGID: run with the file's group (keep same user but change gid)

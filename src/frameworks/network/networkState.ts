@@ -75,6 +75,18 @@ export function flushRules(machineId: string, chain?: FirewallChain): void {
   }
 }
 
+/**
+ * Reset de SOLO el firewall ufw (M2): elimina las reglas gestionadas por ufw,
+ * apaga ufw y limpia sus default policies. A diferencia de flushRules(), NO
+ * toca las reglas iptables manuales (en ufw real, `ufw reset` no las borra).
+ */
+export function resetUfw(machineId: string): void {
+  const s = getState(machineId);
+  s.rules = s.rules.filter(r => r.sourceType !== 'ufw');
+  s.ufwEnabled = false;
+  s.defaultPolicies = {};
+}
+
 export function setPolicy(machineId: string, chain: FirewallChain, target: FirewallTarget): void {
   getState(machineId).defaultPolicies[chain] = target;
 }

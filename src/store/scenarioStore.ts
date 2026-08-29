@@ -55,7 +55,8 @@ export const useScenarioStore = create<ScenarioState>()(
       name: 'cyberops-store',
       version: 2,
       partialize: (state) => ({
-        view: state.view,
+        // M3: NO se persiste `view` — la vista se deriva de la ruta al recargar.
+        // Persistir 'workspace' sin escenario genera una vista huérfana.
         language: state.language,
         theme: state.theme,
         uiMode: state.uiMode,
@@ -68,7 +69,6 @@ export const useScenarioStore = create<ScenarioState>()(
         const p = (persisted ?? {}) as Partial<ScenarioState>;
         return {
           ...current,
-          view: p.view ?? current.view,
           language: p.language ?? current.language,
           theme: p.theme ?? current.theme,
           uiMode: p.uiMode ?? current.uiMode,
