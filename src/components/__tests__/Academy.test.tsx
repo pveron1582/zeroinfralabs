@@ -265,19 +265,19 @@ describe('Academy', () => {
 
     it('el back link de una lección OS vuelve a su módulo (/academy/os/module/linux)', () => {
       renderAcademy('/es/academy/os/linux-01');
-      const link = screen.getByRole('link', { name: /Sistemas Operativos/ });
+      const link = screen.getByRole('link', { name: /Regresar/ });
       expect(link).toHaveAttribute('href', '/es/academy/os/module/linux');
     });
 
     it('el back link de una lección flat (protocolos-ii) vuelve al path', () => {
       renderAcademy('/es/academy/protocolos-ii/network-04');
-      const link = screen.getByRole('link', { name: /Redes II/ });
+      const link = screen.getByRole('link', { name: /Regresar/ });
       expect(link).toHaveAttribute('href', '/es/academy/protocolos-ii');
     });
 
     it('el back link de una lección de scripting vuelve a su módulo', () => {
       renderAcademy('/es/academy/scripting/bash-01');
-      const link = screen.getByRole('link', { name: /Scripting para pentesting/ });
+      const link = screen.getByRole('link', { name: /Regresar/ });
       expect(link).toHaveAttribute('href', '/es/academy/scripting/module/bash');
     });
 

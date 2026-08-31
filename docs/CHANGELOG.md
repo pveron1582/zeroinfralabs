@@ -1,5 +1,261 @@
 # Changelog
 
+## [Unreleased] - 2026-08-30
+
+### ci-03/04/05 ES: los últimos 3 videos mudos ahora suenan
+
+El autor grabó los 9 wavs ES que faltaban (ci-03, ci-04, ci-05) — los
+únicos que quedaban de toda la academia:
+
+- **Wavs** en `public/videos/audio-es/<video-id>/` · **`AUDIO_TIMINGS`**
+  con las duraciones reales (ffprobe): ci-03 [28.96, 27.36, 31.76],
+  ci-04 [29.60, 28.40, 32.80], ci-05 [21.92, 28.80, 35.12].
+- **`AUDIO_PENDING` queda vacío** — las 3 composiciones ya emiten su
+  `<Audio>` ES (antes se renderizaban mudas con timings estimados).
+- **Beats re-medidos** con transcripción word-level del wav ES en las
+  3 composiciones ES (los estimados quedaban hasta 14s corridos vs el
+  audio real, p.ej. el cierre de ci-05 pasaba de 16s a 32.3s).
+- **Render**: 3 MP4 en `public/videos/es/` (87-92s, audio aac) ·
+  **CDN** (`a4a6286`) con purge.
+- Pixel-check de ci-04 (título → hash/cifrado → familias → HTTPS →
+  usos diarios, cada panel entra cuando la voz lo nombra).
+
+Con esto la academia queda **completa en ambos idiomas**: 59 videos ES
+con audio + 59 EN con audio, 59/59 lecciones con `srcEn`.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **1956 tests**.
+
+### Scripting EN: sl/ps/py (15 videos) — la academia completa en inglés
+
+Último módulo: con los 45 wavs de scripting se completa la versión
+EN de **los 59 videos del Academy** (14 sisops + 15 redes + 15
+hacking ético + 15 scripting):
+
+- **`AUDIO_TIMINGS_EN`**: duraciones de sl-01..05, ps-01..05,
+  py-01..05 (ffprobe). Wavs en `public/videos/audio-en/<video-id>/`.
+- **15 composiciones `*En.tsx`** con beats re-medidos de la
+  transcripción word-level. Traducciones de terminales al inglés
+  (`.\recon.ps1` with execution policy, `bash -i >& /dev/tcp`,
+  `requests.get`), conservando los comandos técnicos.
+- **Render**: 15 MP4 en `public/videos/en/` (52-80s, audio aac).
+- **Lecciones**: `srcEn` en las 15 (bash/powershell/python lessons)
+  → verificación total: **59 lecciones con video tienen sus 59
+  `srcEn`**. La UI en inglés sirve siempre el video EN.
+- **CDN** (`b4f4728`): subidos con purge — `videos/en/` queda con
+  los 59 MP4. La academia completa funciona en ambos idiomas.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm lint` limpio ·
+`pnpm test:run` → **1956 tests pasando**.
+
+### Hacking Ético EN: 2ª tanda — pe-01..05, hw-03..05 (8 videos) → módulo completo
+
+Con los 26 wavs restantes se completa el módulo de Hacking Ético en
+inglés (15 videos EN totales):
+
+- **`AUDIO_TIMINGS_EN`**: duraciones de pe-01..05 (pe-01 tiene 6
+  escenas, pe-02 tiene 4) y hw-03..05 (ffprobe).
+- **8 composiciones `*En.tsx`** con beats re-medidos de la
+  transcripción word-level. pe-02 conserva la escena fusionada
+  Linux→Windows con resaltado por palabra en ambos árboles.
+- **Wavs** en `public/videos/audio-en/<video-id>/` (nombre corto).
+- **Render**: 8 MP4 en `public/videos/en/` (85-105s, audio aac) ·
+  `srcEn` en las 8 lecciones (path-hacking, path-hacking-web).
+- **CDN** (`cd35d55`): subidos con purge — el módulo de Hacking Ético
+  queda completo en EN en la página (los `ci-03/04/05` suenan en EN
+  aunque su audio ES siga pendiente).
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm lint` limpio ·
+`pnpm test:run` → **1956 tests pasando**.
+
+### Hacking Ético EN: 1ª tanda — ci-01..05, hw-01, hw-02 (7 videos)
+
+El autor va pasando los audios EN del módulo; con la primera tanda
+completa (15 ci + 3 hw-01 + 3 hw-02 = 21 wavs de 50) se arman:
+
+- **`AUDIO_TIMINGS_EN`**: duraciones de ci-01..05 y hw-01/02 (ffprobe).
+  Nota: ci-03/04/05 tienen audio EN aunque el ES siga pendiente en
+  `AUDIO_PENDING` — las composiciones EN suenan, las ES siguen mudas.
+- **7 composiciones `*En.tsx`** con beats re-medidos de la
+  transcripción word-level. hw-01/hw-02 reordenan escenas para
+  matchear el guion EN (curl pasa de escena 2 a 3, gobuster de 2 a 3).
+- **Wavs**: `public/videos/audio-en/<video-id>/` con nombre corto
+  (`ci-01-scene1.wav` — el copy inicial volvió a dejar el nombre
+  largo; renombrado).
+- **Render**: 7 MP4 en `public/videos/en/` · `srcEn` en las 7
+  lecciones (path-ciberseguridad, path-hacking-web).
+- **CDN** (`311527b`): subidos con purge — ya sirven en la página EN.
+- Pendiente de la 2ª tanda: pe-01..05 (20 wavs), hw-03 escena 3,
+  hw-04, hw-05.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm lint` limpio ·
+`pnpm test:run` → **1956 tests pasando**.
+
+### Reorganización: MP4 ES a `videos/es/` y wavs a `videos/audio-es/`
+
+Para dejar la estructura simétrica por idioma en local y en el CDN:
+
+- **`public/videos/`**: los 59 MP4 ES pasan a `es/` (junto al `en/`
+  existente); la carpeta de wavs `audio/` pasa a `audio-es/`
+  (el `audio-en/` no cambia).
+- **59 composiciones ES**: `staticFile('videos/audio/...')` →
+  `videos/audio-es/...` (las `*En.tsx` ya usan `audioBase()`).
+- **`audioBase('es')`** → `videos/audio-es` + comentario de
+  `AUDIO_PENDING`.
+- **13 archivos de lecciones**: `src: '/videos/x.mp4'` →
+  `/videos/es/x.mp4` (los `srcEn` siguen apuntando a `/videos/en/`).
+- **Tests** (`AcademyVideo.test.tsx`): 31 expectativas actualizadas a
+  la ruta nueva. Placeholder del admin builder actualizado.
+- **CDN** (`zilabs-videos`, `736ec8a`): los 59 MP4 movidos a
+  `videos/es/` con `git mv`; purge de las rutas viejas y nuevas —
+  `videos/es/li01-linux-history.mp4` → 200, la raíz → 404.
+- **Importante**: el deploy ya publicado seguirá pidiendo
+  `/videos/*.mp4` (raíz) hasta el próximo deploy del repo principal —
+  después de pushear este cambio, jsDelivr sirve todo desde `es/`.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm lint` limpio ·
+`pnpm test:run` → **1956 tests pasando** · render de control ES
+(li-01) verificado con la nueva carpeta de audio.
+
+### Redes: 15 videos en inglés (Fundamentos/Redes I/Redes II) con audio EN
+
+Segundo módulo en inglés (sigue a Sistemas Operativos). El autor grabó
+los 45 audios EN y se arman las versiones EN de los 15 videos:
+
+- **`AUDIO_TIMINGS_EN`**: duraciones de los 45 wavs EN de redes
+  (ffprobe). Los wavs van a `public/videos/audio-en/<video-id>/`
+  renombrados al nombre corto que usa cada composición
+  (`re-01-scene1.wav`, `re1-01-scene1.wav`... — ojo: primero se
+  copiaron con el nombre largo y el render 404-eó; renombrar).
+- **15 composiciones `*En.tsx`** (Re01..05, Re1*, Re2*): mismos
+  visuales, textos EN, beats re-medidos contra la transcripción
+  word-level de los wavs EN.
+- **Render**: 15 MP4 en `public/videos/en/` con el nombre que usan las
+  lecciones (`re01-network-types.mp4`, `re101-...`, `re201-...`).
+- **Lecciones**: `srcEn` agregado en las 15 de
+  `path-redes.ts`/`path-protocolos.ts`/`path-protocolos-ii.ts`.
+- **CDN**: los 29 MP4 EN (14 sisops + 15 redes) subidos al repo
+  `zilabs-videos` (`videos/en/`, commit `38d1303`) con purge de caché —
+  la página en inglés ya los resuelve.
+- **Verificación**: pixel-check de re01 EN (título, nodos, chips por
+  escena) · duraciones de los 15 MP4 contra `AUDIO_TIMINGS_EN` · audio
+  aac presente.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm lint` limpio ·
+`pnpm test:run` → **1956 tests pasando**.
+
+### Sistemas Operativos: 14 videos en inglés (li/wi/ot) con audio EN
+
+El autor grabó los 49 audios EN (voz del guion inglés) y se arman las
+versiones EN de los 14 videos del módulo:
+
+- **`src/video/remotion/audioTimings.ts`**: `AUDIO_TIMINGS_EN` con las
+  duraciones de los 49 wavs EN (ffprobe) + helpers `audioTimings(id, lang)`,
+  `sceneStartFrames/totalDurationSec/totalDurationFrames(id, fps, lang)` y
+  `audioBase(lang)` (`videos/audio-en/`). Los helpers ES quedan con default
+  `lang='es'` — las 39 composiciones ES no cambian.
+- **14 composiciones `*En.tsx`** (Li01..05, Wi01..05, Ot01..04): mismos
+  visuales que las ES, con textos en inglés y beats internos re-medidos
+  contra la transcripción word-level (faster-whisper `small` int8) de los
+  wavs EN — cada reveal/cápsula/terminal aparece cuando la voz EN lo nombra.
+- **Wavs**: `public/videos/audio-en/<video-id>/` (49 archivos, copiados de
+  `voicebox-scripts/sistemas-operativos/`).
+- **Render**: 14 MP4 en `public/videos/en/` (li01..05, wi01..05,
+  ot-01..04 — 3.7-6.3 MB c/u, audio aac, duraciones 70-126s).
+- **Lecciones**: paso `video` gana `srcEn?` (`src/types/academy.ts`).
+  `AcademyVideo` usa `srcEn` cuando `!isEs` (fallback al `src` ES si falta).
+  Agregado en las 14 lecciones de linux/windows/otros (`srcEn` apunta a
+  `/videos/en/<nombre>.mp4`).
+- **Root.tsx**: 14 composiciones registradas como `<id>-en` con
+  `totalDurationFrames(id, FPS, 'en')`.
+- **Verificación**: pixel-check de li01 EN (título a t=3, typewriter del
+  quote t=7-9, cápsulas GNU a t=20 — sincronizadas con la voz EN) ·
+  duraciones de los 14 MP4 contra `AUDIO_TIMINGS_EN` · audio aac presente.
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm lint` limpio ·
+`pnpm test:run` → **1956 tests pasando**.
+
+Nota: los MP4 EN de Sistemas Operativos ya están en el CDN (junto con
+los de redes, commit `38d1303`).
+
+## [Unreleased] - 2026-08-29
+
+### Otros Sistemas (ot-01..04): mismo fix de texto negro en terminales
+
+Los MP4 de ot-01 (macOS/BSD/ChromeOS) y ot-02 (móviles/Raspberry) tenían el
+mismo bug que los wi-*: texto de `TerminalWindow` sin `color` heredaba el
+negro del navegador (`uname -a`, `Darwin`, `adb shell`, `ls /sdcard/`,
+`cat /etc/os-release`...). El fix ya estaba en el primitive
+(`TerminalWindow.tsx` impone `color: THEME.text`); se re-renderizaron los 4
+videos del módulo y se subieron al repo de videos (`ffe0ef5`) con purge de
+caché. ot-03/ot-04 no usan terminales — sus re-renders salieron idénticos.
+Verificado por píxeles: texto claro en la terminal de macOS pasó de 24 px
+(viejo) a 606 px (nuevo). Nota jsDelivr: el edge de `@main` para ot-02 puede
+tardar hasta 12h en rotar; por SHA sirve la versión nueva de inmediato.
+
+### Wi03/04/05: texto negro dentro de las terminales (heredaba color del navegador)
+
+Todo texto de `TerminalWindow` sin `color` explícito (`C:\` y `Default share` del
+`net share`, `Info: Establishing...` del evil-winrm, cuentas del `net user`)
+heredaba el negro por defecto del navegador sobre el fondo oscuro — ilegible.
+Fix en el primitive (`TerminalWindow.tsx`): el contenedor ahora impone
+`color: THEME.text`, cubriendo las 43 composiciones que lo usan. Los 3 MP4
+re-renderizados y subidos al repo de videos (`f8d8e81`), caché de jsDelivr
+purgada. Nota: jsDelivr cachea `@main` 12h por edge (`s-maxage=43200`) —
+referirse por SHA (`@<commit>`) entrega la versión nueva de inmediato.
+
+### Wi03/Wi04/Wi05: los videos que ve el usuario venían del CDN, no de public/
+
+El reproductor del Academy (`src/utils/videoUrl.ts`) sirve los MP4 desde
+jsDelivr (`pveron1582/zilabs-videos@main`), no desde `public/videos/` — los
+re-renders locales no llegaban al usuario. Los 3 MP4 corregidos
+(wi03-security, wi04-filesystem, wi05-network-services) se subieron al repo
+de videos (commit `ac170f8`), se purgó la caché de jsDelivr y se verificó por
+píxeles que el CDN sirve la versión nueva (ON en verde: 221 px en t=12s de
+wi03, antes ~0). Además el `▶` del overlay del reproductor
+(`AcademyVideo.tsx`) ahora es blanco (`#e5e7eb`) — era negro por defecto.
+
+### Wi03: los "ON" de los perfiles del firewall eran invisibles (texto negro sobre terminal oscura)
+
+En la escena 1 del video de seguridad (`Wi03Security.tsx`), la terminal
+`netsh advfirewall` listaba los 3 perfiles con su estado `ON` sin color — el
+texto heredaba el negro por defecto del navegador sobre el fondo casi negro
+de la `TerminalWindow`. Ahora cada `ON` se pinta en verde (`THEME.green`),
+semánticamente correcto para perfiles activos y legible sobre el fondo.
+Verificado por píxeles en el re-render: 52 px verdes estables durante toda
+la escena (antes 0). MP4 re-renderizado (misma duración, 67.6s).
+
+### Videos de Windows (clases 4 y 5) re-sincronizados con el audio re-grabado + terminales nuevas
+
+El audio de `wi-04-filesystem` y `wi-05-network-services` se re-grabó (wavs del
+2026-08-27) y los beats internos de las composiciones quedaron corridos hasta
+~3s respecto de la narración nueva. Re-medición con transcripción word-level
+(faster-whisper, `small` int8) sobre los 6 wavs y re-render de los 2 MP4:
+
+- **Wi04 Escena 1**: resaltados del árbol re-medidos (Windows 7.6 / Temp 10.5 /
+  Program Files 19.9 / inetpub 21.9 / wwwroot 23.7 — antes 7.2/10.6/17.8/18.8/19.8)
+  · footer ACL/NTFS a 27.0s (antes 21.9s).
+- **Wi04 Escena 2**: cápsulas de cuentas a 12.1/13.5/14.7/15.4s (antes
+  10.3-14.8) · "no hay un solo root" a 10.0s · grupos clave a 18.5s · **nueva
+  `TerminalWindow`** con `net user` + `net localgroup` (fade a 23.7s) — la
+  narración los menciona y no tenían visual.
+- **Wi04 Escena 3**: puntos ACL a 1.5/4.9/9.1s · loot re-medido (SAM/registro
+  16.8 / Documents+Desktop 20.5 / share SMB 23.4 — antes 22.1/24.3 al final).
+- **Wi05 Escena 1**: puntos SMB a 1.7/5.7/14.3/20.5 relativos al panel (antes
+  0.1/3.6/11.0/17.1) · terminal `net share` ahora entra con fade a 8.8s de
+  escena (cuando la narración nombra los shares admin) y agrega el share
+  `publico` que la narración menciona.
+- **Wi05 Escena 2**: RDP a 0.8/5.4/8.7/16.0s (antes 2.0/5.5/9.8/17.6).
+- **Wi05 Escena 3**: WinRM a 0.7/7.6/11.2s · cierre a 15.3s (sin cambios).
+- **Verificación por píxeles**: footer ACL aparece 27→28s, cápsulas crecen
+  90→314 entre 47-50s, terminal `net user` visible a 58s (dots 360), loot
+  amber aparece a ~78s, terminal `net share` entra 9→9.5s, cierre Wi05 crece
+  a 1166 px verdes a los 70s. Duraciones de los MP4 sin cambios (90.6s /
+  74.7s, las que declaran las lecciones).
+
+**Métricas:** `tsc --noEmit` 0 errores · `pnpm test:run` → **1956 tests pasando**.
+
+---
+
 ## [Unreleased] - 2026-08-17
 
 ### Academy: Redes I estrena "VLANs: segmentación por diseño"

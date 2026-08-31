@@ -111,14 +111,7 @@ export function AcademyPathPage() {
       <main className="flex-1 w-full max-w-[1440px] mx-auto relative px-4 md:px-8 py-10 md:py-12">
         {/* Contenido centrado como antes (880px) */}
         <div className="mx-auto w-full max-w-[880px]">
-          <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-            <Link
-              to={`/${lang}/academy`}
-              className="inline-flex items-center gap-2 text-sm font-semibold transition-colors text-emerald-400 hover:text-emerald-300"
-              style={{ color: colors.emerald }}
-            >
-              ← {isEs ? 'Todos los módulos' : 'All modules'}
-            </Link>
+          <div className="flex items-center justify-end gap-4 mb-6 flex-wrap">
             {/* Progreso del módulo */}
             <div className="flex items-center gap-3 rounded-xl px-4 py-2.5"
               style={{ background: colors.sectionBg, border: `1px solid ${colors.border}` }}>
@@ -166,6 +159,18 @@ export function AcademyPathPage() {
               </div>
             )}
           </div>
+          <Link
+            to={`/${lang}/academy`}
+            className="mt-8 mx-auto flex w-fit items-center justify-center gap-1.5 text-xs font-semibold px-5 py-2 rounded-lg transition-colors"
+            style={{
+              background: '#991b1b',
+              color: '#ffffff',
+              border: '1px solid #7f1d1d',
+              fontFamily: FONT_MONO,
+            }}
+          >
+            ← {isEs ? 'Regresar a los módulos' : 'Back to modules'}
+          </Link>
         </div>
       </main>
     </div>

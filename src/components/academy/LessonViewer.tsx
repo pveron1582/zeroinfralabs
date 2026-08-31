@@ -65,9 +65,6 @@ export function LessonViewer() {
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 0%, #10b98122 0%, transparent 65%)' }} />
         <div className="relative max-w-2xl mx-auto">
-          <Link to={backTarget} className="text-xs font-semibold tracking-widest uppercase text-emerald-400/90 hover:text-emerald-300 transition-colors" style={{ fontFamily: FONT_MONO }}>
-            ← {isEs ? path.titleEs : path.title}
-          </Link>
           <h1 className="text-xl md:text-2xl font-bold text-white mt-3 mb-2" style={{ lineHeight: 1.15 }}>
             {isEs ? lesson.titleEs : lesson.title}
           </h1>
@@ -138,6 +135,18 @@ export function LessonViewer() {
               : (isEs ? 'Siguiente →' : 'Next →')}
           </button>
         </div>
+          <Link
+            to={backTarget}
+            className="mt-6 mx-auto flex w-fit items-center justify-center gap-1.5 text-xs font-semibold px-5 py-2 rounded-lg transition-colors"
+            style={{
+              background: '#991b1b',
+              color: '#ffffff',
+              border: '1px solid #7f1d1d',
+              fontFamily: FONT_MONO,
+            }}
+          >
+            ← {isEs ? 'Regresar' : 'Back'}
+          </Link>
       </main>
     </div>
   );
