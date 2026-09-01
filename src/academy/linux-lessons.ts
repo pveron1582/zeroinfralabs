@@ -31,7 +31,8 @@ export const LINUX_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/li01-linux-history.mp4',
+        src: '/videos/es/li01-linux-history.mp4',
+        srcEn: '/videos/en/li01-linux-history.mp4',
         durationSec: 75,
         caption: 'Born in 1991 as a hobby by Linus Torvalds. Linux is the kernel; GNU provides the programs. The 4 freedoms let you study, modify and share the source code — that is why it is the hacker\'s OS.',
         captionEs: 'Nació en 1991 como hobby de Linus Torvalds. Linux es el kernel; GNU aporta los programas. Las 4 libertades te dejan estudiar, modificar y compartir el código fuente — por eso es el SO del hacker.',
@@ -104,7 +105,8 @@ export const LINUX_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/li02-shell.mp4',
+        src: '/videos/es/li02-shell.mp4',
+        srcEn: '/videos/en/li02-shell.mp4',
         durationSec: 111,
         caption: 'The prompt: kali@attacker-01:~$ reads user, machine, directory and permissions. Anatomy of a command: program + flags + argument. $ vs # (root).',
         captionEs: 'El prompt: kali@attacker-01:~$ se lee usuario, máquina, directorio y permisos. Anatomía de un comando: programa + flags + argumento. $ vs # (root).',
@@ -178,7 +180,8 @@ export const LINUX_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/li03-commands.mp4',
+        src: '/videos/es/li03-commands.mp4',
+        srcEn: '/videos/en/li03-commands.mp4',
         durationSec: 65,
         caption: 'pwd (where am I), id (who am I), ls -la (what is here), echo + redir (write/read files). The 4 you will use daily.',
         captionEs: 'pwd (dónde estoy), id (quién soy), ls -la (qué hay), echo + redir (escribir/leer). Los 4 que usarás a diario.',
@@ -252,7 +255,8 @@ export const LINUX_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/li04-create-edit.mp4',
+        src: '/videos/es/li04-create-edit.mp4',
+        srcEn: '/videos/en/li04-create-edit.mp4',
         durationSec: 71,
         caption: 'mkdir creates a folder, touch a file, nano opens the editor. Work from /tmp — always world-writable.',
         captionEs: 'mkdir crea carpeta, touch un archivo, nano abre el editor. Trabaja desde /tmp — escribible por todos.',
@@ -326,7 +330,8 @@ export const LINUX_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/li05-permissions.mp4',
+        src: '/videos/es/li05-permissions.mp4',
+        srcEn: '/videos/en/li05-permissions.mp4',
         durationSec: 110,
         caption: 'rwx = read/write/execute. 644 = owner edits, others read. SUID (s) = run as the owner — root. The key to privesc.',
         captionEs: 'rwx = leer/escribir/ejecutar. 644 = dueño edita, otros leen. SUID (s) = correr como el dueño — root. La llave de la escalada.',

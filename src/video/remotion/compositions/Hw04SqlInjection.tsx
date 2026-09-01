@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Hw04SqlInjection.tsx ─────────────
 // Video: SQL Injection — hablándole a la base de datos.
 // Clase 4 de Hacking Web (lección web-02). Guiones: voicebox-scripts/hw-04-*.txt
-// Audios reales en public/videos/audio/hw-04-sql-injection/ (2026-08-25).
+// Audios reales en public/videos/audio-es/hw-04-sql-injection/ (2026-08-25).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -84,15 +84,15 @@ export const Hw04SqlInjection: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-04-sql-injection/hw-04-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-04-sql-injection/hw-04-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-04-sql-injection/hw-04-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-04-sql-injection/hw-04-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-04-sql-injection/hw-04-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-04-sql-injection/hw-04-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

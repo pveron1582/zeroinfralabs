@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Hw03Xss.tsx ──────────────────────
 // Video: XSS — inyectando scripts en el navegador.
 // Clase 3 de Hacking Web (lección web-01). Guiones: voicebox-scripts/hw-03-*.txt
-// Audios reales en public/videos/audio/hw-03-xss/ (2026-08-25).
+// Audios reales en public/videos/audio-es/hw-03-xss/ (2026-08-25).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -87,15 +87,15 @@ export const Hw03Xss: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-03-xss/hw-03-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-03-xss/hw-03-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-03-xss/hw-03-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-03-xss/hw-03-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-03-xss/hw-03-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-03-xss/hw-03-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

@@ -1,11 +1,6 @@
-// ── video/remotion/compositions/Li03CoreCommands.tsx ───────────────
-// Video: los 4 comandos base (pwd, id, ls, echo). Remodelado con los
-// audios nuevos: cada comando aparece en su propia terminal cuando la
-// narración lo explica (silencedetect), con el output mostrado en vivo.
-//
-// Scene 1 (12.7s): intro — 4 comandos, 4 preguntas
-// Scene 2 (36.7s): pwd → id → ls/ls -la → echo + cat
-// Scene 3 (14.3s): .bash_history — lo que los atacantes leen primero
+// ── video/remotion/compositions/Li03CoreCommandsEn.tsx ────────────
+// English version of li-03-commands. Same visuals; beats re-measured
+// against the EN wavs (word-level transcription, 2026-08-30).
 
 import React from 'react';
 import {
@@ -17,7 +12,7 @@ import {
 } from 'remotion';
 import { Audio } from '@remotion/media';
 import { staticFile } from 'remotion';
-import { sceneStartFrames, AUDIO_TIMINGS } from '../audioTimings';
+import { sceneStartFrames, AUDIO_TIMINGS_EN, audioBase } from '../audioTimings';
 import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
@@ -34,28 +29,26 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-// ── Scene 1: 4 comandos, 4 preguntas ────────────────────────────────
+// ── Scene 1: 4 commands, 4 questions ────────────────────────────────
+// EN: commands named at 4.1/5.1/5.7/6.4; questions 9.7-13.3; closing 14.1
 const CMD_QUESTIONS = [
-  { cmd: 'pwd', q: '¿dónde estoy?', c: THEME.cyan },
-  { cmd: 'id', q: '¿quién soy?', c: THEME.green },
-  { cmd: 'ls', q: '¿qué hay acá?', c: THEME.amber },
-  { cmd: 'echo', q: '¿cómo escribo?', c: THEME.purple },
+  { cmd: 'pwd', q: 'where am I?', c: THEME.cyan },
+  { cmd: 'id', q: 'who am I?', c: THEME.green },
+  { cmd: 'ls', q: "what's in here?", c: THEME.amber },
+  { cmd: 'echo', q: 'how do I write?', c: THEME.purple },
 ];
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  // OJO: dentro de la Sequence anidada el frame arranca en 0 al llegar a
-  // titleEnd, así que los delays de los KeyCapsule van RELATIVOS a ese
-  // momento (igual que los usados en Li01).
-  const titleEndS = 5.7;
+  const titleEndS = 3.8;
   const titleEnd = Math.round(titleEndS * fps);
-  const firstChip = Math.round((6.2 - titleEndS) * fps); // 6.2s absolutos de la escena
-  const endNoteA = firstChip + Math.round(5.2 * fps); // ~8s dentro de la secuencia
+  const firstChip = Math.round((9.5 - titleEndS) * fps); // questions start ~9.5s
+  const endNoteA = firstChip + Math.round(4.6 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={titleEnd}>
         <TitleScene
-          title="TUS 4 COMANDOS DE TODOS LOS DÍAS"
-          subtitle="cada uno responde una pregunta — dónde estoy, quién soy…"
+          title="YOUR 4 EVERYDAY COMMANDS"
+          subtitle="each one answers a question — where am I, who am I…"
           fontSize={40}
         />
       </Sequence>
@@ -64,12 +57,12 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
           <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', justifyContent: 'center' }}>
             {CMD_QUESTIONS.map((c, i) => (
               <div key={c.cmd} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                <KeyCapsule label={c.q} value={c.cmd} accent={c.c} delay={firstChip + Math.round(i * 1.6 * fps)} size={28} />
+                <KeyCapsule label={c.q} value={c.cmd} accent={c.c} delay={firstChip + Math.round(i * 1.1 * fps)} size={28} />
               </div>
             ))}
           </div>
           <div style={{ marginTop: 36, fontSize: 22, color: THEME.muted, fontFamily: MONO, opacity: interpolate(useCurrentFrame() - endNoteA, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-            te los muestro uno por uno en la terminal
+            let me show you them one by one
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -77,19 +70,16 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
   );
 };
 
-// ── Scene 2: los 4 comandos en acción ───────────────────────────────
-// Las 4 sesiones se APILAN en una sola terminal (como el diseño
-// original): cada bloque aparece cuando la narración lo explica y
-// queda visible. pwd(1s) → id(7s) → ls(14.5s) → echo+cat(23s).
+// ── Scene 2: the 4 commands in action ──────────────────────────────
+// EN: pwd(0.9) → id(11.7) → ls(22.4) → echo+cat(31.5) · closing 37.8
 interface Session {
   cmd: string;
   output: string[];
   label: string;
-  at: number; // segundo en que el narrador lo explica
+  at: number;
   accent: string;
 }
 
-// Bloque apilado: etiqueta + prompt + comando tipeado + output
 const SessionBlock: React.FC<{ session: Session; frame: number; fps: number; active: boolean }> = ({
   session,
   frame,
@@ -138,41 +128,40 @@ const SessionBlock: React.FC<{ session: Session; frame: number; fps: number; act
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
   const frame = useCurrentFrame();
-  const keyAt = Math.round(33.3 * fps);
+  const keyAt = Math.round(37.8 * fps);
 
   const sessions: Session[] = [
-    { label: '¿dónde estoy? — pwd', cmd: 'pwd', output: ['/home/kali'], at: 1.0, accent: THEME.cyan },
+    { label: 'where am I? — pwd', cmd: 'pwd', output: ['/home/kali'], at: 0.9, accent: THEME.cyan },
     {
-      label: '¿quién soy? — id',
+      label: 'who am I? — id',
       cmd: 'id',
       output: ['uid=1000(kali) gid=1000(kali) groups=1000(kali),27(sudo)'],
-      at: 7.0,
+      at: 11.7,
       accent: THEME.green,
     },
     {
-      label: '¿qué hay acá? — ls / ls -la',
+      label: "what's in here? — ls / ls -la",
       cmd: 'ls -la',
       output: ['-rw-r--r--  kali kali  notas.txt', 'drwxr-xr-x  kali kali  Documents'],
-      at: 14.5,
+      at: 22.4,
       accent: THEME.amber,
     },
     {
-      label: 'escribir y leer — echo + cat',
+      label: 'write and read — echo + cat',
       cmd: "echo 'hola' > /tmp/test.txt && cat /tmp/test.txt",
       output: ['hola'],
-      at: 23.0,
+      at: 31.5,
       accent: THEME.purple,
     },
   ];
 
-  // comando activo según la narración (para el marcador ▸)
   const activeIdx = sessions.reduceRight((acc, s, i) => (frame >= Math.round(s.at * fps) ? i : acc), 0);
 
   return (
     <AbsoluteFill>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', gap: 12 }}>
         <div style={{ fontSize: 24, fontWeight: 800, color: THEME.text, fontFamily: MONO }}>
-          LA BASE PARA MANEJAR ARCHIVOS
+          THE FOUNDATION FOR MANAGING FILES
         </div>
         <TerminalWindow title="zsh — kali@attacker-01:~$" width={840}>
           {sessions.map((s, i) => (
@@ -187,14 +176,16 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
             opacity: interpolate(frame - keyAt, [0, 12], [0, 1], { extrapolateRight: 'clamp' }),
           }}
         >
-          esa es la base para manejar archivos y notas en cualquier sistema
+          that's the foundation for managing files and notes on any system
         </div>
       </div>
     </AbsoluteFill>
   );
 };
 
-// ── Scene 3: .bash_history ──────────────────────────────────────────
+// ── Scene 3: .bash_history ────────────────────────────────────────
+// EN: file named at 2.7; "everything you've typed" 4.6; "on someone else's
+// system" 7.4; what-it-tells list 10-13; "reading the person's mind" 14.0
 const HISTORY = [
   'ssh root@192.168.1.11',
   'ls -la /etc',
@@ -205,12 +196,12 @@ const HISTORY = [
 
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
   const frame = useCurrentFrame();
-  const t1 = Math.round(6.5 * fps);
-  const t2 = Math.round(11.0 * fps);
+  const t1 = Math.round(6.0 * fps);
+  const t2 = Math.round(13.0 * fps);
   return (
     <AbsoluteFill style={CENTERED}>
       <div style={{ fontSize: 32, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 30 }}>
-        LO QUE LOS ATACANTES LEEN PRIMERO
+        WHAT ATTACKERS READ FIRST
       </div>
       <TerminalWindow title="~/.bash_history" width={780}>
         {HISTORY.map((line, i) => (
@@ -226,40 +217,38 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
         ))}
       </TerminalWindow>
       <div style={{ marginTop: 30, fontSize: 21, color: THEME.muted, fontFamily: MONO, maxWidth: 720, lineHeight: 1.5, opacity: interpolate(useCurrentFrame() - t2, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-        en un sistema ajeno, el historial te dice qué hizo el usuario y qué rutas existen — es leerle la mente
+        on someone else's system, the history tells you what the user did and which paths exist — it's reading their mind
       </div>
     </AbsoluteFill>
   );
 };
 
-export const Li03CoreCommands: React.FC = () => {
+export const Li03CoreCommandsEn: React.FC = () => {
   const { fps } = useVideoConfig();
 
-  const [s1, s2, s3] = AUDIO_TIMINGS['li-03-commands'];
-  const starts = sceneStartFrames('li-03-commands', fps);
+  const [s1, s2, s3] = AUDIO_TIMINGS_EN['li-03-commands'];
+  const starts = sceneStartFrames('li-03-commands', fps, 'en');
   const dur1 = Math.ceil(s1 * fps);
   const dur2 = Math.ceil(s2 * fps);
   const dur3 = Math.ceil(s3 * fps) + fps;
+  const base = audioBase('en');
 
   return (
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
 
-      {/* Scene 1: intro */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio-es/li-03-commands/li-03-scene1.wav')} />
+        <Audio src={staticFile(`${base}/li-03-commands/li-03-scene1.wav`)} />
         <Scene1 fps={fps} />
       </Sequence>
 
-      {/* Scene 2: los 4 comandos */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio-es/li-03-commands/li-03-scene2.wav')} />
+        <Audio src={staticFile(`${base}/li-03-commands/li-03-scene2.wav`)} />
         <Scene2 fps={fps} />
       </Sequence>
 
-      {/* Scene 3: .bash_history */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio-es/li-03-commands/li-03-scene3.wav')} />
+        <Audio src={staticFile(`${base}/li-03-commands/li-03-scene3.wav`)} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

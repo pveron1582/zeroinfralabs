@@ -54,6 +54,7 @@ export type LessonStep =
   | {
       type: 'video';
       src: string;              // ej: '/videos/li01-linux-history.mp4'
+      srcEn?: string;           // versión en inglés (ej: '/videos/en/li01-linux-history.mp4')
       poster?: string;          // opcional, preview image
       durationSec: number;
       caption?: string;         // texto que aparece durante el video

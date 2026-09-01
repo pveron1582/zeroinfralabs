@@ -1,6 +1,6 @@
 // ── components/academy/AcademyVideo.tsx ────────────────────────────
 // Reproductor de video para los pasos `video` del Academy.
-// Videos pre-renderizados con Remotion → /public/videos/*.mp4.
+// Videos pre-renderizados con Remotion → /public/videos/es|en/*.mp4.
 // Chrome estilo ventana oscura, como los demos del landing.
 
 import { useState } from 'react';
@@ -9,6 +9,7 @@ import { VIDEO_BASE_URL } from '../../utils/videoUrl';
 
 interface AcademyVideoProps {
   src: string;
+  srcEn?: string;
   poster?: string;
   durationSec: number;
   caption?: string;
@@ -16,12 +17,12 @@ interface AcademyVideoProps {
   isEs: boolean;
 }
 
-export function AcademyVideo({ src, poster, durationSec, caption, captionEs, isEs }: AcademyVideoProps) {
+export function AcademyVideo({ src, srcEn, poster, durationSec, caption, captionEs, isEs }: AcademyVideoProps) {
   const [playing, setPlaying] = useState(false);
   const captionText = isEs ? (captionEs || caption) : (caption || captionEs);
-  // Resuelve la URL del video: si VIDEO_BASE_URL está definida (R2/CDN),
-  // los videos se cargan desde ahí; si no, desde el mismo dominio.
-  const resolvedSrc = VIDEO_BASE_URL ? `${VIDEO_BASE_URL}${src}` : src;
+  // ES usa src; EN usa srcEn si existe, si no el original
+  const baseSrc = !isEs && srcEn ? srcEn : src;
+  const resolvedSrc = VIDEO_BASE_URL ? `${VIDEO_BASE_URL}${baseSrc}` : baseSrc;
   const resolvedPoster = poster && VIDEO_BASE_URL ? `${VIDEO_BASE_URL}${poster}` : poster;
 
   return (
@@ -54,7 +55,7 @@ export function AcademyVideo({ src, poster, durationSec, caption, captionEs, isE
         </video>
         {!playing && !poster && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ background: 'rgba(5,10,8,0.5)' }}>
-            <div className="text-5xl">▶</div>
+            <div className="text-5xl" style={{ color: '#e5e7eb' }}>▶</div>
           </div>
         )}
       </div>

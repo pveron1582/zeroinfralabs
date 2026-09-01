@@ -28,7 +28,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re201-dhcp.mp4',
+        src: '/videos/es/re201-dhcp.mp4',
+        srcEn: '/videos/en/re201-dhcp.mp4',
         durationSec: 82,
         caption: 'DHCP hands out the network config automatically: IP, mask, gateway and DNS. It works with leases (lends the IP, renews before it expires). The DORA handshake: Discover, Offer, Request, Acknowledge over UDP 67/68. Static IP is stable but does not scale. The attack: rogue DHCP hands out malicious gateway/DNS — defense is DHCP snooping.',
         captionEs: 'DHCP reparte la configuración automáticamente: IP, máscara, gateway y DNS. Trabaja con alquileres (presta la IP y la renueva antes de vencer). El handshake DORA: Discover, Offer, Request, Acknowledge por UDP 67/68. La IP estática es estable pero no escala. El ataque: rogue DHCP entrega gateway/DNS maliciosos — la defensa es DHCP snooping.',
@@ -108,7 +109,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re202-nat.mp4',
+        src: '/videos/es/re202-nat.mp4',
+        srcEn: '/videos/en/re202-nat.mp4',
         durationSec: 88,
         caption: 'NAT rewrites packet IPs between your private network and the internet. The translation table remembers who asked: outgoing connections match an entry, incoming ones do not and get dropped. PAT gives each device a different outgoing port on one public IP. Pros: saves IPs, hides topology, free firewall. Cons: breaks end-to-end. DNAT / port forwarding is the reverse: what the network chose to expose.',
         captionEs: 'NAT reescribe las IPs de cada paquete entre tu red privada e internet. La tabla de traducción recuerda quién preguntó: las conexiones salientes calzan, las entrantes no y se descartan. PAT da a cada equipo un puerto de salida distinto sobre una IP pública. Pros: ahorra IPs, oculta topología, firewall gratis. Contras: rompe extremo a extremo. DNAT / port forwarding es la dirección inversa: lo que la red decidió exponer.',
@@ -188,7 +190,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re203-dns.mp4',
+        src: '/videos/es/re203-dns.mp4',
+        srcEn: '/videos/en/re203-dns.mp4',
         durationSec: 102,
         caption: 'DNS translates names to IPs (google.com → 142.250.78.78) over UDP 53, falling back to TCP. The resolution chain: root servers → TLD servers (.com) → authoritative server. Answers carry a TTL to be cached. Record types: A (IPv4), AAAA (IPv6), MX (mail), NS (authoritative), CNAME (alias), TXT. Attacks: cache poisoning, DNS hijacking, exfiltration. Defenses: DNSSEC, DNS over HTTPS.',
         captionEs: 'DNS traduce nombres a IPs (google.com → 142.250.78.78) por UDP 53, con fallback a TCP. La cadena de resolución: root servers → servidores TLD (.com) → servidor autoritativo. Las respuestas llevan un TTL para cachear. Registros: A (IPv4), AAAA (IPv6), MX (correo), NS (autoritativo), CNAME (alias), TXT. Ataques: envenenamiento de caché, hijacking, exfiltración. Defensas: DNSSEC, DNS sobre HTTPS.',
@@ -268,7 +271,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re204-vpn.mp4',
+        src: '/videos/es/re204-vpn.mp4',
+        srcEn: '/videos/en/re204-vpn.mp4',
         durationSec: 86,
         caption: 'A VPN is an encrypted tunnel over the internet. Three jobs: confidentiality (encrypted), integrity (authenticated) and authenticity (only credentialed users enter). Uses: site-to-site to join offices, remote access, segmentation. Protocols: IPsec (layer 3, site-to-site), OpenVPN (flexible), WireGuard (fast), TLS VPN (browser). It protects the path, not the destination: a compromised VPN credential is a direct entry to the network.',
         captionEs: 'Una VPN es un túnel cifrado sobre internet. Tres trabajos: confidencialidad (cifrado), integridad (autenticado) y autenticidad (solo entran usuarios con credenciales). Usos: site-to-site para unir sedes, acceso remoto, segmentación. Protocolos: IPsec (capa 3, site-to-site), OpenVPN (flexible), WireGuard (rápido), TLS VPN (navegador). Protege el camino, no el destino: una credencial de VPN comprometida es una entrada directa a la red.',
@@ -348,7 +352,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re205-dmz.mp4',
+        src: '/videos/es/re205-dmz.mp4',
+        srcEn: '/videos/en/re205-dmz.mp4',
         durationSec: 77,
         caption: 'DMZ = Demilitarized Zone: a network segment between the internet and your internal LAN. Public-facing machines (web, mail) live there; databases and workstations live in the LAN behind the firewall. Inbound only allows DMZ ports (80/443, 25); outbound is normal. If the web server is pwned, the attacker is stuck in the DMZ. For pentesting: land on the DMZ, then pivot toward the LAN.',
         captionEs: 'DMZ = Zona Desmilitarizada: un segmento de red entre internet y tu LAN interna. Las máquinas públicas (web, correo) viven ahí; las bases de datos y PCs viven en la LAN detrás del firewall. Entrante solo permite puertos de la DMZ (80/443, 25); saliente normal. Si hackean el web, el atacante queda atrapado en la DMZ. Para pentesting: aterrizás en la DMZ y después pivotás hacia la LAN.',
@@ -375,10 +380,10 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
       },
       {
         type: 'terminal-demo',
-        command: 'sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to-destination 10.0.1.10\nsudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 3306 -j DROP',
-        output: '# El puerto 80 (web, DMZ 10.0.1.0/24) se expone hacia adentro\n# El puerto 3306 (MySQL, LAN 10.0.2.0/24) se descarta: base de datos protegida',
-        explanation: 'Two NAT rules: port 80 is forwarded to the DMZ web server; port 3306 is dropped, so the database is reachable only from inside the LAN.',
-        explanationEs: 'Dos reglas de NAT: el puerto 80 se reenvía al servidor web de la DMZ; el 3306 se descarta, así la base de datos solo se alcanza desde dentro de la LAN.',
+        command: 'sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to-destination 10.0.1.10\nsudo iptables -A FORWARD -i eth0 -p tcp --dport 3306 -j DROP',
+        output: '# NAT: el puerto 80 (web, DMZ 10.0.1.10) se redirige hacia la DMZ\n# Filtrado: el puerto 3306 (MySQL) se bloquea en FORWARD: base de datos protegida',
+        explanation: 'Two rules: NAT (PREROUTING) forwards web traffic to the DMZ (10.0.1.10); filter (FORWARD) drops external access to port 3306 (MySQL), keeping the database reachable only from inside the LAN.',
+        explanationEs: 'Dos reglas: NAT (PREROUTING) redirige el tráfico web a la DMZ (10.0.1.10); filtrado (FORWARD) bloquea el acceso externo al puerto 3306 (MySQL), dejando la base de datos alcanzable solo desde la LAN.',
       },
       {
         type: 'content',

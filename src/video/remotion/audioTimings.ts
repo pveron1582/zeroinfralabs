@@ -4,6 +4,79 @@
 // 1. Insertar el audio en el momento correcto
 // 2. Calcular durationInFrames de cada composición
 
+// Versión EN: duraciones de los wavs en inglés (ffprobe, 2026-08-30).
+// Los wavs viven en public/videos/audio-en/<video-id>/.
+export const AUDIO_TIMINGS_EN: Record<string, number[]> = {
+  'li-01-linux-history': [16.40, 20.96, 22.08, 16.64],
+  'li-02-shell': [16.16, 41.68, 46.16, 16.64],
+  'li-03-commands': [15.84, 41.04, 15.76],
+  'li-04-create-edit': [16.56, 35.36, 29.44],
+  'li-05-permissions': [18.56, 38.48, 29.20, 28.48],
+  'wi-01-windows-history': [28.72, 25.92, 27.28],
+  'wi-02-current-versions': [24.00, 32.56, 18.16],
+  'wi-03-security': [22.96, 23.28, 22.72],
+  'wi-04-filesystem': [33.04, 29.28, 29.12],
+  'wi-05-network-services': [30.48, 20.56, 19.68],
+  'ot-01-alternative-systems': [16.80, 28.00, 33.52, 37.92],
+  'ot-02-portable-devices': [13.12, 35.44, 29.20, 33.28],
+  'ot-03-hacking-hardware': [21.68, 39.12, 40.08, 17.20],
+  'ot-04-social-engineering': [16.32, 44.40, 38.00, 25.84],
+  // Redes EN (2026-08-30): fr-* → composiciones re-0X, re1/re2 directas.
+  're-01-network-types': [18.96, 20.16, 18.56],
+  're-02-ip-addresses': [20.96, 27.44, 21.44],
+  're-03-devices-topologies': [25.44, 25.68, 13.36],
+  're-04-osi-layers': [18.80, 34.64, 16.80],
+  're-05-addressing-dns': [19.44, 20.40, 19.76],
+  're1-01-protocols-by-layer': [22.88, 20.32, 34.88],
+  're1-02-services': [18.72, 32.32, 25.20],
+  're1-03-ports': [27.28, 39.04, 29.60],
+  're1-04-devices': [24.40, 34.24, 31.68],
+  're1-05-vlans': [22.56, 27.60, 37.84],
+  're2-01-dhcp': [24.48, 31.60, 34.32],
+  're2-02-nat': [25.60, 33.12, 35.28],
+  're2-03-dns': [24.32, 36.88, 41.68],
+  're2-04-vpn': [25.60, 37.28, 27.28],
+  're2-05-dmz': [32.00, 30.00, 22.24],
+  // Hacking Ético EN (2026-08-30): completos ci-01..05, hw-01, hw-02.
+  'ci-01-cia-triad': [21.12, 18.88, 13.76],
+  'ci-02-hashes-cracking': [18.32, 20.48, 15.68],
+  'ci-03-information-gathering': [32.88, 32.24, 35.36],
+  'ci-04-cryptography': [32.88, 30.64, 33.60],
+  'ci-05-owasp-top-ten': [25.20, 28.64, 34.72],
+  'hw-01-web-protocols': [31.84, 32.00, 34.16],
+  'hw-02-domains-subdirectories': [40.24, 40.56, 43.12],
+  // Hacking Ético EN (2026-08-30): 2ª tanda pe-01..05, hw-03..05.
+  'pe-01-pentest-phases': [14.08, 19.04, 14.32, 14.72, 18.80, 15.12],
+  'pe-02-filesystem': [13.52, 27.28, 26.08, 16.96],
+  'pe-03-offline-cracking': [31.76, 24.24, 32.32],
+  'pe-04-online-cracking': [32.40, 30.56, 30.56],
+  'pe-05-man-in-the-middle': [33.60, 37.76, 28.96],
+  'hw-03-xss': [30.96, 36.56, 31.84],
+  'hw-04-sql-injection': [26.64, 32.08, 34.08],
+  'hw-05-path-traversal-lfi': [36.08, 33.44, 34.00],
+  // Scripting EN (2026-08-30): sl/ps/py completos.
+  'sl-01-bash-intro': [26.72, 22.96, 27.84],
+  'sl-02-variables-conditionals': [22.96, 29.92, 31.36],
+  'sl-03-loops-functions': [20.40, 28.16, 29.52],
+  'sl-04-enumeration': [25.20, 23.52, 28.96],
+  'sl-05-reverse-shells': [19.60, 27.20, 27.76],
+  'ps-01-objects-pipeline': [22.16, 28.16, 24.24],
+  'ps-02-variables-conditionals': [19.44, 25.04, 24.88],
+  'ps-03-loops-cmdlets': [17.92, 25.76, 24.96],
+  'ps-04-windows-enumeration': [16.80, 23.36, 22.80],
+  'ps-05-credentials-obfuscation': [18.16, 21.20, 25.28],
+  'py-01-python-intro': [20.32, 26.00, 21.60],
+  'py-02-types-conditions': [15.36, 25.12, 25.20],
+  'py-03-loops-libraries': [16.40, 21.44, 26.00],
+  'py-04-socket-networking': [17.92, 18.88, 20.00],
+  'py-05-http-requests': [19.44, 22.16, 24.40],
+};
+
+export function audioTimings(videoId: string, lang: 'es' | 'en' = 'es'): number[] {
+  if (lang === 'en') return AUDIO_TIMINGS_EN[videoId] || [];
+  return AUDIO_TIMINGS[videoId] || [];
+}
+
 export const AUDIO_TIMINGS: Record<string, number[]> = {
   'pe-01-pentest-phases': [12.56, 15.60, 13.92, 13.60, 16.24, 12.32],
   'li-01-linux-history': [15.28, 20.40, 19.20, 17.92],
@@ -20,27 +93,12 @@ export const AUDIO_TIMINGS: Record<string, number[]> = {
   'wi-03-security': [21.44, 21.20, 23.36],
   'wi-04-filesystem': [33.44, 28.16, 27.36],
   'wi-05-network-services': [28.96, 21.60, 22.56],
-  // ⚠️ ESTIMADOS (ci-*): duraciones aproximadas según los scripts de
-  // voicebox-scripts/ci-*.txt. Se reemplazan con las reales (ffprobe)
-  // cuando el autor pase los wavs.
-  'ci-01-cia-triad': [18, 17, 16],
-  'ci-02-hashes-cracking': [15, 16, 15],
-  // ⚠️ ESTIMADOS (ci-03): Information Gathering (Fundamentos de Ciberseguridad,
-  // ciber-03). Sin wavs todavía (guiones en voicebox-scripts/ci-03-*.txt). Se
-  // reemplazan con las reales (ffprobe) cuando lleguen los audios; mientras
-  // tanto la composición omite el <Audio> (ver hasAudio()).
-  'ci-03-information-gathering': [23, 22, 22],
-  // ⚠️ ESTIMADOS (ci-04): Bases de criptografía (Fundamentos de
-  // Ciberseguridad, ciber-04). Sin wavs todavía (guiones en
-  // voicebox-scripts/ci-04-*.txt). Se reemplazan con las reales (ffprobe)
-  // cuando lleguen los audios; mientras tanto la composición omite el
-  // <Audio> (ver hasAudio()).
-  'ci-04-cryptography': [20, 22, 21],
-  // ⚠️ ESTIMADOS (ci-05): OWASP Top Ten (Fundamentos de Ciberseguridad,
-  // ciber-05). Sin wavs todavía (guiones en voicebox-scripts/ci-05-*.txt).
-  // Se reemplazan con las reales (ffprobe) cuando lleguen los audios;
-  // mientras tanto la composición omite el <Audio> (ver hasAudio()).
-  'ci-05-owasp-top-ten': [18, 20, 22],
+  'ci-01-cia-triad': [20.08, 18.88, 13.28],
+  'ci-02-hashes-cracking': [16.96, 19.12, 13.84],
+  // ci-03/04/05: duraciones reales de los wavs ES (ffprobe, 2026-08-30).
+  'ci-03-information-gathering': [28.96, 27.36, 31.76],
+  'ci-04-cryptography': [29.60, 28.40, 32.80],
+  'ci-05-owasp-top-ten': [21.92, 28.80, 35.12],
   // ot-*: duraciones reales de los wavs (ffprobe, 2026-08-15).
   'ot-01-alternative-systems': [16.48, 27.20, 32.40, 37.60],
   'ot-02-portable-devices': [12.08, 31.76, 27.76, 32.00],
@@ -112,14 +170,11 @@ export const AUDIO_TIMINGS: Record<string, number[]> = {
   're2-05-dmz': [27.36, 27.36, 21.12],
 };
 
-// Ids cuyo audio todavía NO está disponible en public/videos/audio/.
+// Ids cuyo audio todavía NO está disponible en public/videos/audio-es/.
 // Las composiciones listadas acá omiten el <Audio> y se renderizan mudas;
 // sacar el id de esta lista cuando el wav esté en su lugar.
-const AUDIO_PENDING: Record<string, boolean> = {
-  'ci-03-information-gathering': true,
-  'ci-04-cryptography': true,
-  'ci-05-owasp-top-ten': true,
-};
+// (ci-03/04/05 ya tienen sus wavs ES — se sacaron de esta lista, 2026-08-30.)
+const AUDIO_PENDING: Record<string, boolean> = {};
 
 export function hasAudio(videoId: string): boolean {
   return !AUDIO_PENDING[videoId];
@@ -128,8 +183,8 @@ export function hasAudio(videoId: string): boolean {
 // Cada escena tiene padding corto entre escenas (0.3s)
 export const SCENE_GAP = 0.3;
 
-export function sceneStartFrames(videoId: string, fps: number): number[] {
-  const timings = AUDIO_TIMINGS[videoId] || [];
+export function sceneStartFrames(videoId: string, fps: number, lang: 'es' | 'en' = 'es'): number[] {
+  const timings = audioTimings(videoId, lang);
   let acc = 0;
   const frames: number[] = [];
   for (const t of timings) {
@@ -140,12 +195,17 @@ export function sceneStartFrames(videoId: string, fps: number): number[] {
 }
 
 // Duración total incluyendo gaps
-export function totalDurationSec(videoId: string): number {
-  const timings = AUDIO_TIMINGS[videoId] || [];
+export function totalDurationSec(videoId: string, lang: 'es' | 'en' = 'es'): number {
+  const timings = audioTimings(videoId, lang);
   const sum = timings.reduce((a, b) => a + b, 0);
   return sum + SCENE_GAP * Math.max(0, timings.length - 1);
 }
 
-export function totalDurationFrames(videoId: string, fps: number): number {
-  return Math.ceil(totalDurationSec(videoId) * fps) + fps; // +1s buffer final
+export function totalDurationFrames(videoId: string, fps: number, lang: 'es' | 'en' = 'es'): number {
+  return Math.ceil(totalDurationSec(videoId, lang) * fps) + fps; // +1s buffer final
+}
+
+// Prefijo de carpeta de audio según idioma (public/videos/audio[-en]/)
+export function audioBase(lang: 'es' | 'en'): string {
+  return lang === 'en' ? 'videos/audio-en' : 'videos/audio-es';
 }

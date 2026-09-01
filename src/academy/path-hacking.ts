@@ -24,7 +24,8 @@ export const HACKING_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/pe01-pentest-phases.mp4',
+        src: '/videos/es/pe01-pentest-phases.mp4',
+        srcEn: '/videos/en/pe01-pentest-phases.mp4',
         durationSec: 86,
         caption: 'The 5 phases in action: recon, scanning, exploitation, post-exploitation and reporting. Method, not chaos.',
         captionEs: 'Las 5 fases en acción: reconocimiento, escaneo, explotación, post-explotación y reporte. El método, no el caos.',
@@ -83,7 +84,8 @@ export const HACKING_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/pe02-filesystem.mp4',
+        src: '/videos/es/pe02-filesystem.mp4',
+        srcEn: '/videos/en/pe02-filesystem.mp4',
         durationSec: 76,
         caption: 'First, understand the map: Linux organizes everything under a single / — Windows splits per drive (C:\\, D:\\). The concepts are the same; the names differ.',
         captionEs: 'Primero, entendé el mapa: Linux organiza todo bajo un solo / — Windows divide por disco (C:\\, D:\\). Los conceptos son los mismos; los nombres cambian.',
@@ -143,7 +145,8 @@ export const HACKING_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/pe03-offline-cracking.mp4',
+        src: '/videos/es/pe03-offline-cracking.mp4',
+        srcEn: '/videos/en/pe03-offline-cracking.mp4',
         durationSec: 78,
         caption: 'Offline cracking: you own the hash, so you crack it at your own pace — no lockouts, no alerts. john the ripper runs on CPU with a wordlist (rockyou); hashcat runs on GPU with rules and millions of combinations per second.',
         captionEs: 'Cracking offline: vos tenés el hash, así que lo crackeás a tu ritmo — sin bloqueos ni alertas. john the ripper corre en CPU con una wordlist (rockyou); hashcat corre en GPU con reglas y millones de combinaciones por segundo.',
@@ -224,7 +227,8 @@ export const HACKING_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/pe04-online-cracking.mp4',
+        src: '/videos/es/pe04-online-cracking.mp4',
+        srcEn: '/videos/en/pe04-online-cracking.mp4',
         durationSec: 90,
         caption: 'Online cracking attacks the live service: no hash needed, every attempt is a real connection. hydra (the classic), medusa (lighter) and ncrack (from the Nmap family, integrates with scans). Slower and noisier — the network and lockout policies set your limits.',
         captionEs: 'El cracking online ataca el servicio vivo: no hace falta el hash, cada intento es una conexión real. hydra (el clásico), medusa (más liviana) y ncrack (de la familia Nmap, se integra con los escaneos). Más lento y ruidoso — la red y las políticas de bloqueo ponen tus límites.',
@@ -307,7 +311,8 @@ export const HACKING_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/pe05-man-in-the-middle.mp4',
+        src: '/videos/es/pe05-man-in-the-middle.mp4',
+        srcEn: '/videos/en/pe05-man-in-the-middle.mp4',
         durationSec: 93,
         caption: 'Man-in-the-middle in action: the attacker floods the victim with forged ARP replies, becomes the fake gateway and relays every packet with ip_forward — reading the traffic while the victim keeps browsing normally.',
         captionEs: 'El man-in-the-middle en acción: el atacante inunda a la víctima con respuestas ARP falsas, pasa a ser el gateway falso y retransmite cada paquete con ip_forward — leyendo el tráfico mientras la víctima sigue navegando normal.',

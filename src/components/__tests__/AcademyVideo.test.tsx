@@ -81,7 +81,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/li01-linux-history.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/li01-linux-history.mp4'));
     expect(screen.getByText(/Nació en 1991 como hobby/)).toBeInTheDocument();
   });
 
@@ -93,7 +93,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/wi01-windows-history.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/wi01-windows-history.mp4'));
     expect(screen.getByText(/Nació en 1985 como interfaz sobre MS-DOS/)).toBeInTheDocument();
   });
 
@@ -105,7 +105,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/pe02-filesystem.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/pe02-filesystem.mp4'));
     expect(screen.getByText(/Primero, entendé el mapa/)).toBeInTheDocument();
   });
 
@@ -117,7 +117,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ci01-cia-triad.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ci01-cia-triad.mp4'));
     expect(screen.getByText(/La triada CID: Confidencialidad/)).toBeInTheDocument();
   });
 
@@ -129,7 +129,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ci02-hashes-cracking.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ci02-hashes-cracking.mp4'));
     expect(screen.getByText(/Un hash es una huella de un solo sentido/)).toBeInTheDocument();
   });
 
@@ -141,7 +141,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ci03-information-gathering.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ci03-information-gathering.mp4'));
     expect(screen.getByText(/convierte a tu objetivo en un mapa/)).toBeInTheDocument();
   });
 
@@ -153,7 +153,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ci04-cryptography.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ci04-cryptography.mp4'));
     expect(screen.getByText(/es el arte de mezclar datos/)).toBeInTheDocument();
   });
 
@@ -165,7 +165,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ci05-owasp-top-ten.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ci05-owasp-top-ten.mp4'));
     expect(screen.getByText(/es la lista ordenada de los riesgos web/)).toBeInTheDocument();
   });
 
@@ -177,7 +177,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/pe03-offline-cracking.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/pe03-offline-cracking.mp4'));
     expect(screen.getByText(/vos tenés el hash, así que lo crackeás a tu ritmo/)).toBeInTheDocument();
   });
 
@@ -189,7 +189,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/pe04-online-cracking.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/pe04-online-cracking.mp4'));
     expect(screen.getByText(/ataca el servicio vivo: no hace falta el hash/)).toBeInTheDocument();
   });
 
@@ -201,7 +201,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/pe05-man-in-the-middle.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/pe05-man-in-the-middle.mp4'));
     expect(screen.getByText(/el atacante inunda a la víctima con respuestas ARP falsas/)).toBeInTheDocument();
   });
 
@@ -213,7 +213,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/hw01-web-protocols.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/hw01-web-protocols.mp4'));
     expect(screen.getByText(/La web es el campo de batalla: HTTP manda todo en texto plano/)).toBeInTheDocument();
   });
 
@@ -225,7 +225,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/hw02-domains-subdirectories.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/hw02-domains-subdirectories.mp4'));
     expect(screen.getByText(/Mapeá el objetivo: dominio, subdominio y subdirectorio/)).toBeInTheDocument();
   });
 
@@ -237,7 +237,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/hw03-xss.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/hw03-xss.mp4'));
     expect(screen.getByText(/XSS ejecuta JavaScript en el navegador de la víctima/)).toBeInTheDocument();
   });
 
@@ -249,7 +249,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/hw04-sql-injection.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/hw04-sql-injection.mp4'));
     expect(screen.getByText(/La inyección SQL te hace hablar directo con la base/)).toBeInTheDocument();
   });
 
@@ -261,7 +261,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/hw05-path-traversal-lfi.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/hw05-path-traversal-lfi.mp4'));
     expect(screen.getByText(/Path traversal escapa de la raíz web y el LFI lee el código fuente/)).toBeInTheDocument();
   });
 
@@ -272,7 +272,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/sl01-bash-intro.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/sl01-bash-intro.mp4'));
     expect(screen.getByText(/Bash es la shell que se volvió lenguaje/)).toBeInTheDocument();
   });
 
@@ -283,7 +283,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/sl02-variables-conditionals.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/sl02-variables-conditionals.mp4'));
     expect(screen.getByText(/Variables que guardan datos, argumentos/)).toBeInTheDocument();
   });
 
@@ -294,7 +294,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/sl03-loops-functions.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/sl03-loops-functions.mp4'));
     expect(screen.getByText(/Bucles para repetir a escala, funciones para organizar/)).toBeInTheDocument();
   });
 
@@ -305,7 +305,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/sl04-enumeration.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/sl04-enumeration.mp4'));
     expect(screen.getByText(/Tu primer caso real: ping sweep/)).toBeInTheDocument();
   });
 
@@ -316,7 +316,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/sl05-reverse-shells.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/sl05-reverse-shells.mp4'));
     expect(screen.getByText(/De scripts que reconocen a scripts que atacan/)).toBeInTheDocument();
   });
 
@@ -327,7 +327,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ps01-objects-pipeline.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ps01-objects-pipeline.mp4'));
     expect(screen.getByText(/PowerShell pasa objetos, no texto/)).toBeInTheDocument();
   });
 
@@ -338,7 +338,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ps02-variables-conditionals.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ps02-variables-conditionals.mp4'));
     expect(screen.getByText(/hashtables y condiciones con operadores palabra/)).toBeInTheDocument();
   });
 
@@ -349,7 +349,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ps03-loops-cmdlets.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ps03-loops-cmdlets.mp4'));
     expect(screen.getByText(/los cmdlets que más vas a usar/)).toBeInTheDocument();
   });
 
@@ -360,7 +360,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ps04-windows-enumeration.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ps04-windows-enumeration.mp4'));
     expect(screen.getByText(/Tu navaja suiza en Windows/)).toBeInTheDocument();
   });
 
@@ -371,7 +371,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/ps05-credentials-obfuscation.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ps05-credentials-obfuscation.mp4'));
     expect(screen.getByText(/Las credenciales viven en LSASS/)).toBeInTheDocument();
   });
 
@@ -382,7 +382,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/py01-python-intro.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/py01-python-intro.mp4'));
     expect(screen.getByText(/Python es el lenguaje del hacking/)).toBeInTheDocument();
   });
 
@@ -393,7 +393,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/py02-types-conditions.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/py02-types-conditions.mp4'));
     expect(screen.getByText(/Cuatro tipos/)).toBeInTheDocument();
   });
 
@@ -404,7 +404,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/py03-loops-libraries.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/py03-loops-libraries.mp4'));
     expect(screen.getByText(/funciones con def/)).toBeInTheDocument();
   });
 
@@ -415,7 +415,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/py04-socket-networking.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/py04-socket-networking.mp4'));
     expect(screen.getByText(/Tu primer script de red/)).toBeInTheDocument();
   });
 
@@ -426,7 +426,7 @@ describe('AcademyVideo (paso tipo video)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/py05-http-requests.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/py05-http-requests.mp4'));
     expect(screen.getByText(/HTTP en tres líneas con requests/)).toBeInTheDocument();
   });
 });

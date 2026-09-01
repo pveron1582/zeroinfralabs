@@ -199,25 +199,25 @@ export const Ot03HackingHardware: React.FC = () => {
 
       {/* Scene 1: título + doble uso */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/ot-03-hacking-hardware/ot-03-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-03-hacking-hardware/ot-03-scene1.wav')} />
         <Scene1 fps={fps} />
       </Sequence>
 
       {/* Scene 2: Pineapple + USB HID */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio/ot-03-hacking-hardware/ot-03-scene2.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-03-hacking-hardware/ot-03-scene2.wav')} />
         <Scene2 fps={fps} />
       </Sequence>
 
       {/* Scene 3: Flipper + compañía */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio/ot-03-hacking-hardware/ot-03-scene3.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-03-hacking-hardware/ot-03-scene3.wav')} />
         <Scene3 fps={fps} />
       </Sequence>
 
       {/* Scene 4: cierre */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        <Audio src={staticFile('videos/audio/ot-03-hacking-hardware/ot-03-scene4.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-03-hacking-hardware/ot-03-scene4.wav')} />
         <Scene4 fps={fps} />
       </Sequence>
     </AbsoluteFill>

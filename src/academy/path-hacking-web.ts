@@ -26,7 +26,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/hw01-web-protocols.mp4',
+        src: '/videos/es/hw01-web-protocols.mp4',
+        srcEn: '/videos/en/hw01-web-protocols.mp4',
         durationSec: 94,
         caption: 'The web is the battlefield: HTTP sends everything in clear text, HTTPS encrypts the channel but not the app, and more protocols are in play — WebSocket, WebDAV, REST/API, even DNS.',
         captionEs: 'La web es el campo de batalla: HTTP manda todo en texto plano, HTTPS cifra el canal pero no la app, y hay más protocolos en juego — WebSocket, WebDAV, REST/API e incluso DNS.',
@@ -92,7 +93,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/hw02-domains-subdirectories.mp4',
+        src: '/videos/es/hw02-domains-subdirectories.mp4',
+        srcEn: '/videos/en/hw02-domains-subdirectories.mp4',
         durationSec: 111,
         caption: 'Map the target: domain, subdomain and subdirectory are three different things. Fuzzing reveals what nobody links — stale panels, hidden backups, forgotten subdomains.',
         captionEs: 'Mapeá el objetivo: dominio, subdominio y subdirectorio son cosas distintas. El fuzzing revela lo que nadie linkea — paneles viejos, backups ocultos, subdominios olvidados.',
@@ -158,7 +160,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/hw03-xss.mp4',
+        src: '/videos/es/hw03-xss.mp4',
+        srcEn: '/videos/en/hw03-xss.mp4',
         durationSec: 93,
         caption: 'XSS runs JavaScript in the victim’s browser: it reads cookies, hijacks sessions and is stopped by always escaping output.',
         captionEs: 'XSS ejecuta JavaScript en el navegador de la víctima: lee cookies, secuestra sesiones y se frena escapando siempre la salida.',
@@ -225,7 +228,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/hw04-sql-injection.mp4',
+        src: '/videos/es/hw04-sql-injection.mp4',
+        srcEn: '/videos/en/hw04-sql-injection.mp4',
         durationSec: 90,
         caption: 'SQL injection makes you speak directly to the database: an OR \'1\'=\'1\' skips the login; parameterized queries stop it.',
         captionEs: 'La inyección SQL te hace hablar directo con la base: un OR \'1\'=\'1\' salta el login; las consultas parametrizadas lo frenan.',
@@ -292,7 +296,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/hw05-path-traversal-lfi.mp4',
+        src: '/videos/es/hw05-path-traversal-lfi.mp4',
+        srcEn: '/videos/en/hw05-path-traversal-lfi.mp4',
         durationSec: 100,
         caption: 'Path traversal escapes the web root and LFI reads the source code; with log poisoning you reach remote code execution.',
         captionEs: 'Path traversal escapa de la raíz web y el LFI lee el código fuente; con log poisoning llegás a ejecutar código remoto.',

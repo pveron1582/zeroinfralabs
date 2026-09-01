@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Hw01WebProtocols.tsx ─────────────
 // Video: protocolos web — HTTP, HTTPS y más.
 // Clase 1 de Hacking Web (lección proto-02). Guiones: voicebox-scripts/hw-01-*.txt
-// Audios reales en public/videos/audio/hw-01-web-protocols/ (2026-08-25).
+// Audios reales en public/videos/audio-es/hw-01-web-protocols/ (2026-08-25).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -94,15 +94,15 @@ export const Hw01WebProtocols: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-01-web-protocols/hw-01-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-01-web-protocols/hw-01-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-01-web-protocols/hw-01-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-01-web-protocols/hw-01-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-01-web-protocols/hw-01-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-01-web-protocols/hw-01-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

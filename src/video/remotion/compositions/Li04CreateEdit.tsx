@@ -243,19 +243,19 @@ export const Li04CreateEdit: React.FC = () => {
 
       {/* Scene 1: intro */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/li-04-create-edit/li-04-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/li-04-create-edit/li-04-scene1.wav')} />
         <Scene1 fps={fps} />
       </Sequence>
 
       {/* Scene 2: pipeline */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio/li-04-create-edit/li-04-scene2.wav')} />
+        <Audio src={staticFile('videos/audio-es/li-04-create-edit/li-04-scene2.wav')} />
         <Scene2 fps={fps} />
       </Sequence>
 
       {/* Scene 3: dónde podés crear */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio/li-04-create-edit/li-04-scene3.wav')} />
+        <Audio src={staticFile('videos/audio-es/li-04-create-edit/li-04-scene3.wav')} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

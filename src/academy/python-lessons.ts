@@ -26,7 +26,8 @@ export const PYTHON_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/py01-python-intro.mp4',
+        src: '/videos/es/py01-python-intro.mp4',
+        srcEn: '/videos/en/py01-python-intro.mp4',
         durationSec: 60,
         caption: 'Python is the hacking language: readable, powerful and with libraries for almost everything. print, input and your first one-liner.',
         captionEs: 'Python es el lenguaje del hacking: legible, poderoso y con librerías para casi todo. print, input y tu primer one-liner.',
@@ -94,7 +95,8 @@ export const PYTHON_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/py02-types-conditions.mp4',
+        src: '/videos/es/py02-types-conditions.mp4',
+        srcEn: '/videos/en/py02-types-conditions.mp4',
         durationSec: 58,
         caption: 'Four types — int, str, list, dict — and an if: with that you can model almost anything in a pentest. F-strings to format.',
         captionEs: 'Cuatro tipos — int, str, list, dict — y un if: con eso modelás casi cualquier cosa de un pentest. F-strings para formatear.',
@@ -154,7 +156,8 @@ export const PYTHON_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/py03-loops-libraries.mp4',
+        src: '/videos/es/py03-loops-libraries.mp4',
+        srcEn: '/videos/en/py03-loops-libraries.mp4',
         durationSec: 55,
         caption: '80% of your scripts: loops over IPs and ports, functions with def and imports to bring in external power.',
         captionEs: 'El 80% de tus scripts: bucles sobre IPs y puertos, funciones con def e imports para traer poder externo.',
@@ -214,7 +217,8 @@ export const PYTHON_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/py04-socket-networking.mp4',
+        src: '/videos/es/py04-socket-networking.mp4',
+        srcEn: '/videos/en/py04-socket-networking.mp4',
         durationSec: 49,
         caption: 'Your first network script: a port scanner with socket, try/except and banner grabbing.',
         captionEs: 'Tu primer script de red: un scanner de puertos con socket, try/except y banner grabbing.',
@@ -282,7 +286,8 @@ export const PYTHON_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/py05-http-requests.mp4',
+        src: '/videos/es/py05-http-requests.mp4',
+        srcEn: '/videos/en/py05-http-requests.mp4',
         durationSec: 60,
         caption: 'HTTP in three lines with requests, and a login brute force that decides by the response. The module closer.',
         captionEs: 'HTTP en tres líneas con requests y un brute force de login que decide por la respuesta. El cierre del módulo.',

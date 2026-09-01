@@ -26,7 +26,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re101-protocols-by-layer.mp4',
+        src: '/videos/es/re101-protocols-by-layer.mp4',
+        srcEn: '/videos/en/re101-protocols-by-layer.mp4',
         durationSec: 67,
         caption: 'A protocol is an agreement on how to communicate: data format, how the conversation starts and ends, how errors are reported. Layer 2/3: Ethernet (MAC), ARP (MAC for an IP), IP (routing), ICMP (ping). Layer 4: TCP (reliable, web/mail/SSH) vs UDP (fast, no guarantee, streaming/DNS). Layer 7: HTTP, DNS, SSH, SMTP.',
         captionEs: 'Un protocolo es un acuerdo sobre cómo comunicarse: formato de datos, cómo inicia y termina la conversación, cómo se reportan los errores. Capa 2/3: Ethernet (MAC), ARP (la MAC de una IP), IP (enrutado), ICMP (ping). Capa 4: TCP (confiable, web/correo/SSH) vs UDP (rápido, sin garantía, streaming/DNS). Capa 7: HTTP, DNS, SSH, SMTP.',
@@ -93,7 +94,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re103-ports.mp4',
+        src: '/videos/es/re103-ports.mp4',
+        srcEn: '/videos/en/re103-ports.mp4',
         durationSec: 91,
         caption: 'A port is a number from 0 to 65535 identifying a service inside a machine: the IP says WHICH machine, the port says WHICH service. Together they form a socket (IP:port). Three ranges: well-known (0–1023), registered (1024–49151), dynamic (49152–65535). The classics: 21 FTP, 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 80 HTTP, 110 POP3, 143 IMAP, 443 HTTPS, 445 SMB, 3306 MySQL, 3389 RDP, 8080 HTTP.',
         captionEs: 'Un puerto es un número de 0 a 65535 que identifica un servicio dentro de una máquina: la IP dice QUÉ máquina, el puerto QUÉ servicio. Juntos forman un socket (IP:puerto). Tres rangos: bien conocidos (0–1023), registrados (1024–49151), dinámicos (49152–65535). Los clásicos: 21 FTP, 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 80 HTTP, 110 POP3, 143 IMAP, 443 HTTPS, 445 SMB, 3306 MySQL, 3389 RDP, 8080 HTTP.',
@@ -167,7 +169,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re102-services.mp4',
+        src: '/videos/es/re102-services.mp4',
+        srcEn: '/videos/en/re102-services.mp4',
         durationSec: 77,
         caption: 'SSH (22): encrypted remote administration; typical attacks are brute force and stolen keys. FTP (21): plain text credentials, anonymous login common. SMB (445): Windows file sharing, famous for EternalBlue (MS17-010). VNC (5900): graphical remote desktop, sometimes with no or weak password. nmap -sV turns open ports into exploit leads.',
         captionEs: 'SSH (22): administración remota cifrada; ataques típicos, fuerza bruta y robo de claves. FTP (21): credenciales en texto plano, login anónimo común. SMB (445): archivos en Windows, famoso por EternalBlue (MS17-010). VNC (5900): escritorio remoto gráfico, a veces sin contraseña o débil. nmap -sV convierte puertos abiertos en pistas de exploits.',
@@ -242,7 +245,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re104-devices.mp4',
+        src: '/videos/es/re104-devices.mp4',
+        srcEn: '/videos/en/re104-devices.mp4',
         durationSec: 76,
         caption: 'Hub (layer 1): repeats everything to every port, makes no decisions. Switch (layer 2): learns which MAC lives on each port and delivers only to the destination; VLANs, managed/unmanaged, PoE. Router (layer 3): connects networks via IP, routing table (OSPF/BGP), NAT and DHCP, WAN/LAN ports. Cabling: copper (RJ45, ~100m), fiber (light, long links), access point (WiFi).',
         captionEs: 'Hub (capa 1): repite todo a todos los puertos, no toma decisiones. Switch (capa 2): aprende qué MAC vive en cada puerto y entrega solo al destino; VLANs, administrable/no, PoE. Router (capa 3): conecta redes por IP, tabla de rutas (OSPF/BGP), NAT y DHCP, puertos WAN/LAN. Cableado: cobre (RJ45, ~100 m), fibra (luz, enlaces largos), access point (WiFi).',
@@ -353,7 +357,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re105-vlans.mp4',
+        src: '/videos/es/re105-vlans.mp4',
+        srcEn: '/videos/en/re105-vlans.mp4',
         durationSec: 83,
         caption: 'A VLAN is a logical network on top of the physical one: a group of switch ports that behave as their own switch at layer 2. Segmentation by design: VLAN 10 employees, 20 servers, 30 cameras/IoT, 40 guests. Efficiency: each broadcast stays inside its own VLAN. 802.1Q tags frames with the VLAN id (1–4094); access ports carry one VLAN, trunks carry many. Security: containment, but VLAN hopping can jump floors.',
         captionEs: 'Una VLAN es una red lógica encima de la física: un grupo de puertos que se comporta como su propio switch en capa 2. Segmentación por diseño: VLAN 10 empleados, 20 servidores, 30 cámaras/IoT, 40 invitados. Eficiencia: cada broadcast se queda en su VLAN. 802.1Q taguea las tramas con el id (1–4094); los puertos access llevan una VLAN, los trunks muchas. Seguridad: contención, pero el VLAN hopping puede saltar de piso.',

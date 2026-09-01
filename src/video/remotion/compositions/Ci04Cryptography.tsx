@@ -26,8 +26,12 @@ const CENTERED: React.CSSProperties = {
 };
 
 // ── Escena 1: qué es + cifrado vs hash ─────────────────────────────
+// Beats reales del wav ES (2026-08-30): dos operaciones 5.0 · cifrar
+// 6.1 · descifrar 9.0 · algoritmo público 11.0 · clave 13.5 · ruido
+// 15.1 · reversible 20.6 · un solo sentido 23.6 · "es hash" 29.2.
+// Panel en 5.0s.
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const panelAt = Math.round(6 * fps);
+  const panelAt = Math.round(5.0 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={panelAt}>
@@ -44,21 +48,21 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
           <div style={{ display: 'flex', gap: 20, width: 1060, justifyContent: 'center' }}>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.cyan}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={8} fps={fps} mark="" color={THEME.cyan}>CIFRADO 🔄</RevealLine>
+                <RevealLine at={1.1} fps={fps} mark="" color={THEME.cyan}>CIFRADO 🔄</RevealLine>
               </div>
-              <RevealLine at={10} fps={fps} mark="▸" color={THEME.cyan}>reversible: con la clave recuperás el dato</RevealLine>
-              <RevealLine at={14} fps={fps} mark="▸" color={THEME.cyan}>protege datos que vas a leer</RevealLine>
+              <RevealLine at={15.6} fps={fps} mark="▸" color={THEME.cyan}>reversible: con la clave recuperás el dato</RevealLine>
+              <RevealLine at={22.1} fps={fps} mark="▸" color={THEME.cyan}>"si se puede descifrar, es cifrado"</RevealLine>
             </div>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.purple}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: THEME.purple, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={9} fps={fps} mark="" color={THEME.purple}>HASH 🧬</RevealLine>
+                <RevealLine at={18.6} fps={fps} mark="" color={THEME.purple}>HASH 🧬</RevealLine>
               </div>
-              <RevealLine at={11} fps={fps} mark="▸" color={THEME.purple}>un solo sentido: no se deshashea</RevealLine>
-              <RevealLine at={15} fps={fps} mark="▸" color={THEME.purple}>verifica integridad, no guarda el dato</RevealLine>
+              <RevealLine at={18.6} fps={fps} mark="▸" color={THEME.purple}>de un solo sentido: no hay vuelta atrás</RevealLine>
+              <RevealLine at={24.2} fps={fps} mark="▸" color={THEME.purple}>"si no hay vuelta atrás, es hash"</RevealLine>
             </div>
           </div>
           <div style={{ width: 900, textAlign: 'left', marginTop: 18 }}>
-            <RevealLine at={18} fps={fps} mark="▸" color={THEME.amber}>si se puede descifrar es cifrado · si no hay vuelta, es hash</RevealLine>
+            <RevealLine at={10.1} fps={fps} mark="▸" color={THEME.amber}>sin la clave, el cifrado es solo ruido</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -67,8 +71,11 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 2: simétrica vs asimétrica ──────────────────────────────
+// Beats reales: dos familias 0.0 · simétrica 1.1 · AES 5.8 · se
+/// filtre 8.6 · asimétrica 9.6 · pública 11.6 · privada 14.0 · cifra
+// una 16.2 · lenta 18.8 · HTTPS juntas 21.4. comboAt 21.4.
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
-  const comboAt = Math.round(13 * fps);
+  const comboAt = Math.round(21.4 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={comboAt}>
@@ -79,25 +86,25 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
           <div style={{ display: 'flex', gap: 60, width: 1060, justifyContent: 'center' }}>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 14 }}>
-                <RevealLine at={2} fps={fps} mark="" color={THEME.green}>SIMÉTRICA</RevealLine>
+                <RevealLine at={1.1} fps={fps} mark="" color={THEME.green}>SIMÉTRICA</RevealLine>
               </div>
               <div style={{ display: 'flex', gap: 14, justifyContent: 'center', marginBottom: 12 }}>
-                <KeyCapsule label="misma clave" value="🔑" accent={THEME.green} delay={Math.round(3 * fps)} size={30} />
-                <KeyCapsule label="una para cifrar y descifrar" value="🔓🔒" accent={THEME.green} delay={Math.round(4.5 * fps)} size={30} />
+                <KeyCapsule label="clave compartida" value="🔑" accent={THEME.green} delay={Math.round(2.4 * fps)} size={30} />
+                <KeyCapsule label="cifrar y descifrar" value="🔓🔒" accent={THEME.green} delay={Math.round(3.6 * fps)} size={30} />
               </div>
-              <RevealLine at={7} fps={fps} mark="▸" color={THEME.green}>rápida · AES, ChaCha20</RevealLine>
-              <RevealLine at={9} fps={fps} mark="⚠" color={THEME.amber}>hay que acordar la clave sin que se filtre</RevealLine>
+              <RevealLine at={0.8} fps={fps} mark="▸" color={THEME.green}>rápida, como AES</RevealLine>
+              <RevealLine at={3.6} fps={fps} mark="⚠" color={THEME.amber}>acordar la clave sin que se filtre</RevealLine>
             </div>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 14 }}>
-                <RevealLine at={3} fps={fps} mark="" color={THEME.cyan}>ASIMÉTRICA</RevealLine>
+                <RevealLine at={9.6} fps={fps} mark="" color={THEME.cyan}>ASIMÉTRICA</RevealLine>
               </div>
               <div style={{ display: 'flex', gap: 14, justifyContent: 'center', marginBottom: 12 }}>
-                <KeyCapsule label="pública · cualquiera" value="🔓" accent={THEME.cyan} delay={Math.round(4.5 * fps)} size={30} />
-                <KeyCapsule label="privada · solo el dueño" value="🔒" accent={THEME.cyan} delay={Math.round(5.5 * fps)} size={30} />
+                <KeyCapsule label="pública · cualquiera" value="🔓" accent={THEME.cyan} delay={Math.round(6.6 * fps)} size={30} />
+                <KeyCapsule label="privada · solo el dueño" value="🔒" accent={THEME.cyan} delay={Math.round(9.0 * fps)} size={30} />
               </div>
-              <RevealLine at={8} fps={fps} mark="▸" color={THEME.cyan}>lo que cifra una, solo lo descifra la otra</RevealLine>
-              <RevealLine at={10} fps={fps} mark="▸" color={THEME.cyan}>más lenta · RSA, ECC</RevealLine>
+              <RevealLine at={11.2} fps={fps} mark="▸" color={THEME.cyan}>lo que cifra una, solo lo descifra la otra</RevealLine>
+              <RevealLine at={13.9} fps={fps} mark="▸" color={THEME.cyan}>más lenta, sin secreto compartido</RevealLine>
             </div>
           </div>
         </AbsoluteFill>
@@ -107,7 +114,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 22 }}>
             HTTPS USA <span style={{ color: THEME.amber }}>LAS DOS</span>
           </div>
-          <TerminalWindow title="🔒 https://example.com" width={780} delay={Math.round(2 * fps)}>
+          <TerminalWindow title="🔒 https://example.com" width={780} delay={Math.round(2.2 * fps)}>
             <div style={{ fontSize: 15, whiteSpace: 'pre', lineHeight: 1.8 }}>
               <span style={{ color: THEME.cyan }}>ASIMÉTRICA</span> → intercambia la clave al inicio
               {'\n'}<span style={{ color: THEME.green }}>SIMÉTRICA</span>   → lleva todo el tráfico después
@@ -121,8 +128,10 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 3: dónde la ves + cierre ────────────────────────────────
+// Beats reales: HTTPS 2.1 · SSH 7.4 · VPN 10.8 · contraseñas 13.4 ·
+// firmas 19.5 · primas 25.6 · verificar 30.6. closeAt 25.6.
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(12 * fps);
+  const closeAt = Math.round(25.6 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
@@ -131,11 +140,11 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
             DÓNDE LA VES <span style={{ color: THEME.green }}>TODOS LOS DÍAS</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: 900 }}>
-            <RevealLine at={2.5} fps={fps} mark="🔒" color={THEME.cyan}>HTTPS: el candado del navegador</RevealLine>
-            <RevealLine at={4.5} fps={fps} mark="🗝️" color={THEME.purple}>SSH: tu par de claves autentica</RevealLine>
-            <RevealLine at={6.5} fps={fps} mark="🧅" color={THEME.amber}>VPN: el túnel cifrado (WireGuard, IPsec)</RevealLine>
-            <RevealLine at={8.5} fps={fps} mark="🧬" color={THEME.green}>contraseñas: hashes, no cifrado</RevealLine>
-            <RevealLine at={10.5} fps={fps} mark="✍️" color={THEME.red}>firmas digitales: privada firma, pública verifica</RevealLine>
+            <RevealLine at={2.1} fps={fps} mark="🔒" color={THEME.cyan}>HTTPS: el candado del navegador (AES + RSA)</RevealLine>
+            <RevealLine at={7.4} fps={fps} mark="🗝️" color={THEME.purple}>SSH: tu par de claves autentica</RevealLine>
+            <RevealLine at={10.8} fps={fps} mark="🧅" color={THEME.amber}>VPN: cifra el túnel completo</RevealLine>
+            <RevealLine at={13.4} fps={fps} mark="🧬" color={THEME.green}>contraseñas: hashes, no cifrado</RevealLine>
+            <RevealLine at={19.5} fps={fps} mark="✍️" color={THEME.red}>firmas: la privada firma, la pública prueba que es genuino</RevealLine>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -164,17 +173,17 @@ export const Ci04Cryptography: React.FC = () => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/ci-04-cryptography/ci-04-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ci-04-cryptography/ci-04-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/ci-04-cryptography/ci-04-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ci-04-cryptography/ci-04-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/ci-04-cryptography/ci-04-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ci-04-cryptography/ci-04-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

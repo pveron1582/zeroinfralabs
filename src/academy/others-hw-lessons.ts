@@ -25,7 +25,8 @@ export const OTHERS_HW_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ot-03-hacking-hardware.mp4',
+        src: '/videos/es/ot-03-hacking-hardware.mp4',
+        srcEn: '/videos/en/ot-03-hacking-hardware.mp4',
         durationSec: 109,
         caption: 'Hacking hardware: the WiFi Pineapple (rogue access point that hijacks Wi-Fi), USB HID injection (Rubber Ducky and Bash Bunny type commands as a fake keyboard), the Flipper Zero (RFID/NFC, 433 MHz, IR, GPIO and replay) plus the O.MG Cable, Proxmark3 and HackRF One. All dual-use: attackers use them to get in, defenders to test their gear.',
         captionEs: 'Hardware de hacking: el WiFi Pineapple (punto de acceso malicioso que secuestra el Wi-Fi), la inyección USB HID (Rubber Ducky y Bash Bunny escriben comandos como teclado falso), el Flipper Zero (RFID/NFC, 433 MHz, IR, GPIO y replay) más el O.MG Cable, el Proxmark3 y el HackRF One. Todos de doble uso: los atacantes entran, los defensores prueban.',
@@ -98,7 +99,8 @@ export const OTHERS_HW_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ot-04-social-engineering.mp4',
+        src: '/videos/es/ot-04-social-engineering.mp4',
+        srcEn: '/videos/en/ot-04-social-engineering.mp4',
         durationSec: 122,
         caption: 'Educational only: skimmers read the magnetic stripe (the EMV chip blocks clones), access-card cloners exploit broken RFID like Mifare Classic, and social engineering attacks the human — phishing, vishing, baiting, pretexting and tailgating. It deserves a full module in Ethical Hacking.',
         captionEs: 'Solo educativo: los skimmers leen la banda magnética (el chip EMV bloquea los clones), los clonadores de acceso explotan el RFID roto como Mifare Classic, y la ingeniería social ataca al humano — phishing, vishing, baiting, pretexting y tailgating. Merece un módulo entero en Hacking Ético.',

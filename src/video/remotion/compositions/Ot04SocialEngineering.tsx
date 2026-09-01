@@ -172,25 +172,25 @@ export const Ot04SocialEngineering: React.FC = () => {
 
       {/* Scene 1: disclaimer */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/ot-04-social-engineering/ot-04-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene1.wav')} />
         <Scene1 />
       </Sequence>
 
       {/* Scene 2: skimmers + clonadores */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio/ot-04-social-engineering/ot-04-scene2.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene2.wav')} />
         <Scene2 fps={fps} />
       </Sequence>
 
       {/* Scene 3: técnicas de ingeniería social */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio/ot-04-social-engineering/ot-04-scene3.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene3.wav')} />
         <Scene3 fps={fps} />
       </Sequence>
 
       {/* Scene 4: cierre */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        <Audio src={staticFile('videos/audio/ot-04-social-engineering/ot-04-scene4.wav')} />
+        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene4.wav')} />
         <Scene4 fps={fps} />
       </Sequence>
     </AbsoluteFill>

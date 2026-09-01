@@ -28,7 +28,8 @@ export const OTHERS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ot-01-alternative-systems.mp4',
+        src: '/videos/es/ot-01-alternative-systems.mp4',
+        srcEn: '/videos/en/ot-01-alternative-systems.mp4',
         durationSec: 116,
         caption: 'The third world of operating systems: macOS (certified Unix, zsh, /Users, launchd), the BSD family (FreeBSD, OpenBSD, NetBSD, pfSense) and ChromeOS (a Linux kernel with Chrome as the whole UI). uname answers differently in each — but they are all Unix family.',
         captionEs: 'El tercer mundo de los sistemas: macOS (Unix certificado, zsh, /Users, launchd), la familia BSD (FreeBSD, OpenBSD, NetBSD, pfSense) y ChromeOS (un kernel Linux con Chrome como toda la interfaz). uname responde distinto en cada uno — pero todos son de la familia Unix.',
@@ -94,7 +95,8 @@ export const OTHERS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ot-02-portable-devices.mp4',
+        src: '/videos/es/ot-02-portable-devices.mp4',
+        srcEn: '/videos/en/ot-02-portable-devices.mp4',
         durationSec: 106,
         caption: 'Android is a modified Linux kernel (adb shell gives you a real shell), iOS is Unix but the most locked-down system (jailbreak to get root), and the Raspberry Pi is Debian-based with apt and GPIO pins for electronics. The "other" is the hardware, not the software.',
         captionEs: 'Android es un kernel Linux modificado (adb shell te da una shell real), iOS es Unix pero el sistema más encerrado (jailbreak para root), y la Raspberry Pi está basada en Debian con apt y pines GPIO para electrónica. Lo "otro" es el hardware, no el software.',

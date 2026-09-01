@@ -66,7 +66,7 @@ export function StepEditor({ step, onChange, isEs }: {
       return (
         <div className="space-y-2">
           <input value={step.src} onChange={e => onChange({ ...step, src: e.target.value })}
-            placeholder="/videos/nombre.mp4" className={inputCls} style={inputStyle} />
+            placeholder="/videos/es/nombre.mp4" className={inputCls} style={inputStyle} />
           <input type="number" value={step.durationSec} onChange={e => onChange({ ...step, durationSec: Number(e.target.value) })}
             placeholder="Duración (segundos)" className={inputCls} style={inputStyle} />
           <input value={step.caption || ''} onChange={e => onChange({ ...step, caption: e.target.value })}

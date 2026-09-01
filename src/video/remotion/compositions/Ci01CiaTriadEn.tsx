@@ -1,15 +1,12 @@
-// ── video/remotion/compositions/Ci01CiaTriad.tsx ───────────────────
-// Video: la triada CID — confidencialidad, integridad y disponibilidad
-// con ataques reales por cada pata y el ángulo del pentester.
-// Con audio de la voz "Miguel" (3 escenas, ~52s).
-// ⚠️ TIMINGS ESTIMADOS: se reemplazan con los reales (ffprobe) cuando el
-// autor pase los wavs; los syncs internos (RevealLine/KeyCapsule) también.
+// ── video/remotion/compositions/Ci01CiaTriadEn.tsx ──────────────
+// English version of ci-01-cia-triad. Same visuals; beats re-measured
+// against the EN wavs (word-level transcription, 2026-08-30).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
 import { staticFile } from 'remotion';
-import { sceneStartFrames, AUDIO_TIMINGS } from '../audioTimings';
+import { sceneStartFrames, AUDIO_TIMINGS_EN, audioBase } from '../audioTimings';
 import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
@@ -25,21 +22,24 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-// ── Escena 1: las tres patas de la triada ──────────────────────────
+// ── Scene 1: the three legs of the triad ───────────────────────
+// EN: confidentiality 3.3 · integrity 4.4 · availability 5.4 ·
+// authorized eyes 10.0 · silence 14.6 · need it 17.3. Panel at 3.2s
+// → relative: 0.1 / 1.2 / 2.2 / 6.8 / 11.4 / 14.1.
 const PILLARS = [
-  { name: 'CONFIDENCIALIDAD', icon: '🔒', color: THEME.cyan, points: ['solo ojos autorizados leen el dato', 'robar datos = romperla'] },
-  { name: 'INTEGRIDAD', icon: '🧾', color: THEME.amber, points: ['el dato no se modifica en silencio', 'tocar logs = romperla'] },
-  { name: 'DISPONIBILIDAD', icon: '✅', color: THEME.green, points: ['el sistema funciona cuando se lo necesita', 'DDoS = romperla'] },
+  { name: 'CONFIDENTIALITY', icon: '🔒', color: THEME.cyan, points: [['only authorized eyes read the data', 6.8], ['stealing data = breaking it', 9.9]] },
+  { name: 'INTEGRITY', icon: '🧾', color: THEME.amber, points: [['the data doesn\'t get modified in silence', 11.4], ['touching logs = breaking it', 14.4]] },
+  { name: 'AVAILABILITY', icon: '✅', color: THEME.green, points: [['the system works when you need it', 14.1], ['DDoS = breaking it', 18.1]] },
 ];
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const panelAt = Math.round(4 * fps);
+  const panelAt = Math.round(3.2 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={panelAt}>
         <TitleScene
-          title={<>LA TRIADA <span style={{ color: THEME.cyan }}>CID</span></>}
-          subtitle="confidencialidad · integridad · disponibilidad"
+          title={<>THE <span style={{ color: THEME.cyan }}>CIA</span> TRIAD</>}
+          subtitle="confidentiality · integrity · availability"
         />
       </Sequence>
       <Sequence from={panelAt}>
@@ -60,8 +60,8 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
                 <div style={{ fontSize: 24, fontWeight: 800, color: p.color, fontFamily: MONO, marginBottom: 12 }}>
                   {p.icon} {p.name}
                 </div>
-                {p.points.map(pt => (
-                  <RevealLine key={pt} at={6 + p.points.indexOf(pt) * 3.5} fps={fps} mark="▸" color={p.color}>{pt}</RevealLine>
+                {p.points.map(([pt, at]) => (
+                  <RevealLine key={pt as string} at={at as number} fps={fps} mark="▸" color={p.color}>{pt}</RevealLine>
                 ))}
               </div>
             ))}
@@ -72,18 +72,21 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
   );
 };
 
-// ── Escena 2: ataques reales por cada pata ─────────────────────────
+// ── Scene 2: real attacks per leg ─────────────────────────────
+// EN: break one 1.1 · confidentiality 3.2 · SQLi 7.2 · integrity
+// 8.7 · defacing 9.7 · logs 11.0 · availability 13.2 · DDoS 14.2 ·
+// ransomware 16.2
 const ATTACKS = [
-  { name: 'CONFIDENCIALIDAD', color: THEME.cyan, attacks: ['robar /etc/shadow', 'SQLi volcando la base'] },
-  { name: 'INTEGRIDAD', color: THEME.amber, attacks: ['defacear la web', 'tocar logs para cubrirte'] },
-  { name: 'DISPONIBILIDAD', color: THEME.green, attacks: ['DDoS tumba el servicio', 'ransomware pide rescate'] },
+  { name: 'CONFIDENTIALITY', color: THEME.cyan, attacks: [['stealing a password file', 4.1], ['SQL injection dumping the database', 6.1]] },
+  { name: 'INTEGRITY', color: THEME.amber, attacks: [['defacing a web page', 9.7], ['touching the logs to cover your tracks', 11.0]] },
+  { name: 'AVAILABILITY', color: THEME.green, attacks: [['a DDoS takes down a service', 14.2], ['ransomware locks everything', 16.2]] },
 ];
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
   return (
     <AbsoluteFill style={CENTERED}>
       <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 30 }}>
-        CADA ATAQUE ROMPE <span style={{ color: THEME.red }}>UNA PATA</span>
+        EVERY ATTACK BREAKS <span style={{ color: THEME.red }}>ONE LEG</span>
       </div>
       <div style={{ display: 'flex', gap: 24, width: 1120 }}>
         {ATTACKS.map(a => (
@@ -101,8 +104,8 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
             <div style={{ fontSize: 22, fontWeight: 800, color: a.color, fontFamily: MONO, marginBottom: 12 }}>
               {a.name}
             </div>
-            {a.attacks.map(at => (
-              <RevealLine key={at} at={3 + a.attacks.indexOf(at) * 4} fps={fps} mark="✗" color={THEME.red}>{at}</RevealLine>
+            {a.attacks.map(([at, atT]) => (
+              <RevealLine key={at as string} at={atT as number} fps={fps} mark="✗" color={THEME.red}>{at}</RevealLine>
             ))}
           </div>
         ))}
@@ -111,17 +114,19 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
   );
 };
 
-// ── Escena 3: cierre — el ángulo del pentester ─────────────────────
+// ── Scene 3: closing — the pentester angle ────────────────────
+// EN: worth the most 2.1 · enumerating 5.4 · defending 10.1 ·
+// afford to lose 12.4. closeAt 9.9.
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(11 * fps);
+  const closeAt = Math.round(9.9 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 28, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 26 }}>
-            LO QUE MÁS VALE ES LA <span style={{ color: THEME.cyan }}>INFORMACIÓN</span>
+            WHAT'S WORTH THE MOST IS <span style={{ color: THEME.cyan }}>THE INFORMATION</span>
           </div>
-          <TerminalWindow title="kali@attacker-01:~$" width={680} delay={Math.round(3 * fps)}>
+          <TerminalWindow title="kali@attacker-01:~$" width={680} delay={Math.round(5.4 * fps)}>
             <div style={{ fontSize: 15, whiteSpace: 'pre', lineHeight: 1.7 }}>
               <span style={{ color: THEME.green }}>kali@attacker-01:~$</span> cat /etc/shadow | head -2
               {'\n'}root:$6$rounds=656000$abcdef$<span style={{ color: THEME.dim }}>...</span>:19100:0:99999:7:::
@@ -129,48 +134,46 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
             </div>
           </TerminalWindow>
           <div style={{ marginTop: 22, fontSize: 18, color: THEME.muted, fontFamily: MONO }}>
-            leerlo rompe la confidencialidad: el atacante crackea offline, sin alertas
+            reading it breaks confidentiality: the attacker cracks it offline, no alerts
           </div>
         </AbsoluteFill>
       </Sequence>
       <Sequence from={closeAt}>
         <TitleScene
-          title={<>ENUMERÁ: <span style={{ color: THEME.amber }}>¿CUÁL PATA TE CONVIENE ATACAR?</span></>}
-          subtitle="y cuando defendés: ¿cuál no podés perder?"
+          title={<>ENUMERATE: <span style={{ color: THEME.amber }}>WHICH LEG PAYS OFF TO ATTACK?</span></>}
+          subtitle="and when you're defending: which one can't you afford to lose?"
         />
       </Sequence>
     </AbsoluteFill>
   );
 };
 
-export const Ci01CiaTriad: React.FC = () => {
+export const Ci01CiaTriadEn: React.FC = () => {
   const { fps } = useVideoConfig();
 
-  const [s1, s2, s3] = AUDIO_TIMINGS['ci-01-cia-triad'];
-  const starts = sceneStartFrames('ci-01-cia-triad', fps);
+  const [s1, s2, s3] = AUDIO_TIMINGS_EN['ci-01-cia-triad'];
+  const starts = sceneStartFrames('ci-01-cia-triad', fps, 'en');
   const dur1 = Math.ceil(s1 * fps);
   const dur2 = Math.ceil(s2 * fps);
   const dur3 = Math.ceil(s3 * fps) + fps;
+  const base = audioBase('en');
 
   return (
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
 
-      {/* Scene 1: la triada */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio-es/ci-01-cia-triad/ci-01-scene1.wav')} />
+        <Audio src={staticFile(`${base}/ci-01-cia-triad/ci-01-scene1.wav`)} />
         <Scene1 fps={fps} />
       </Sequence>
 
-      {/* Scene 2: ataques reales */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio-es/ci-01-cia-triad/ci-01-scene2.wav')} />
+        <Audio src={staticFile(`${base}/ci-01-cia-triad/ci-01-scene2.wav`)} />
         <Scene2 fps={fps} />
       </Sequence>
 
-      {/* Scene 3: cierre */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio-es/ci-01-cia-triad/ci-01-scene3.wav')} />
+        <Audio src={staticFile(`${base}/ci-01-cia-triad/ci-01-scene3.wav`)} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

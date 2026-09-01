@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Hw02DomainsSubdirectories.tsx ─────
 // Video: dominios, subdominios y subdirectorios — mapeando el objetivo.
 // Clase 2 de Hacking Web (lección web-04). Guiones: voicebox-scripts/hw-02-*.txt
-// Audios reales en public/videos/audio/hw-02-domains-subdirectories/ (2026-08-25).
+// Audios reales en public/videos/audio-es/hw-02-domains-subdirectories/ (2026-08-25).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -94,15 +94,15 @@ export const Hw02DomainsSubdirectories: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-02-domains-subdirectories/hw-02-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-02-domains-subdirectories/hw-02-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-02-domains-subdirectories/hw-02-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-02-domains-subdirectories/hw-02-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/hw-02-domains-subdirectories/hw-02-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/hw-02-domains-subdirectories/hw-02-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

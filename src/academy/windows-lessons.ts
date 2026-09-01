@@ -24,7 +24,8 @@ export const WINDOWS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/wi01-windows-history.mp4',
+        src: '/videos/es/wi01-windows-history.mp4',
+        srcEn: '/videos/en/wi01-windows-history.mp4',
         durationSec: 74,
         caption: 'Born in 1985 as a GUI on top of MS-DOS, Windows 95 brought the Start menu, and every version shares the NT kernel. Windows is proprietary: closed source, licensed, and you cannot read the code.',
         captionEs: 'Nació en 1985 como interfaz sobre MS-DOS, Windows 95 trajo el menú Inicio y todas las versiones comparten el kernel NT. Windows es privativo: código cerrado, con licencia y sin acceso al código.',
@@ -90,7 +91,8 @@ export const WINDOWS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/wi02-current-versions.mp4',
+        src: '/videos/es/wi02-current-versions.mp4',
+        srcEn: '/videos/en/wi02-current-versions.mp4',
         durationSec: 75,
         caption: 'Three Windows rule the corporate world: 10 (2015, support ends Oct 2025), 11 (TPM 2.0 + Secure Boot) and Server (Active Directory, IIS, PowerShell/WinRM).',
         captionEs: 'Tres Windows dominan el mundo corporativo: 10 (2015, soporte hasta oct 2025), 11 (TPM 2.0 + Secure Boot) y Server (Active Directory, IIS, PowerShell/WinRM).',
@@ -156,7 +158,8 @@ export const WINDOWS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/wi03-security.mp4',
+        src: '/videos/es/wi03-security.mp4',
+        srcEn: '/videos/en/wi03-security.mp4',
         durationSec: 68,
         caption: 'Windows ships locked down: firewall with 3 profiles, Defender antivirus, UAC prompts, Group Policy from Active Directory — plus BitLocker, Credential Guard and the Event Logs.',
         captionEs: 'Windows viene blindado: firewall con 3 perfiles, antivirus Defender, avisos de UAC, políticas de grupo desde Active Directory — más BitLocker, Credential Guard y los Event Logs.',
@@ -236,7 +239,8 @@ export const WINDOWS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/wi04-filesystem.mp4',
+        src: '/videos/es/wi04-filesystem.mp4',
+        srcEn: '/videos/en/wi04-filesystem.mp4',
         durationSec: 91,
         caption: 'Windows maps differently: C:\\ with System32, Temp, Users, Program Files and inetpub. Passwords live in the SAM hive. Permissions are ACLs, shown with icacls.',
         captionEs: 'Windows se mapea distinto: C:\\ con System32, Temp, Users, Program Files e inetpub. Las contraseñas viven en el hive SAM. Los permisos son ACL, con icacls.',
@@ -309,7 +313,8 @@ export const WINDOWS_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/wi05-network-services.mp4',
+        src: '/videos/es/wi05-network-services.mp4',
+        srcEn: '/videos/en/wi05-network-services.mp4',
         durationSec: 75,
         caption: 'The corporate entry doors: SMB on 445 (shares, EternalBlue), RDP on 3389 (lateral movement), WinRM on 5985 (PowerShell remoting with Evil-WinRM).',
         captionEs: 'Las puertas de entrada corporativas: SMB en 445 (shares, EternalBlue), RDP en 3389 (movimiento lateral), WinRM en 5985 (PowerShell remoto con Evil-WinRM).',

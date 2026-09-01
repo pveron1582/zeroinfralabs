@@ -99,6 +99,7 @@ function VideoStep({ step, isEs }: {
       </div>
       <AcademyVideo
         src={step.src}
+        srcEn={step.srcEn}
         poster={step.poster}
         durationSec={step.durationSec}
         caption={step.caption}

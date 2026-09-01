@@ -1,13 +1,12 @@
-// ── video/remotion/compositions/Ci05OwaspTopTen.tsx ────────────────
-// Video: OWASP Top Ten — los 10 riesgos web más explotados.
-// Lección ciber-05 (Fundamentos de Ciberseguridad). Guiones: voicebox-scripts/ci-05-*.txt
-// ⚠️ AUDIO PENDIENTE: hasAudio() es false → se renderiza mudo hasta que
-// lleguen los wavs y se reemplacen los timings estimados.
+// ── video/remotion/compositions/Ci05OwaspTopTenEn.tsx ───────
+// English version of ci-05-owasp-top-ten. Same visuals; beats
+// re-measured against the EN wavs (word-level transcription, 2026-08-30).
+// EN audio available even though ES is still pending.
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
-import { sceneStartFrames, AUDIO_TIMINGS, hasAudio } from '../audioTimings';
+import { sceneStartFrames, AUDIO_TIMINGS_EN, audioBase } from '../audioTimings';
 import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
@@ -23,46 +22,46 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-// ── Escena 1: qué es OWASP ─────────────────────────────────────────
-// Beats reales del wav ES (2026-08-30): auditores 10.1 · desarrolladores
-// 12.0 · atacantes 14.0 · red team memoriza 15.8 · lugar donde mirar
-// 18.9. Panel en 9.0s.
+// ── Scene 1: what OWASP is ───────────────────────────────────
+// EN: list 2.4 · non-profit 6.9 · auditors 12.2 · developers
+// 13.8 · attackers 15.5 · red team memorizes 17.3 · place to look
+// 22.0. Panel at 6.0s → rel: 6.2 / 7.8 / 9.5 / 11.3 / 16.0.
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const panelAt = Math.round(9.0 * fps);
+  const panelAt = Math.round(6.0 * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={panelAt}>
         <TitleScene
-          title={<>LA TABLA QUE EL RED TEAM <span style={{ color: THEME.red }}>MEMORIZA</span></>}
-          subtitle="OWASP Top Ten — los 10 riesgos web más explotados"
+          title={<>THE TABLE THE RED TEAM <span style={{ color: THEME.red }}>MEMORIZES</span></>}
+          subtitle="OWASP Top Ten — the 10 most exploited web risks"
         />
       </Sequence>
       <Sequence from={panelAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 22, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }}>
-            QUIÉN LA USA: <span style={{ color: THEME.cyan }}>TODOS</span>
+            WHO USES IT: <span style={{ color: THEME.cyan }}>EVERYONE</span>
           </div>
           <div style={{ display: 'flex', gap: 20, width: 1040, justifyContent: 'center' }}>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.cyan}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
               <div style={{ fontSize: 19, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={1.1} fps={fps} mark="" color={THEME.cyan}>AUDITORES</RevealLine>
+                <RevealLine at={6.2} fps={fps} mark="" color={THEME.cyan}>AUDITORS</RevealLine>
               </div>
-              <RevealLine at={2.0} fps={fps} mark="▸" color={THEME.cyan}>testean contra la lista</RevealLine>
-              <RevealLine at={3.3} fps={fps} mark="▸" color={THEME.cyan}>cada entrada = un lugar donde mirar</RevealLine>
+              <RevealLine at={8.2} fps={fps} mark="▸" color={THEME.cyan}>test against the list</RevealLine>
+              <RevealLine at={10.2} fps={fps} mark="▸" color={THEME.cyan}>every entry = a checklist</RevealLine>
             </div>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.green}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
               <div style={{ fontSize: 19, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={3.0} fps={fps} mark="" color={THEME.green}>DESARROLLADORES</RevealLine>
+                <RevealLine at={7.8} fps={fps} mark="" color={THEME.green}>DEVELOPERS</RevealLine>
               </div>
-              <RevealLine at={3.7} fps={fps} mark="▸" color={THEME.green}>refuerzan contra la lista</RevealLine>
-              <RevealLine at={5.9} fps={fps} mark="▸" color={THEME.green}>arreglá los 10, cerrás el 80% de la puerta</RevealLine>
+              <RevealLine at={9.8} fps={fps} mark="▸" color={THEME.green}>harden against the list</RevealLine>
+              <RevealLine at={11.8} fps={fps} mark="▸" color={THEME.green}>closes 80% of the door</RevealLine>
             </div>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.red}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
               <div style={{ fontSize: 19, fontWeight: 800, color: THEME.red, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={5.0} fps={fps} mark="" color={THEME.red}>ATACANTES</RevealLine>
+                <RevealLine at={9.5} fps={fps} mark="" color={THEME.red}>ATTACKERS</RevealLine>
               </div>
-              <RevealLine at={5.8} fps={fps} mark="▸" color={THEME.red}>cazan dentro de la lista</RevealLine>
-              <RevealLine at={7.7} fps={fps} mark="▸" color={THEME.red}>un ataque clásico por entrada</RevealLine>
+              <RevealLine at={10.5} fps={fps} mark="▸" color={THEME.red}>hunt within the list</RevealLine>
+              <RevealLine at={16.0} fps={fps} mark="▸" color={THEME.red}>a classic attack per entry</RevealLine>
             </div>
           </div>
         </AbsoluteFill>
@@ -71,14 +70,12 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
   );
 };
 
-// ── Escena 2: top 3 ────────────────────────────────────────────────
-// sumAt adelantado de 25.6 a 16s para que "juntos cubren..." tenga
-// tiempo de lectura (antes duraba 1s y parecía cortado). Los 3
-// aparecen más rápido dentro del primer bloque.
+// ── Scene 2: top 3 ──────────────────────────────────────────
+// sumAt adelantado de 25.2 a 16s (antes la 2ª pantalla duraba 3s).
 const TOP3 = [
-  { n: '1', name: 'BROKEN ACCESS CONTROL', desc: 'llegás a lo que no deberías: /admin, datos de otro', color: THEME.red, at: 2.1 },
-  { n: '2', name: 'CRYPTOGRAPHIC FAILURES', desc: 'datos sensibles sin proteger: texto plano, hashes débiles', color: THEME.amber, at: 9.5 },
-  { n: '3', name: 'INJECTION', desc: "tu input se ejecuta como código: ' OR 1=1, XSS", color: THEME.cyan, at: 15.0 },
+  { n: '1', name: 'BROKEN ACCESS CONTROL', desc: 'you reach things you shouldn\'t: /admin, another user\'s data', color: THEME.red, at: 2.7 },
+  { n: '2', name: 'CRYPTOGRAPHIC FAILURES', desc: 'sensitive data unprotected: plain text, weak hashes', color: THEME.amber, at: 10.2 },
+  { n: '3', name: 'INJECTION', desc: "your input runs as code: ' OR 1=1, XSS", color: THEME.cyan, at: 18.0 },
 ];
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
@@ -88,7 +85,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
       <Sequence from={0} durationInFrames={sumAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 32 }}>
-            EL <span style={{ color: THEME.red }}>TOP 3</span>, LOS QUE MÁS IMPORTAN
+            THE <span style={{ color: THEME.red }}>TOP 3</span>, THE ONES THAT MATTER MOST
           </div>
           <div style={{ display: 'flex', gap: 20, width: 1100, justifyContent: 'center' }}>
             {TOP3.map(t => (
@@ -109,7 +106,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
       <Sequence from={sumAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO }}>
-            <RevealLine at={0.4} fps={fps} mark="▸" color={THEME.red}>juntos, estos tres cubren la mayoría de las brechas reales</RevealLine>
+            <RevealLine at={0.2} fps={fps} mark="▸" color={THEME.red}>together, these three cover most real world breaches</RevealLine>
           </div>
           <div style={{ display: 'flex', gap: 16, marginTop: 26 }}>
             {['Access', 'Crypto', 'Injection'].map((x, i) => (
@@ -122,17 +119,17 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
   );
 };
 
-// ── Escena 3: los otros 7 + red/blue team + cierre ─────────────────
-// playbookAt adelantado de 26.6 a 18s y closeAt de 32.3 a 28s para que
+// ── Scene 3: the other 7 + red/blue team + closing ──────────
+// playbookAt adelantado de 25.5 a 18s y closeAt de 31.9 a 28s para que
 // las comparaciones red/blue carguen completas (antes quedaba 1s).
 const OTHER7 = [
-  { n: '4', name: 'Insecure Design', color: THEME.purple, at: 1.6 },
-  { n: '5', name: 'Security Misconfiguration', color: THEME.amber, at: 4.2 },
-  { n: '6', name: 'Vulnerable Components', color: THEME.red, at: 8.3 },
-  { n: '7', name: 'Auth Failures', color: THEME.cyan, at: 11.9 },
-  { n: '8', name: 'Integrity Failures', color: THEME.green, at: 14.3 },
-  { n: '9', name: 'Logging & Monitoring', color: THEME.purple, at: 17.4 },
-  { n: '10', name: 'SSRF', color: THEME.amber, at: 21.0 },
+  { n: '4', name: 'Insecure Design', color: THEME.purple, at: 2.2 },
+  { n: '5', name: 'Security Misconfiguration', color: THEME.amber, at: 5.6 },
+  { n: '6', name: 'Vulnerable Components', color: THEME.red, at: 9.7 },
+  { n: '7', name: 'Auth Failures', color: THEME.cyan, at: 13.2 },
+  { n: '8', name: 'Integrity Failures', color: THEME.green, at: 15.3 },
+  { n: '9', name: 'Logging & Monitoring', color: THEME.purple, at: 17.8 },
+  { n: '10', name: 'SSRF', color: THEME.amber, at: 21.2 },
 ];
 
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
@@ -143,7 +140,7 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
       <Sequence from={0} durationInFrames={playbookAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }}>
-            LOS OTROS <span style={{ color: THEME.purple }}>SIETE</span>
+            THE OTHER <span style={{ color: THEME.purple }}>SEVEN</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14, width: 1080 }}>
             {OTHER7.map(o => (
@@ -163,61 +160,62 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
       <Sequence from={playbookAt} durationInFrames={closeAt - playbookAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 22 }}>
-            EL TOP TEN COMO <span style={{ color: THEME.red }}>PLAYBOOK</span>
+            THE TOP TEN AS A <span style={{ color: THEME.red }}>PLAYBOOK</span>
           </div>
           <div style={{ display: 'flex', gap: 20, width: 1040, justifyContent: 'center' }}>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.red}60`, borderRadius: 16, padding: '18px 20px', textAlign: 'left' }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: THEME.red, fontFamily: MONO, marginBottom: 10 }}>
-                <RevealLine at={0.0} fps={fps} mark="" color={THEME.red}>RED TEAM ⚔️</RevealLine>
+                <RevealLine at={0.3} fps={fps} mark="" color={THEME.red}>RED TEAM ⚔️</RevealLine>
               </div>
-              <RevealLine at={0.5} fps={fps} mark="▸" color={THEME.red}>cada entrada es una idea de ataque</RevealLine>
+              <RevealLine at={0.5} fps={fps} mark="▸" color={THEME.red}>every entry is an attack idea</RevealLine>
+              <RevealLine at={1.2} fps={fps} mark="▸" color={THEME.red}>a classic attack to try per entry</RevealLine>
             </div>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.green}60`, borderRadius: 16, padding: '18px 20px', textAlign: 'left' }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 10 }}>
                 <RevealLine at={0.8} fps={fps} mark="" color={THEME.green}>BLUE TEAM 🛡️</RevealLine>
               </div>
-              <RevealLine at={1.5} fps={fps} mark="▸" color={THEME.green}>invertida: una lista de arreglos</RevealLine>
-              <RevealLine at={2.8} fps={fps} mark="▸" color={THEME.green}>arreglá los 10 y cerrás el 80% de la puerta</RevealLine>
+              <RevealLine at={1.5} fps={fps} mark="▸" color={THEME.green}>flipped, it's a fix list</RevealLine>
+              <RevealLine at={2.8} fps={fps} mark="▸" color={THEME.green}>fix all 10 and you close 80% of the door</RevealLine>
             </div>
           </div>
         </AbsoluteFill>
       </Sequence>
       <Sequence from={closeAt}>
         <TitleScene
-          title={<>NO ES UNA LISTA PARA <span style={{ color: THEME.red }}>MEMORIZAR</span></>}
-          subtitle="es un menú de ideas de ataque · y, invertido, de arreglos"
+          title={<>IT'S NOT A LIST TO <span style={{ color: THEME.red }}>MEMORIZE</span></>}
+          subtitle="it's a menu of attack ideas · and, flipped, of defense fixes"
         />
       </Sequence>
     </AbsoluteFill>
   );
 };
 
-export const Ci05OwaspTopTen: React.FC = () => {
+export const Ci05OwaspTopTenEn: React.FC = () => {
   const { fps } = useVideoConfig();
 
-  const [s1, s2, s3] = AUDIO_TIMINGS['ci-05-owasp-top-ten'];
-  const starts = sceneStartFrames('ci-05-owasp-top-ten', fps);
+  const [s1, s2, s3] = AUDIO_TIMINGS_EN['ci-05-owasp-top-ten'];
+  const starts = sceneStartFrames('ci-05-owasp-top-ten', fps, 'en');
   const dur1 = Math.ceil(s1 * fps);
   const dur2 = Math.ceil(s2 * fps);
   const dur3 = Math.ceil(s3 * fps) + fps;
-  const withAudio = hasAudio('ci-05-owasp-top-ten');
+  const base = audioBase('en');
 
   return (
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio-es/ci-05-owasp-top-ten/ci-05-scene1.wav')} />}
+        <Audio src={staticFile(`${base}/ci-05-owasp-top-ten/ci-05-scene1.wav`)} />
         <Scene1 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio-es/ci-05-owasp-top-ten/ci-05-scene2.wav')} />}
+        <Audio src={staticFile(`${base}/ci-05-owasp-top-ten/ci-05-scene2.wav`)} />
         <Scene2 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio-es/ci-05-owasp-top-ten/ci-05-scene3.wav')} />}
+        <Audio src={staticFile(`${base}/ci-05-owasp-top-ten/ci-05-scene3.wav`)} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

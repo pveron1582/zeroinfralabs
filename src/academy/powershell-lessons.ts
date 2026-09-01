@@ -27,7 +27,8 @@ export const POWERSHELL_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ps01-objects-pipeline.mp4',
+        src: '/videos/es/ps01-objects-pipeline.mp4',
+        srcEn: '/videos/en/ps01-objects-pipeline.mp4',
         durationSec: 63,
         caption: 'PowerShell passes objects, not text: Verb-Noun cmdlets, the pipeline, .ps1 scripts and the Execution Policy bypass.',
         captionEs: 'PowerShell pasa objetos, no texto: cmdlets Verbo-Sustantivo, el pipeline, scripts .ps1 y el bypass de Execution Policy.',
@@ -86,7 +87,8 @@ export const POWERSHELL_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ps02-variables-conditionals.mp4',
+        src: '/videos/es/ps02-variables-conditionals.mp4',
+        srcEn: '/videos/en/ps02-variables-conditionals.mp4',
         durationSec: 62,
         caption: 'Variables with $, arrays, hashtables and conditions with word operators like -eq and -match.',
         captionEs: 'Variables con $, arrays, hashtables y condiciones con operadores palabra como -eq y -match.',
@@ -145,7 +147,8 @@ export const POWERSHELL_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ps03-loops-cmdlets.mp4',
+        src: '/videos/es/ps03-loops-cmdlets.mp4',
+        srcEn: '/videos/en/ps03-loops-cmdlets.mp4',
         durationSec: 61,
         caption: 'Loops, functions and the cmdlets you will use the most: $_, Where-Object, ForEach-Object and the I/O ones.',
         captionEs: 'Bucles, funciones y los cmdlets que más vas a usar: $_, Where-Object, ForEach-Object y los de I/O.',
@@ -204,7 +207,8 @@ export const POWERSHELL_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ps04-windows-enumeration.mp4',
+        src: '/videos/es/ps04-windows-enumeration.mp4',
+        srcEn: '/videos/en/ps04-windows-enumeration.mp4',
         durationSec: 59,
         caption: 'Your Swiss army knife on Windows: whoami /priv, Get-Process, net localgroup and the registry. SeDebugPrivilege is gold.',
         captionEs: 'Tu navaja suiza en Windows: whoami /priv, Get-Process, net localgroup y el registro. SeDebugPrivilege es oro.',
@@ -263,7 +267,8 @@ export const POWERSHELL_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/ps05-credentials-obfuscation.mp4',
+        src: '/videos/es/ps05-credentials-obfuscation.mp4',
+        srcEn: '/videos/en/ps05-credentials-obfuscation.mp4',
         durationSec: 61,
         caption: 'Credentials live in LSASS: Mimikatz dumps them, and base64 obfuscation with -EncodedCommand slips past the filters.',
         captionEs: 'Las credenciales viven en LSASS: Mimikatz las vuelca y la ofuscación base64 con -EncodedCommand esquiva los filtros.',

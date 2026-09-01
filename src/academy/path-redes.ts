@@ -23,7 +23,8 @@ export const REDES_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re01-network-types.mp4',
+        src: '/videos/es/re01-network-types.mp4',
+        srcEn: '/videos/en/re01-network-types.mp4',
         durationSec: 59,
         caption: 'A network is connected devices sharing data. Each device is a node: wired (ethernet, fiber) or wireless (wifi). By size: PAN (personal), LAN (home/office), MAN (city), WAN (countries — the internet). The VPN is an encrypted tunnel over the internet, not a physical network.',
         captionEs: 'Una red es un conjunto de dispositivos conectados para compartir datos. Cada equipo es un nodo: por cable (ethernet, fibra) o inalámbrico (wifi). Por tamaño: PAN (personal), LAN (casa/oficina), MAN (ciudad), WAN (países — internet). La VPN es un túnel cifrado sobre internet, no una red física.',
@@ -82,7 +83,8 @@ export const REDES_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re02-ip-addresses.mp4',
+        src: '/videos/es/re02-ip-addresses.mp4',
+        srcEn: '/videos/en/re02-ip-addresses.mp4',
         durationSec: 72,
         caption: 'The IP is the postal address of each device: four numbers from 0 to 255 separated by dots. Public IPs are unique on the internet; private ones (10.x, 172.16–31.x, 192.168.x) stay inside your network. NAT lets the router translate all private addresses into a single public one.',
         captionEs: 'La IP es la dirección postal de cada equipo: cuatro números de 0 a 255 separados por puntos. Las públicas son únicas en internet; las privadas (10.x, 172.16–31.x, 192.168.x) quedan dentro de tu red. NAT deja que el router traduzca todas las privadas a una sola pública.',
@@ -149,7 +151,8 @@ export const REDES_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re03-devices-topologies.mp4',
+        src: '/videos/es/re03-devices-topologies.mp4',
+        srcEn: '/videos/en/re03-devices-topologies.mp4',
         durationSec: 74,
         caption: 'Hub (layer 1, repeats everything), switch (layer 2, delivers by MAC) and router (layer 3, joins networks, NAT, DHCP). Topologies are the shape of the network: bus, star (the most used), ring and mesh. Where you sit in the topology decides what you can see.',
         captionEs: 'Hub (capa 1, repite todo), switch (capa 2, entrega por MAC) y router (capa 3, une redes, NAT, DHCP). Las topologías son la forma de la red: bus, estrella (la más usada), anillo y malla. Tu posición en la topología define qué podés ver.',
@@ -214,7 +217,8 @@ export const REDES_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re04-osi-layers.mp4',
+        src: '/videos/es/re04-osi-layers.mp4',
+        srcEn: '/videos/en/re04-osi-layers.mp4',
         durationSec: 73,
         caption: 'OSI splits communication into 7 layers with one job each: application, presentation, session, transport, network, data link, physical. The internet runs on TCP/IP, which merges them into 4. "Layer 2" or "layer 3" always means the OSI model.',
         captionEs: 'OSI divide la comunicación en 7 capas con un trabajo cada una: aplicación, presentación, sesión, transporte, red, enlace, física. Internet corre con TCP/IP, que las junta en 4. "Capa 2" o "capa 3" siempre significan el modelo OSI.',
@@ -273,7 +277,8 @@ export const REDES_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/re05-addressing-dns.mp4',
+        src: '/videos/es/re05-addressing-dns.mp4',
+        srcEn: '/videos/en/re05-addressing-dns.mp4',
         durationSec: 65,
         caption: 'Three numbers configure a device: IP (identity), subnet mask (network vs device), gateway (the router that takes you out). Historically IPs came in classes (A/B/C); today CIDR rules. DNS translates names into IPs — the internet\'s address book.',
         captionEs: 'Tres números configuran un equipo: IP (identidad), máscara de red (red vs equipo), gateway (el router por donde salís). Históricamente las IPs venían en clases (A/B/C); hoy manda CIDR. El DNS traduce nombres a IPs — la agenda de internet.',
