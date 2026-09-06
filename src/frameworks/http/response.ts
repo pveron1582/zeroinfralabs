@@ -146,19 +146,21 @@ export function buildLoginResponse(
     const flag = target.flags?.root;
 
     let rowId = 1;
-    const userRows = Object.entries(target.known_passwords ?? {})
+    const knownPasswords = target.known_passwords ?? {};
+    const userRows = Object.entries(knownPasswords)
       .filter(([u]) => u !== 'root')
-      .map(([u]) => `| ${rowId++} | ${u.padEnd(9)} | hash_${u}_x9f2 | ${u}@int.local | user   |`);
+      .map(([u, pass]) => `| ${rowId++} | ${u.padEnd(9)} | ${(pass as string).padEnd(16)} | ${u}@int.local | user   |`);
     const flagRow = flag
-      ? [`| ${rowId} | ${'root'.padEnd(9)} | ${flag} | root@int.local | flag   |`]
+      ? [`| ${rowId} | ${'root'.padEnd(9)} | ${flag.padEnd(16)} | root@int.local | flag   |`]
       : [];
     const rows = userRows.concat(flagRow);
     if (rows.length === 0) {
-      rows.push(`| 1 | ${'admin'.padEnd(9)} | hash_admin_x9f2 | admin@int.local | user   |`);
+      rows.push(`| 1 | ${'admin'.padEnd(9)} | ${'[unknown]'.padEnd(16)} | admin@int.local | user   |`);
     }
 
+    // Indicar que hay un dump accesible por FTP (sin revelar credenciales)
     const ftpLines = ftpCreds
-      ? `\n  <p>[!] FTP backup account: <strong>${ftpCreds.user} / ${ftpCreds.pass}</strong> (dump in /srv/ftp)</p>\n  <p>[!] Database backup exported to /srv/ftp/database_dump.sql — recover it via FTP.</p>`
+      ? `\n  <p>[!] Database backup exported to /srv/ftp/database_dump.sql — recover it via FTP.</p>`
       : '';
     const flagLine = flag
       ? `\n  <p><strong>[★] root flag: ${flag}</strong></p>`

@@ -243,7 +243,10 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
   }
 
   if (page) {
-    const normalized = page.replace(/^(\.\.\/)*/, '').replace(/^\.\//, '');
+    // Normalizar traversal: limpiar ../ y variantes generadas por autocorrect
+    // (p.ej. ' ./' o '. ./' que algunos IME/correctores producen al tipear '..')
+    const traversalCleaned = page.replace(/(?:\.\s*\.\s*\/|\s*\.\s*\/)+/g, '../').replace(/(\.\.\/)+/, '');
+    const normalized = traversalCleaned.replace(/^\/+/, '').replace(/^\.\//, '');
     const serverFile = SERVER_FILES[normalized];
     if (serverFile) {
       return (

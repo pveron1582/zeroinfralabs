@@ -53,7 +53,8 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
     r = executeCommand(`curl -X POST http://${target.machine_info.ip}/login -d "username=' UNION SELECT table_name FROM information_schema.tables--&password=x"`, attacker, machines, active().id, undefined, '/root');
     expect(validateMission(r, active())).toBe(true);
     expect(r.output).toContain('root / SQLr00t@2024!');
-    expect(r.output).toContain('ftpuser / ftp_dump_2024');
+    // La contraseña de ftpuser aparece directamente en la tabla users del UNION SELECT
+    expect(r.output).toContain('ftp_dump_2024');
     expect(r.output).toContain('/srv/ftp/database_dump.sql');
     completeActive();
     expect(active().id).toBe(6);

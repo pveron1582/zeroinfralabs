@@ -120,6 +120,12 @@ export function FakeBrowser({
       const fullPath = clean.replace(`http://${lfiMachine.machine_info.ip}`, '');
       if (fullPath.includes('etc/passwd')) {
         onReportVulnerability?.(lfiMachine.id, 'LFI', 'detected');
+        // Emitir también como CommandResponse para que el validador universal complete la misión
+        checkMissionCompletion?.({
+          output: '',
+          type: 'vuln',
+          foundVulnerability: { machineId: lfiMachine.id, vulnId: 'LFI', status: 'detected' },
+        });
       }
     }
   };
@@ -286,7 +292,13 @@ export function FakeBrowser({
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <input type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') navigate(urlInput); }}
-            className="flex-1 bg-transparent text-gray-300 text-xs outline-none font-mono" spellCheck={false} />
+            className="flex-1 bg-transparent text-gray-300 text-xs outline-none font-mono"
+            spellCheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            data-gramm="false"
+            data-enable-grammarly="false" />
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-700 rounded text-xs text-gray-400 font-mono">
           <span>CyberBrowser</span>

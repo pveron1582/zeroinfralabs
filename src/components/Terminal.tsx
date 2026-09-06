@@ -46,6 +46,8 @@ function TerminalInput({
       autoComplete="off"
       autoCorrect="off"
       autoCapitalize="off"
+      data-gramm="false"
+      data-enable-grammarly="false"
     />
   );
 }

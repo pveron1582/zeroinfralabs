@@ -174,7 +174,8 @@ describe('Happy Path: Scenario 07 (Burp Suite) - flujo completo', () => {
   it('el UNION del lab 07 NO muestra credenciales ajenas (ni ftpuser, ni dump FTP)', () => {
     const target = scenario_07.machines.find(m => !m.id.includes('attacker'))!;
     const union = buildSyntheticResponse(target, 'POST', '/login', "username=' UNION SELECT * FROM users--&password=x");
-    expect(union.body).not.toContain('ftpuser / ftp_dump_2024');
+    // El lab 07 no tiene ftpuser ni el dump FTP del lab 06
+    expect(union.body).not.toContain('ftp_dump_2024');
     expect(union.body).not.toContain('SQLr00t@2024!');
     expect(union.body).toContain(scenario07Data.credentials.database.pass);
   });
@@ -183,7 +184,8 @@ describe('Happy Path: Scenario 07 (Burp Suite) - flujo completo', () => {
     const target = scenario_06.machines.find((m: Machine) => !m.id.includes('attacker'))!;
     const union = buildSyntheticResponse(target, 'POST', '/login', "username=' UNION SELECT * FROM users--&password=x");
     expect(union.body).toContain('root / SQLr00t@2024!');
-    expect(union.body).toContain('ftpuser / ftp_dump_2024');
+    // ftp_dump_2024 aparece como password de ftpuser en la tabla users
+    expect(union.body).toContain('ftp_dump_2024');
     expect(union.body).toContain('/srv/ftp/database_dump.sql');
   });
 
