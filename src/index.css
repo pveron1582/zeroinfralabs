@@ -24,6 +24,17 @@
   --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
 }
 
+/* Desactivar ligaduras de JetBrains Mono en campos de texto: Chrome/Brave
+   aplican ligaduras tipográficas en <input> y secuencias como ".." o "..../"
+   se renderizan como glifos combinados (visualmente "desaparecen" puntos),
+   rompiendo el tipeo de path traversal (../../) en la Terminal y el
+   FakeBrowser. El valor del campo nunca se alteraba — era solo rendering. */
+input,
+textarea {
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}
+
 @keyframes fadeInEntry {
   from { opacity: 0; transform: translateY(3px); }
   to { opacity: 1; transform: none; }

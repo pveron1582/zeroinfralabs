@@ -1,5 +1,43 @@
 # Changelog
 
+## [Unreleased] - 2026-09-05
+
+### Fix: los puntos y barras "desaparecían" al tipear en Chrome/Brave (ligaduras de fuente)
+
+Síntoma reportado: al tipear path traversal (`../`, `../../../../etc/passwd`)
+en la Terminal o en la barra del FakeBrowser, Chrome/Brave mostraban los
+puntos como espacios (" `./` con un espacio adelante"), solo quedaban
+visibles los últimos caracteres. Firefox y Chromium vanilla no lo hacían.
+
+**Causa raíz (rendering, no lógica):** JetBrains Mono trae ligaduras
+tipográficas para secuencias de `.` y `/`. Chrome/Brave las aplican dentro
+de los `<input>`, Firefox no. El valor del campo nunca se alteraba — al dar
+Enter el comando aparecía completo — era solo la visualización en vivo.
+
+**Fix** (`src/index.css`): ligaduras desactivadas en campos de texto:
+
+```css
+input, textarea {
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}
+```
+
+### Fix preventivo: `<meta name="google" content="notranslate">`
+
+Agregado en `index.html` para que Chrome/Brave no ofrezcan traducir la app:
+la traducción automática de página reescribe nodos del DOM y es conocida
+por corromper inputs controlados de React.
+
+Nota histórica: el regex de `InclusionSIte.tsx` (`traversalCleaned`, que
+tolera variantes tipo `" ./"` en el parámetro `page=`) queda como defensa
+extra — ahora sabemos que esas variantes venían de este mismo artifact de
+rendering.
+
+**Métricas:** `pnpm build` OK · tests de regresión ejecutados durante el
+diagnóstico (input de Terminal y FakeBrowser con `......`, `../`, `////`
+tipeado carácter por carácter → valor intacto).
+
 ## [Unreleased] - 2026-08-30
 
 ### ci-03/04/05 ES: los últimos 3 videos mudos ahora suenan
