@@ -153,19 +153,19 @@ export const Wi02CurrentVersions: React.FC = () => {
 
       {/* Scene 1: Windows 10 */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/wi-02-current-versions/wi-02-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-02-current-versions/wi-02-scene1.wav')} />
         <Scene1 fps={fps} />
       </Sequence>
 
       {/* Scene 2: Windows 11 y Server */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio/wi-02-current-versions/wi-02-scene2.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-02-current-versions/wi-02-scene2.wav')} />
         <Scene2 fps={fps} />
       </Sequence>
 
       {/* Scene 3: por qué importa + cierre */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio/wi-02-current-versions/wi-02-scene3.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-02-current-versions/wi-02-scene3.wav')} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

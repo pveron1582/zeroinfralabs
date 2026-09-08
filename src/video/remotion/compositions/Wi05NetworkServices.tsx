@@ -25,13 +25,14 @@ const CENTERED: React.CSSProperties = {
 };
 
 // ── Escena 1: SMB ──────────────────────────────────────────────────
-// `at` es relativo a la sub-secuencia del panel (arranca en `panelAt` 3.1s).
-// En tiempo de escena quedan en 3.2 / 6.7 / 14.1 / 20.2s (silencedetect).
+// `at` re-medidos con transcripción word-level sobre wi-05-scene1.wav
+// (audio del 2026-08-27). Son relativos a la sub-secuencia del panel
+// (arranca en `panelAt` 3.1s): quedan en 4.8 / 8.8 / 17.4 / 23.6s de escena.
 const SMB_POINTS = [
-  { text: 'puerto 445: archivos e impresoras', at: 0.1 },
-  { text: 'shares admin por defecto: C$, ADMIN$, IPC$', at: 3.6 },
-  { text: 'shares personalizados: el objetivo clásico', at: 11.0 },
-  { text: 'EternalBlue: toma Windows viejos sin credenciales', at: 17.1 },
+  { text: 'puerto 445: archivos e impresoras', at: 1.7 },
+  { text: 'shares admin por defecto: C$, ADMIN$, IPC$', at: 5.7 },
+  { text: 'shares personalizados: el objetivo clásico', at: 14.3 },
+  { text: 'EternalBlue: toma Windows viejos sin credenciales', at: 20.5 },
 ];
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
@@ -55,12 +56,15 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
                 <RevealLine key={p.text} at={p.at} fps={fps} mark="▸" color={THEME.cyan}>{p.text}</RevealLine>
               ))}
             </div>
-            <TerminalWindow title="C:\\> net share" width={520}>
+            {/* delay relativo al panel (arranca a 3.1s de escena): entra a
+                8.8s de escena, cuando la narración menciona los shares admin */}
+            <TerminalWindow title="C:\\> net share" width={520} delay={Math.round(5.7 * fps)}>
               <div style={{ fontSize: 13, whiteSpace: 'pre', lineHeight: 1.6 }}>
                 <span style={{ color: THEME.cyan }}>C$</span>     C:\          Default share
                 {'\n'}<span style={{ color: THEME.cyan }}>ADMIN$</span>  C:\Windows   Remote Admin
                 {'\n'}<span style={{ color: THEME.cyan }}>IPC$</span>                Remote IPC
                 {'\n'}<span style={{ color: THEME.cyan }}>datos</span>   D:\datos
+                {'\n'}<span style={{ color: THEME.cyan }}>publico</span>  E:\publico
               </div>
             </TerminalWindow>
           </div>
@@ -71,11 +75,12 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 2: RDP ──────────────────────────────────────────────────
+// `at` re-medidos con transcripción word-level sobre wi-05-scene2.wav.
 const RDP_POINTS = [
-  { text: 'puerto 3389: escritorio remoto gráfico', at: 2.0 },
-  { text: 'expuesto a internet = imán de fuerza bruta', at: 5.5 },
-  { text: 'movimiento lateral: credenciales → próxima máquina', at: 9.8 },
-  { text: 'pass-the-hash + Restricted Admin son reales', at: 17.6 },
+  { text: 'puerto 3389: escritorio remoto gráfico', at: 0.8 },
+  { text: 'expuesto a internet = imán de fuerza bruta', at: 5.4 },
+  { text: 'movimiento lateral: credenciales → próxima máquina', at: 8.7 },
+  { text: 'pass-the-hash + Restricted Admin son reales', at: 16.0 },
 ];
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
@@ -97,14 +102,15 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 3: WinRM + cierre ───────────────────────────────────────
+// `at` re-medidos con transcripción word-level sobre wi-05-scene3.wav.
 const WINRM_POINTS = [
-  { text: 'puerto 5985: PowerShell Remoting', at: 2.2 },
-  { text: 'con credenciales válidas → shell remota completa', at: 7.8 },
+  { text: 'puerto 5985: PowerShell Remoting', at: 0.7 },
+  { text: 'con credenciales válidas → shell remota completa', at: 7.6 },
   { text: 'Evil-WinRM: usuario + contraseña → PowerShell interactivo', at: 11.2 },
 ];
 
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  // la narración dice "usuario y contraseña..." a los ~15.2s (silencedetect)
+  // la narración dice "usuario y contraseña..." a los ~15.2s (transcripción)
   const closeAt = Math.round(15.3 * fps);
   return (
     <AbsoluteFill>
@@ -155,19 +161,19 @@ export const Wi05NetworkServices: React.FC = () => {
 
       {/* Scene 1: SMB */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/wi-05-network-services/wi-05-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-05-network-services/wi-05-scene1.wav')} />
         <Scene1 fps={fps} />
       </Sequence>
 
       {/* Scene 2: RDP */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio/wi-05-network-services/wi-05-scene2.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-05-network-services/wi-05-scene2.wav')} />
         <Scene2 fps={fps} />
       </Sequence>
 
       {/* Scene 3: WinRM + cierre */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio/wi-05-network-services/wi-05-scene3.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-05-network-services/wi-05-scene3.wav')} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

@@ -89,10 +89,10 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => (
         <RevealLine at={12.51} fps={fps} mark="✓" color={THEME.green}>esa asimetría hace funcionar la arquitectura</RevealLine>
       </div>
     </div>
-    <TerminalWindow title="kali@attacker-01:~$ iptables -t nat" width={680} delay={Math.round(15.39 * fps)}>
-      <div style={{ fontSize: 13, whiteSpace: 'pre', lineHeight: 1.7 }}>
-        <span style={{ color: THEME.green }}>--dport 80  -j DNAT --to 10.0.1.10</span>   <span style={{ color: THEME.dim }}># web → DMZ</span>
-        {'\n'}<span style={{ color: THEME.red }}>--dport 3306 -j DROP</span>             <span style={{ color: THEME.dim }}># MySQL → protegida</span>
+    <TerminalWindow title="firewall:~$ iptables rules" width={720} delay={Math.round(15.39 * fps)}>
+      <div style={{ fontSize: 12, whiteSpace: 'pre', lineHeight: 1.7 }}>
+        <span style={{ color: THEME.green }}>iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 10.0.1.10</span>
+        {'\n'}<span style={{ color: THEME.red }}>iptables -A FORWARD -i eth0 -p tcp --dport 3306 -j DROP</span>
       </div>
     </TerminalWindow>
   </AbsoluteFill>
@@ -140,17 +140,17 @@ export const Re2Dmz: React.FC = () => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/re2-05-dmz/re2-05-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re2-05-dmz/re2-05-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/re2-05-dmz/re2-05-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re2-05-dmz/re2-05-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/re2-05-dmz/re2-05-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re2-05-dmz/re2-05-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

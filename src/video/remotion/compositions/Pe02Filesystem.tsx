@@ -293,24 +293,24 @@ export const Pe02Filesystem: React.FC = () => {
 
       {/* Scene 1: Título */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/pe-02-filesystem/pe-02-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/pe-02-filesystem/pe-02-scene1.wav')} />
         <TitleScene title="DOS MUNDOS, DOS MAPAS" subtitle="Linux y Windows organizan todo distinto" />
       </Sequence>
 
       {/* Escena central: Linux con resaltados + Windows crece al lado (misma escena) */}
       <Sequence from={starts[1]} durationInFrames={mergedDur}>
         <Sequence from={0} durationInFrames={Math.ceil(s2 * fps)}>
-          <Audio src={staticFile('videos/audio/pe-02-filesystem/pe-02-scene2.wav')} />
+          <Audio src={staticFile('videos/audio-es/pe-02-filesystem/pe-02-scene2.wav')} />
         </Sequence>
         <Sequence from={s3Frame} durationInFrames={dur3}>
-          <Audio src={staticFile('videos/audio/pe-02-filesystem/pe-02-scene3.wav')} />
+          <Audio src={staticFile('videos/audio-es/pe-02-filesystem/pe-02-scene3.wav')} />
         </Sequence>
         <MergedScene fps={fps} s2={s2} />
       </Sequence>
 
       {/* Scene 4: Cierre — panel de resumen con rutas por sistema */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        <Audio src={staticFile('videos/audio/pe-02-filesystem/pe-02-scene4.wav')} />
+        <Audio src={staticFile('videos/audio-es/pe-02-filesystem/pe-02-scene4.wav')} />
         <ClosingScene fps={fps} />
       </Sequence>
     </AbsoluteFill>

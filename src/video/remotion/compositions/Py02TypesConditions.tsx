@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Py02TypesConditions.tsx ──────────
 // Video: variables, tipos y condiciones.
 // Clase 2 de Scripting/Python (lección python-02). Guiones: voicebox-scripts/py-02-*.txt
-// Audios reales en public/videos/audio/py-02-types-conditions/ (ffprobe 2026-08-26).
+// Audios reales en public/videos/audio-es/py-02-types-conditions/ (ffprobe 2026-08-26).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -103,15 +103,15 @@ export const Py02TypesConditions: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/py-02-types-conditions/py-02-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/py-02-types-conditions/py-02-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/py-02-types-conditions/py-02-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/py-02-types-conditions/py-02-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/py-02-types-conditions/py-02-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/py-02-types-conditions/py-02-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

@@ -47,7 +47,7 @@ export const TerminalWindow: React.FC<{
         <span style={{ width: 12, height: 12, borderRadius: '50%', background: THEME.green }} />
         <span style={{ marginLeft: 8, fontSize: 13, color: THEME.dim }}>{title}</span>
       </div>
-      <div style={{ padding: '20px 24px', fontSize: 20 }}>{children}</div>
+      <div style={{ padding: '20px 24px', fontSize: 20, color: THEME.text }}>{children}</div>
     </div>
   );
 };

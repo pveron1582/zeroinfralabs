@@ -16,6 +16,7 @@ import { TreeView } from '../primitives/TreeView';
 import type { TreeItem } from '../primitives/TreeView';
 import { KeyCapsule } from '../primitives/KeyCapsule';
 import { RevealLine } from '../primitives/RevealLine';
+import { TerminalWindow } from '../primitives/TerminalWindow';
 
 const CENTERED: React.CSSProperties = {
   display: 'flex',
@@ -49,17 +50,17 @@ const C_TREE: TreeItem[] = [
 ];
 
 // Momentos (en segundos, relativos a la escena) en que la narración
-// menciona cada carpeta del árbol — medidos con silencedetect (-50dB)
-// sobre wi-04-scene1.wav.
+// menciona cada carpeta del árbol — re-medidos con transcripción
+// word-level (faster-whisper) sobre wi-04-scene1.wav (audio del 2026-08-27).
 const TREE_HIGHLIGHTS: Array<{ label: string; at: number }> = [
   { label: 'C:\\', at: 5.3 },
-  { label: 'Windows', at: 7.2 },
+  { label: 'Windows', at: 7.6 },
   { label: 'System32', at: 8.0 },
-  { label: 'Temp', at: 10.6 },
-  { label: 'Users', at: 14.5 },
-  { label: 'Program Files', at: 17.8 },
-  { label: 'inetpub', at: 18.8 },
-  { label: 'wwwroot', at: 19.8 },
+  { label: 'Temp', at: 10.5 },
+  { label: 'Users', at: 14.4 },
+  { label: 'Program Files', at: 19.9 },
+  { label: 'inetpub', at: 21.9 },
+  { label: 'wwwroot', at: 23.7 },
 ];
 
 const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
@@ -92,7 +93,7 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
             highlighted={highlighted}
           />
           <div style={{ marginTop: 26, fontSize: 19, color: THEME.muted, fontFamily: MONO,
-            opacity: interpolate(frame - Math.round(21.9 * fps), [0, 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) }}>
+            opacity: interpolate(frame - Math.round(27.0 * fps), [0, 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) }}>
             las <span style={{ color: THEME.cyan }}>ACL</span> solo existen en NTFS — FAT32 no tiene permisos de archivos
           </div>
         </AbsoluteFill>
@@ -102,16 +103,17 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 2: SAM, cuentas y grupos ────────────────────────────────
+// `at` re-medidos con transcripción word-level sobre wi-04-scene2.wav.
 const SAM_POINTS = [
-  { text: 'las contraseñas locales viven en el hive SAM', at: 0.3 },
-  { text: 'System32\\config — bloqueado mientras Windows corre', at: 2.8 },
+  { text: 'las contraseñas locales viven en el hive SAM', at: 0.1 },
+  { text: 'System32\\config — bloqueado mientras Windows corre', at: 2.6 },
   { text: 'se obtiene offline o con una copia de volumen', at: 5.1 },
 ];
 const ACCOUNTS = [
-  { label: 'Administrator', at: 10.3 },
-  { label: 'usuarios estándar', at: 11.5 },
-  { label: 'Guest', at: 12.4 },
-  { label: 'SYSTEM = root', at: 14.8 },
+  { label: 'Administrator', at: 12.1 },
+  { label: 'usuarios estándar', at: 13.5 },
+  { label: 'Guest', at: 14.7 },
+  { label: 'SYSTEM = root', at: 15.4 },
 ];
 
 const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
@@ -126,7 +128,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
           <RevealLine key={p.text} at={p.at} fps={fps} mark="▸" color={THEME.amber}>{p.text}</RevealLine>
         ))}
       </div>
-      <div style={{ fontSize: 20, color: THEME.muted, fontFamily: MONO, marginBottom: 16, opacity: fade(7.2) }}>
+      <div style={{ fontSize: 20, color: THEME.muted, fontFamily: MONO, marginBottom: 16, opacity: fade(10.0) }}>
         no hay un solo root: hay varias cuentas
       </div>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 980 }}>
@@ -134,29 +136,40 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
           <KeyCapsule key={a.label} label="cuenta" value={a.label} accent={THEME.cyan} delay={Math.round(a.at * fps)} size={17} />
         ))}
       </div>
-      <div style={{ marginTop: 24, fontSize: 18, color: THEME.muted, fontFamily: MONO, opacity: fade(17.3) }}>
+      <div style={{ marginTop: 24, fontSize: 18, color: THEME.muted, fontFamily: MONO, opacity: fade(18.5) }}>
         grupos clave: Administrators · Users · Remote Desktop Users · Everyone
+      </div>
+      <div style={{ marginTop: 24, opacity: fade(23.7) }}>
+        <TerminalWindow title="C:\\> net user / net localgroup" width={900}>
+          <div style={{ fontSize: 13, whiteSpace: 'pre', lineHeight: 1.6 }}>
+            {'C:\\>'} <span style={{ color: THEME.amber }}>net user</span>{'\n'}
+            Administrator   Guest   ana{'\n'}
+            {'C:\\>'} <span style={{ color: THEME.amber }}>net localgroup</span>{'\n'}
+            Administrators  Users  Remote Desktop Users  Everyone
+          </div>
+        </TerminalWindow>
       </div>
     </AbsoluteFill>
   );
 };
 
 // ── Escena 3: permisos NTFS + dónde vive lo jugoso + cierre ────────
+// `at` verificados con transcripción word-level sobre wi-04-scene3.wav.
 const ACL_POINTS = [
-  { text: 'los permisos se llaman ACL: quién puede hacer qué', at: 2.6 },
-  { text: 'control total · modificar · leer y ejecutar · leer', at: 5.0 },
-  { text: 'dueño + herencia desde las carpetas padre', at: 9.2 },
+  { text: 'los permisos se llaman ACL: quién puede hacer qué', at: 1.5 },
+  { text: 'control total · modificar · leer y ejecutar · leer', at: 4.9 },
+  { text: 'dueño + herencia desde las carpetas padre', at: 9.1 },
 ];
 // `at` es relativo a la sub-secuencia "lo jugoso" (arranca en `lootAt` 15.4s).
-// En tiempo de escena quedan en 16.8 / 22.1 / 24.3s (silencedetect).
+// En tiempo de escena quedan en 16.8 / 20.5 / 23.4s (transcripción).
 const LOOT_POINTS = [
-  { text: 'el registro guarda configs, a veces contraseñas en texto plano', at: 1.4 },
-  { text: 'Documents y Desktop: lo que el usuario toca de verdad', at: 6.7 },
-  { text: 'share SMB = segunda capa de permisos encima de las ACL', at: 8.9 },
+  { text: 'el SAM y el registro guardan configs, a veces contraseñas en texto plano', at: 1.4 },
+  { text: 'Documents y Desktop: lo que el usuario toca de verdad', at: 5.0 },
+  { text: 'share SMB = segunda capa de permisos encima de las ACL', at: 8.0 },
 ];
 
 const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  // "¿Dónde vive lo jugoso?" se dice a los ~15.3s de la escena (silencedetect)
+  // "¿Dónde vive lo jugoso?" se dice a los ~15.3s de la escena (transcripción)
   const lootAt = Math.round(15.4 * fps);
   return (
     <AbsoluteFill>
@@ -204,19 +217,19 @@ export const Wi04Filesystem: React.FC = () => {
 
       {/* Scene 1: el mapa de C:\ */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/wi-04-filesystem/wi-04-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-04-filesystem/wi-04-scene1.wav')} />
         <Scene1 fps={fps} />
       </Sequence>
 
       {/* Scene 2: SAM, cuentas y grupos */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio/wi-04-filesystem/wi-04-scene2.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-04-filesystem/wi-04-scene2.wav')} />
         <Scene2 fps={fps} />
       </Sequence>
 
       {/* Scene 3: permisos NTFS + dónde vive lo jugoso */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio/wi-04-filesystem/wi-04-scene3.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-04-filesystem/wi-04-scene3.wav')} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Sl03LoopsFunctions.tsx ───────────
 // Video: bucles, funciones y filtros de texto.
 // Clase 3 de Scripting/Bash (lección bash-03). Guiones: voicebox-scripts/sl-03-*.txt
-// Audios reales en public/videos/audio/sl-03-loops-functions/ (ffprobe 2026-08-26).
+// Audios reales en public/videos/audio-es/sl-03-loops-functions/ (ffprobe 2026-08-26).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -97,15 +97,15 @@ export const Sl03LoopsFunctions: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/sl-03-loops-functions/sl-03-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/sl-03-loops-functions/sl-03-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/sl-03-loops-functions/sl-03-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/sl-03-loops-functions/sl-03-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/sl-03-loops-functions/sl-03-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/sl-03-loops-functions/sl-03-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

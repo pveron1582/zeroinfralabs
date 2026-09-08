@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Py05HttpRequests.tsx ─────────────
 // Video: pentesting II — HTTP con requests.
 // Clase 5 de Scripting/Python (lección python-05). Guiones: voicebox-scripts/py-05-*.txt
-// Audios reales en public/videos/audio/py-05-http-requests/ (ffprobe 2026-08-26).
+// Audios reales en public/videos/audio-es/py-05-http-requests/ (ffprobe 2026-08-26).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -103,15 +103,15 @@ export const Py05HttpRequests: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/py-05-http-requests/py-05-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/py-05-http-requests/py-05-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/py-05-http-requests/py-05-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/py-05-http-requests/py-05-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/py-05-http-requests/py-05-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/py-05-http-requests/py-05-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

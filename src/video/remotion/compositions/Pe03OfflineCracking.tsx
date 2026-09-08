@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Pe03OfflineCracking.tsx ────────────
 // Video: cracking offline — john the ripper + hashcat.
 // Lección hacking-05, clase 3 de Pentesting. Guiones: voicebox-scripts/pe-03-*.txt
-// Audios reales en public/videos/audio/pe-03-offline-cracking/ (2026-08-25).
+// Audios reales en public/videos/audio-es/pe-03-offline-cracking/ (2026-08-25).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -146,17 +146,17 @@ export const Pe03OfflineCracking: React.FC = () => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/pe-03-offline-cracking/pe-03-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/pe-03-offline-cracking/pe-03-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/pe-03-offline-cracking/pe-03-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/pe-03-offline-cracking/pe-03-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/pe-03-offline-cracking/pe-03-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/pe-03-offline-cracking/pe-03-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

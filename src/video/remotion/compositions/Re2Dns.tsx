@@ -162,17 +162,17 @@ export const Re2Dns: React.FC = () => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/re2-03-dns/re2-03-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re2-03-dns/re2-03-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/re2-03-dns/re2-03-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re2-03-dns/re2-03-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/re2-03-dns/re2-03-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re2-03-dns/re2-03-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

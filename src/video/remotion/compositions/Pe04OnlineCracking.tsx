@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Pe04OnlineCracking.tsx ─────────────
 // Video: cracking online — hydra, medusa y ncrack.
 // Lección hacking-06, clase 4 de Pentesting. Guiones: voicebox-scripts/pe-04-*.txt
-// Audios reales en public/videos/audio/pe-04-online-cracking/ (2026-08-25).
+// Audios reales en public/videos/audio-es/pe-04-online-cracking/ (2026-08-25).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -155,17 +155,17 @@ export const Pe04OnlineCracking: React.FC = () => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/pe-04-online-cracking/pe-04-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/pe-04-online-cracking/pe-04-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/pe-04-online-cracking/pe-04-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/pe-04-online-cracking/pe-04-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/pe-04-online-cracking/pe-04-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/pe-04-online-cracking/pe-04-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

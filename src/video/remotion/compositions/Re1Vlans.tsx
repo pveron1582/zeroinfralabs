@@ -214,17 +214,17 @@ export const Re1Vlans: React.FC = () => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/re1-05-vlans/re1-05-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re1-05-vlans/re1-05-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/re1-05-vlans/re1-05-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re1-05-vlans/re1-05-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/re1-05-vlans/re1-05-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/re1-05-vlans/re1-05-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

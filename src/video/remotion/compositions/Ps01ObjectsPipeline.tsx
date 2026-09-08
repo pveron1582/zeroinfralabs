@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Ps01ObjectsPipeline.tsx ──────────
 // Video: qué es PowerShell — objetos, no texto.
 // Clase 1 de Scripting/PowerShell (lección powershell-01). Guiones: voicebox-scripts/ps-01-*.txt
-// Audios reales en public/videos/audio/ps-01-objects-pipeline/ (ffprobe 2026-08-26).
+// Audios reales en public/videos/audio-es/ps-01-objects-pipeline/ (ffprobe 2026-08-26).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -100,15 +100,15 @@ export const Ps01ObjectsPipeline: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/ps-01-objects-pipeline/ps-01-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ps-01-objects-pipeline/ps-01-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/ps-01-objects-pipeline/ps-01-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ps-01-objects-pipeline/ps-01-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/ps-01-objects-pipeline/ps-01-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ps-01-objects-pipeline/ps-01-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

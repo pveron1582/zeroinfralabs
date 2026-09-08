@@ -61,9 +61,9 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
             </div>
             <TerminalWindow title="C:\\> netsh advfirewall" width={500}>
               <div style={{ fontSize: 15, whiteSpace: 'pre', lineHeight: 1.6 }}>
-                <span style={{ color: THEME.amber }}>Domain Profile:</span> ON
-                {'\n'}<span style={{ color: THEME.amber }}>Private Profile:</span> ON
-                {'\n'}<span style={{ color: THEME.amber }}>Public Profile:</span> ON
+                <span style={{ color: THEME.amber }}>Domain Profile:</span> <span style={{ color: THEME.green }}>ON</span>
+                {'\n'}<span style={{ color: THEME.amber }}>Private Profile:</span> <span style={{ color: THEME.green }}>ON</span>
+                {'\n'}<span style={{ color: THEME.amber }}>Public Profile:</span> <span style={{ color: THEME.green }}>ON</span>
               </div>
             </TerminalWindow>
           </div>
@@ -152,19 +152,19 @@ export const Wi03Security: React.FC = () => {
 
       {/* Scene 1: firewall */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio/wi-03-security/wi-03-scene1.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-03-security/wi-03-scene1.wav')} />
         <Scene1 fps={fps} />
       </Sequence>
 
       {/* Scene 2: Defender + UAC */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio/wi-03-security/wi-03-scene2.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-03-security/wi-03-scene2.wav')} />
         <Scene2 fps={fps} />
       </Sequence>
 
       {/* Scene 3: GPO + más defensas */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio/wi-03-security/wi-03-scene3.wav')} />
+        <Audio src={staticFile('videos/audio-es/wi-03-security/wi-03-scene3.wav')} />
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>

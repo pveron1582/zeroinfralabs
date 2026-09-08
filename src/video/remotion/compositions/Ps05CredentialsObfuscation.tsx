@@ -1,7 +1,7 @@
 // ── video/remotion/compositions/Ps05CredentialsObfuscation.tsx ───
 // Video: pentesting II — credenciales, ofuscación y exfiltración.
 // Clase 5 de Scripting/PowerShell (lección powershell-05). Guiones: voicebox-scripts/ps-05-*.txt
-// Audios reales en public/videos/audio/ps-05-credentials-obfuscation/ (ffprobe 2026-08-26).
+// Audios reales en public/videos/audio-es/ps-05-credentials-obfuscation/ (ffprobe 2026-08-26).
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
@@ -101,15 +101,15 @@ export const Ps05CredentialsObfuscation: React.FC = () => {
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio/ps-05-credentials-obfuscation/ps-05-scene1.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ps-05-credentials-obfuscation/ps-05-scene1.wav')} />}
         <Scene1 fps={fps} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio/ps-05-credentials-obfuscation/ps-05-scene2.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ps-05-credentials-obfuscation/ps-05-scene2.wav')} />}
         <Scene2 fps={fps} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio/ps-05-credentials-obfuscation/ps-05-scene3.wav')} />}
+        {withAudio && <Audio src={staticFile('videos/audio-es/ps-05-credentials-obfuscation/ps-05-scene3.wav')} />}
         <Scene3 fps={fps} />
       </Sequence>
     </AbsoluteFill>
