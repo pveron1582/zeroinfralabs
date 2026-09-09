@@ -1,0 +1,7 @@
+# Videos servidos desde el CDN de zilabs-videos (jsDelivr).
+# Los originales viven en git (LFS) para re-renderizar con Remotion,
+# pero no tienen que subir en cada deploy a Vercel.
+public/videos/es
+public/videos/en
+public/videos/audio-es
+public/videos/audio-en
