@@ -67,7 +67,7 @@ import { Li01LinuxHistoryEn } from './compositions/Li01LinuxHistoryEn';
 import { Li02ShellAnatomyEn } from './compositions/Li02ShellAnatomyEn';
 import { Li03CoreCommandsEn } from './compositions/Li03CoreCommandsEn';
 import { Li04CreateEditEn } from './compositions/Li04CreateEditEn';
-import { Li05PermissionsEn } from './compositions/Li05PermissionsEn';
+
 import { Wi01WindowsHistoryEn } from './compositions/Wi01WindowsHistoryEn';
 import { Wi02CurrentVersionsEn } from './compositions/Wi02CurrentVersionsEn';
 import { Wi03SecurityEn } from './compositions/Wi03SecurityEn';
@@ -77,7 +77,7 @@ import { Ot01AlternativeSystemsEn } from './compositions/Ot01AlternativeSystemsE
 import { Ot02PortableDevicesEn } from './compositions/Ot02PortableDevicesEn';
 import { Ot03HackingHardwareEn } from './compositions/Ot03HackingHardwareEn';
 import { Ot04SocialEngineeringEn } from './compositions/Ot04SocialEngineeringEn';
-import { Re01NetworkTypesEn } from './compositions/Re01NetworkTypesEn';
+
 import { Re02IpAddressesEn } from './compositions/Re02IpAddressesEn';
 import { Re03DevicesTopologiesEn } from './compositions/Re03DevicesTopologiesEn';
 import { Re04OsiLayersEn } from './compositions/Re04OsiLayersEn';
@@ -99,7 +99,7 @@ import { Ci04CryptographyEn } from './compositions/Ci04CryptographyEn';
 import { Ci05OwaspTopTenEn } from './compositions/Ci05OwaspTopTenEn';
 import { Hw01WebProtocolsEn } from './compositions/Hw01WebProtocolsEn';
 import { Hw02DomainsSubdirectoriesEn } from './compositions/Hw02DomainsSubdirectoriesEn';
-import { Pe01PentestPhasesEn } from './compositions/Pe01PentestPhasesEn';
+
 import { Pe02FilesystemEn } from './compositions/Pe02FilesystemEn';
 import { Pe03OfflineCrackingEn } from './compositions/Pe03OfflineCrackingEn';
 import { Pe04OnlineCrackingEn } from './compositions/Pe04OnlineCrackingEn';
@@ -131,8 +131,16 @@ export const RemotionRoot: React.FC = () => {
     <>
       <Composition
         id="pe-01-pentest-phases"
-        component={Pe01PentestPhases}
+        component={() => <Pe01PentestPhases lang="es" />}
         durationInFrames={totalDurationFrames('pe-01-pentest-phases', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="pe-01-pentest-phases-en"
+        component={() => <Pe01PentestPhases lang="en" />}
+        durationInFrames={totalDurationFrames('pe-01-pentest-phases', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
@@ -203,8 +211,16 @@ export const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="li-05-permissions"
-        component={Li05Permissions}
+        component={() => <Li05Permissions lang="es" />}
         durationInFrames={totalDurationFrames('li-05-permissions', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="li-05-permissions-en"
+        component={() => <Li05Permissions lang="en" />}
+        durationInFrames={totalDurationFrames('li-05-permissions', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
@@ -379,8 +395,16 @@ export const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="re-01-network-types"
-        component={Re01NetworkTypes}
+        component={() => <Re01NetworkTypes lang="es" />}
         durationInFrames={totalDurationFrames('re-01-network-types', FPS)}
+        fps={FPS}
+        width={1280}
+        height={720}
+      />
+      <Composition
+        id="re-01-network-types-en"
+        component={() => <Re01NetworkTypes lang="en" />}
+        durationInFrames={totalDurationFrames('re-01-network-types', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
@@ -634,14 +658,7 @@ export const RemotionRoot: React.FC = () => {
         width={1280}
         height={720}
       />
-      <Composition
-        id="li-05-permissions-en"
-        component={Li05PermissionsEn}
-        durationInFrames={totalDurationFrames('li-05-permissions', FPS, 'en')}
-        fps={FPS}
-        width={1280}
-        height={720}
-      />
+
       <Composition
         id="wi-01-windows-history-en"
         component={Wi01WindowsHistoryEn}
@@ -715,14 +732,7 @@ export const RemotionRoot: React.FC = () => {
         height={720}
       />
       {/* English versions — Redes (fr→re-0X, re1, re2) */}
-      <Composition
-        id="re-01-network-types-en"
-        component={Re01NetworkTypesEn}
-        durationInFrames={totalDurationFrames('re-01-network-types', FPS, 'en')}
-        fps={FPS}
-        width={1280}
-        height={720}
-      />
+
       <Composition
         id="re-02-ip-addresses-en"
         component={Re02IpAddressesEn}
@@ -893,14 +903,7 @@ export const RemotionRoot: React.FC = () => {
         height={720}
       />
       {/* English versions — Hacking Ético 2ª tanda (pe, hw-03..05) */}
-      <Composition
-        id="pe-01-pentest-phases-en"
-        component={Pe01PentestPhasesEn}
-        durationInFrames={totalDurationFrames('pe-01-pentest-phases', FPS, 'en')}
-        fps={FPS}
-        width={1280}
-        height={720}
-      />
+
       <Composition
         id="pe-02-filesystem-en"
         component={Pe02FilesystemEn}
