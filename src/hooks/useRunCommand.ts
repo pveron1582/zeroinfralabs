@@ -11,6 +11,7 @@ import type { SessionRunnerDeps, SessionRunResult } from './useFtpSession';
 import { getFtpPromptFor } from './useFtpSession';
 import type { SshRunResult } from './useSshSession';
 import type { PendingSu } from './usePendingSu';
+import type { PendingPython, PythonInputResult } from './usePendingPythonInput';
 import type { IdentityFrame } from './useIdentityStack';
 import { useScenarioStore } from '../store/scenarioStore';
 import { getStreamingConfig, computeTotalDelay, shouldStream } from './streamingConfig';
@@ -18,6 +19,8 @@ import { getStreamingConfig, computeTotalDelay, shouldStream } from './streaming
 export interface RunCommandDeps {
   pendingSu: PendingSu | null;
   handleSuPassword: (password: string) => CommandResponse | null;
+  pendingPython: PendingPython | null;
+  handlePythonInput: (line: string) => PythonInputResult | null;
   ftpSession: { active?: boolean } | null;
   runFtpCommand: (cmd: string, deps: SessionRunnerDeps) => SessionRunResult;
   startFtpSession: (s: FtpSessionData, deps: SessionRunnerDeps) => void;
@@ -49,6 +52,7 @@ export interface RunCommandDeps {
 export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
   const {
     pendingSu, handleSuPassword,
+    pendingPython, handlePythonInput,
     ftpSession, runFtpCommand, startFtpSession,
     sshSession, runSshPassword, startSshSession,
     busy, setBusy, setHistory, setInput, setHistIdx, setCmdHistory,
@@ -77,6 +81,25 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
       }
       setInput('');
       setHistIdx(-1);
+      return;
+    }
+
+    // python3 esperando input(): la línea tipeada es la entrada del script.
+    // Se re-ejecuta el script con la cola completa y se muestra el delta.
+    if (pendingPython) {
+      setInput(''); setHistIdx(-1);
+      const handled = handlePythonInput(trimmed);
+      if (handled) {
+        setHistory(prev => [...prev, {
+          command: trimmed,
+          output: handled.delta,
+          streaming: false,
+          prompt: '',
+          timestamp: Date.now(),
+        }]);
+        if (handled.done) processCommandResult(processDeps, handled.result, false);
+        else checkMissionCompletion(handled.result);
+      }
       return;
     }
 

@@ -48,6 +48,7 @@ import { help_ufw } from './ufw';
 import { help_ip } from './ip';
 import { help_ss } from './ss';
 import { help_netstat } from './netstat';
+import { help_python3 } from './python3';
 
 export const COMMAND_HELP: Record<string, string> = {
   su: help_su,
@@ -97,4 +98,5 @@ export const COMMAND_HELP: Record<string, string> = {
   ip: help_ip,
   ss: help_ss,
   netstat: help_netstat,
+  python3: help_python3,
 };

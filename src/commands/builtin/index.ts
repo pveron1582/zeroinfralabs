@@ -51,3 +51,4 @@ export { cmd_df } from './df';
 export { cmd_du } from './du';
 export { cmd_ln } from './ln';
 export { cmd_find } from './find';
+export { cmd_python3, cmd_python } from './python3';

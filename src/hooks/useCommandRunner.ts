@@ -21,6 +21,7 @@ import { useTerminalEffects } from './useTerminalEffects';
 import { useAutoRefresh } from './useAutoRefresh';
 import { useReverseShell } from './useReverseShell';
 import { usePendingSu } from './usePendingSu';
+import { usePendingPythonInput } from './usePendingPythonInput';
 import { useFtpSession, getFtpPromptFor, type SessionRunnerDeps } from './useFtpSession';
 import { useSshSession, getSshPromptFor } from './useSshSession';
 import { useDownloadedFile } from './useDownloadedFile';
@@ -96,16 +97,6 @@ export function useCommandRunner({
     machine, currentDir, setCurrentDir, pushIdentity,
   });
 
-  const prompt = pendingSu
-    ? `${pendingSu.targetUser}@${machine.machine_info.hostname}'s password: `
-    : executor.isMsfActive()
-      ? (executor.getMsfPrompt() || 'msf6 >')
-      : ftpSession?.active
-        ? (getFtpPromptFor(ftpSession) || 'ftp> ')
-        : sshSession?.active
-          ? (getSshPromptFor(sshSession) || '')
-          : basePrompt;
-
   // ── Historial ────────────────────────────────────────────────────
   const makeWelcome = (_machines: Machine[]): HistoryEntry => ({
     command: null, streaming: false,
@@ -139,6 +130,7 @@ export function useCommandRunner({
     setListeningPort(null);
     setCurrentDir('/root');
     setMsfState(null);
+    setPendingPython(null);
     executor.resetMsfState();
     setUmask(0o022);
     setEnv(DEFAULT_ENV(machine));
@@ -188,6 +180,23 @@ export function useCommandRunner({
     terminalId,
   };
 
+  // python3 esperando input() (necesita sessionDeps para re-ejecutar).
+  const { pendingPython, setPendingPython, handlePythonInput } = usePendingPythonInput({
+    sessionDeps,
+  });
+
+  const prompt = pendingSu
+    ? `${pendingSu.targetUser}@${machine.machine_info.hostname}'s password: `
+    : pendingPython
+      ? '' // el prompt del script ya está en el output; la línea entra tal cual
+      : executor.isMsfActive()
+      ? (executor.getMsfPrompt() || 'msf6 >')
+      : ftpSession?.active
+        ? (getFtpPromptFor(ftpSession) || 'ftp> ')
+        : sshSession?.active
+          ? (getSshPromptFor(sshSession) || '')
+          : basePrompt;
+
   const { checkMissionCompletion } = useMissionCompletion(onMissionComplete);
   const { handleDownloadedFile } = useDownloadedFile({ attackerMachineId, allMachines, language, setHistory });
 
@@ -197,7 +206,7 @@ export function useCommandRunner({
     onMissionComplete, onChangeMachine, onCredentialsFound,
     onVerifyCredentials, onFailedUser, onSudoPrivileges,
     setBlockingCommand, setListeningPort, setNanoFile, setBusy,
-    setHistory, setFtpSession, setSshSession, setPendingSu,
+    setHistory, setFtpSession, setSshSession, setPendingSu, setPendingPython,
     reportVulnerability,
   };
 
@@ -221,6 +230,7 @@ export function useCommandRunner({
   // ── Ejecutor principal (extraído a useRunCommand) ────────────────
   const runCommand = useRunCommand({
     pendingSu, handleSuPassword,
+    pendingPython, handlePythonInput,
     ftpSession, runFtpCommand, startFtpSession,
     sshSession, runSshPassword, startSshSession,
     busy, setBusy, setHistory, setInput, setHistIdx, setCmdHistory,
@@ -249,6 +259,18 @@ export function useCommandRunner({
   const handleNanoSave = (content: string, filenameToSave?: string) =>
     nanoSave(nanoFile, content, filenameToSave);
 
+  // ── Ctrl+C cancela un input() pendiente (KeyboardInterrupt) ──────
+  const handleCancelPython = () => {
+    setPendingPython(null);
+    setHistory(prev => [...prev, {
+      command: null,
+      output: '^C\nKeyboardInterrupt',
+      streaming: false,
+      prompt: basePrompt,
+      timestamp: Date.now(),
+    }]);
+  };
+
   // ── Keyboard shortcuts ───────────────────────────────────────────
   const { showSuggestions, suggestions, suggestionIdx, handleKeyDown, setShowSuggestions, setSuggestions, setSuggestionIdx } = useKeyboardShortcuts({
     input, setInput, machine, currentDir, msfState,
@@ -256,6 +278,7 @@ export function useCommandRunner({
     busy, setBusy, blockingCommand, setBlockingCommand,
     setListeningPort: cancelListening, setHistory, prompt, runCommand,
     makeWelcome, allMachines, goHome, setMsfState: handleSetMsfState,
+    pendingPythonCancel: pendingPython ? handleCancelPython : null,
   });
 
   return {

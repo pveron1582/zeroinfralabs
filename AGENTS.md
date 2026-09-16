@@ -127,7 +127,7 @@ Resumen rápido:
 ```
 src/
 ├── commands/
-│   ├── builtin/        # 59 system commands (ls, cd, cat, sudo, ps, kill, systemctl, iptables, ufw, ip, ss, export, grep, crontab, mount, df, du, ln, find, ...)
+│   ├── builtin/        # 60 system commands (ls, cd, cat, sudo, ps, kill, systemctl, iptables, ufw, ip, ss, export, grep, crontab, mount, df, du, ln, find, python3, ...)
 │   ├── tools/          # 12 pentest/system tools (nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg; ssh/nc/ftp live in frameworks/shells and are re-exported)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
 ├── academy/            # 8 paths / 58 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
@@ -140,7 +140,8 @@ src/
 │   ├── network/        # NetworkState (iptables/ufw/interfaces, effectivePortState)
 │   ├── packages/       # PackageManager (apt/dpkg DB + installed set per machine)
 │   ├── cron/           # CronRunner (virtual clock, parse/list/run cron jobs → syslog)
-│   └── fs/             # mounts.ts (fstab parsing + mount state per machine)
+│   ├── fs/             # mounts.ts (fstab parsing + mount state per machine)
+│   └── python/         # Mini-interprete de Python (subconjunto para Academy): lexer/parser/evaluator + stdlib simulada. socket puentea a effectivePortState(); open() al FS virtual. input() → pythonPendingInput (usePendingPythonInput re-ejecuta el script con la cola de entradas)
 ├── laboratorios/       # 7 labs (laboratorio01-07.ts) + templates.ts (buildScenario, COMMON_PORTS) + attackers/
 ├── store/              # Zustand: scenarioStore.ts + slices/{ui,terminal,scenario,identity,academy} + selectors.ts
 ├── fs-models/          # Virtual Linux/Windows/Kali filesystems

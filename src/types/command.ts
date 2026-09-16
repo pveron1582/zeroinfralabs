@@ -148,6 +148,10 @@ interface CmdResponseBase {
   // tipo "Password:" y, al recibirla, la pasa a un suPasswordSubmit callback.
   requiresPassword?: boolean;
   suTarget?: string;
+  // python3 quedó esperando input(): el runner captura la próxima línea,
+  // la agrega a pythonInputs y re-ejecuta el script con la cola completa
+  // mostrando solo el delta de salida (hooks/usePendingPythonInput).
+  pythonPendingInput?: { argv: string[]; sourceName: string };
   // `su` desde root cambia a un usuario de menor privilegio sin password
   // (root authority). El CommandRunner aplica setSuUser + pushIdentity al
   // instante, sin pasar por el prompt de password.
@@ -233,6 +237,9 @@ export interface CommandContext {
   setEnv?: (env: Record<string, string>) => void;
   // Entrada recibida vía pipe (cmd1 | cmd2). Solo presente en el 2º comando.
   pipedInput?: string;
+  // Entradas ya acumuladas para input() del mini-intérprete (flujo
+  // interactivo de python3: el script se re-ejecuta con la cola completa).
+  pythonInputs?: string[];
   // `sudo <editor>` marca el contexto como elevado: los editores (nano) usan
   // la identidad root para abrir/guardar archivos restringidos.
   elevatedEdit?: boolean;

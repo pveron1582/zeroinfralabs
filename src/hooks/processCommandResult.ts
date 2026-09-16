@@ -8,6 +8,7 @@ import type { Machine, FileEntry, CommandResponse, BlockingCommand, FtpSessionDa
 import { useScenarioStore } from '../store/scenarioStore';
 import type { IdentityFrame } from './useIdentityStack';
 import type { PendingSu } from './usePendingSu';
+import type { PendingPython } from './usePendingPythonInput';
 
 export interface HistoryEntry {
   command: string | null;
@@ -42,6 +43,7 @@ export interface ProcessDeps {
   setFtpSession: (s: FtpSessionData | null) => void;
   setSshSession: (s: SshSessionData | null) => void;
   setPendingSu: React.Dispatch<React.SetStateAction<PendingSu | null>>;
+  setPendingPython: React.Dispatch<React.SetStateAction<PendingPython | null>>;
   reportVulnerability: (machineId: string, vulnId: string, status: string) => void;
 }
 
@@ -53,7 +55,7 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
     onMissionComplete, onChangeMachine, onCredentialsFound,
     onVerifyCredentials, onFailedUser, onSudoPrivileges,
     setBlockingCommand, setListeningPort, setNanoFile, setBusy,
-    setHistory, setPendingSu, reportVulnerability,
+    setHistory, setPendingSu, setPendingPython, reportVulnerability,
   } = deps;
 
   if ('completedMissionId' in result && result.completedMissionId) {
@@ -183,6 +185,16 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
       promptToken: '',
       sudoEscalation: 'sudoEscalation' in result ? result.sudoEscalation : undefined,
       sudoCwd: 'sudoCwd' in result ? result.sudoCwd : undefined,
+    });
+  }
+
+  // python3 quedó esperando input(): capturar la próxima línea del terminal.
+  if ('pythonPendingInput' in result && result.pythonPendingInput) {
+    setPendingPython({
+      argv: result.pythonPendingInput.argv,
+      sourceName: result.pythonPendingInput.sourceName,
+      inputs: [],
+      shownOutput: result.output,
     });
   }
 
