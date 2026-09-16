@@ -26,26 +26,9 @@ export const useScenarioStore = create<ScenarioState>()(
       const resetWorkspace = () => {
         shellManager.reset();
         set({
-          view: 'landing',
-          showNetworkMap: false,
-          hasNewNetworkInfo: false,
-          notification: null,
-          browserCurrentUrl: 'https://www.google.com',
-          browserIsLoggedIn: false,
-          browserNavHistory: ['https://www.google.com'],
-          browserNavIdx: 0,
-          listeningPort: null,
-          blockingCommand: null,
-          msfState: null,
-          ftpSession: null,
-          sshSession: null,
-          showSurvey: false,
-          pendingSurveyScenario: null,
-          showCompletionOverlay: false,
-          _prevMachinesSnapshot: [],
-          // Fuerza un reset global de managers al volver a entrar a un
-          // escenario (incluso si es el mismo que estaba activo antes).
-          globalResetDoneForScenario: null,
+          ...get().resetUiState(),
+          ...get().resetTerminalState(),
+          ...get().resetScenarioWorkspaceState(),
         });
       };
 

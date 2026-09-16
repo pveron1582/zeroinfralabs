@@ -38,6 +38,7 @@ export interface ScenarioSlice {
   changeMachine: (machineId: string) => void;
   getActiveMachine: () => Machine;
   getScenarioMachines: () => Machine[];
+  resetScenarioWorkspaceState: () => Pick<ScenarioSlice, '_prevMachinesSnapshot'>;
 }
 
 export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSlice> = (set, get) => ({
@@ -228,4 +229,8 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
       currentScenario.machines.some(sm => sm.id === m.id)
     );
   },
+
+  resetScenarioWorkspaceState: () => ({
+    _prevMachinesSnapshot: [],
+  }),
 });

@@ -42,6 +42,7 @@ export interface UISlice {
   setBrowserUrl: (url: string) => void;
   setBrowserLoggedIn: (loggedIn: boolean) => void;
   setBrowserNavHistory: (history: string[], idx: number) => void;
+  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay'>;
 }
 
 export const createUISlice: StateCreator<ScenarioState, [], [], UISlice> = (set, get) => ({
@@ -94,4 +95,18 @@ export const createUISlice: StateCreator<ScenarioState, [], [], UISlice> = (set,
   setBrowserUrl: (url) => set({ browserCurrentUrl: url }),
   setBrowserLoggedIn: (loggedIn) => set({ browserIsLoggedIn: loggedIn }),
   setBrowserNavHistory: (history, idx) => set({ browserNavHistory: history, browserNavIdx: idx }),
+
+  resetUiState: () => ({
+    view: 'landing' as AppView,
+    showNetworkMap: false,
+    hasNewNetworkInfo: false,
+    notification: null,
+    browserCurrentUrl: 'https://www.google.com',
+    browserIsLoggedIn: false,
+    browserNavHistory: ['https://www.google.com'],
+    browserNavIdx: 0,
+    showSurvey: false,
+    pendingSurveyScenario: null,
+    showCompletionOverlay: false,
+  }),
 });

@@ -22,6 +22,7 @@ export interface TerminalSlice {
   setBlockingCommand: (command: BlockingCommand | null) => void;
   setCurrentDir: (dir: string) => void;
   markGlobalResetDone: (scenarioId: string) => void;
+  resetTerminalState: () => Pick<TerminalSlice, 'listeningPort' | 'blockingCommand' | 'msfState' | 'ftpSession' | 'sshSession' | 'globalResetDoneForScenario'>;
 }
 
 export const createTerminalSlice: StateCreator<ScenarioState, [], [], TerminalSlice> = (set) => ({
@@ -40,4 +41,13 @@ export const createTerminalSlice: StateCreator<ScenarioState, [], [], TerminalSl
   setBlockingCommand: (command) => set({ blockingCommand: command }),
   setCurrentDir: (dir) => set({ currentDir: dir }),
   markGlobalResetDone: (scenarioId) => set({ globalResetDoneForScenario: scenarioId }),
+
+  resetTerminalState: () => ({
+    listeningPort: null,
+    blockingCommand: null,
+    msfState: null,
+    ftpSession: null,
+    sshSession: null,
+    globalResetDoneForScenario: null,
+  }),
 });
