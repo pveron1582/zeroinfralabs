@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 7 visible labs (laboratorio01-07), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 1939 tests across 147 files.
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 7 visible labs (laboratorio01-07), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 2106 tests across 162 files.
 
 ## Commands
 
@@ -127,7 +127,7 @@ Resumen rápido:
 ```
 src/
 ├── commands/
-│   ├── builtin/        # 60 system commands (ls, cd, cat, sudo, ps, kill, systemctl, iptables, ufw, ip, ss, export, grep, crontab, mount, df, du, ln, find, python3, ...)
+│   ├── builtin/        # 51 system commands (ls, cd, cat, sudo, ps, kill, systemctl, iptables, ufw, ip, ss, export, grep, crontab, mount, df, du, ln, find, python3, ...)
 │   ├── tools/          # 12 pentest/system tools (nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg; ssh/nc/ftp live in frameworks/shells and are re-exported)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
 ├── academy/            # 8 paths / 58 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)

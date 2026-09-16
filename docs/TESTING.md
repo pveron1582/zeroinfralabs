@@ -2,60 +2,92 @@
 
 ## Resumen
 
-**Framework:** Vitest + React Testing Library + jsdom  
-**Total Tests:** 800+  
-**Cobertura:** Componentes, Comandos, Hooks, Utilidades
+**Framework:** Vitest 4.x + React Testing Library + jsdom  
+**Total Tests:** 2106 en 162 archivos  
+**Cobertura (v8):** 83.3% stmts / 72.18% branches / 79.29% funcs / 85.7% lines  
+**E2E:** Playwright (7 specs en `e2e/`, no corren en CI aún)
 
 ## Comandos
 
 ```bash
 pnpm test                # Watch mode (re-ejecuta al guardar)
-pnpm test:run            # Ejecución única
-pnpm test:coverage       # Reporte de cobertura
-pnpm test:ui             # UI interactiva
+pnpm test:run            # Ejecución única (CI gate)
+pnpm test:coverage       # Reporte de cobertura con thresholds
+pnpm test:ui             # UI interactiva de Vitest
+pnpm test -- -t "nombre" # Filtrar por nombre de test
+pnpm test -- src/path    # Ejecutar un archivo específico
 ```
+
+### Cobertura thresholds (`vitest.config.ts`)
+
+| Métrica | Umbral | Real (2026-09) |
+|---------|--------|----------------|
+| statements | 80% | 83.3% |
+| branches | 72% | 72.18% |
+| functions | 75% | 79.29% |
+| lines | 80% | 85.7% |
 
 ## Estructura de Tests
 
 ```
 src/
-├── commands/__tests__/          # Tests de comandos
-│   ├── happyPath-scenario01.test.ts
-│   ├── happyPath-scenario02.test.ts
-│   └── happyPathHelpers.ts
-├── components/__tests__/          # Tests de React
-│   ├── Terminal.test.tsx
-│   ├── FakeBrowser.test.tsx
-│   └── fixtures.ts
-├── store/__tests__/               # Tests de store
-│   └── selectors.test.ts
-└── utils/__tests__/               # Tests de utilidades
-    ├── donationMessage.test.ts
-    ├── networkAlert.test.ts
-    └── autocomplete.test.ts
+├── commands/
+│   ├── __tests__/           # Happy path por lab + integración
+│   │   ├── happyPath-scenario01..07.test.ts
+│   │   ├── happyPathHelpers.ts
+│   │   ├── fase3-suid-sticky.test.ts
+│   │   ├── fase4-editors.test.ts
+│   │   ├── fase5-processes.test.ts
+│   │   ├── fase6-network.test.ts
+│   │   ├── fase7-packages-pipes-env.test.ts
+│   │   ├── fase8-cron.test.ts
+│   │   ├── fase9-fs.test.ts
+│   │   └── python3.test.ts
+│   └── builtin/__tests__/   # Tests unitarios por comando (51 cmds)
+├── components/__tests__/    # Tests de React (Terminal, FakeBrowser, etc.)
+├── hooks/__tests__/         # Tests de hooks (useCommandRunner, useFtpSession, etc.)
+├── store/__tests__/         # Tests de Zustand store
+├── utils/__tests__/         # Tests de utilidades (labValidator, permissions, etc.)
+├── frameworks/              # Tests de frameworks (metasploit, http, python, proxy)
+├── laboratorios/__tests__/  # Tests de definición de labs
+├── fs-models/__tests__/     # Tests de filesystem virtual
+├── i18n/__tests__/          # Tests de traducciones
+└── test/setup.ts            # Setup global (mocks, store reset)
 ```
 
 ## Tipos de Tests
 
-### 1. Tests de Comandos (Happy Path)
-Validan flujos completos de laboratorios:
-- Escenario 1: WordPress compromise
-- Escenario 2: SSH brute force
-- Escenario 3: EternalBlue exploit
-- Escenario 4: LFI to RCE
-- Escenario 5: FTP + Privilege escalation
+### 1. Happy Path por Laboratorio
+Flujos completos de cada lab (01-07): scan → enum → exploit → flag.
+Helpers compartidos en `happyPathHelpers.ts` para crear máquinas mock, evolucionar estado y verificar resultados.
 
-### 2. Tests de Componentes React
-- Renderizado correcto
-- Interacciones de usuario
-- Callbacks y eventos
-- Integración con store
+### 2. Tests de Fases (fase3-fase9)
+Tests organizados por dominio de conocimiento:
+- **fase3:** SUID, SGID, sticky bit
+- **fase4:** Editores (nano, vim) y privesc
+- **fase5:** Procesos (ps, top, kill)
+- **fase6:** Red (iptables, ufw, nmap)
+- **fase7:** Paquetes, pipes, entorno
+- **fase8:** Cron jobs
+- **fase9:** Filesystem (mounts, permisos)
 
-### 3. Tests de Utilidades
-- `labValidator.ts` — Validación de misiones
-- `autocomplete.ts` — Sistema de autocompletado
-- `networkAlert.ts` — Detección de cambios
-- `analytics.ts` — Event tracking
+### 3. Tests de Hooks
+Cobertura de los 16 hooks especializados:
+- `useCommandRunner` — orquestador principal (prompt, sesiones, streaming)
+- `useRunCommand` — routing por sesión (su, python, FTP, SSH)
+- `useFtpSession` / `useSshSession` — ciclo de vida de sesiones
+- `usePendingPythonInput` — flujo input() interactivo de Python
+- `useReverseShell` — detección de reverse shell entrante
+- `processCommandResult` — dispatcher de efectos secundarios
+
+### 4. Tests de Componentes React
+- Renderizado, interacciones, callbacks, integración con store
+- MachineLoader con **fake timers** (eliminó flakeo)
+
+### 5. Tests de Utilidades
+- `labValidator.ts` — validación universal (17 criteria types)
+- `permissions.ts` — permisos Unix (canRead, canWrite, canExecute)
+- `storage.ts` — borrado selectivo de localStorage
 
 ## Convenciones
 
@@ -63,15 +95,17 @@ Validan flujos completos de laboratorios:
 ```typescript
 // Descripciones en español
 describe('Terminal', () => {
-  it('debe renderizar el mensaje de bienvenida', () => {
-    // ...
-  });
-  
-  it('debe limpiar el input al ejecutar un comando', () => {
-    // ...
-  });
+  it('debe renderizar el mensaje de bienvenida', () => { ... });
+  it('debe limpiar el input al ejecutar un comando', () => { ... });
 });
 ```
+
+### Entorno de test
+Los tests de lógica pura (comandos, utils, frameworks, fs-models) usan:
+```typescript
+// @vitest-environment node  (sin DOM: más rápido)
+```
+Los tests de componentes y hooks que requieren DOM usan jsdom (default).
 
 ### Mocks
 ```typescript
@@ -84,40 +118,42 @@ vi.mock('../../store/scenarioStore', () => ({
 }));
 ```
 
-### Helpers
-Usar `src/commands/__tests__/happyPathHelpers.ts` para:
-- Crear máquinas mock
-- Evolucionar estado
-- Verificar resultados
+## Flujos de CI
 
-## Cobertura Objetivo
+### Prerequisites para merge
+1. `pnpm exec tsc --noEmit` → 0 errores
+2. `pnpm lint` → 0 problemas
+3. `pnpm test:run` → todos pasan (3 corridas verdes recomendadas para cambios en tests/infra)
+4. `pnpm build` → exit 0
 
-| Módulo | Cobertura |
-|--------|-----------|
-| Commands | > 80% |
-| Components | > 60% |
-| Utils | > 70% |
-| Store | > 85% |
-| Labs | 100% (definición) |
+### Cobertura
+- Thresholds en `vitest.config.ts` bloquean si bajan
+- Reporte local: `pnpm test:coverage`
+- Para PRs de infra/tests: correr 3 corridas antes de mergear
 
 ## Debugging
 
 ```bash
-# Ejecutar test específico
+# Test específico
 pnpm test -- src/commands/__tests__/happyPath-scenario01.test.ts
 
-# Ejecutar por nombre
+# Por nombre
 pnpm test -- -t "debe autenticar"
 
 # Verbose
 pnpm test -- --reporter=verbose
+
+# Aislar tests que fallan (para investigar flakeo)
+npx vitest run src/components/__tests__/MachineLoader.test.tsx
+
+# Cache limpia si hay comportamiento raro
+rm -rf node_modules/.vitest
 ```
 
-## CI/CD
+## Tests E2E (Playwright)
 
-Tests ejecutan automáticamente en cada PR:
+Specs en `e2e/` (7 specs, 210 LOC). **No corren en CI** — solo local:
 ```bash
-pnpm test:run
+pnpm test:e2e
 ```
-
-Fallo = bloqueo de merge.
+Configuración en `playwright.config.ts`. Ver §3.4 de `docs/mejoras-deep.md` para agregar a CI.

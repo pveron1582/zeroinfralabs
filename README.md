@@ -101,7 +101,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **1950 Tests** — Vitest + React Testing Library + Playwright E2E (149 archivos unitarios + 19 E2E)
+- **2106 Tests** — Vitest + React Testing Library + Playwright E2E (162 archivos unitarios + 7 E2E)
 
 ## 🏗️ Tech Stack
 
@@ -123,7 +123,7 @@ src/
 ├── academy/          # 8 paths / 58 lecciones: path-*.ts + *-lessons.ts
 ├── video/            # Composiciones Remotion de video-lecciones (39)
 ├── commands/
-│   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, etc. (59)
+│   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, python3, etc. (51)
 │   └── tools/       # nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg (12)
 ├── components/
 │   ├── landing/     # SiteHeader, PageHero, LandingLabPreview, MarketingFooter
@@ -142,11 +142,13 @@ src/
 │   ├── network/     # NetworkState (iptables, ufw, interfaces)
 │   ├── packages/    # PackageManager (apt, dpkg)
 │   ├── cron/        # CronRunner (reloj virtual + cron jobs → syslog)
-│   └── fs/          # mounts.ts (fstab + estado de montajes)
-├── hooks/           # 14 hooks especializados: useCommandRunner (orquestador),
+│   ├── fs/          # mounts.ts (fstab + estado de montajes)
+│   └── python/      # Mini-intérprete de Python (lexer/parser/evaluator + stdlib simulada)
+├── hooks/           # 16 hooks especializados: useCommandRunner (orquestador),
 │                    # useIdentityStack, useFtpSession, useSshSession, usePendingSu,
-│                    # useReverseShell, useAutoRefresh, useDownloadedFile, useTerminalEffects,
-│                    # useNanoSave, useMissionCompletion, streamingConfig
+│                    # usePendingPythonInput, useReverseShell, useAutoRefresh,
+│                    # useDownloadedFile, useTerminalEffects, useNanoSave,
+│                    # useMissionCompletion, useKeyboardShortcuts, streamingConfig
 ├── i18n/            # Traducciones español/inglés
 ├── laboratorios/    # Definición de labs (01-07) + templates + attackers (Kali)
 ├── fs-models/       # Modelos de filesystem (Linux, Windows, Kali)
@@ -171,10 +173,10 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales
-- ✅ 1950 tests pasando (149 test files unitarios + 19 E2E con Playwright)
+- ✅ 2106 tests pasando (162 test files unitarios + 7 E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
-- ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)
+- ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 17 variantes)
 - ✅ Validación universal (17 criteria types, 17 validators)
 - ✅ Permisos de sistema de archivos (SUID, SGID, Sticky bit, umask, ownership)
 - ✅ Metasploit simulado (sesiones, módulos aux/exploit/post)
