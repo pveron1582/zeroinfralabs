@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/whoami.test.ts ──────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { cmd_whoami } from '../whoami';
 import type { Machine } from '../../../types';

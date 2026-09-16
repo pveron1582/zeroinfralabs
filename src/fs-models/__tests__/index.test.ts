@@ -1,4 +1,5 @@
 // ── fs-models/__tests__/index.test.ts ─────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para las exportaciones del módulo fs-models
 
 import { describe, it, expect } from 'vitest';

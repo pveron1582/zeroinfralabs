@@ -1,4 +1,5 @@
 // ── src/utils/__tests__/network.test.ts ───────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests for network utilities
 
 import { describe, it, expect } from 'vitest';

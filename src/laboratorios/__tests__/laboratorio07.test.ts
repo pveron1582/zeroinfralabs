@@ -1,3 +1,4 @@
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { scenario_07, scenario07Data } from '../laboratorio07';
 

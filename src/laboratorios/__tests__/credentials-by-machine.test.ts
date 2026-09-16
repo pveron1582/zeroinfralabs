@@ -1,4 +1,5 @@
 // ── laboratorios/__tests__/credentials-by-machine.test.ts ─────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Sistema general de usuario/password por máquina:
 //  - El usuario `kali` NO debe aparecer en los targets de lab (solo existe
 //    en la máquina atacante Kali).

@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/nano.test.ts ────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { cmd_nano } from '../nano';
 import { validateMission } from '../../../utils/labValidator';

@@ -1,4 +1,5 @@
 // ── utils/__tests__/logger.test.ts ────────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests for the application logger (MEJORAS 5.1).
 // Verifies that logger is no-op in production and emits in development.
 //

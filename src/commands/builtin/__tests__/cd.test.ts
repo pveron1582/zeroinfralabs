@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/cd.test.ts ─────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect, vi } from 'vitest';
 import { cmd_cd } from '../cd';
 import type { Machine, CommandContext } from '../../../types';

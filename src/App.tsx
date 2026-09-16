@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LandingPage }  from './components/LandingPage';
 import { LabGrid }      from './components/LabGrid';
+import { NotFound }     from './components/NotFound';
 import { ChunkErrorBoundary } from './components/ChunkErrorBoundary';
 import { lazyWithRetry } from './utils/lazyRetry';
 
@@ -46,7 +47,10 @@ export default function App() {
             <Route path="/:lang/academy/:pathId/module/:subId" element={<AcademyPathPage />} />
             <Route path="/:lang/academy/:pathId/:lessonId" element={<LessonViewer />} />
             <Route path="/:lang/zildeb" element={<AdminPanel />} />
-            <Route path="/test" element={<TestLab />} />
+            {/* Lab de pruebas: solo en desarrollo (borra el storage propio del lab). */}
+            {import.meta.env.DEV && <Route path="/test" element={<TestLab />} />}
+            {/* Catch-all: sin esto, una URL desconocida dejaba el documento vacío. */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

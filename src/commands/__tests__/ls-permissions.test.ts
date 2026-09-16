@@ -1,4 +1,5 @@
 // ── commands/__tests__/ls-permissions.test.ts ──────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests for ls permission enforcement: ls on a dir without `x` for the
 // current user must return "Permission denied". When in short format,
 // entries without `r` (per file) must be filtered out.

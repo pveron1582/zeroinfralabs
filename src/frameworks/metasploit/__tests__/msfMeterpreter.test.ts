@@ -1,4 +1,5 @@
 // ── frameworks/metasploit/__tests__/msfMeterpreter.test.ts ──
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { executeMeterpreterCommand } from '../orchestrators/msfMeterpreter';
 import type { MsfState } from '../core/msfTypes';

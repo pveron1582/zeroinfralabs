@@ -121,4 +121,9 @@ export interface Translations {
   close: string;
   category: string;
   labName: string;
+  // 404 (ruta no encontrada)
+  notFoundTitle: string;
+  notFoundBody: string;
+  notFoundGoLabs: string;
+  notFoundGoAcademy: string;
 }

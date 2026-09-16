@@ -1,4 +1,5 @@
 // ── commands/__tests__/fase3-suid-sticky.test.ts ───────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests for Fase 3: SUID, SGID, Sticky Bit permissions
 
 import { describe, it, expect, beforeEach } from 'vitest';

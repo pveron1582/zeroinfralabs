@@ -1,4 +1,5 @@
 // ── utils/__tests__/fs.test.ts ──────────────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests for filesystem helpers in utils/fs.ts
 
 import { describe, it, expect } from 'vitest';

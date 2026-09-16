@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/ls.test.ts ────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para el comando ls
 // Verifica que el comando liste correctamente archivos y directorios
 

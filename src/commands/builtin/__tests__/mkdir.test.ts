@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/mkdir.test.ts ───────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para el comando mkdir
 
 import { describe, it, expect, beforeEach } from 'vitest';

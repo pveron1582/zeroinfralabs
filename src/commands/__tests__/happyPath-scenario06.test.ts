@@ -1,4 +1,5 @@
 // ── commands/__tests__/happyPath-scenario06.test.ts ───────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Happy path tests for Scenario 06: SQL Injection & Database Exfiltration
 
 import { describe, it, expect } from 'vitest';

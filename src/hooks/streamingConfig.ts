@@ -13,6 +13,9 @@ export const CMD_DELAYS: Record<string, StreamingConfig> = {
   'gobuster': { lineDelay: 40, minTotal: 1500 },
   'hydra':    { lineDelay: 50, minTotal: 2000 },
   'ssh':      { lineDelay: 0,  minTotal: 500  },
+  // python3 NO hace streaming: el resultado debe aplicar processCommandResult
+  // de forma síncrona para que pythonPendingInput quede activo antes de que
+  // el usuario tipee la respuesta al input() (si no, la línea se pierde).
   'default':  { lineDelay: 0,  minTotal: 0    },
 };
 

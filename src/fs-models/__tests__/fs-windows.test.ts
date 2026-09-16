@@ -1,4 +1,5 @@
 // ── fs-models/__tests__/fs-windows.test.ts ───────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para el modelo de sistema de archivos Windows
 
 import { describe, it, expect } from 'vitest';

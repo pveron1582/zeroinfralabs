@@ -1,4 +1,5 @@
 // ── commands/__tests__/fase7-packages-pipes-env.test.ts ─────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests de la Fase 7 del ROADMAP: sistema de paquetes (apt/dpkg),
 // pipes y redirección (|, >, >>, <) y variables de entorno
 // (export/env/unset, $VAR).

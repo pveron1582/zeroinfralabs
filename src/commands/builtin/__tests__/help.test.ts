@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/help.test.ts ───────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para el comando help
 
 import { describe, it, expect } from 'vitest';

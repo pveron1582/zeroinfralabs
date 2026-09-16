@@ -1,4 +1,5 @@
 // ── commands/__tests__/commands-basics.test.ts ────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Test de humo: help, whoami, ifconfig, clear, ls, cat
 // Verifica que comandos built-in respondan sin depender de ningún lab
 

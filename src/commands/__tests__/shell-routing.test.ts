@@ -1,4 +1,5 @@
 // ── commands/__tests__/shell-routing.test.ts ──────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // P2-13 / C1 — el routing de sesiones de shell es POR TERMINAL (ownerId).
 // Antes: una sesión abierta en la terminal A secuestraba lo que se escribía
 // en la terminal B (shellManager global). Ahora cada terminal tiene su stack.

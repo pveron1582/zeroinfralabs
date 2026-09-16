@@ -1,4 +1,5 @@
 // ── commands/__tests__/commands-scenario01.test.ts ─────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Prueba de comandos: arp-scan, nmap, gobuster
 // Verifica metadata correcta con datos del Escenario 01
 

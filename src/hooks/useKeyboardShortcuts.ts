@@ -28,6 +28,8 @@ interface UseKeyboardShortcutsOptions {
   allMachines: Machine[];
   goHome: () => void;
   setMsfState: (state: MsfState | null) => void;
+  // python3 esperando input(): Ctrl+C lo cancela como KeyboardInterrupt.
+  pendingPythonCancel?: (() => void) | null;
 }
 
 interface UseKeyboardShortcutsReturn {
@@ -46,7 +48,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions): UseK
     cmdHistory, histIdx, setHistIdx,
     busy, setBusy, blockingCommand, setBlockingCommand,
     setListeningPort, setHistory, prompt, runCommand,
-    makeWelcome, allMachines, setMsfState,
+    makeWelcome, allMachines, setMsfState, pendingPythonCancel,
   } = options;
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -54,6 +56,12 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions): UseK
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // python3 esperando input(): Ctrl+C interrumpe el script (KeyboardInterrupt)
+    if (pendingPythonCancel && e.ctrlKey && e.key === 'c') {
+      e.preventDefault();
+      pendingPythonCancel();
+      return;
+    }
     if (blockingCommand) {
       // Check for cancelKey first (e.g., 'q' for top/htop)
       if (blockingCommand.cancelKey && e.key === blockingCommand.cancelKey) {

@@ -34,6 +34,11 @@ let labStart = 0;
  * Format: sess_a3f8c2d1 (8 hex chars)
  */
 function getSessionId(): string {
+  // Fuera del navegador (tests en node, SSR) no hay storage: se genera un id
+  // efímero en memoria y el evento igual se enriquece sin romper.
+  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+    return 'sess_' + Math.random().toString(16).slice(2, 10);
+  }
   let sid = sessionStorage.getItem('cyberops-session-id');
   if (!sid) {
     sid = 'sess_' + Math.random().toString(16).slice(2, 10);

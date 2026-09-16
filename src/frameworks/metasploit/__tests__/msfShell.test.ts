@@ -1,4 +1,5 @@
 // ── frameworks/metasploit/__tests__/msfShell.test.ts ────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { executeShellCommand } from '../orchestrators/msfShell';
 import type { MsfState } from '../core/msfTypes';

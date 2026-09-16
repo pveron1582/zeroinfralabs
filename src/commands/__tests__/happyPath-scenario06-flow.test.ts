@@ -1,4 +1,5 @@
 // ── commands/__tests__/happyPath-scenario06-flow.test.ts ─────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Flujo completo del Lab 06 vía executeCommand + validateMission + store,
 // simulando lo que hace checkMissionCompletion en useCommandRunner.
 

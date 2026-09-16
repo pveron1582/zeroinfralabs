@@ -1,4 +1,5 @@
 // ── commands/__tests__/happyPath-scenario03.test.ts ───────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Happy path tests for Scenario 03: EternalBlue - MS17-010
 
 import { describe, it, expect, beforeEach } from 'vitest';

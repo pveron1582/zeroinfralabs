@@ -108,4 +108,9 @@ export const en: Translations = {
     close: 'Close',
     category: 'Category',
     labName: 'Lab',
+    // 404
+    notFoundTitle: 'Page not found',
+    notFoundBody: 'The page you are looking for does not exist or was moved.',
+    notFoundGoLabs: 'Back to Labs',
+    notFoundGoAcademy: 'Go to Academy',
 };

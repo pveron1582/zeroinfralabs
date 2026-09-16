@@ -1,4 +1,5 @@
 // ── utils/__tests__/autocomplete.test.ts ──────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para el sistema de autocompletado de la terminal
 // Verifica que las funciones de autocompletado funcionen correctamente
 // para comandos, archivos y directorios

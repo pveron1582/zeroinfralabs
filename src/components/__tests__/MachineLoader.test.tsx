@@ -1,11 +1,25 @@
 // ── components/__tests__/MachineLoader.test.tsx ───────────────────
 // Tests para el componente MachineLoader (versión con countdown + carga realista)
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
 import { MachineLoader } from '../MachineLoader';
 
+// La animación del loader depende de setTimeout/setInterval/requestAnimationFrame y de
+// Date.now(). Con timers reales cada dígito del countdown vive ~500 ms, y con la suite
+// completa corriendo en paralelo (153 archivos) estos tests fallaban de forma
+// intermitente por carga de máquina (ver docs/mejoras-deep.md §2.1).
+// Acá se usan SIEMPRE fake timers y se avanza el reloj a mano: determinista y rápido.
+// `vi.useFakeTimers()` fakea Date y requestAnimationFrame, así que la fase de carga
+// también avanza con advanceTimersByTime.
+const advance = (ms: number) => {
+  act(() => { vi.advanceTimersByTime(ms); });
+};
+
 describe('MachineLoader', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
   it('debe renderizar la información de la máquina durante el countdown', () => {
     render(
       <MachineLoader
@@ -23,7 +37,7 @@ describe('MachineLoader', () => {
     expect(screen.getByText('3')).toBeInTheDocument();
   });
 
-  it('debe mostrar el countdown 3..2..1..GO', async () => {
+  it('debe mostrar el countdown 3..2..1..GO', () => {
     render(
       <MachineLoader
         machineName="Test Machine"
@@ -34,23 +48,24 @@ describe('MachineLoader', () => {
       />
     );
 
+    // El countdown dura 1500 ms repartidos en 3 tramos de 500 ms
     expect(screen.getByText('3')).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText('2')).toBeInTheDocument();
-    }, { timeout: 600 });
+    advance(600);
+    expect(screen.getByText('2')).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText('1')).toBeInTheDocument();
-    }, { timeout: 600 });
+    advance(500);
+    expect(screen.getByText('1')).toBeInTheDocument();
 
-    // After countdown transitions to loading phase
-    await waitFor(() => {
-      expect(screen.getByText('Resolviendo infraestructura...')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    // El tramo que cruza los 1500 ms cambia a la fase de carga. Ojo: el efecto de esa
+    // fase (y su requestAnimationFrame) se registra al salir del act(), así que el
+    // primer tick del loader necesita un advance extra.
+    advance(500);
+    advance(200);
+    expect(screen.getByText('Resolviendo infraestructura...')).toBeInTheDocument();
   });
 
-  it('debe avanzar el progreso con log lines durante la carga', async () => {
+  it('debe avanzar el progreso con log lines durante la carga', () => {
     render(
       <MachineLoader
         machineName="Test Machine"
@@ -61,12 +76,12 @@ describe('MachineLoader', () => {
       />
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('→ Resolviendo DNS del laboratorio...')).toBeInTheDocument();
-    }, { timeout: 2000 });
+    advance(1600); // fin del countdown → fase de carga
+    advance(300);  // el primer log se emite al 3% de 5000 ms de carga
+    expect(screen.getByText('→ Resolviendo DNS del laboratorio...')).toBeInTheDocument();
   });
 
-  it('debe mostrar logs con interpolación de variables', async () => {
+  it('debe mostrar logs con interpolación de variables', () => {
     render(
       <MachineLoader
         machineName="Target-01"
@@ -77,12 +92,12 @@ describe('MachineLoader', () => {
       />
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('→ Provisionando Target-01...')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    advance(1600);
+    advance(1100); // 18% de los 5000 ms de carga → log de provisionamiento
+    expect(screen.getByText('→ Provisionando Target-01...')).toBeInTheDocument();
   });
 
-  it('debe llamar onComplete al finalizar la carga', async () => {
+  it('debe llamar onComplete al finalizar la carga', () => {
     const onComplete = vi.fn();
 
     render(
@@ -96,12 +111,15 @@ describe('MachineLoader', () => {
       />
     );
 
-    await waitFor(() => {
-      expect(onComplete).toHaveBeenCalled();
-    }, { timeout: 3000 });
+    expect(onComplete).not.toHaveBeenCalled();
+
+    advance(1600); // countdown → fase de carga (el efecto se registra al salir del act)
+    advance(700);  // la carga (500 ms) termina → fase complete + setTimeout(onComplete, 400)
+    advance(500);  // se dispara onComplete
+    expect(onComplete).toHaveBeenCalled();
   });
 
-  it('debe mostrar el mensaje final cuando está completo', async () => {
+  it('debe mostrar el mensaje final cuando está completo', () => {
     render(
       <MachineLoader
         machineName="Test Machine"
@@ -113,13 +131,13 @@ describe('MachineLoader', () => {
       />
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('LABORATORIO ACTIVO')).toBeInTheDocument();
-      expect(screen.getByText('Acceso concedido. Ready for attack.')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    advance(1600); // countdown → fase de carga (el efecto se registra al salir del act)
+    advance(700);  // la carga (500 ms) termina → pantalla de completado
+    expect(screen.getByText('LABORATORIO ACTIVO')).toBeInTheDocument();
+    expect(screen.getByText('Acceso concedido. Ready for attack.')).toBeInTheDocument();
   });
 
-  it('debe mostrar el indicador de progreso visual durante la carga', async () => {
+  it('debe mostrar el indicador de progreso visual durante la carga', () => {
     const { container } = render(
       <MachineLoader
         machineName="Test Machine"
@@ -130,10 +148,9 @@ describe('MachineLoader', () => {
       />
     );
 
-    await waitFor(() => {
-      const progressBar = container.querySelector('[class*="rounded-full"][class*="h-2"]');
-      expect(progressBar).toBeInTheDocument();
-    }, { timeout: 3000 });
+    advance(1600); // entra en fase de carga, donde vive la barra de progreso
+    const progressBar = container.querySelector('[class*="rounded-full"][class*="h-2"]');
+    expect(progressBar).toBeInTheDocument();
   });
 
   it('debe mostrar textos en inglés cuando language="en"', async () => {

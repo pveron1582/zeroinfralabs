@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/pwd.test.ts ───────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para cmd_pwd: imprime el directorio actual del contexto.
 
 import { describe, it, expect } from 'vitest';

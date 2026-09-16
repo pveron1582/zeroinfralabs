@@ -9,13 +9,18 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
+    // Los tests de componentes animados dependen de timers. Con la suite completa
+    // corriendo 153 archivos en paralelo, el default de 5 s hacía fallar tests
+    // válidos por carga de máquina (ver docs/mejoras-deep.md §2.1).
+    testTimeout: 15000,
+    hookTimeout: 15000,
     coverage: {
       provider: 'v8',
-      // Blindar el estado actual (82.5% stmts / 71.1% branch / 77.8% funcs / 84.3% lines).
-      // Ver informe mejoras_glm.md §P0-6.
+      // Nota P0-D (docs/mejoras-deep.md §2.5): los thresholds viven al filo de lo medido.
+      // Piso real 2026-09: 81.91 stmts / 70.28 branch / 78.65 funcs / 84.20 lines.
       thresholds: {
         statements: 80,
-        branches: 70,
+        branches: 72,
         functions: 75,
         lines: 80,
       },

@@ -1,3 +1,4 @@
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { cmd_chmod } from '../chmod';
 import type { Machine, CommandContext } from '../../../types';

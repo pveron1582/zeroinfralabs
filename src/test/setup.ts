@@ -5,30 +5,35 @@
 import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+// Nota: los tests de lógica pura (comandos, utils, frameworks, fs-models) corren con
+// `// @vitest-environment node` y NO tienen window/document. Todo lo que sea mock del
+// DOM queda detrás de este guard para que el setup no rompa en ese entorno.
+if (typeof window !== 'undefined') {
+  // Mock window.matchMedia
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
 
-// Mock window.history
-Object.defineProperty(window, 'history', {
-  writable: true,
-  value: {
-    pushState: vi.fn(),
-    back: vi.fn(),
-    state: null,
-  },
-});
+  // Mock window.history
+  Object.defineProperty(window, 'history', {
+    writable: true,
+    value: {
+      pushState: vi.fn(),
+      back: vi.fn(),
+      state: null,
+    },
+  });
+}
 
 // Mock ResizeObserver
 class MockResizeObserver {
@@ -52,8 +57,8 @@ import { afterEach, beforeEach } from 'vitest';
 import { useScenarioStore } from '../store/scenarioStore';
 
 beforeEach(() => {
-  // Clear localStorage before each test
-  localStorage.clear();
+  // Clear localStorage before each test (no existe con @vitest-environment node)
+  if (typeof localStorage !== 'undefined') localStorage.clear();
   // Reset store to default values using setState
   useScenarioStore.setState((state) => ({
     ...state,

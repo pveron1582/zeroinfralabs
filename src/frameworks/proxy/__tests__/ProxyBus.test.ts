@@ -1,4 +1,5 @@
 // ── frameworks/proxy/__tests__/ProxyBus.test.ts ────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // ProxyBus: pub/sub del tráfico navegador → Burp Proxy (patrón ShellManager).
 
 import { describe, it, expect, afterEach, vi } from 'vitest';

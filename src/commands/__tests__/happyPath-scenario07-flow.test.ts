@@ -1,4 +1,5 @@
 // ── commands/__tests__/happyPath-scenario07-flow.test.ts ─────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Flujo completo del Lab 07 (Burp Suite) validado misión a misión.
 // Misiones 1-2 por terminal (executeCommand); misiones 3-5 por el navegador
 // (CasinoVeo: visita + SQLi manual); misiones 6-8 por Burp Suite, simulando

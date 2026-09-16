@@ -1,4 +1,5 @@
 // ── utils/__tests__/analytics.test.ts ───────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { 
   trackEvent, 

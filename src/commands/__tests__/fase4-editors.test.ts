@@ -1,3 +1,4 @@
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { Machine } from '../../types';
 import { executeCommand } from '../index';

@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/rmdir.test.ts ───────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests para el comando rmdir
 
 import { describe, it, expect, beforeEach } from 'vitest';

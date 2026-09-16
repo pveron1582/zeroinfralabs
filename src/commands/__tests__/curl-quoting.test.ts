@@ -1,4 +1,5 @@
 // ── commands/__tests__/curl-quoting.test.ts ─────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Verifica que los payloads SQLi funcionen con distintas formas de comillas
 // a través del parser real (executeCommand + splitArgs).
 

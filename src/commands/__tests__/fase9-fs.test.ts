@@ -1,4 +1,5 @@
 // ── commands/__tests__/fase9-fs.test.ts ─────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests de la Fase 9 del ROADMAP: sistema de archivos avanzado
 // (mount/umount, df/du, ln/symlinks, find, grep -r).
 

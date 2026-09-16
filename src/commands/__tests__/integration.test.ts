@@ -1,3 +1,4 @@
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { executeCommand, resetMsfState, isMsfActive, getMsfPrompt } from '../index';
 import { SCENARIOS } from '../../laboratorios/laboratorios';

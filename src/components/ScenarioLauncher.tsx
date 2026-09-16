@@ -6,6 +6,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useScenarioStore } from '../store/scenarioStore';
 import { SCENARIOS, TEST_SCENARIO } from '../laboratorios/laboratorios';
 import { logger } from '../utils/logger';
+import { clearZilabsStorage } from '../utils/storage';
 import { DEFAULT_WALLPAPER } from './desktopWallpapers';
 import { MachineLoader } from './MachineLoader';
 import { LabGrid } from './LabGrid';
@@ -96,7 +97,10 @@ function TestLab() {
   const { selectScenario, setView } = useScenarioStore();
 
   useEffect(() => {
-    localStorage.clear();
+    // Ojo: borra SOLO las claves de ZI Labs. Antes era localStorage.clear(), que
+    // arrasaba el progreso de Academy y las preferencias del usuario de todo el origen
+    // (ver docs/mejoras-deep.md §2.2).
+    clearZilabsStorage();
     logger.debug('Loading TEST_SCENARIO:', TEST_SCENARIO);
     logger.debug('TEST_SCENARIO category:', TEST_SCENARIO.category);
     setTimeout(() => {

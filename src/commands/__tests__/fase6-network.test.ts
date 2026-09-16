@@ -1,4 +1,5 @@
 // ── commands/__tests__/fase6-network.test.ts ─────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests de la Fase 6 del ROADMAP: firewall (iptables/ufw), red
 // (ip/ifconfig) y sockets (ss/netstat), incluyendo la integración
 // con nmap (puertos filtrados).

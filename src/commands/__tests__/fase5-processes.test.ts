@@ -1,4 +1,5 @@
 // ── commands/__tests__/fase5-processes.test.ts ──────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests de la Fase 5 del ROADMAP: procesos, kill, systemctl, journalctl.
 
 import { describe, it, expect, beforeEach } from 'vitest';

@@ -1,4 +1,5 @@
 // ── commands/__tests__/fase8-cron.test.ts ───────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests de la Fase 8 del ROADMAP: crontab (-l/-e/-r/-u), reloj virtual
 // (date/sleep) y ejecución de cron jobs (cronRunner) con generación de
 // logs en /var/log/syslog y efectos sobre el filesystem.

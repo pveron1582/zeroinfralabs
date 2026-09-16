@@ -2,7 +2,7 @@
 // Zustand global state store — orchestrates slices and persistence
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
 import type { ScenarioState } from './types';
 import { createUISlice } from './slices/uiSlice';
 import { createTerminalSlice } from './slices/terminalSlice';
@@ -10,6 +10,15 @@ import { createScenarioSlice } from './slices/scenarioSlice';
 import { createIdentitySlice } from './slices/identitySlice';
 import { createAcademySlice } from './slices/academySlice';
 import { shellManager } from '../frameworks/shells/ShellManager';
+
+// Storage no-op para entornos sin DOM (tests con `@vitest-environment node`).
+// Sin esto, zustand avisa «storage is currently unavailable» en cada archivo de test
+// que importe el store, y el store no se puede usar fuera del navegador.
+const noopStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+};
 
 export const useScenarioStore = create<ScenarioState>()(
   persist(
@@ -54,6 +63,9 @@ export const useScenarioStore = create<ScenarioState>()(
     {
       name: 'cyberops-store',
       version: 2,
+      // En el navegador persiste en localStorage; fuera del DOM (tests en node,
+      // SSR) usa un storage no-op para no romper ni ensuciar la consola.
+      storage: createJSONStorage(() => (typeof window === 'undefined' ? noopStorage : window.localStorage)),
       partialize: (state) => ({
         // M3: NO se persiste `view` — la vista se deriva de la ruta al recargar.
         // Persistir 'workspace' sin escenario genera una vista huérfana.

@@ -67,6 +67,7 @@ export const cmd_help = {
   du             - Show directory sizes
   ln [-s]        - Create links (symbolic/hard)
   find           - Search files by name/perm/user
+  python3        - Run Python scripts (simulated)
   which [cmd]    - Locate command path
   exit           - Close session / return
   end            - Exit the lab

@@ -1,4 +1,5 @@
 // ── commands/__tests__/nano-save-preserve-owner.test.ts ────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests that the nano command emits existingSnapshot for the hook to
 // preserve owner/group/mode on save. Complements fase4-editors.test.ts.
 

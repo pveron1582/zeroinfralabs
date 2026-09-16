@@ -1,4 +1,5 @@
 // ── commands/__tests__/commands-scenario02.test.ts ─────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Prueba de comandos: arp-scan, nmap, hydra, ssh
 // Verifica metadata correcta con datos del Escenario 02
 

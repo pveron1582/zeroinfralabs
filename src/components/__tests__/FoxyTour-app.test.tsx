@@ -54,7 +54,7 @@ describe('FoxyTour en AppContent real', () => {
     // Esperar un momento: el tour no debe volver a abrirse solo
     await new Promise(r => setTimeout(r, 300));
     expect(screen.queryByText(/¡Hola! Soy Foxy/)).not.toBeInTheDocument();
-  });
+  }, 15000);
 
   it('no reabre el tour tras un remount de AppContent (bug de sessionStorage)', async () => {
     // Bug real: el guard era un useRef que se reseteaba al remontar AppContent
@@ -82,7 +82,7 @@ describe('FoxyTour en AppContent real', () => {
 
     await new Promise(r => setTimeout(r, 300));
     expect(screen.queryByText(/¡Hola! Soy Foxy/)).not.toBeInTheDocument();
-  });
+  }, 15000);
 
   it('incluye el paso de Chrome en un escenario Web', async () => {
     render(

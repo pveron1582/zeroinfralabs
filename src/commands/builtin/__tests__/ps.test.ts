@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/ps.test.ts ───────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { cmd_ps } from '../ps';
 import type { Machine } from '../../../types';

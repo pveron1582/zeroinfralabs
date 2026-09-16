@@ -1,4 +1,5 @@
 // ── commands/__tests__/closeSession.test.ts ────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // A5: cerrar una sesión debe responder según su TIPO (no siempre FTP)
 // y el executor no debe sobrescribir el estado con FTP genérico.
 

@@ -1,4 +1,5 @@
 // ── commands/__tests__/permissions-integration.test.ts ─────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Matriz de tests de regresión transversal del sistema de permisos.
 // Verifica que los comandos principales respeten el patrón Unix:
 // root bypass, user con permiso, user sin permiso, sticky bit, SUID.

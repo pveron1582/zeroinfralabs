@@ -1,4 +1,5 @@
 // ── commands/builtin/__tests__/sudo.test.ts ───────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { cmd_sudo } from '../sudo';
 import type { Machine, CommandContext } from '../../../types';

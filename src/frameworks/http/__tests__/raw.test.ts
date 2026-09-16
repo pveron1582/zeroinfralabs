@@ -1,4 +1,5 @@
 // ── frameworks/http/__tests__/raw.test.ts ───────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // buildRawRequest / parseRawRequest: serialización y parseo de requests HTTP
 // crudas estilo Burp (Repeater + flujo de Intercept).
 

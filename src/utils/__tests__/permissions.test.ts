@@ -1,4 +1,5 @@
 // ── utils/__tests__/permissions.test.ts ─────────────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Tests for permission system (users.ts + permissions.ts)
 
 import { describe, it, expect } from 'vitest';

@@ -1,4 +1,5 @@
 // ── laboratorios/__tests__/laboratorio05.test.ts ────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { scenario_05, scenario05Data, SCENARIO_TEMPLATES } from '../laboratorio05';
 import { COMMON_PORTS } from '../templates';

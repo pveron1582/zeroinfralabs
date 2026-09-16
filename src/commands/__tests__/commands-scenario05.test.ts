@@ -1,4 +1,5 @@
 // ── commands/__tests__/happyPath-scenario05.test.ts ───────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Happy path tests for Scenario 05: FTP Enumeration + Brute Force + Privilege Escalation
 
 import { describe, it, expect } from 'vitest';

@@ -1,4 +1,5 @@
 // ── commands/__tests__/happyPath-scenario04.test.ts ───────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Happy path tests for Scenario 04: LFI to RCE
 
 import { describe, it, expect } from 'vitest';

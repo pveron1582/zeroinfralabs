@@ -1,4 +1,5 @@
 // ── commands/__tests__/commandNames.test.ts ───────────────────────
+// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 // Garantiza que la lista estática COMMAND_NAMES (names.ts, liviana,
 // usada por autocomplete sin arrastrar el barrel) no diverja del
 // registro real de comandos (fuente de verdad).
