@@ -39,7 +39,7 @@ export const exec = (
   machine: Machine,
   allMachines: Machine[],
   currentMissionId: number
-) => executeCommand(line, machine, allMachines, currentMissionId, undefined, '/');
+) => executeCommand({ line: line, machine: machine, allMachines: allMachines, currentMissionId: currentMissionId, currentDir: '/' });
 
 export const withLevel = (machine: Machine, level: number): Machine => ({
   ...machine,

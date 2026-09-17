@@ -25,7 +25,6 @@ export const SCENARIO_TEMPLATES_LFI = {
     networkRange: '192.168.20.0/24',
     attackerFiles: [
       createFile('/root/payload.php', REVERSE_SHELL_PAYLOAD.phpSimple, 'text'),
-      createFile('/root/notas.txt', 'PASO A PASO LFI TO RCE:\n1. Descubrimiento: arp-scan 192.168.20.0/24\n2. Escaneo: nmap -sV 192.168.20.11\n3. LFI: Probar ?page=../../../../etc/passwd\n4. Reverse Shell: Poner nc -nlvp 4444 y subir el payload.php\n5. Ejecución: Ve a /files/ y haz clic en payload.php o navega a /files/payload.php', 'text'),
       createFile('/root/escaneo.txt', 'Nmap scan report for dev-portal-backup (192.168.20.11)\nHost is up (0.00052s latency).\nPORT   STATE SERVICE VERSION\n22/tcp open  ssh     OpenSSH 8.4p1 Debian\n80/tcp open  http    Apache/2.4.52 (Debian)\n|_http-title: DevPortal\n\nService Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel', 'text'),
     ],
     targetMachine: {

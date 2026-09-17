@@ -27,31 +27,31 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
     const completeActive = () => useScenarioStore.getState().completeMission(active().id);
 
     // Misión 1: descubrimiento
-    let r = executeCommand(`netdiscover -r 192.168.40.0/24`, attacker, machines, active().id, undefined, '/root');
+    let r = executeCommand({ line: `netdiscover -r 192.168.40.0/24`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(validateMission(r, active())).toBe(true);
     completeActive();
     expect(active().id).toBe(2);
 
     // Misión 2: escaneo de puertos
-    r = executeCommand(`nmap -sS -p- --min-rate 5000 ${target.machine_info.ip}`, attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: `nmap -sS -p- --min-rate 5000 ${target.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(validateMission(r, active())).toBe(true);
     completeActive();
     expect(active().id).toBe(3);
 
     // Misión 3: identificar SQLi con comilla simple (error SQL)
-    r = executeCommand(`curl -X POST http://${target.machine_info.ip}/login -d "username='&password=x"`, attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: `curl -X POST http://${target.machine_info.ip}/login -d "username='&password=x"`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(validateMission(r, active())).toBe(true);
     completeActive();
     expect(active().id).toBe(4);
 
     // Misión 4: explotar SQLi con OR bypass
-    r = executeCommand(`curl -X POST http://${target.machine_info.ip}/login -d "username=' OR '1'='1&password=x"`, attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: `curl -X POST http://${target.machine_info.ip}/login -d "username=' OR '1'='1&password=x"`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(validateMission(r, active())).toBe(true);
     completeActive();
     expect(active().id).toBe(5);
 
     // Misión 5: enumeración de BD con UNION (revela creds MySQL + ruta del dump)
-    r = executeCommand(`curl -X POST http://${target.machine_info.ip}/login -d "username=' UNION SELECT table_name FROM information_schema.tables--&password=x"`, attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: `curl -X POST http://${target.machine_info.ip}/login -d "username=' UNION SELECT table_name FROM information_schema.tables--&password=x"`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(validateMission(r, active())).toBe(true);
     expect(r.output).toContain('root / SQLr00t@2024!');
     // La contraseña de ftpuser aparece directamente en la tabla users del UNION SELECT
@@ -78,21 +78,21 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
     const active = () => useScenarioStore.getState().missions.find(m => m.status === 'active')!;
 
     // Conectar
-    let r = executeCommand(`ftp ${target.machine_info.ip}`, attacker, machines, active().id, undefined, '/root');
+    let r = executeCommand({ line: `ftp ${target.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect('ftpSession' in r && r.ftpSession?.active).toBe(true);
     expect('ftpSession' in r && r.ftpSession?.step).toBe('username');
 
     // Username ftpuser
-    r = executeCommand('ftpuser', attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: 'ftpuser', machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect('ftpSession' in r && r.ftpSession?.step).toBe('password');
 
     // Password correcta → login exitoso
-    r = executeCommand('ftp_dump_2024', attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: 'ftp_dump_2024', machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect('ftpSession' in r && r.ftpSession?.loggedIn).toBe(true);
     expect(validateMission(r, active())).toBe(true);
 
     // Descargar dump
-    r = executeCommand('get database_dump.sql', attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: 'get database_dump.sql', machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect('downloadedFile' in r && r.downloadedFile?.path).toBe('/root/database_dump.sql');
 
     resetShellSessions();
@@ -104,12 +104,12 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
     const target = machines.find(m => !m.id.includes('attacker'))!;
     resetShellSessions();
 
-    executeCommand(`ftp ${target.machine_info.ip}`, attacker, machines, 1, undefined, '/root');
-    executeCommand('anonymous', attacker, machines, 1, undefined, '/root');
-    let r = executeCommand('pass@', attacker, machines, 1, undefined, '/root');
+    executeCommand({ line: `ftp ${target.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
+    executeCommand({ line: 'anonymous', machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
+    let r = executeCommand({ line: 'pass@', machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     expect('ftpSession' in r && r.ftpSession?.loggedIn).toBe(true);
 
-    r = executeCommand('get database_dump.sql', attacker, machines, 1, undefined, '/root');
+    r = executeCommand({ line: 'get database_dump.sql', machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     expect(r.output).toContain('Permission denied');
     resetShellSessions();
   });
@@ -145,7 +145,7 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
       files: [...attacker.files, { path: '/root/database_dump.sql', content: dump.content, type: 'text', owner: 'root', group: 'root', mode: 0o644 }],
     };
 
-    const r = executeCommand('cat /root/database_dump.sql', attackerWithFile, machines, active().id, undefined, '/root');
+    const r = executeCommand({ line: 'cat /root/database_dump.sql', machine: attackerWithFile, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(r.output).toContain('ZIL{DATABASE_COMPROMISED}');
     const fr = 'fileRead' in r ? r.fileRead : undefined;
     expect(fr?.isFlag).toBe(true);
@@ -172,7 +172,7 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
     };
     const active = () => useScenarioStore.getState().missions.find(m => m.status === 'active')!;
 
-    const r = executeCommand('cat /root/database_dump.sql | grep -i flag', attackerWithFile, machines, active().id, undefined, '/root');
+    const r = executeCommand({ line: 'cat /root/database_dump.sql | grep -i flag', machine: attackerWithFile, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(r.output.toLowerCase()).toContain('flag');
     const fr = 'fileRead' in r ? r.fileRead : undefined;
     expect(fr?.isFlag).toBe(true);

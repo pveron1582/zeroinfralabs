@@ -38,11 +38,10 @@ export function useAutoRefresh({
     if (busy && blockingCommand?.cancelKey === 'q' && blockingCommand?.clearScreen) {
       const cmdName = blockingCommand?.message?.includes('htop') ? 'htop' : 'top';
       const refreshInterval = setInterval(() => {
-        const result = executor.executeCommand(
-          cmdName, machine, allMachines, currentMissionId,
-          undefined, currentDir, undefined, undefined, undefined,
-          umask, setUmask, env, setEnv,
-        );
+        const result = executor.executeCommand({
+          line: cmdName, machine, allMachines, currentMissionId,
+          currentDir, umask, setUmask, env, setEnv,
+        });
         if (!result.isError && result.output) {
           const out = result.output;
           setHistory(prev => {

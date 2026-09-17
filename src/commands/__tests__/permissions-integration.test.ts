@@ -55,7 +55,7 @@ function execAs(user: string, line: string, machine: Machine, currentDir = '/') 
     ...machine,
     found_credentials: [{ file: '', user, pass: 'p', verified: true, service: 'ssh' }],
   };
-  const r = executeCommand(line, m, [m], 0, undefined, currentDir);
+  const r = executeCommand({ line: line, machine: m, allMachines: [m], currentMissionId: 0, currentDir: currentDir });
   if (r.filesChanged) machine.files = r.filesChanged;
   return r;
 }

@@ -256,7 +256,7 @@ describe('Fase 8 - date y sleep', () => {
 
   it('sleep: integración vía executeCommand persiste filesChanged', () => {
     const machine = makeMachine();
-    const r = executeCommand('sleep 60', machine, [machine], 1);
+    const r = executeCommand({ line: 'sleep 60', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     applyResult(machine, r);
     const syslog = machine.files.find(f => f.path === '/var/log/syslog');
     expect(syslog?.content).toContain('CRON');

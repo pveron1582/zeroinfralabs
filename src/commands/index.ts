@@ -78,46 +78,7 @@ function buildCommandCtx(req: CommandRequest): CommandContext {
   };
 }
 
-/** Convierte la firma posicional legada (13 args) en un CommandRequest. */
-function legacyArgsToRequest(line: string, rest: unknown[]): CommandRequest {
-  return {
-    line,
-    machine: rest[0] as CommandRequest['machine'],
-    allMachines: rest[1] as CommandRequest['allMachines'],
-    currentMissionId: rest[2] as number,
-    onMsfStateChange: rest[3] as CommandRequest['onMsfStateChange'],
-    currentDir: rest[4] as CommandRequest['currentDir'],
-    setCurrentDir: rest[5] as CommandRequest['setCurrentDir'],
-    ftpSession: rest[6] as CommandRequest['ftpSession'],
-    language: rest[7] as CommandRequest['language'],
-    umask: rest[8] as CommandRequest['umask'],
-    setUmask: rest[9] as CommandRequest['setUmask'],
-    env: rest[10] as CommandRequest['env'],
-    setEnv: rest[11] as CommandRequest['setEnv'],
-  };
-}
-
-export function executeCommand(req: CommandRequest): ReturnType<typeof executeCommandInternal>;
-export function executeCommand(
-  line: string,
-  machine: CommandContext['machine'],
-  allMachines: CommandContext['allMachines'],
-  currentMissionId: number,
-  onMsfStateChange?: (state: MsfState | null) => void,
-  currentDir?: string,
-  setCurrentDir?: (dir: string) => void,
-  ftpSession?: CommandContext['ftpSession'],
-  language?: 'en' | 'es',
-  umask?: number,
-  setUmask?: (mask: number) => void,
-  env?: Record<string, string>,
-  setEnv?: (env: Record<string, string>) => void
-): ReturnType<typeof executeCommandInternal>;
-export function executeCommand(
-  lineOrReq: string | CommandRequest,
-  ...rest: unknown[]
-): ReturnType<typeof executeCommandInternal> {
-  const req: CommandRequest = typeof lineOrReq === 'string' ? legacyArgsToRequest(lineOrReq, rest) : lineOrReq;
+export function executeCommand(req: CommandRequest): ReturnType<typeof executeCommandInternal> {
   return executeCommandInternal(req.line, buildCommandCtx(req), COMMANDS, _getMsf, req.onMsfStateChange);
 }
 
@@ -159,11 +120,7 @@ export function createIsolatedExecutor(): IsolatedExecutor {
     ['msfconsole', createMsfCommand(_getIsolated, _setIsolated)] as const,
   ]);
 
-  const _execute: typeof executeCommand = (
-    lineOrReq: string | CommandRequest,
-    ...rest: unknown[]
-  ) => {
-    const req: CommandRequest = typeof lineOrReq === 'string' ? legacyArgsToRequest(lineOrReq, rest) : lineOrReq;
+  const _execute: typeof executeCommand = (req: CommandRequest) => {
     return executeCommandInternal(req.line, buildCommandCtx(req), _isolatedCommands, _getIsolated, req.onMsfStateChange);
   };
 

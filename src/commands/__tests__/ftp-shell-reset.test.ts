@@ -11,21 +11,21 @@ describe('repro: sesion FTP se limpia al resetear workspace', () => {
     const attacker = machines.find(m => m.id.includes('attacker'))!;
     const t = machines.find(m => !m.id.includes('attacker'))!;
 
-    executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
-    executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
-    let r = executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
+    executeCommand({ line: `ftp ${t.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    executeCommand({ line: 'ftpuser', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    let r = executeCommand({ line: 'ftp_dump_2024', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
     expect('ftpSession' in r && r.ftpSession?.loggedIn).toBe(true);
 
     // reset workspace sin quit previo
     useScenarioStore.getState().resetWorkspace();
 
     // el ftp <ip> debe abrir sesión nueva (no ?Invalid command)
-    r = executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
+    r = executeCommand({ line: `ftp ${t.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
     expect(r.output).not.toContain('?Invalid command');
     expect('ftpSession' in r && r.ftpSession?.active).toBe(true);
 
-    executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
-    r = executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
+    executeCommand({ line: 'ftpuser', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    r = executeCommand({ line: 'ftp_dump_2024', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
     expect('ftpSession' in r && r.ftpSession?.loggedIn).toBe(true);
   });
 });

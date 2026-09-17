@@ -240,27 +240,27 @@ describe('Fase 7 - pipes', () => {
   it('executeCommand: nmap | grep integrado preserva metadata del escáner', () => {
     const target = makeRootTarget();
     const attacker = makeRootMachine();
-    const r = executeCommand('nmap -sV 192.168.1.10', attacker, [attacker, target], 1);
+    const r = executeCommand({ line: 'nmap -sV 192.168.1.10', machine: attacker, allMachines: [attacker, target], currentMissionId: 1, currentDir: '/' });
     expect('scanResults' in r).toBe(true);
   });
 
   it('executeCommand: cat | grep filtra el output real', () => {
     const machine = makeRootTarget();
-    const r = executeCommand('cat /etc/passwd | grep admin', machine, [machine], 1);
+    const r = executeCommand({ line: 'cat /etc/passwd | grep admin', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     expect(r.output).toBe('admin:x:1000:1000:Admin:/home/admin:/bin/bash');
   });
 
   it('executeCommand: ls | head limita líneas', () => {
     const machine = makeRootTarget();
-    const r = executeCommand('ls /etc | head -n 1', machine, [machine], 1);
+    const r = executeCommand({ line: 'ls /etc | head -n 1', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     expect(r.output.split('\n')).toHaveLength(1);
   });
 
   it('executeCommand: wc cuenta salida de un pipe', () => {
     const machine = makeRootTarget();
-    const r = executeCommand('cat /etc/passwd | wc', machine, [machine], 1);
+    const r = executeCommand({ line: 'cat /etc/passwd | wc', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     expect(r.output).toMatch(/^2 \d+ \d+/);
   });
@@ -269,7 +269,7 @@ describe('Fase 7 - pipes', () => {
 describe('Fase 7 - redirección global', () => {
   it('executeCommand: > escribe output de un comando a archivo', () => {
     const machine = makeRootTarget();
-    const r = executeCommand('ls /etc > /home/admin/salida.txt', machine, [machine], 1);
+    const r = executeCommand({ line: 'ls /etc > /home/admin/salida.txt', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     expect(machine.files.some(f => f.path === '/home/admin/salida.txt')).toBe(true);
     expect(r.filesChanged).toBeDefined();
@@ -277,8 +277,8 @@ describe('Fase 7 - redirección global', () => {
 
   it('executeCommand: >> append respeta permisos', () => {
     const machine = makeRootTarget();
-    executeCommand('echo uno > /home/admin/acc.txt', machine, [machine], 1);
-    const r = executeCommand('echo dos >> /home/admin/acc.txt', machine, [machine], 1);
+    executeCommand({ line: 'echo uno > /home/admin/acc.txt', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
+    const r = executeCommand({ line: 'echo dos >> /home/admin/acc.txt', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     const f = machine.files.find(f => f.path === '/home/admin/acc.txt');
     expect(f?.content).toContain('uno');
@@ -287,14 +287,14 @@ describe('Fase 7 - redirección global', () => {
 
   it('executeCommand: usuario sin permisos recibe Permission denied', () => {
     const machine = makeMachine();
-    const r = executeCommand('echo hola > /etc/no-write.txt', machine, [machine], 1);
+    const r = executeCommand({ line: 'echo hola > /etc/no-write.txt', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).toBe(true);
     expect(r.output).toContain('Permission denied');
   });
 
   it('executeCommand: < lee contenido como argumento de cat', () => {
     const machine = makeRootTarget();
-    const r = executeCommand('cat < /etc/passwd', machine, [machine], 1);
+    const r = executeCommand({ line: 'cat < /etc/passwd', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     expect(r.output).toContain('admin:x:1000');
   });
@@ -304,14 +304,14 @@ describe('Fase 7 - expansión integrada', () => {
   it('executeCommand: $VAR se expande en el comando', () => {
     const machine = makeRootTarget();
     const env = { USER: 'admin' };
-    const r = executeCommand('echo hola $USER', machine, [machine], 1, undefined, '/', undefined, undefined, undefined, undefined, undefined, env);
+    const r = executeCommand({ line: 'echo hola $USER', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/', env: env });
     expect(r.output).toBe('hola admin');
   });
 
   it('executeCommand: echo $USER no expande dentro de comillas simples', () => {
     const machine = makeRootTarget();
     const env = { USER: 'admin' };
-    const r = executeCommand("echo '$USER'", machine, [machine], 1, undefined, '/', undefined, undefined, undefined, undefined, undefined, env);
+    const r = executeCommand({ line: "echo '$USER'", machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/', env: env });
     expect(r.output).toContain('$USER');
   });
 });

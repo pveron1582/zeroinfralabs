@@ -183,38 +183,38 @@ describe('Fase 3: SUID, SGID, Sticky Bit', () => {
     });
 
     it('debe cambiar identidad a root al ejecutar binario SUID de root', () => {
-      const result = executeCommand('whoami', SUID_MACHINE, [SUID_MACHINE], 0, undefined, '/');
+      const result = executeCommand({ line: 'whoami', machine: SUID_MACHINE, allMachines: [SUID_MACHINE], currentMissionId: 0, currentDir: '/' });
       expect(result.output).toContain('root');
     });
 
     it('debe emitir privescAttempted=true en respuesta SUID', () => {
-      const result = executeCommand('whoami', SUID_MACHINE, [SUID_MACHINE], 0, undefined, '/');
+      const result = executeCommand({ line: 'whoami', machine: SUID_MACHINE, allMachines: [SUID_MACHINE], currentMissionId: 0, currentDir: '/' });
       expect('privescAttempted' in result).toBe(true);
       expect(result.privescAttempted).toBe(true);
     });
 
     it('debe emitir privescTool y privescCompleted en respuesta SUID', () => {
-      const result = executeCommand('whoami', SUID_MACHINE, [SUID_MACHINE], 0, undefined, '/');
+      const result = executeCommand({ line: 'whoami', machine: SUID_MACHINE, allMachines: [SUID_MACHINE], currentMissionId: 0, currentDir: '/' });
       expect(result.privescTool).toBe('whoami');
       expect(result.privescCompleted).toBe('target-01');
     });
 
     it('NO debe emitir privescCompleted si el comando SUID falla (pero sí privescAttempted)', () => {
-      const result = executeCommand('cat /noexiste', SUID_MACHINE, [SUID_MACHINE], 0, undefined, '/');
+      const result = executeCommand({ line: 'cat /noexiste', machine: SUID_MACHINE, allMachines: [SUID_MACHINE], currentMissionId: 0, currentDir: '/' });
       expect(result.isError).toBe(true);
       expect('privescAttempted' in result ? result.privescAttempted : undefined).toBe(true);
       expect('privescCompleted' in result ? result.privescCompleted : undefined).toBeUndefined();
     });
 
     it('NO debe emitir privesc para binario sin SUID', () => {
-      const normalResult = executeCommand('whoami', {
+      const normalResult = executeCommand({ line: 'whoami', machine: {
         ...SUID_MACHINE,
         files: SUID_MACHINE.files.map(f =>
           f.path === '/usr/bin/whoami'
             ? { ...f, mode: 0o755 }
             : f
         ),
-      }, [SUID_MACHINE], 0, undefined, '/');
+      }, allMachines: [SUID_MACHINE], currentMissionId: 0, currentDir: '/' });
       expect(normalResult.privescAttempted).toBeUndefined();
     });
   });
@@ -252,14 +252,14 @@ describe('Fase 3: SUID, SGID, Sticky Bit', () => {
           { path: '/etc/group', content: 'root:x:0:\nalice:x:1000:', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
         ],
       };
-      const result = executeCommand('rmdir /tmp/alice_subdir', machine, [machine], 0, undefined, '/');
+      const result = executeCommand({ line: 'rmdir /tmp/alice_subdir', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(result.isError).not.toBe(true);
       expect(result.output).not.toContain('Operation not permitted');
     });
 
     it('debe denegar a bob borrar subdirectorio de alice en /tmp', () => {
       const machine = makeStickyMachine();
-      const result = executeCommand('rmdir /tmp/alice_subdir', machine, [machine], 0, undefined, '/');
+      const result = executeCommand({ line: 'rmdir /tmp/alice_subdir', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(result.output).toContain('Operation not permitted');
     });
 
@@ -278,7 +278,7 @@ describe('Fase 3: SUID, SGID, Sticky Bit', () => {
           { path: '/etc/group', content: 'root:x:0:\nalice:x:1000:', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
         ],
       };
-      const result = executeCommand('rmdir /tmp/alice_subdir', machine, [machine], 0, undefined, '/');
+      const result = executeCommand({ line: 'rmdir /tmp/alice_subdir', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(result.isError).not.toBe(true);
       expect(result.output).not.toContain('Operation not permitted');
     });

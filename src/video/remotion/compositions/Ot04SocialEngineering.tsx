@@ -3,15 +3,13 @@
 // skimmers y clonadores de tarjetas, clonación de acceso RFID, y las
 // técnicas clásicas de ingeniería social. Cierre: merece un módulo en
 // Hacking Ético.
-// Con audio de la voz "Miguel" (4 escenas, ~121s).
-// Syncs internos alineados a los segmentos de habla medidos con
-// silencedetect (-50dB) sobre los wavs reales (2026-08-15).
+// Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
 import { staticFile } from 'remotion';
-import { sceneStartFrames, AUDIO_TIMINGS } from '../audioTimings';
+import { sceneStartFrames, audioTimings, audioBase, hasAudio } from '../audioTimings';
 import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
@@ -27,53 +25,137 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
+// ── COPY ────────────────────────────────────────────────────────────
+const COPY = {
+  es: {
+    s1: {
+      title: <span style={{ color: THEME.amber }}>SOLO EDUCATIVO</span>,
+      subtitle: 'entender cómo atacan sirve para defenderte, no para robar',
+    },
+    s2: {
+      skimmerHeading: '💳 SKIMMERS Y CLONADORES',
+      accessHeading: '🪪 TARJETAS DE ACCESO',
+      skimmerPoints: [
+        { text: 'se coloca sobre el lector real (cajero, surtidor)', at: 2 },
+        { text: 'lee la banda magnética al pasar la tarjeta', at: 7.5 },
+        { text: '+ cámara o teclado falso = número y PIN', at: 11 },
+        { text: 'clona la banda en una tarjeta en blanco', at: 14.5 },
+        { text: 'chip EMV: el clon no sirve para pagar', at: 18 },
+      ],
+      accessPoints: [
+        { text: 'RFID viejo: Mifare Classic con cifrado roto', at: 26 },
+        { text: 'clon sin tocarla (lector / Flipper / Proxmark)', at: 34 },
+        { text: 'migrar a AES y credenciales por celular', at: 39 },
+      ],
+    },
+    s3: {
+      heading: <>INGENIERÍA SOCIAL: <span style={{ color: THEME.red }}>ATACAR AL HUMANO</span></>,
+      techniques: [
+        { name: 'PHISHING', desc: 'mail falso de una entidad de confianza', at: 11 },
+        { name: 'VISHING', desc: 'la misma estafa, por teléfono', at: 15 },
+        { name: 'BAITING', desc: 'USB o descarga tentadora con malware', at: 18 },
+        { name: 'PRETEXTING', desc: 'inventar una situación falsa para sacarte datos', at: 21 },
+        { name: 'TAILGATING', desc: 'entrar detrás tuyo por la puerta segura', at: 25 },
+      ],
+      closeAt: 28,
+      closeHeading: <>ningún firewall bloquea una <span style={{ color: THEME.red }}>llamada amable</span> pidiendo tu contraseña</>,
+      closeFooter: 'lo hacen la capacitación y la verificación',
+    },
+    s4: {
+      heading: <>PARTE REAL DEL <span style={{ color: THEME.cyan }}>PENTESTING</span></>,
+      capsules: [
+        { label: 'clonar credenciales', value: 'BADGE CLONING', accent: THEME.cyan, delayAt: 3 },
+        { label: 'USB drops', value: 'USB DROPS', accent: THEME.amber, delayAt: 5 },
+        { label: 'llamadas falsas', value: 'VISHING', accent: THEME.red, delayAt: 6.5 },
+      ],
+      revealText: 'así entran los atacantes reales',
+      revealAt: 8,
+      closeAt: 17.5,
+      closeTitle: <>MERECE UN <span style={{ color: THEME.amber }}>MÓDULO ENTERO</span> EN HACKING ÉTICO</>,
+      closeSubtitle: 'hackear no es solo teclado: puertas, credenciales, cables y conversaciones',
+    },
+  },
+  en: {
+    s1: {
+      title: <span style={{ color: THEME.amber }}>EDUCATIONAL ONLY</span>,
+      subtitle: 'understanding how attacks work serves to defend yourself, not to steal',
+    },
+    s2: {
+      skimmerHeading: '💳 SKIMMERS AND CLONERS',
+      accessHeading: '🪪 ACCESS CARDS',
+      skimmerPoints: [
+        { text: 'placed over the real reader (ATM, gas pump)', at: 1.8 },
+        { text: 'reads the magnetic stripe when you swipe', at: 7.6 },
+        { text: '+ hidden camera or fake keypad = number and PIN', at: 10.6 },
+        { text: 'clones the stripe onto a blank card', at: 17.0 },
+        { text: 'the EMV chip makes clones useless for paying', at: 19.3 },
+      ],
+      accessPoints: [
+        { text: 'old RFID: Mifare Classic, broken for years', at: 29.3 },
+        { text: 'copy your badge in seconds, without touching it', at: 34.8 },
+        { text: 'migrate to AES cards and phone credentials', at: 40.6 },
+      ],
+    },
+    s3: {
+      heading: <>SOCIAL ENGINEERING: <span style={{ color: THEME.red }}>HACKING THE HUMAN</span></>,
+      techniques: [
+        { name: 'PHISHING', desc: 'a fake email impersonating a trusted entity', at: 14.3 },
+        { name: 'VISHING', desc: 'the same scam, over the phone', at: 17.9 },
+        { name: 'BAITING', desc: 'a tempting USB or download hiding malware', at: 21.1 },
+        { name: 'PRETEXTING', desc: 'a false scenario to make you hand over data', at: 25.0 },
+        { name: 'TAILGATING', desc: 'walking in behind an employee through a secure door', at: 28.9 },
+      ],
+      closeAt: 32.5,
+      closeHeading: <>no firewall blocks a <span style={{ color: THEME.red }}>friendly call</span> asking for your password</>,
+      closeFooter: "that's what training and verification are for",
+    },
+    s4: {
+      heading: <>A REAL PART OF <span style={{ color: THEME.cyan }}>PENTESTING</span></>,
+      capsules: [
+        { label: 'clone credentials', value: 'BADGE CLONING', accent: THEME.cyan, delayAt: 4.1 },
+        { label: 'USB drops', value: 'USB DROPS', accent: THEME.amber, delayAt: 5.6 },
+        { label: 'fake calls', value: 'VISHING', accent: THEME.red, delayAt: 7.0 },
+      ],
+      revealText: "that's how real attackers get in",
+      revealAt: 10.1,
+      closeAt: 19.0,
+      closeTitle: <>DESERVES <span style={{ color: THEME.amber }}>ITS OWN MODULE</span> IN ETHICAL HACKING</>,
+      closeSubtitle: "hacking isn't just keyboards: doors, badges, cables, and conversations",
+    },
+  },
+};
+
+const VID = 'ot-04-social-engineering';
+
 // ── Escena 1: disclaimer educativo ──────────────────────────────────
-const Scene1: React.FC = () => {
+const Scene1: React.FC<{ c: typeof COPY.es.s1 }> = ({ c }) => {
   return (
     <TitleScene
-      title={<span style={{ color: THEME.amber }}>SOLO EDUCATIVO</span>}
-      subtitle="entender cómo atacan sirve para defenderte, no para robar"
+      title={c.title}
+      subtitle={c.subtitle}
       fontSize={44}
     />
   );
 };
 
 // ── Escena 2: skimmers + clonadores de acceso ───────────────────────
-// Habla (voz Miguel): 'se coloca sobre el lector real' ~2 · 'lee la
-// banda' ~7.5 · 'cámara o teclado falso: PIN' ~11 · 'clona la banda'
-// ~14.5 · 'chip EMV' ~18 · 'Mifare Classic con cifrado roto' ~26 ·
-// 'clon sin tocarla' ~34 · 'migrar a AES y por celular' ~39
-const SKIMMER_POINTS = [
-  { text: 'se coloca sobre el lector real (cajero, surtidor)', at: 2 },
-  { text: 'lee la banda magnética al pasar la tarjeta', at: 7.5 },
-  { text: '+ cámara o teclado falso = número y PIN', at: 11 },
-  { text: 'clona la banda en una tarjeta en blanco', at: 14.5 },
-  { text: 'chip EMV: el clon no sirve para pagar', at: 18 },
-];
-
-const ACCESS_POINTS = [
-  { text: 'RFID viejo: Mifare Classic con cifrado roto', at: 26 },
-  { text: 'clon sin tocarla (lector / Flipper / Proxmark)', at: 34 },
-  { text: 'migrar a AES y credenciales por celular', at: 39 },
-];
-
-const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
+const Scene2: React.FC<{ fps: number; c: typeof COPY.es.s2 }> = ({ fps, c }) => {
   return (
     <AbsoluteFill style={CENTERED}>
       <div style={{ display: 'flex', gap: 24, width: 1120 }}>
         <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.red}60`, borderRadius: 14, padding: '24px 22px', textAlign: 'left' }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: THEME.red, fontFamily: MONO, marginBottom: 12 }}>
-            💳 SKIMMERS Y CLONADORES
+            {c.skimmerHeading}
           </div>
-          {SKIMMER_POINTS.map(p => (
+          {c.skimmerPoints.map(p => (
             <RevealLine key={p.text} at={p.at} fps={fps} mark="✗" color={THEME.red}>{p.text}</RevealLine>
           ))}
         </div>
         <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.cyan}60`, borderRadius: 14, padding: '24px 22px', textAlign: 'left' }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 12 }}>
-            🪪 TARJETAS DE ACCESO
+            {c.accessHeading}
           </div>
-          {ACCESS_POINTS.map(p => (
+          {c.accessPoints.map(p => (
             <RevealLine key={p.text} at={p.at} fps={fps} mark="✗" color={THEME.cyan}>{p.text}</RevealLine>
           ))}
         </div>
@@ -83,27 +165,17 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 3: las técnicas de ingeniería social ─────────────────────
-// Habla (voz Miguel): 'phishing' ~11 · 'vishing' ~15 · 'baiting' ~18 ·
-// 'pretexting' ~21 · 'tailgating' ~25 · 'ningún firewall bloquea' ~28
-const TECHNIQUES = [
-  { name: 'PHISHING', desc: 'mail falso de una entidad de confianza', at: 11 },
-  { name: 'VISHING', desc: 'la misma estafa, por teléfono', at: 15 },
-  { name: 'BAITING', desc: 'USB o descarga tentadora con malware', at: 18 },
-  { name: 'PRETEXTING', desc: 'inventar una situación falsa para sacarte datos', at: 21 },
-  { name: 'TAILGATING', desc: 'entrar detrás tuyo por la puerta segura', at: 25 },
-];
-
-const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(28 * fps);
+const Scene3: React.FC<{ fps: number; c: typeof COPY.es.s3 }> = ({ fps, c }) => {
+  const closeAt = Math.round(c.closeAt * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 28 }}>
-            INGENIERÍA SOCIAL: <span style={{ color: THEME.red }}>ATACAR AL HUMANO</span>
+            {c.heading}
           </div>
           <div style={{ width: 900, background: THEME.panel, border: `1px solid ${THEME.red}60`, borderRadius: 14, padding: '24px 28px', textAlign: 'left' }}>
-            {TECHNIQUES.map(t => (
+            {c.techniques.map(t => (
               <RevealLine key={t.name} at={t.at} fps={fps} mark="⚠" color={THEME.red}>
                 <span style={{ fontWeight: 700, color: THEME.text }}>{t.name}</span>
                 <span style={{ color: THEME.muted }}> — {t.desc}</span>
@@ -115,10 +187,10 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
       <Sequence from={closeAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO }}>
-            ningún firewall bloquea una <span style={{ color: THEME.red }}>llamada amable</span> pidiendo tu contraseña
+            {c.closeHeading}
           </div>
           <div style={{ marginTop: 18, fontSize: 19, color: THEME.muted, fontFamily: MONO }}>
-            lo hacen la capacitación y la verificación
+            {c.closeFooter}
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -127,44 +199,42 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 4: cierre — por qué un pentester necesita esto ───────────
-// Habla (voz Miguel): 'clonación / USB drops / vishing' ~3-6.5 ·
-// 'así entran los atacantes reales' ~8 · 'merece un módulo entero' ~17.5
-const Scene4: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(17.5 * fps);
+const Scene4: React.FC<{ fps: number; c: typeof COPY.es.s4 }> = ({ fps, c }) => {
+  const closeAt = Math.round(c.closeAt * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }}>
-            PARTE REAL DEL <span style={{ color: THEME.cyan }}>PENTESTING</span>
+            {c.heading}
           </div>
           <div style={{ display: 'flex', gap: 18 }}>
-            <KeyCapsule label="clonar credenciales" value="BADGE CLONING" accent={THEME.cyan} delay={Math.round(3 * fps)} size={18} />
-            <KeyCapsule label="USB drops" value="USB DROPS" accent={THEME.amber} delay={Math.round(5 * fps)} size={18} />
-            <KeyCapsule label="llamadas falsas" value="VISHING" accent={THEME.red} delay={Math.round(6.5 * fps)} size={18} />
+            {c.capsules.map(cap => (
+              <KeyCapsule key={cap.value} label={cap.label} value={cap.value} accent={cap.accent} delay={Math.round(cap.delayAt * fps)} size={18} />
+            ))}
           </div>
-          <RevealLine at={8} fps={fps} mark="▸" color={THEME.cyan}>así entran los atacantes reales</RevealLine>
+          <RevealLine at={c.revealAt} fps={fps} mark="▸" color={THEME.cyan}>{c.revealText}</RevealLine>
         </AbsoluteFill>
       </Sequence>
       <Sequence from={closeAt}>
-        <TitleScene
-          title={<>MERECE UN <span style={{ color: THEME.amber }}>MÓDULO ENTERO</span> EN HACKING ÉTICO</>}
-          subtitle="hackear no es solo teclado: puertas, credenciales, cables y conversaciones"
-        />
+        <TitleScene title={c.closeTitle} subtitle={c.closeSubtitle} />
       </Sequence>
     </AbsoluteFill>
   );
 };
 
-export const Ot04SocialEngineering: React.FC = () => {
+// ── Componente principal ────────────────────────────────────────────
+export const Ot04SocialEngineering: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) => {
   const { fps } = useVideoConfig();
+  const c = COPY[lang];
 
-  const [s1, s2, s3, s4] = AUDIO_TIMINGS['ot-04-social-engineering'];
-  const starts = sceneStartFrames('ot-04-social-engineering', fps);
+  const [s1, s2, s3, s4] = audioTimings(VID, lang);
+  const starts = sceneStartFrames(VID, fps, lang);
   const dur1 = Math.ceil(s1 * fps);
   const dur2 = Math.ceil(s2 * fps);
   const dur3 = Math.ceil(s3 * fps);
   const dur4 = Math.ceil(s4 * fps) + fps;
+  const base = audioBase(lang);
 
   return (
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
@@ -172,26 +242,26 @@ export const Ot04SocialEngineering: React.FC = () => {
 
       {/* Scene 1: disclaimer */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene1.wav')} />
-        <Scene1 />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene1.wav`)} />}
+        <Scene1 c={c.s1} />
       </Sequence>
 
       {/* Scene 2: skimmers + clonadores */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene2.wav')} />
-        <Scene2 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene2.wav`)} />}
+        <Scene2 fps={fps} c={c.s2} />
       </Sequence>
 
       {/* Scene 3: técnicas de ingeniería social */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene3.wav')} />
-        <Scene3 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene3.wav`)} />}
+        <Scene3 fps={fps} c={c.s3} />
       </Sequence>
 
       {/* Scene 4: cierre */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        <Audio src={staticFile('videos/audio-es/ot-04-social-engineering/ot-04-scene4.wav')} />
-        <Scene4 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene4.wav`)} />}
+        <Scene4 fps={fps} c={c.s4} />
       </Sequence>
     </AbsoluteFill>
   );

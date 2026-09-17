@@ -1,12 +1,6 @@
 // ── video/remotion/compositions/Li04CreateEdit.tsx ─────────────────
-// Video: crear y editar archivos — mkdir, touch, nano. Remodelado con
-// los audios nuevos (voz "Miguel"): cada paso del pipeline aparece
-// cuando la narración lo explica y la escena de permisos resalta la
-// advertencia de /etc (solo root). Timings por silencedetect.
-//
-// Scene 1 (14.7s): intro — no ensucies, 3 comandos en orden
-// Scene 2 (28.7s): mkdir → touch → nano, paso a paso
-// Scene 3 (26.3s): dónde podés crear — /tmp, home, /etc (solo root)
+// Video: crear y editar archivos — mkdir, touch, nano. Versión unificada
+// ES/EN con `lang` prop. Timings por silencedetect.
 
 import React from 'react';
 import {
@@ -19,7 +13,7 @@ import {
 } from 'remotion';
 import { Audio } from '@remotion/media';
 import { staticFile } from 'remotion';
-import { sceneStartFrames, AUDIO_TIMINGS } from '../audioTimings';
+import { sceneStartFrames, audioTimings, audioBase, hasAudio } from '../audioTimings';
 import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
@@ -33,19 +27,94 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-// ── Scene 1: intro — 3 comandos en orden ────────────────────────────
-// Los `at` son RELATIVOS a la secuencia anidada (que arranca en titleEnd,
-// 3.3s). Timings remeasured con silencedetect (-50dB, d=0.2) sobre los
-// wavs reales (voz Miguel): "primero... mkdir" arranca en 7.93 abs → 4.6
-// relativo, "después... touch" en 10.13 abs → 6.8, "y por último... nano"
-// en 12.04 abs → 8.7, "Vamos a verlos" en 14.02 abs.
-const ORDER_STEPS = [
-  { n: '1', cmd: 'mkdir', what: 'creás la carpeta', c: THEME.cyan, at: 4.6 },
-  { n: '2', cmd: 'touch', what: 'creás el archivo', c: THEME.amber, at: 6.8 },
-  { n: '3', cmd: 'nano', what: 'lo editás', c: THEME.red, at: 8.7 },
-];
+// ── COPY ────────────────────────────────────────────────────────────
+const COPY = {
+  es: {
+    s1: {
+      title: 'CREÁ TU ESPACIO DE TRABAJO',
+      subtitle: 'primera regla: no ensucies — trabajá en una carpeta tuya',
+      outro: 'un orden muy simple — vamos a verlos',
+      orderSteps: [
+        { n: '1', cmd: 'mkdir', what: 'creás la carpeta', c: THEME.cyan, at: 4.6 },
+        { n: '2', cmd: 'touch', what: 'creás el archivo', c: THEME.amber, at: 6.8 },
+        { n: '3', cmd: 'nano', what: 'lo editás', c: THEME.red, at: 8.7 },
+      ],
+    },
+    s2: {
+      heading: 'CARPETA → ARCHIVO → EDITOR',
+      ctrlHint: <>en nano: <span style={{ color: THEME.text, fontWeight: 700 }}>Ctrl+O</span> guardar ·{' '}<span style={{ color: THEME.text, fontWeight: 700 }}>Ctrl+X</span> salir</>,
+      footer: 'carpeta, archivo, editor — así dejás notas y scripts en cualquier sistema',
+      pipeline: [
+        { n: '1', cmd: 'mkdir /tmp/trabajo', what: 'make directory — crea la carpeta', c: THEME.cyan, at: 1.0 },
+        { n: '2', cmd: 'touch /tmp/trabajo/notas.txt', what: 'crea un archivo vacío', c: THEME.amber, at: 4.0 },
+        { n: '3', cmd: 'nano /tmp/trabajo/notas.txt', what: 'editor de texto en la terminal', c: THEME.red, at: 7.0 },
+      ],
+    },
+    s3: {
+      intro: 'NO TODAS LAS CARPETAS TE DEJAN ESCRIBIR',
+      introSub: 'hay que mirar los permisos',
+      warning: 'en /etc con un usuario normal → el sistema lo rechaza (Permission denied)',
+      attacker: <>por eso los atacantes trabajan desde <span style={{ color: THEME.text, fontWeight: 700 }}>/tmp</span>: siempre pueden escribir sin pedir permiso</>,
+      locations: [
+        { path: '/tmp', allowed: true, label: 'siempre — carpeta temporal', c: THEME.cyan, at: 3.4 },
+        { path: '/home/tu_usuario', allowed: true, label: 'tu home', c: THEME.green, at: 8.0 },
+        { path: '/etc', allowed: false, label: 'solo root — config del sistema', c: THEME.red, at: 9.5 },
+      ],
+    },
+  },
+  en: {
+    s1: {
+      title: 'BUILD YOUR WORKSPACE',
+      subtitle: "first rule: don't make a mess — work in a folder of your own",
+      outro: "a very simple order — let's see them",
+      orderSteps: [
+        { n: '1', cmd: 'mkdir', what: 'you create the folder', c: THEME.cyan, at: 7.2 },
+        { n: '2', cmd: 'touch', what: 'you create the file', c: THEME.amber, at: 9.7 },
+        { n: '3', cmd: 'nano', what: 'you edit it', c: THEME.red, at: 11.6 },
+      ],
+    },
+    s2: {
+      heading: 'FOLDER → FILE → EDITOR',
+      ctrlHint: <>in nano: <span style={{ color: THEME.text, fontWeight: 700 }}>Ctrl+O</span> save ·{' '}<span style={{ color: THEME.text, fontWeight: 700 }}>Ctrl+X</span> exit</>,
+      footer: 'folder, file, editor — leave notes and scripts on any system',
+      pipeline: [
+        { n: '1', cmd: 'mkdir /tmp/trabajo', what: 'make directory — creates the folder', c: THEME.cyan, at: 0.2 },
+        { n: '2', cmd: 'touch /tmp/trabajo/notas.txt', what: 'creates an empty file', c: THEME.amber, at: 12.6 },
+        { n: '3', cmd: 'nano /tmp/trabajo/notas.txt', what: 'text editor inside the terminal', c: THEME.red, at: 18.0 },
+      ],
+    },
+    s3: {
+      intro: 'NOT EVERY FOLDER LETS YOU WRITE',
+      introSub: 'you have to look at the permissions',
+      warning: 'in /etc as a regular user → the system rejects you (Permission denied)',
+      attacker: <>that's why attackers work from <span style={{ color: THEME.text, fontWeight: 700 }}>/tmp</span>: the one place they can always write without asking permission</>,
+      locations: [
+        { path: '/tmp', allowed: true, label: 'always — the temporary folder', c: THEME.cyan, at: 4.4 },
+        { path: '/home/tu_usuario', allowed: true, label: 'your home', c: THEME.green, at: 10.3 },
+        { path: '/etc', allowed: false, label: 'root only — system config', c: THEME.red, at: 13.1 },
+      ],
+    },
+  },
+};
 
-const OrderChip: React.FC<{ step: typeof ORDER_STEPS[0]; fps: number }> = ({ step, fps }) => {
+// ── BEATS (seconds, multiplied by fps at use site) ──────────────────
+const BEATS = {
+  es: {
+    s1: { titleEnd: 3.3, outroAt: 10.7 },
+    s2: { ctrlAt: 11.5, closeAt: 15.2 },
+    s3: { introAt: 0.3, warningAt: 15.5, attackerAt: 17.0 },
+  },
+  en: {
+    s1: { titleEnd: 3.3, outroAt: 12.3 },
+    s2: { ctrlAt: 23.2, closeAt: 29.0 },
+    s3: { introAt: 0.3, warningAt: 19.1, attackerAt: 22.9 },
+  },
+};
+
+const VID = 'li-04-create-edit';
+
+// ── Scene 1: intro — 3 comandos en orden ────────────────────────────
+const OrderChip: React.FC<{ step: typeof COPY.es.s1.orderSteps[0]; fps: number }> = ({ step, fps }) => {
   const frame = useCurrentFrame();
   const t = frame - Math.round(step.at * fps);
   const enter = spring({ frame: t, fps, config: { damping: 200 } });
@@ -64,54 +133,46 @@ const OrderChip: React.FC<{ step: typeof ORDER_STEPS[0]; fps: number }> = ({ ste
   );
 };
 
-const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const titleEnd = Math.round(3.3 * fps);
-  const outroAt = Math.round(10.7 * fps);
-  return (
-    <AbsoluteFill>
-      <Sequence from={0} durationInFrames={titleEnd}>
-        <TitleScene
-          title="CREÁ TU ESPACIO DE TRABAJO"
-          subtitle="primera regla: no ensucies — trabajá en una carpeta tuya"
-          fontSize={40}
-        />
-      </Sequence>
-      <Sequence from={titleEnd}>
-        <AbsoluteFill style={CENTERED}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {ORDER_STEPS.map((s) => (
-              <OrderChip key={s.n} step={s} fps={fps} />
-            ))}
-          </div>
-          <OutroText at={outroAt} />
-        </AbsoluteFill>
-      </Sequence>
-    </AbsoluteFill>
-  );
-};
-
-const OutroText: React.FC<{ at: number }> = ({ at }) => {
+const OutroText: React.FC<{ at: number; text: string }> = ({ at, text }) => {
   const frame = useCurrentFrame();
   return (
     <div style={{
       marginTop: 34, fontSize: 21, color: THEME.muted, fontFamily: MONO,
       opacity: interpolate(frame - at, [0, 12], [0, 1], { extrapolateRight: 'clamp' }),
     }}>
-      un orden muy simple — vamos a verlos
+      {text}
     </div>
   );
 };
 
-// ── Scene 2: mkdir → touch → nano, paso a paso ──────────────────────
-// Silencias de la narración: mkdir ~0.6-3.9 · touch ~3.9-6.7 ·
-// nano ~6.7-14.8 · ctrl+o/ctrl+x ~14.8-23.6 · cierre ~23.6.
-const PIPELINE = [
-  { n: '1', cmd: 'mkdir /tmp/trabajo', what: 'make directory — crea la carpeta', c: THEME.cyan, at: 1.0 },
-  { n: '2', cmd: 'touch /tmp/trabajo/notas.txt', what: 'crea un archivo vacío', c: THEME.amber, at: 4.0 },
-  { n: '3', cmd: 'nano /tmp/trabajo/notas.txt', what: 'editor de texto en la terminal', c: THEME.red, at: 7.0 },
-];
+const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
+  const titleEnd = Math.round(b.titleEnd * fps);
+  const outroAt = Math.round(b.outroAt * fps);
+  return (
+    <AbsoluteFill>
+      <Sequence from={0} durationInFrames={titleEnd}>
+        <TitleScene
+          title={c.title}
+          subtitle={c.subtitle}
+          fontSize={40}
+        />
+      </Sequence>
+      <Sequence from={titleEnd}>
+        <AbsoluteFill style={CENTERED}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {c.orderSteps.map((s) => (
+              <OrderChip key={s.n} step={s} fps={fps} />
+            ))}
+          </div>
+          <OutroText at={outroAt} text={c.outro} />
+        </AbsoluteFill>
+      </Sequence>
+    </AbsoluteFill>
+  );
+};
 
-const StepCard: React.FC<{ step: typeof PIPELINE[0]; fps: number }> = ({ step, fps }) => {
+// ── Scene 2: mkdir → touch → nano, paso a paso ──────────────────────
+const StepCard: React.FC<{ step: typeof COPY.es.s2.pipeline[0]; fps: number }> = ({ step, fps }) => {
   const frame = useCurrentFrame();
   const t = frame - Math.round(step.at * fps);
   const enter = spring({ frame: t, fps, config: { damping: 200 } });
@@ -130,33 +191,29 @@ const StepCard: React.FC<{ step: typeof PIPELINE[0]; fps: number }> = ({ step, f
   );
 };
 
-const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
+const Scene2: React.FC<{ fps: number; c: typeof COPY.es.s2; b: typeof BEATS.es.s2 }> = ({ fps, c, b }) => {
   const frame = useCurrentFrame();
-  // Remeasured con silencedetect: la explicación de guardar/salir (Ctrl+O,
-  // Ctrl+X) está dentro del segmento [7.1s-14.8s]; el cierre "Carpeta,
-  // archivo, editor" arranca tras el silencio fuerte de 14.81s (→15.2).
-  const ctrlAt = Math.round(11.5 * fps);
-  const closeAt = Math.round(15.2 * fps);
+  const ctrlAt = Math.round(b.ctrlAt * fps);
+  const closeAt = Math.round(b.closeAt * fps);
 
   return (
     <AbsoluteFill>
       <div style={CENTERED}>
         <div style={{ fontSize: 28, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 36 }}>
-          CARPETA → ARCHIVO → EDITOR
+          {c.heading}
         </div>
         <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {PIPELINE.map((s) => (
+          {c.pipeline.map((s) => (
             <StepCard key={s.n} step={s} fps={fps} />
           ))}
         </div>
 
         <div style={{ marginTop: 30, fontSize: 20, color: THEME.cyan, fontFamily: MONO, opacity: interpolate(frame - ctrlAt, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-          en nano: <span style={{ color: THEME.text, fontWeight: 700 }}>Ctrl+O</span> guardar ·{' '}
-          <span style={{ color: THEME.text, fontWeight: 700 }}>Ctrl+X</span> salir
+          {c.ctrlHint}
         </div>
 
         <div style={{ marginTop: 26, fontSize: 19, color: THEME.muted, fontFamily: MONO, opacity: interpolate(frame - closeAt, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-          carpeta, archivo, editor — así dejás notas y scripts en cualquier sistema
+          {c.footer}
         </div>
       </div>
     </AbsoluteFill>
@@ -164,17 +221,7 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Scene 3: dónde podés crear ──────────────────────────────────────
-// Timings remeasured con silencedetect (-50dB): "En /tmp" arranca en 3.79
-// (chip at 3.4, justo antes), "tu home" en 8.27 (at 8.0), "Pero en /etc" en
-// 9.74 (at 9.5), "el sistema te lo va a rechazar" cierra el bloque /etc
-// (~15.5-20.4), "Por eso los atacantes" arranca ~17 tras terminar /etc.
-const LOCATIONS = [
-  { path: '/tmp', allowed: true, label: 'siempre — carpeta temporal', c: THEME.cyan, at: 3.4 },
-  { path: '/home/tu_usuario', allowed: true, label: 'tu home', c: THEME.green, at: 8.0 },
-  { path: '/etc', allowed: false, label: 'solo root — config del sistema', c: THEME.red, at: 9.5 },
-];
-
-const LocationChip: React.FC<{ loc: typeof LOCATIONS[0]; fps: number }> = ({ loc, fps }) => {
+const LocationChip: React.FC<{ loc: typeof COPY.es.s3.locations[0]; fps: number }> = ({ loc, fps }) => {
   const frame = useCurrentFrame();
   const t = frame - Math.round(loc.at * fps);
   const enter = spring({ frame: t, fps, config: { damping: 200 } });
@@ -186,8 +233,6 @@ const LocationChip: React.FC<{ loc: typeof LOCATIONS[0]; fps: number }> = ({ loc
       padding: '24px 22px', minWidth: 210, textAlign: 'center', fontFamily: MONO,
     }}>
       <div style={{ fontSize: 22, color: loc.c, fontWeight: 700 }}>{loc.path}</div>
-      {/* El color es explícito: sin él el glifo hereda el negro del fondo
-          y queda invisible sobre THEME.panel (oscuro). */}
       <div style={{ fontSize: 34, margin: '10px 0', fontWeight: 800, color: loc.allowed ? THEME.green : THEME.red }}>
         {loc.allowed ? '✓' : '✗'}
       </div>
@@ -196,46 +241,50 @@ const LocationChip: React.FC<{ loc: typeof LOCATIONS[0]; fps: number }> = ({ loc
   );
 };
 
-const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
+const Scene3: React.FC<{ fps: number; c: typeof COPY.es.s3; b: typeof BEATS.es.s3 }> = ({ fps, c, b }) => {
   const frame = useCurrentFrame();
-  const introAt = Math.round(0.3 * fps);
-  const warningAt = Math.round(15.5 * fps);
-  const attackerAt = Math.round(17.0 * fps);
+  const introAt = Math.round(b.introAt * fps);
+  const warningAt = Math.round(b.warningAt * fps);
+  const attackerAt = Math.round(b.attackerAt * fps);
 
   return (
     <AbsoluteFill>
       <div style={CENTERED}>
         <div style={{ fontSize: 28, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 16, opacity: interpolate(frame - introAt, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-          NO TODAS LAS CARPETAS TE DEJAN ESCRIBIR
+          {c.intro}
         </div>
         <div style={{ fontSize: 19, color: THEME.muted, fontFamily: MONO, marginBottom: 32, opacity: interpolate(frame - introAt, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-          hay que mirar los permisos
+          {c.introSub}
         </div>
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {LOCATIONS.map((l) => (
+          {c.locations.map((l) => (
             <LocationChip key={l.path} loc={l} fps={fps} />
           ))}
         </div>
 
         <div style={{ marginTop: 30, fontSize: 19, color: THEME.red, fontFamily: MONO, opacity: interpolate(frame - warningAt, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-          en /etc con un usuario normal → el sistema lo rechaza (Permission denied)
+          {c.warning}
         </div>
         <div style={{ marginTop: 24, fontSize: 20, color: THEME.cyan, fontFamily: MONO, opacity: interpolate(frame - attackerAt, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) }}>
-          por eso los atacantes trabajan desde <span style={{ color: THEME.text, fontWeight: 700 }}>/tmp</span>: siempre pueden escribir sin pedir permiso
+          {c.attacker}
         </div>
       </div>
     </AbsoluteFill>
   );
 };
 
-export const Li04CreateEdit: React.FC = () => {
+// ── Componente principal ────────────────────────────────────────────
+export const Li04CreateEdit: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) => {
   const { fps } = useVideoConfig();
+  const c = COPY[lang];
+  const b = BEATS[lang];
 
-  const [s1, s2, s3] = AUDIO_TIMINGS['li-04-create-edit'];
-  const starts = sceneStartFrames('li-04-create-edit', fps);
+  const [s1, s2, s3] = audioTimings(VID, lang);
+  const starts = sceneStartFrames(VID, fps, lang);
   const dur1 = Math.ceil(s1 * fps);
   const dur2 = Math.ceil(s2 * fps);
   const dur3 = Math.ceil(s3 * fps) + fps;
+  const base = audioBase(lang);
 
   return (
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
@@ -243,20 +292,20 @@ export const Li04CreateEdit: React.FC = () => {
 
       {/* Scene 1: intro */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio-es/li-04-create-edit/li-04-scene1.wav')} />
-        <Scene1 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-04-scene1.wav`)} />}
+        <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       {/* Scene 2: pipeline */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio-es/li-04-create-edit/li-04-scene2.wav')} />
-        <Scene2 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-04-scene2.wav`)} />}
+        <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       {/* Scene 3: dónde podés crear */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio-es/li-04-create-edit/li-04-scene3.wav')} />
-        <Scene3 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-04-scene3.wav`)} />}
+        <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>
   );

@@ -89,14 +89,7 @@ describe('Happy Path: Scenario 06 - SQL Injection & Database Exfiltration', () =
   });
 
   it('Paso 4: comando del hint ejecutado por el parser real (con comillas) completa el exploit', () => {
-    const result = executeCommand(
-      `curl -X POST http://${target.machine_info.ip}/login -d "username=' OR '1'='1&password=x"`,
-      attacker,
-      machines,
-      1,
-      undefined,
-      '/root'
-    );
+    const result = executeCommand({ line: `curl -X POST http://${target.machine_info.ip}/login -d "username=' OR '1'='1&password=x"`, machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     expectSuccess(result);
     expect(result.output).toContain('Admin Dashboard');
     expect(validateMission(result, scenario_06.missions[3])).toBe(true);
@@ -104,14 +97,7 @@ describe('Happy Path: Scenario 06 - SQL Injection & Database Exfiltration', () =
   });
 
   it('Paso 5: comando UNION del hint ejecutado por el parser real descubre credenciales', () => {
-    const result = executeCommand(
-      `curl -X POST http://${target.machine_info.ip}/login -d "username=' UNION SELECT table_name FROM information_schema.tables--&password=x"`,
-      attacker,
-      machines,
-      1,
-      undefined,
-      '/root'
-    );
+    const result = executeCommand({ line: `curl -X POST http://${target.machine_info.ip}/login -d "username=' UNION SELECT table_name FROM information_schema.tables--&password=x"`, machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     expectSuccess(result);
     expect(result.output).toContain('Database Enumeration');
     expect(result.output).toContain('database_dump.sql');

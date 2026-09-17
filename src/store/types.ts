@@ -5,6 +5,9 @@ import type { Machine, Scenario, Mission, FileEntry, BlockingCommand, FtpSession
 import type { EnumerationSnapshot } from '../utils/networkAlert';
 import type { IdentitySlice } from './slices/identitySlice';
 import type { AcademySlice } from './slices/academySlice';
+import type { UISlice } from './slices/uiSlice';
+import type { TerminalSlice } from './slices/terminalSlice';
+import type { ScenarioSlice } from './slices/scenarioSlice';
 
 export interface Notification {
   text: string;
@@ -116,4 +119,8 @@ export interface ScenarioState extends IdentitySlice, AcademySlice {
   setSshSession: (session: SshSessionState | null) => void;
   markGlobalResetDone: (scenarioId: string) => void;
   reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
+
+  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay'>;
+  resetTerminalState: () => Pick<TerminalSlice, 'listeningPort' | 'blockingCommand' | 'msfState' | 'ftpSession' | 'sshSession' | 'globalResetDoneForScenario'>;
+  resetScenarioWorkspaceState: () => Pick<ScenarioSlice, '_prevMachinesSnapshot'>;
 }

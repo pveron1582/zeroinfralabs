@@ -31,7 +31,7 @@ beforeEach(() => {
 
 describe('nano existingSnapshot', () => {
   it('debe emitir existingSnapshot con owner/group/mode del archivo al abrir existente', () => {
-    const r = executeCommand('nano /home/kali/report.txt', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'nano /home/kali/report.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     const nf = (r as any).nanoFile;
     expect(nf).toBeDefined();
@@ -41,14 +41,14 @@ describe('nano existingSnapshot', () => {
   });
 
   it('NO debe emitir existingSnapshot al abrir buffer nuevo', () => {
-    const r = executeCommand('nano /home/kali/new.txt', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'nano /home/kali/new.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     const nf = (r as any).nanoFile;
     expect(nf.existingSnapshot).toBeUndefined();
   });
 
   it('existingSnapshot debe respetar el modo 0600 (no normalizar)', () => {
-    const r = executeCommand('nano /home/kali/report.txt', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'nano /home/kali/report.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     const snap = (r as any).nanoFile.existingSnapshot;
     expect(snap.mode).toBe(0o600);
   });
@@ -59,7 +59,7 @@ describe('nano existingSnapshot', () => {
       content: 'x',
       type: 'text',
     });
-    const r = executeCommand('nano /home/kali/noowner.txt', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'nano /home/kali/noowner.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     const snap = (r as any).nanoFile.existingSnapshot;
     expect(snap.owner).toBe('root');
     expect(snap.group).toBe('root');
@@ -77,12 +77,12 @@ describe('nano readOnly flag', () => {
       group: 'kali',
       mode: 0o640,
     });
-    const r = executeCommand('nano /srv/shared.txt', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'nano /srv/shared.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect((r as any).nanoFile.readOnly).toBe(true);
   });
 
   it('readOnly=false (o undefined) cuando user puede escribir el archivo', () => {
-    const r = executeCommand('nano /home/kali/report.txt', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'nano /home/kali/report.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect((r as any).nanoFile.readOnly).toBeFalsy();
   });
 });

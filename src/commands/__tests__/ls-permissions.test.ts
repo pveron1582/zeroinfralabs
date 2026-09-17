@@ -35,32 +35,32 @@ beforeEach(() => {
 
 describe('ls permisos sobre el directorio target', () => {
   it('bob NO puede listar /root (0700)', () => {
-    const r = executeCommand('ls /root', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'ls /root', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).toBe(true);
     expect(r.output).toContain('Permission denied');
   });
 
   it('bob PUEDE listar /home/bob (755, owner=bob)', () => {
-    const r = executeCommand('ls /home/bob', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'ls /home/bob', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).toBeUndefined();
     expect(r.output).toContain('note.txt');
   });
 
   it('bob PUEDE listar /tmp (1777, world-writable)', () => {
-    const r = executeCommand('ls /tmp', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'ls /tmp', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).toBeUndefined();
     expect(r.output).toContain('world.txt');
   });
 
   it('bob NO puede listar /root con -l', () => {
-    const r = executeCommand('ls -l /root', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'ls -l /root', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).toBe(true);
     expect(r.output).toContain('Permission denied');
   });
 
   it('root puede listar /root sin restricción', () => {
     machine.su_user = 'root';
-    const r = executeCommand('ls /root', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'ls /root', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).toBeUndefined();
     expect(r.output).toContain('secret.txt');
   });
@@ -68,13 +68,13 @@ describe('ls permisos sobre el directorio target', () => {
 
 describe('ls formato corto filtra entries sin permiso de lectura', () => {
   it('bob lista /home/bob y ve sus propios archivos', () => {
-    const r = executeCommand('ls /home/bob', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'ls /home/bob', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.output).toContain('note.txt');
   });
 
   it('directorio listado se devuelve aunque esté vacío (permiso ok)', () => {
     machine.files.push({ path: '/empty/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 });
-    const r = executeCommand('ls /empty', machine, [machine], 0, undefined, '/');
+    const r = executeCommand({ line: 'ls /empty', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
     expect(r.isError).toBeUndefined();
   });
 });

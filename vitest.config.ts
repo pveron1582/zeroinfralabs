@@ -17,7 +17,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       // Nota P0-D (docs/mejoras-deep.md §2.5): los thresholds viven al filo de lo medido.
-      // Piso real 2026-09: 81.91 stmts / 70.28 branch / 78.65 funcs / 84.20 lines.
+      // Piso real medido con pnpm test:run: 72.18 branches / 81.91 stmts / 78.65 funcs / 84.20 lines.
       thresholds: {
         statements: 80,
         branches: 72,

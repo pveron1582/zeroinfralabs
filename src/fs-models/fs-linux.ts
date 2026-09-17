@@ -15,6 +15,7 @@ export type { ExtraLinuxUser, LinuxFileSystemConfig };
 // ESTRUCTURA DE DIRECTORIOS RAÍZ (directorios vacíos para ls)
 // ═══════════════════════════════════════════════════════════════
 const ROOT_DIRS: FileEntry[] = [
+  { path: '/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
   { path: '/bin/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
   { path: '/boot/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
   { path: '/dev/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },

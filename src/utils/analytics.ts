@@ -24,6 +24,30 @@ const WEBHOOK_URL = import.meta.env.VITE_ANALYTICS_WEBHOOK || '';
 const queue: TrackEventData[] = [];
 let flushing = false;
 
+// Throttle: max events per time window + dedup by key
+const MAX_EVENTS_PER_WINDOW = 20;
+const WINDOW_MS = 60_000; // 1 minute
+const eventWindow: { timestamp: number; key: string }[] = [];
+
+function makeDedupeKey(data: TrackEventData): string {
+  return `${data.eventType}:${data.scenarioId ?? ''}:${JSON.stringify(data.details ?? {})}`;
+}
+
+function isThrottled(data: TrackEventData): boolean {
+  const now = Date.now();
+  // Purge entries outside the window
+  while (eventWindow.length > 0 && eventWindow[0].timestamp < now - WINDOW_MS) {
+    eventWindow.shift();
+  }
+  const key = makeDedupeKey(data);
+  // Dedup: same key within window
+  if (eventWindow.some(e => e.key === key)) return true;
+  // Rate limit
+  if (eventWindow.length >= MAX_EVENTS_PER_WINDOW) return true;
+  eventWindow.push({ timestamp: now, key });
+  return false;
+}
+
 // Session tracking
 const sessionStart = Date.now();
 let labStart = 0;
@@ -76,6 +100,7 @@ export function getSessionDuration(): number {
  */
 export function trackEvent(data: TrackEventData): void {
   if (!WEBHOOK_URL) return;
+  if (isThrottled(data)) return;
 
   const enriched: TrackEventData = {
     ...data,

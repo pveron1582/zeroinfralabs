@@ -82,54 +82,79 @@ export function getPrimaryGroupName(machine: Machine, user: User): string {
   return group?.name ?? user.gid.toString();
 }
 
+function buildSyntheticUser(username: string): User {
+  return { username, uid: 1000, gid: 1000, home: `/home/${username}`, shell: '/bin/bash', groups: [1000] };
+}
+
+interface IdentityRule {
+  id: string;
+  match: (machine: Machine, getUser: (m: Machine, u: string) => User | null) => User | null;
+}
+
+const IDENTITY_RULES: IdentityRule[] = [
+  {
+    id: 'su_user',
+    match: (m, getUser) => {
+      if (!m.su_user) return null;
+      return getUser(m, m.su_user) ?? buildSyntheticUser(m.su_user);
+    },
+  },
+  {
+    id: 'attacker',
+    match: (m, getUser) => {
+      if (!m.id.includes('attacker')) return null;
+      return getUser(m, 'root') ?? ROOT_USER;
+    },
+  },
+  {
+    id: 'privesc_completed',
+    match: (m, getUser) => {
+      if (!m.privesc_completed) return null;
+      return getUser(m, 'root') ?? null;
+    },
+  },
+  {
+    id: 'reverse_shell_credential',
+    match: (m, getUser) => {
+      const cred = m.found_credentials?.find(c => c.service === 'reverse-shell');
+      if (!cred) return null;
+      return getUser(m, cred.user) ?? buildSyntheticUser(cred.user);
+    },
+  },
+  {
+    id: 'ssh_verified_credential',
+    match: (m, getUser) => {
+      const cred = m.found_credentials?.find(c => c.service === 'ssh' && c.verified);
+      if (!cred) return null;
+      return getUser(m, cred.user) ?? buildSyntheticUser(cred.user);
+    },
+  },
+  {
+    id: 'verified_credential',
+    match: (m, getUser) => {
+      const cred = m.found_credentials?.find(c => c.verified);
+      if (!cred) return null;
+      return getUser(m, cred.user) ?? buildSyntheticUser(cred.user);
+    },
+  },
+  {
+    id: 'ssh_port_credential',
+    match: (m, getUser) => {
+      const sshPort = m.scan_results?.ports?.find(p => p.service === 'ssh');
+      if (!sshPort?.credentials?.user) return null;
+      return getUser(m, sshPort.credentials.user) ?? buildSyntheticUser(sshPort.credentials.user);
+    },
+  },
+];
+
+const FALLBACK_USER: User = { username: 'user', uid: 1000, gid: 1000, home: '/home/user', shell: '/bin/bash', groups: [1000] };
+
 export function getCurrentUser(machine: Machine): User {
-  if (machine.su_user) {
-    const user = getUser(machine, machine.su_user);
-    if (user) return user;
-    return { username: machine.su_user, uid: 1000, gid: 1000, home: `/home/${machine.su_user}`, shell: '/bin/bash', groups: [1000] };
+  for (const rule of IDENTITY_RULES) {
+    const result = rule.match(machine, getUser);
+    if (result) return result;
   }
-
-  if (machine.id.includes('attacker')) {
-    const root = getUser(machine, 'root');
-    if (root) return root;
-    return ROOT_USER;
-  }
-
-  if (machine.privesc_completed) {
-    const root = getUser(machine, 'root');
-    if (root) return root;
-  }
-
-  const rceCred = machine.found_credentials?.find(c => c.service === 'reverse-shell');
-  if (rceCred) {
-    const user = getUser(machine, rceCred.user);
-    if (user) return user;
-    return { username: rceCred.user, uid: 1000, gid: 1000, home: `/home/${rceCred.user}`, shell: '/bin/bash', groups: [1000] };
-  }
-
-  if (machine.found_credentials) {
-    const sshCred = machine.found_credentials.find(c => c.service === 'ssh' && c.verified);
-    if (sshCred) {
-      const user = getUser(machine, sshCred.user);
-      if (user) return user;
-      return { username: sshCred.user, uid: 1000, gid: 1000, home: `/home/${sshCred.user}`, shell: '/bin/bash', groups: [1000] };
-    }
-    const verified = machine.found_credentials.find(c => c.verified);
-    if (verified) {
-      const user = getUser(machine, verified.user);
-      if (user) return user;
-      return { username: verified.user, uid: 1000, gid: 1000, home: `/home/${verified.user}`, shell: '/bin/bash', groups: [1000] };
-    }
-  }
-
-  const sshPort = machine.scan_results?.ports?.find(p => p.service === 'ssh');
-  if (sshPort?.credentials?.user) {
-    const user = getUser(machine, sshPort.credentials.user);
-    if (user) return user;
-    return { username: sshPort.credentials.user, uid: 1000, gid: 1000, home: `/home/${sshPort.credentials.user}`, shell: '/bin/bash', groups: [1000] };
-  }
-
-  return { username: 'user', uid: 1000, gid: 1000, home: '/home/user', shell: '/bin/bash', groups: [1000] };
+  return FALLBACK_USER;
 }
 
 export function isRoot(user: User | null): boolean {

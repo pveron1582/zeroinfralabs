@@ -41,7 +41,7 @@ export type MissionCriteriaType =
   | 'ncListener'           // netcat listener started
   | 'blockingCommand'      // listener/payload active
   | 'sudoPrivileges'       // sudo -l enumerated allowed commands
-  | 'browserAction'        // navegación web (validada por FakeBrowser, no por labValidator)
+  | 'browserAction'        // navegación web (FakeBrowser emite, labValidator valida con targetMachineId)
   | 'httpRequest';         // transacción HTTP capturada (Burp Suite / motor HTTP)
 
 export interface ValidationCriteria {

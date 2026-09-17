@@ -13,7 +13,7 @@ describe('curl: payloads SQLi con distintas comillas (parser real)', () => {
   const t = machines.find(m => !m.id.includes('attacker'))!;
 
   const fvOf = (cmd: string) => {
-    const r = executeCommand(cmd, attacker, machines, 1, undefined, '/root');
+    const r = executeCommand({ line: cmd, machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     return 'foundVulnerability' in r ? r.foundVulnerability : undefined;
   };
 
@@ -38,7 +38,7 @@ describe('curl: payloads SQLi con distintas comillas (parser real)', () => {
   });
 
   it('union en minúscula con dobles comillas descubre credenciales', () => {
-    const r = executeCommand(`curl -X POST http://${t.machine_info.ip}/login -d "username=' union select table_name from information_schema.tables--&password=x"`, attacker, machines, 1, undefined, '/root');
+    const r = executeCommand({ line: `curl -X POST http://${t.machine_info.ip}/login -d "username=' union select table_name from information_schema.tables--&password=x"`, machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     const fc = 'foundCredentials' in r ? r.foundCredentials : undefined;
     expect(fc?.service).toBe('mysql');
   });

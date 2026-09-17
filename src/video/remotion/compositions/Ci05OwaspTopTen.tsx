@@ -1,13 +1,12 @@
 // ── video/remotion/compositions/Ci05OwaspTopTen.tsx ────────────────
 // Video: OWASP Top Ten — los 10 riesgos web más explotados.
-// Lección ciber-05 (Fundamentos de Ciberseguridad). Guiones: voicebox-scripts/ci-05-*.txt
-// ⚠️ AUDIO PENDIENTE: hasAudio() es false → se renderiza mudo hasta que
-// lleguen los wavs y se reemplacen los timings estimados.
+// Versión unificada ES/EN con `lang` prop.
+// Timings por silencedetect.
 
 import React from 'react';
 import { AbsoluteFill, Sequence, staticFile, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
-import { sceneStartFrames, AUDIO_TIMINGS, hasAudio } from '../audioTimings';
+import { sceneStartFrames, audioTimings, audioBase, hasAudio } from '../audioTimings';
 import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
@@ -23,47 +22,118 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-// ── Escena 1: qué es OWASP ─────────────────────────────────────────
-// Beats reales del wav ES (2026-08-30): auditores 10.1 · desarrolladores
-// 12.0 · atacantes 14.0 · red team memoriza 15.8 · lugar donde mirar
-// 18.9. Panel en 9.0s.
-const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
-  const panelAt = Math.round(9.0 * fps);
+// ── COPY ────────────────────────────────────────────────────────────
+const OTHER7 = [
+  { n: '4', name: 'Insecure Design', color: THEME.purple },
+  { n: '5', name: 'Security Misconfiguration', color: THEME.amber },
+  { n: '6', name: 'Vulnerable Components', color: THEME.red },
+  { n: '7', name: 'Auth Failures', color: THEME.cyan },
+  { n: '8', name: 'Integrity Failures', color: THEME.green },
+  { n: '9', name: 'Logging & Monitoring', color: THEME.purple },
+  { n: '10', name: 'SSRF', color: THEME.amber },
+];
+
+const COPY = {
+  es: {
+    s1: {
+      title: <>LA TABLA QUE EL RED TEAM <span style={{ color: THEME.red }}>MEMORIZA</span></>,
+      subtitle: 'OWASP Top Ten — los 10 riesgos web más explotados',
+      heading: 'QUIÉN LA USA: <span style={{ color: THEME.cyan }}>TODOS</span>',
+      auditors: { label: 'AUDITORES', lines: ['testean contra la lista', 'cada entrada = un lugar donde mirar'] },
+      developers: { label: 'DESARROLLADORES', lines: ['refuerzan contra la lista', 'arreglá los 10, cerrás el 80% de la puerta'] },
+      attackers: { label: 'ATACANTES', lines: ['cazan dentro de la lista', 'un ataque clásico por entrada'] },
+    },
+    s2: {
+      heading: 'EL <span style={{ color: THEME.red }}>TOP 3</span>, LOS QUE MÁS IMPORTAN',
+      top3: [
+        { n: '1', name: 'BROKEN ACCESS CONTROL', desc: 'llegás a lo que no deberías: /admin, datos de otro', color: THEME.red },
+        { n: '2', name: 'CRYPTOGRAPHIC FAILURES', desc: 'datos sensibles sin proteger: texto plano, hashes débiles', color: THEME.amber },
+        { n: '3', name: 'INJECTION', desc: "tu input se ejecuta como código: ' OR 1=1, XSS", color: THEME.cyan },
+      ],
+      summary: 'juntos, estos tres cubren la mayoría de las brechas reales',
+    },
+    s3: {
+      heading: 'LOS OTROS <span style={{ color: THEME.purple }}>SIETE</span>',
+      other7: OTHER7,
+      playbookHeading: 'EL TOP TEN COMO <span style={{ color: THEME.red }}>PLAYBOOK</span>',
+      redTeam: { label: 'RED TEAM ⚔️', lines: ['cada entrada es una idea de ataque'] },
+      blueTeam: { label: 'BLUE TEAM 🛡️', lines: ['invertida: una lista de arreglos', 'arreglá los 10 y cerrás el 80% de la puerta'] },
+      closeTitle: <>NO ES UNA LISTA PARA <span style={{ color: THEME.red }}>MEMORIZAR</span></>,
+      closeSubtitle: 'es un menú de ideas de ataque · y, invertido, de arreglos',
+    },
+  },
+  en: {
+    s1: {
+      title: <>THE TABLE THE RED TEAM <span style={{ color: THEME.red }}>MEMORIZES</span></>,
+      subtitle: 'OWASP Top Ten — the 10 most exploited web risks',
+      heading: 'WHO USES IT: <span style={{ color: THEME.cyan }}>EVERYONE</span>',
+      auditors: { label: 'AUDITORS', lines: ['test against the list', 'every entry = a checklist'] },
+      developers: { label: 'DEVELOPERS', lines: ['harden against the list', 'closes 80% of the door'] },
+      attackers: { label: 'ATTACKERS', lines: ['hunt within the list', 'a classic attack per entry'] },
+    },
+    s2: {
+      heading: 'THE <span style={{ color: THEME.red }}>TOP 3</span>, THE ONES THAT MATTER MOST',
+      top3: [
+        { n: '1', name: 'BROKEN ACCESS CONTROL', desc: "you reach things you shouldn't: /admin, another user's data", color: THEME.red },
+        { n: '2', name: 'CRYPTOGRAPHIC FAILURES', desc: 'sensitive data unprotected: plain text, weak hashes', color: THEME.amber },
+        { n: '3', name: 'INJECTION', desc: "your input runs as code: ' OR 1=1, XSS", color: THEME.cyan },
+      ],
+      summary: 'together, these three cover most real world breaches',
+    },
+    s3: {
+      heading: 'THE OTHER <span style={{ color: THEME.purple }}>SEVEN</span>',
+      other7: OTHER7,
+      playbookHeading: 'THE TOP TEN AS A <span style={{ color: THEME.red }}>PLAYBOOK</span>',
+      redTeam: { label: 'RED TEAM ⚔️', lines: ['every entry is an attack idea', 'a classic attack to try per entry'] },
+      blueTeam: { label: 'BLUE TEAM 🛡️', lines: ["flipped, it's a fix list", 'fix all 10 and you close 80% of the door'] },
+      closeTitle: <>IT'S NOT A LIST TO <span style={{ color: THEME.red }}>MEMORIZE</span></>,
+      closeSubtitle: "it's a menu of attack ideas · and, flipped, of defense fixes",
+    },
+  },
+};
+
+// ── BEATS (seconds, multiplied by fps at use site) ──────────────────
+const BEATS = {
+  es: {
+    s1: { panelAt: 9.0, auditors: [1.1, 2.0, 3.3], developers: [3.0, 3.7, 5.9], attackers: [5.0, 5.8, 7.7] },
+    s2: { top3: [2.1, 9.5, 15.0], sumAt: 16, sumLine: 0.4, capsules: [0.5, 1.2, 1.9] },
+    s3: { other7: [1.6, 4.2, 8.3, 11.9, 14.3, 17.4, 21.0], playbookAt: 18, redTeam: [0.0, 0.5], blueTeam: [0.8, 1.5, 2.8], closeAt: 28 },
+  },
+  en: {
+    s1: { panelAt: 6.0, auditors: [6.2, 8.2, 10.2], developers: [7.8, 9.8, 11.8], attackers: [9.5, 10.5, 16.0] },
+    s2: { top3: [2.7, 10.2, 18.0], sumAt: 16, sumLine: 0.2, capsules: [0.5, 1.2, 1.9] },
+    s3: { other7: [2.2, 5.6, 9.7, 13.2, 15.3, 17.8, 21.2], playbookAt: 18, redTeam: [0.3, 0.5, 1.2], blueTeam: [0.8, 1.5, 2.8], closeAt: 28 },
+  },
+};
+
+const VID = 'ci-05-owasp-top-ten';
+
+// ── Scene 1: qué es OWASP ───────────────────────────────────────────
+const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
+  const panelAt = Math.round(b.panelAt * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={panelAt}>
-        <TitleScene
-          title={<>LA TABLA QUE EL RED TEAM <span style={{ color: THEME.red }}>MEMORIZA</span></>}
-          subtitle="OWASP Top Ten — los 10 riesgos web más explotados"
-        />
+        <TitleScene title={c.title} subtitle={c.subtitle} />
       </Sequence>
       <Sequence from={panelAt}>
         <AbsoluteFill style={CENTERED}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }}>
-            QUIÉN LA USA: <span style={{ color: THEME.cyan }}>TODOS</span>
-          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }} dangerouslySetInnerHTML={{ __html: c.heading }} />
           <div style={{ display: 'flex', gap: 20, width: 1040, justifyContent: 'center' }}>
-            <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.cyan}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
-              <div style={{ fontSize: 19, fontWeight: 800, color: THEME.cyan, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={1.1} fps={fps} mark="" color={THEME.cyan}>AUDITORES</RevealLine>
-              </div>
-              <RevealLine at={2.0} fps={fps} mark="▸" color={THEME.cyan}>testean contra la lista</RevealLine>
-              <RevealLine at={3.3} fps={fps} mark="▸" color={THEME.cyan}>cada entrada = un lugar donde mirar</RevealLine>
-            </div>
-            <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.green}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
-              <div style={{ fontSize: 19, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={3.0} fps={fps} mark="" color={THEME.green}>DESARROLLADORES</RevealLine>
-              </div>
-              <RevealLine at={3.7} fps={fps} mark="▸" color={THEME.green}>refuerzan contra la lista</RevealLine>
-              <RevealLine at={5.9} fps={fps} mark="▸" color={THEME.green}>arreglá los 10, cerrás el 80% de la puerta</RevealLine>
-            </div>
-            <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.red}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
-              <div style={{ fontSize: 19, fontWeight: 800, color: THEME.red, fontFamily: MONO, marginBottom: 12 }}>
-                <RevealLine at={5.0} fps={fps} mark="" color={THEME.red}>ATACANTES</RevealLine>
-              </div>
-              <RevealLine at={5.8} fps={fps} mark="▸" color={THEME.red}>cazan dentro de la lista</RevealLine>
-              <RevealLine at={7.7} fps={fps} mark="▸" color={THEME.red}>un ataque clásico por entrada</RevealLine>
-            </div>
+            {[c.auditors, c.developers, c.attackers].map((group, gi) => {
+              const color = gi === 0 ? THEME.cyan : gi === 1 ? THEME.green : THEME.red;
+              const beats = gi === 0 ? b.auditors : gi === 1 ? b.developers : b.attackers;
+              return (
+                <div key={gi} style={{ flex: 1, background: THEME.panel, border: `1px solid ${color}60`, borderRadius: 16, padding: '20px 22px', textAlign: 'left' }}>
+                  <div style={{ fontSize: 19, fontWeight: 800, color, fontFamily: MONO, marginBottom: 12 }}>
+                    <RevealLine at={beats[0]} fps={fps} mark="" color={color}>{group.label}</RevealLine>
+                  </div>
+                  {group.lines.map((line, li) => (
+                    <RevealLine key={li} at={beats[li + 1]} fps={fps} mark="▸" color={color}>{line}</RevealLine>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -71,33 +141,22 @@ const Scene1: React.FC<{ fps: number }> = ({ fps }) => {
   );
 };
 
-// ── Escena 2: top 3 ────────────────────────────────────────────────
-// sumAt adelantado de 25.6 a 16s para que "juntos cubren..." tenga
-// tiempo de lectura (antes duraba 1s y parecía cortado). Los 3
-// aparecen más rápido dentro del primer bloque.
-const TOP3 = [
-  { n: '1', name: 'BROKEN ACCESS CONTROL', desc: 'llegás a lo que no deberías: /admin, datos de otro', color: THEME.red, at: 2.1 },
-  { n: '2', name: 'CRYPTOGRAPHIC FAILURES', desc: 'datos sensibles sin proteger: texto plano, hashes débiles', color: THEME.amber, at: 9.5 },
-  { n: '3', name: 'INJECTION', desc: "tu input se ejecuta como código: ' OR 1=1, XSS", color: THEME.cyan, at: 15.0 },
-];
-
-const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
-  const sumAt = Math.round(16 * fps);
+// ── Scene 2: top 3 ──────────────────────────────────────────────────
+const Scene2: React.FC<{ fps: number; c: typeof COPY.es.s2; b: typeof BEATS.es.s2 }> = ({ fps, c, b }) => {
+  const sumAt = Math.round(b.sumAt * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={sumAt}>
         <AbsoluteFill style={CENTERED}>
-          <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 32 }}>
-            EL <span style={{ color: THEME.red }}>TOP 3</span>, LOS QUE MÁS IMPORTAN
-          </div>
+          <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 32 }} dangerouslySetInnerHTML={{ __html: c.heading }} />
           <div style={{ display: 'flex', gap: 20, width: 1100, justifyContent: 'center' }}>
-            {TOP3.map(t => (
+            {c.top3.map((t, i) => (
               <div key={t.n} style={{
                 flex: 1, background: THEME.panel, border: `1px solid ${t.color}60`, borderRadius: 16,
                 padding: '20px 16px', textAlign: 'center',
               }}>
                 <div style={{ fontSize: 38, fontWeight: 800, color: t.color, fontFamily: MONO, marginBottom: 6 }}>
-                  <RevealLine at={t.at} fps={fps} mark="" color={t.color}>{t.n}</RevealLine>
+                  <RevealLine at={b.top3[i]} fps={fps} mark="" color={t.color}>{t.n}</RevealLine>
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: THEME.text, fontFamily: MONO }}>{t.name}</div>
                 <div style={{ fontSize: 13, color: THEME.muted, fontFamily: MONO, marginTop: 8, lineHeight: 1.5 }}>{t.desc}</div>
@@ -109,11 +168,11 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
       <Sequence from={sumAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO }}>
-            <RevealLine at={0.4} fps={fps} mark="▸" color={THEME.red}>juntos, estos tres cubren la mayoría de las brechas reales</RevealLine>
+            <RevealLine at={b.sumLine} fps={fps} mark="▸" color={THEME.red}>{c.summary}</RevealLine>
           </div>
           <div style={{ display: 'flex', gap: 16, marginTop: 26 }}>
             {['Access', 'Crypto', 'Injection'].map((x, i) => (
-              <KeyCapsule key={x} label="dónde apuntar" value={x} accent={[THEME.red, THEME.amber, THEME.cyan][i]} delay={Math.round((0.5 + i * 0.7) * fps)} size={24} />
+              <KeyCapsule key={x} label="dónde apuntar" value={x} accent={[THEME.red, THEME.amber, THEME.cyan][i]} delay={Math.round(b.capsules[i] * fps)} size={24} />
             ))}
           </div>
         </AbsoluteFill>
@@ -122,37 +181,23 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
   );
 };
 
-// ── Escena 3: los otros 7 + red/blue team + cierre ─────────────────
-// playbookAt adelantado de 26.6 a 18s y closeAt de 32.3 a 28s para que
-// las comparaciones red/blue carguen completas (antes quedaba 1s).
-const OTHER7 = [
-  { n: '4', name: 'Insecure Design', color: THEME.purple, at: 1.6 },
-  { n: '5', name: 'Security Misconfiguration', color: THEME.amber, at: 4.2 },
-  { n: '6', name: 'Vulnerable Components', color: THEME.red, at: 8.3 },
-  { n: '7', name: 'Auth Failures', color: THEME.cyan, at: 11.9 },
-  { n: '8', name: 'Integrity Failures', color: THEME.green, at: 14.3 },
-  { n: '9', name: 'Logging & Monitoring', color: THEME.purple, at: 17.4 },
-  { n: '10', name: 'SSRF', color: THEME.amber, at: 21.0 },
-];
-
-const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const playbookAt = Math.round(18 * fps);
-  const closeAt = Math.round(28 * fps);
+// ── Scene 3: los otros 7 + red/blue team + cierre ───────────────────
+const Scene3: React.FC<{ fps: number; c: typeof COPY.es.s3; b: typeof BEATS.es.s3 }> = ({ fps, c, b }) => {
+  const playbookAt = Math.round(b.playbookAt * fps);
+  const closeAt = Math.round(b.closeAt * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={playbookAt}>
         <AbsoluteFill style={CENTERED}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }}>
-            LOS OTROS <span style={{ color: THEME.purple }}>SIETE</span>
-          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 24 }} dangerouslySetInnerHTML={{ __html: c.heading }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14, width: 1080 }}>
-            {OTHER7.map(o => (
+            {c.other7.map((o, i) => (
               <div key={o.n} style={{
                 background: THEME.panel, border: `1px solid ${o.color}50`, borderRadius: 12,
                 padding: '14px 12px', textAlign: 'center',
               }}>
                 <div style={{ fontSize: 24, fontWeight: 800, color: o.color, fontFamily: MONO }}>
-                  <RevealLine at={o.at} fps={fps} mark="" color={o.color}>{o.n}</RevealLine>
+                  <RevealLine at={b.other7[i]} fps={fps} mark="" color={o.color}>{o.n}</RevealLine>
                 </div>
                 <div style={{ fontSize: 13, color: THEME.muted, fontFamily: MONO, marginTop: 4 }}>{o.name}</div>
               </div>
@@ -162,63 +207,65 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
       </Sequence>
       <Sequence from={playbookAt} durationInFrames={closeAt - playbookAt}>
         <AbsoluteFill style={CENTERED}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 22 }}>
-            EL TOP TEN COMO <span style={{ color: THEME.red }}>PLAYBOOK</span>
-          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 22 }} dangerouslySetInnerHTML={{ __html: c.playbookHeading }} />
           <div style={{ display: 'flex', gap: 20, width: 1040, justifyContent: 'center' }}>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.red}60`, borderRadius: 16, padding: '18px 20px', textAlign: 'left' }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: THEME.red, fontFamily: MONO, marginBottom: 10 }}>
-                <RevealLine at={0.0} fps={fps} mark="" color={THEME.red}>RED TEAM ⚔️</RevealLine>
+                <RevealLine at={b.redTeam[0]} fps={fps} mark="" color={THEME.red}>{c.redTeam.label}</RevealLine>
               </div>
-              <RevealLine at={0.5} fps={fps} mark="▸" color={THEME.red}>cada entrada es una idea de ataque</RevealLine>
+              {c.redTeam.lines.map((line, i) => (
+                <RevealLine key={i} at={b.redTeam[i + 1]} fps={fps} mark="▸" color={THEME.red}>{line}</RevealLine>
+              ))}
             </div>
             <div style={{ flex: 1, background: THEME.panel, border: `1px solid ${THEME.green}60`, borderRadius: 16, padding: '18px 20px', textAlign: 'left' }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: THEME.green, fontFamily: MONO, marginBottom: 10 }}>
-                <RevealLine at={0.8} fps={fps} mark="" color={THEME.green}>BLUE TEAM 🛡️</RevealLine>
+                <RevealLine at={b.blueTeam[0]} fps={fps} mark="" color={THEME.green}>{c.blueTeam.label}</RevealLine>
               </div>
-              <RevealLine at={1.5} fps={fps} mark="▸" color={THEME.green}>invertida: una lista de arreglos</RevealLine>
-              <RevealLine at={2.8} fps={fps} mark="▸" color={THEME.green}>arreglá los 10 y cerrás el 80% de la puerta</RevealLine>
+              {c.blueTeam.lines.map((line, i) => (
+                <RevealLine key={i} at={b.blueTeam[i + 1]} fps={fps} mark="▸" color={THEME.green}>{line}</RevealLine>
+              ))}
             </div>
           </div>
         </AbsoluteFill>
       </Sequence>
       <Sequence from={closeAt}>
-        <TitleScene
-          title={<>NO ES UNA LISTA PARA <span style={{ color: THEME.red }}>MEMORIZAR</span></>}
-          subtitle="es un menú de ideas de ataque · y, invertido, de arreglos"
-        />
+        <TitleScene title={c.closeTitle} subtitle={c.closeSubtitle} />
       </Sequence>
     </AbsoluteFill>
   );
 };
 
-export const Ci05OwaspTopTen: React.FC = () => {
+// ── Componente principal ────────────────────────────────────────────
+export const Ci05OwaspTopTen: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) => {
   const { fps } = useVideoConfig();
+  const c = COPY[lang];
+  const b = BEATS[lang];
 
-  const [s1, s2, s3] = AUDIO_TIMINGS['ci-05-owasp-top-ten'];
-  const starts = sceneStartFrames('ci-05-owasp-top-ten', fps);
+  const [s1, s2, s3] = audioTimings(VID, lang);
+  const starts = sceneStartFrames(VID, fps, lang);
   const dur1 = Math.ceil(s1 * fps);
   const dur2 = Math.ceil(s2 * fps);
   const dur3 = Math.ceil(s3 * fps) + fps;
-  const withAudio = hasAudio('ci-05-owasp-top-ten');
+  const base = audioBase(lang);
+  const withAudio = hasAudio(VID);
 
   return (
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile('videos/audio-es/ci-05-owasp-top-ten/ci-05-scene1.wav')} />}
-        <Scene1 fps={fps} />
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/ci-05-scene1.wav`)} />}
+        <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile('videos/audio-es/ci-05-owasp-top-ten/ci-05-scene2.wav')} />}
-        <Scene2 fps={fps} />
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/ci-05-scene2.wav`)} />}
+        <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile('videos/audio-es/ci-05-owasp-top-ten/ci-05-scene3.wav')} />}
-        <Scene3 fps={fps} />
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/ci-05-scene3.wav`)} />}
+        <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>
   );

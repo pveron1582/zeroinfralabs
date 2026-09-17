@@ -29,12 +29,12 @@ beforeEach(() => {
 describe('Fase 4: Editores y manipulación de archivos', () => {
   describe('4.1 echo', () => {
     it('debe imprimir texto sin redirección', () => {
-      const r = executeCommand('echo hola mundo', machine, [machine], 0, undefined, '/home/user/');
+      const r = executeCommand({ line: 'echo hola mundo', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/home/user/' });
       expect(r.output).toBe('hola mundo');
     });
 
     it('debe escribir archivo con >', () => {
-      const r = executeCommand('echo hello world > newfile.txt', machine, [machine], 0, undefined, '/home/user/');
+      const r = executeCommand({ line: 'echo hello world > newfile.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/home/user/' });
       expect(r.isError).not.toBe(true);
       const f = machine.files.find(f => f.path === '/home/user/newfile.txt');
       expect(f).toBeDefined();
@@ -42,21 +42,21 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
     });
 
     it('debe sobrescribir archivo existente con >', () => {
-      const r = executeCommand('echo overwritten > /tmp/existing.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'echo overwritten > /tmp/existing.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       const f = machine.files.find(f => f.path === '/tmp/existing.txt');
       expect(f!.content).toBe('overwritten\n');
     });
 
     it('debe append con >>', () => {
-      const r = executeCommand('echo appended >> /tmp/existing.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'echo appended >> /tmp/existing.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       const f = machine.files.find(f => f.path === '/tmp/existing.txt');
       expect(f!.content).toBe('oldappended\n');
     });
 
     it('debe crear archivo nuevo con >> si no existe', () => {
-      const r = executeCommand('echo new >> /tmp/new_append.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'echo new >> /tmp/new_append.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       const f = machine.files.find(f => f.path === '/tmp/new_append.txt');
       expect(f).toBeDefined();
@@ -64,7 +64,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
     });
 
     it('debe denegar escritura sin permiso en el directorio padre', () => {
-      const r = executeCommand('echo test > /usr/bin/no_write.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'echo test > /usr/bin/no_write.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).toBe(true);
       expect(r.output).toContain('Permission denied');
     });
@@ -72,7 +72,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
 
   describe('4.2 touch', () => {
     it('debe crear archivo vacío si no existe', () => {
-      const r = executeCommand('touch /tmp/newfile.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'touch /tmp/newfile.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       const f = machine.files.find(f => f.path === '/tmp/newfile.txt');
       expect(f).toBeDefined();
@@ -80,12 +80,12 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
     });
 
     it('debe ignorar archivo existente', () => {
-      const r = executeCommand('touch /tmp/existing.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'touch /tmp/existing.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
     });
 
     it('debe denegar creación sin permiso en el directorio padre', () => {
-      const r = executeCommand('touch /usr/bin/cant.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'touch /usr/bin/cant.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).toBe(true);
       expect(r.output).toContain('Permission denied');
     });
@@ -94,24 +94,24 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
   describe('4.3 rm', () => {
     it('debe eliminar archivo', () => {
       machine.files.push({ path: '/tmp/toremove.txt', content: 'bye', type: 'text', owner: 'user', group: 'user', mode: 0o644 });
-      const r = executeCommand('rm /tmp/toremove.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'rm /tmp/toremove.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect(machine.files.find(f => f.path === '/tmp/toremove.txt')).toBeUndefined();
     });
 
     it('debe denegar si no existe (sin -f)', () => {
-      const r = executeCommand('rm /tmp/nonexistent.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'rm /tmp/nonexistent.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).toBe(true);
     });
 
     it('debe ignorar si no existe con -f', () => {
-      const r = executeCommand('rm -f /tmp/nonexistent.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'rm -f /tmp/nonexistent.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
     });
 
     it('debe eliminar directorio vacío con -r', () => {
       machine.files.push({ path: '/tmp/emptydir/.dir', content: '', type: 'text', owner: 'user', group: 'user', mode: 0o755 });
-      const r = executeCommand('rm -r /tmp/emptydir', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'rm -r /tmp/emptydir', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect(machine.files.find(f => f.path === '/tmp/emptydir/.dir')).toBeUndefined();
     });
@@ -122,21 +122,21 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
         { path: '/tmp/mydir/a.txt', content: 'a', type: 'text', owner: 'user', group: 'user', mode: 0o644 },
         { path: '/tmp/mydir/sub/.dir', content: '', type: 'text', owner: 'user', group: 'user', mode: 0o755 },
       );
-      const r = executeCommand('rm -r /tmp/mydir', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'rm -r /tmp/mydir', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect(machine.files.find(f => f.path.startsWith('/tmp/mydir'))).toBeUndefined();
     });
 
     it('debe rechazar rm sin -r en directorio', () => {
       machine.files.push({ path: '/tmp/adir/.dir', content: '', type: 'text', owner: 'user', group: 'user', mode: 0o755 });
-      const r = executeCommand('rm /tmp/adir', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'rm /tmp/adir', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.output).toContain('Is a directory');
     });
   });
 
   describe('4.4 cp', () => {
     it('debe copiar archivo', () => {
-      const r = executeCommand('cp /home/user/file.txt /tmp/copy.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'cp /home/user/file.txt /tmp/copy.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       const copy = machine.files.find(f => f.path === '/tmp/copy.txt');
       expect(copy).toBeDefined();
@@ -148,7 +148,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
         { path: '/home/user/docs/.dir', content: '', type: 'text', owner: 'user', group: 'user', mode: 0o755 },
         { path: '/home/user/docs/readme.txt', content: 'readme', type: 'text', owner: 'user', group: 'user', mode: 0o644 },
       );
-      const r = executeCommand('cp -r /home/user/docs /tmp/docs_copy', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'cp -r /home/user/docs /tmp/docs_copy', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect(machine.files.find(f => f.path === '/tmp/docs_copy/.dir')).toBeDefined();
       expect(machine.files.find(f => f.path === '/tmp/docs_copy/readme.txt')).toBeDefined();
@@ -156,7 +156,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
 
     it('debe denegar cp sin -r en directorio', () => {
       machine.files.push({ path: '/home/user/docs/.dir', content: '', type: 'text', owner: 'user', group: 'user', mode: 0o755 });
-      const r = executeCommand('cp /home/user/docs /tmp/docs_copy2', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'cp /home/user/docs /tmp/docs_copy2', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.output).toContain('omitting directory');
     });
   });
@@ -164,14 +164,14 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
   describe('4.5 mv', () => {
     it('debe mover archivo', () => {
       machine.files.push({ path: '/tmp/move_me.txt', content: 'moveme', type: 'text', owner: 'user', group: 'user', mode: 0o644 });
-      const r = executeCommand('mv /tmp/move_me.txt /home/user/moved.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'mv /tmp/move_me.txt /home/user/moved.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect(machine.files.find(f => f.path === '/tmp/move_me.txt')).toBeUndefined();
       expect(machine.files.find(f => f.path === '/home/user/moved.txt')).toBeDefined();
     });
 
     it('debe renombrar archivo en el mismo directorio', () => {
-      const r = executeCommand('mv /home/user/file.txt /home/user/renamed.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'mv /home/user/file.txt /home/user/renamed.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect(machine.files.find(f => f.path === '/home/user/file.txt')).toBeUndefined();
       expect(machine.files.find(f => f.path === '/home/user/renamed.txt')).toBeDefined();
@@ -180,7 +180,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
 
   describe('4.6 nano', () => {
     it('debe abrir archivo existente', () => {
-      const r = executeCommand('nano /home/user/file.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'nano /home/user/file.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect((r as any).nanoFile).toBeDefined();
       expect((r as any).nanoFile.path).toBe('/home/user/file.txt');
@@ -188,7 +188,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
     });
 
     it('debe crear archivo nuevo si no existe y padre tiene permiso', () => {
-      const r = executeCommand('nano /tmp/new_nano_file.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'nano /tmp/new_nano_file.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect((r as any).nanoFile).toBeDefined();
       expect((r as any).nanoFile.path).toBe('/tmp/new_nano_file.txt');
@@ -197,12 +197,12 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
     });
 
     it('debe mostrar error si el directorio padre no existe', () => {
-      const r = executeCommand('nano /nonexistent_dir/file.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'nano /nonexistent_dir/file.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).toBe(true);
     });
 
     it('debe abrir editor sin argumentos', () => {
-      const r = executeCommand('nano', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'nano', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect((r as any).nanoFile).toBeDefined();
       expect((r as any).nanoFile.path).toBe('');
@@ -218,7 +218,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
         group: 'user',
         mode: 0o640,
       });
-      const r = executeCommand('nano /srv/shared.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'nano /srv/shared.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       expect(r.isError).not.toBe(true);
       expect((r as any).nanoFile.path).toBe('/srv/shared.txt');
       expect((r as any).nanoFile.readOnly).toBe(true);
@@ -236,7 +236,7 @@ describe('Fase 4: Editores y manipulación de archivos', () => {
       const orig = machine.found_credentials;
       machine.found_credentials = undefined;
       machine.su_user = undefined;
-      const r = executeCommand('nano /root/private.txt', machine, [machine], 0, undefined, '/');
+      const r = executeCommand({ line: 'nano /root/private.txt', machine: machine, allMachines: [machine], currentMissionId: 0, currentDir: '/' });
       machine.found_credentials = orig;
       machine.su_user = undefined;
       expect(r.isError).toBe(true);

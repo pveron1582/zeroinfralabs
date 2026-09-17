@@ -24,7 +24,7 @@ Comandos (libres) → Metadata → LabValidator → validationCriteria → Misi�
 - `uidChecked` — getuid verificó privilegios
 - `ncListener` — netcat listener iniciado
 - `blockingCommand` — comando bloqueante ejecutado
-- `browserAction` — navegación web (validada por FakeBrowser)
+- `browserAction` — navegación web (FakeBrowser emite, labValidator valida con targetMachineId)
 - `httpRequest` — transacción HTTP capturada (Burp Suite / motor HTTP)
 
 **Beneficios:**

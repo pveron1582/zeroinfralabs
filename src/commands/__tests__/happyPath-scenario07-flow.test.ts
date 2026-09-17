@@ -68,13 +68,13 @@ describe('Happy Path: Scenario 07 (Burp Suite) - flujo completo', () => {
     const completeActive = () => useScenarioStore.getState().completeMission(active().id);
 
     // Misión 1: descubrir hosts (cualquier herramienta sirve, ej. arp-scan)
-    let r = executeCommand(`arp-scan ${scenario07Data.networkRange}`, attacker, machines, active().id, undefined, '/root');
+    let r = executeCommand({ line: `arp-scan ${scenario07Data.networkRange}`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(validateMission(r, active())).toBe(true);
     completeActive();
     expect(active().id).toBe(2);
 
     // Misión 2: escaneo de puertos del objetivo
-    r = executeCommand(`nmap -sV ${target.machine_info.ip}`, attacker, machines, active().id, undefined, '/root');
+    r = executeCommand({ line: `nmap -sV ${target.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect(validateMission(r, active())).toBe(true);
     completeActive();
     expect(active().id).toBe(3);

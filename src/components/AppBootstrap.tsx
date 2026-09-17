@@ -9,9 +9,11 @@ import { useScenarioStore } from '../store/scenarioStore';
 
 export function ThemeSync() {
   const theme = useScenarioStore((s) => s.theme);
+  const language = useScenarioStore((s) => s.language);
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    document.documentElement.lang = language || 'en';
+  }, [theme, language]);
   return null;
 }
 

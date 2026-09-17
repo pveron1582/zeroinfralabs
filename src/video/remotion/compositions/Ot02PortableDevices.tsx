@@ -1,15 +1,13 @@
 // ── video/remotion/compositions/Ot02PortableDevices.tsx ─────────────
 // Video: equipos portátiles y de electrónica — Android (kernel Linux),
 // iOS (Unix encerrado) y Raspberry Pi (Debian para electrónica).
-// Con audio de la voz "Miguel" (4 escenas, ~103s).
-// Syncs internos alineados a los segmentos de habla medidos con
-// silencedetect (-50dB) sobre los wavs reales (2026-08-15).
+// Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
 import { staticFile } from 'remotion';
-import { sceneStartFrames, AUDIO_TIMINGS } from '../audioTimings';
+import { sceneStartFrames, audioTimings, audioBase, hasAudio } from '../audioTimings';
 import { THEME, MONO } from '../theme';
 import { FontFace } from '../fonts';
 import { TitleScene } from '../primitives/TitleScene';
@@ -25,37 +23,111 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
+// ── COPY ────────────────────────────────────────────────────────────
+const COPY = {
+  es: {
+    s1: {
+      title: <>TU TELÉFONO TAMBIÉN ES UN <span style={{ color: THEME.green }}>SISTEMA</span></>,
+      subtitle: 'Android es Linux · iOS es Unix · la Pi es Linux pura',
+    },
+    s2: {
+      heading: <>ANDROID: <span style={{ color: THEME.green }}>LINUX POR DENTRO</span></>,
+      androidPoints: [
+        { text: 'kernel Linux modificado', at: 1.5 },
+        { text: 'la mayoría de los Linux del mundo son Android', at: 4 },
+        { text: 'adb shell: shell Linux real', at: 8.5 },
+        { text: 'apps sandboxeadas · ART', at: 13.5 },
+        { text: 'sin root por defecto → Magisk / LineageOS', at: 18.5 },
+      ],
+    },
+    s3: {
+      heading: <>iOS: <span style={{ color: THEME.red }}>UNIX MUY ENCERRADO</span></>,
+      iosPoints: [
+        { text: 'núcleo Darwin · Unix por dentro', at: 2 },
+        { text: 'el sistema más encerrado de todos', at: 6.8 },
+        { text: 'sandbox + solo App Store', at: 9.5 },
+        { text: 'jailbreak = romper la sandbox para root', at: 17.5 },
+        { text: 'exploits raros, caros y secretos', at: 22.5 },
+      ],
+      caption: 'un iPhone sin parchear es un trofeo',
+      captionAt: 25,
+    },
+    s4: {
+      heading: <>RASPBERRY PI: <span style={{ color: THEME.purple }}>LINUX PARA ELECTRÓNICA</span></>,
+      piPoints: [
+        { text: 'basado en Debian: mismo apt, mismo sudo', at: 5.5 },
+        { text: 'pines GPIO → sensores, LEDs, motores', at: 12.5 },
+        { text: 'Pi-hole · consolas retro · NAS', at: 16.5 },
+        { text: 'en pentesting: caja de ataque, honeypot, gadget USB', at: 22 },
+      ],
+      terminalDelay: 5.5,
+      closeAt: 26,
+      closeTitle: <>LO "OTRO" ES EL <span style={{ color: THEME.purple }}>HARDWARE</span>, NO EL SOFTWARE</>,
+      closeSubtitle: 'misma base Linux: ya sabés cómo usarla',
+    },
+  },
+  en: {
+    s1: {
+      title: <>YOUR PHONE IS A <span style={{ color: THEME.green }}>SYSTEM</span> TOO</>,
+      subtitle: 'Android is Linux · iOS is Unix · the Pi is pure Linux',
+    },
+    s2: {
+      heading: <>ANDROID: <span style={{ color: THEME.green }}>LINUX INSIDE</span></>,
+      androidPoints: [
+        { text: 'a modified Linux kernel', at: 0.0 },
+        { text: 'most Linux devices in the world are Android', at: 3.6 },
+        { text: 'adb shell: a real Linux shell', at: 6.7 },
+        { text: 'apps sandboxed · they run inside ART', at: 15.4 },
+        { text: 'no root by default → Magisk / LineageOS', at: 19.8 },
+      ],
+    },
+    s3: {
+      heading: <>iOS: <span style={{ color: THEME.red }}>HEAVILY LOCKED-DOWN UNIX</span></>,
+      iosPoints: [
+        { text: 'Darwin core · Unix inside', at: 3.7 },
+        { text: 'the most locked-down system of all', at: 7.1 },
+        { text: 'own sandbox + App Store only', at: 9.8 },
+        { text: 'jailbreak = break the sandbox for root', at: 16.3 },
+        { text: 'exploits are rare, expensive, and secret', at: 20.3 },
+      ],
+      caption: 'an unpatched iPhone is a trophy',
+      captionAt: 23.6,
+    },
+    s4: {
+      heading: <>RASPBERRY PI: <span style={{ color: THEME.purple }}>LINUX FOR ELECTRONICS</span></>,
+      piPoints: [
+        { text: 'based on Debian: same apt, same sudo', at: 5.2 },
+        { text: 'GPIO pins → sensors, LEDs, motors', at: 13.6 },
+        { text: 'Pi-hole · retro consoles · NAS', at: 19.3 },
+        { text: 'in pentesting: attack box, honeypot, USB gadget', at: 22.9 },
+      ],
+      terminalDelay: 5.2,
+      closeAt: 27.5,
+      closeTitle: <>THE "OTHER" IS THE <span style={{ color: THEME.purple }}>HARDWARE</span>, NOT THE SOFTWARE</>,
+      closeSubtitle: 'same Linux base: you already know how to use it',
+    },
+  },
+};
+
+const VID = 'ot-02-portable-devices';
+
 // ── Escena 1: tu teléfono también es un sistema ─────────────────────
-const Scene1: React.FC = () => {
+const Scene1: React.FC<{ c: typeof COPY.es.s1 }> = ({ c }) => {
   return (
-    <TitleScene
-      title={<>TU TELÉFONO TAMBIÉN ES UN <span style={{ color: THEME.green }}>SISTEMA</span></>}
-      subtitle="Android es Linux · iOS es Unix · la Pi es Linux pura"
-    />
+    <TitleScene title={c.title} subtitle={c.subtitle} />
   );
 };
 
 // ── Escena 2: Android, Linux por dentro ─────────────────────────────
-// Habla (voz Miguel): 'kernel Linux modificado' ~1.5 · 'la mayoría son
-// Android' ~4 · 'adb shell: shell real' ~8.5 · 'sandbox / ART' ~13.5 ·
-// 'sin root → Magisk / LineageOS' ~18.5
-const ANDROID_POINTS = [
-  { text: 'kernel Linux modificado', at: 1.5 },
-  { text: 'la mayoría de los Linux del mundo son Android', at: 4 },
-  { text: 'adb shell: shell Linux real', at: 8.5 },
-  { text: 'apps sandboxeadas · ART', at: 13.5 },
-  { text: 'sin root por defecto → Magisk / LineageOS', at: 18.5 },
-];
-
-const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
+const Scene2: React.FC<{ fps: number; c: typeof COPY.es.s2 }> = ({ fps, c }) => {
   return (
     <AbsoluteFill style={CENTERED}>
       <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 28 }}>
-        ANDROID: <span style={{ color: THEME.green }}>LINUX POR DENTRO</span>
+        {c.heading}
       </div>
       <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
         <div style={{ width: 560, background: THEME.panel, border: `1px solid ${THEME.green}60`, borderRadius: 14, padding: '22px 22px', textAlign: 'left' }}>
-          {ANDROID_POINTS.map(p => (
+          {c.androidPoints.map(p => (
             <RevealLine key={p.text} at={p.at} fps={fps} mark="▸" color={THEME.green}>{p.text}</RevealLine>
           ))}
         </div>
@@ -74,28 +146,17 @@ const Scene2: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 3: iOS, Unix muy encerrado ───────────────────────────────
-// Habla (voz Miguel): 'núcleo Darwin' ~2 · 'el más encerrado' ~6.8 ·
-// 'sandbox + App Store' ~9.5 · 'jailbreak' ~17.5 · 'exploits raros,
-// caros y secretos' ~22.5 · 'un iPhone sin parchear es un trofeo' ~25
-const IOS_POINTS = [
-  { text: 'núcleo Darwin · Unix por dentro', at: 2 },
-  { text: 'el sistema más encerrado de todos', at: 6.8 },
-  { text: 'sandbox + solo App Store', at: 9.5 },
-  { text: 'jailbreak = romper la sandbox para root', at: 17.5 },
-  { text: 'exploits raros, caros y secretos', at: 22.5 },
-];
-
-const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
-  const captionAt = Math.round(25 * fps);
+const Scene3: React.FC<{ fps: number; c: typeof COPY.es.s3 }> = ({ fps, c }) => {
+  const captionAt = Math.round(c.captionAt * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={captionAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 28 }}>
-            iOS: <span style={{ color: THEME.red }}>UNIX MUY ENCERRADO</span>
+            {c.heading}
           </div>
           <div style={{ width: 700, background: THEME.panel, border: `1px solid ${THEME.red}60`, borderRadius: 14, padding: '24px 26px', textAlign: 'left' }}>
-            {IOS_POINTS.map(p => (
+            {c.iosPoints.map(p => (
               <RevealLine key={p.text} at={p.at} fps={fps} mark="✗" color={THEME.red}>{p.text}</RevealLine>
             ))}
           </div>
@@ -104,7 +165,7 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
       <Sequence from={captionAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 22, color: THEME.muted, fontFamily: MONO }}>
-            un iPhone sin parchear es un trofeo
+            {c.caption}
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -113,27 +174,17 @@ const Scene3: React.FC<{ fps: number }> = ({ fps }) => {
 };
 
 // ── Escena 4: Raspberry Pi + cierre ─────────────────────────────────
-// Habla (voz Miguel): 'basado en Debian: apt/sudo' ~5.5 · 'pines GPIO'
-// ~12.5 · 'Pi-hole / consolas / NAS' ~16.5 · 'pentesting: caja de
-// ataque, honeypot, gadget USB' ~22 · 'el otro es el hardware' ~26
-const PI_POINTS = [
-  { text: 'basado en Debian: mismo apt, mismo sudo', at: 5.5 },
-  { text: 'pines GPIO → sensores, LEDs, motores', at: 12.5 },
-  { text: 'Pi-hole · consolas retro · NAS', at: 16.5 },
-  { text: 'en pentesting: caja de ataque, honeypot, gadget USB', at: 22 },
-];
-
-const Scene4: React.FC<{ fps: number }> = ({ fps }) => {
-  const closeAt = Math.round(26 * fps);
+const Scene4: React.FC<{ fps: number; c: typeof COPY.es.s4 }> = ({ fps, c }) => {
+  const closeAt = Math.round(c.closeAt * fps);
   return (
     <AbsoluteFill>
       <Sequence from={0} durationInFrames={closeAt}>
         <AbsoluteFill style={CENTERED}>
           <div style={{ fontSize: 30, fontWeight: 800, color: THEME.text, fontFamily: MONO, marginBottom: 28 }}>
-            RASPBERRY PI: <span style={{ color: THEME.purple }}>LINUX PARA ELECTRÓNICA</span>
+            {c.heading}
           </div>
           <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-            <TerminalWindow title="pi@raspberrypi:~$" width={430} delay={Math.round(5.5 * fps)}>
+            <TerminalWindow title="pi@raspberrypi:~$" width={430} delay={Math.round(c.terminalDelay * fps)}>
               <div style={{ fontSize: 15, whiteSpace: 'pre', lineHeight: 1.8 }}>
                 <span style={{ color: THEME.green }}>pi@raspberrypi:~$</span> cat /etc/os-release
                 {'\n'}PRETTY_NAME="Raspbian GNU/Linux 11 (bullseye)"
@@ -141,7 +192,7 @@ const Scene4: React.FC<{ fps: number }> = ({ fps }) => {
               </div>
             </TerminalWindow>
             <div style={{ width: 480, background: THEME.panel, border: `1px solid ${THEME.purple}60`, borderRadius: 14, padding: '22px 22px', textAlign: 'left' }}>
-              {PI_POINTS.map(p => (
+              {c.piPoints.map(p => (
                 <RevealLine key={p.text} at={p.at} fps={fps} mark="▸" color={THEME.purple}>{p.text}</RevealLine>
               ))}
             </div>
@@ -149,24 +200,24 @@ const Scene4: React.FC<{ fps: number }> = ({ fps }) => {
         </AbsoluteFill>
       </Sequence>
       <Sequence from={closeAt}>
-        <TitleScene
-          title={<>LO "OTRO" ES EL <span style={{ color: THEME.purple }}>HARDWARE</span>, NO EL SOFTWARE</>}
-          subtitle="misma base Linux: ya sabés cómo usarla"
-        />
+        <TitleScene title={c.closeTitle} subtitle={c.closeSubtitle} />
       </Sequence>
     </AbsoluteFill>
   );
 };
 
-export const Ot02PortableDevices: React.FC = () => {
+// ── Componente principal ────────────────────────────────────────────
+export const Ot02PortableDevices: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) => {
   const { fps } = useVideoConfig();
+  const c = COPY[lang];
 
-  const [s1, s2, s3, s4] = AUDIO_TIMINGS['ot-02-portable-devices'];
-  const starts = sceneStartFrames('ot-02-portable-devices', fps);
+  const [s1, s2, s3, s4] = audioTimings(VID, lang);
+  const starts = sceneStartFrames(VID, fps, lang);
   const dur1 = Math.ceil(s1 * fps);
   const dur2 = Math.ceil(s2 * fps);
   const dur3 = Math.ceil(s3 * fps);
   const dur4 = Math.ceil(s4 * fps) + fps;
+  const base = audioBase(lang);
 
   return (
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
@@ -174,26 +225,26 @@ export const Ot02PortableDevices: React.FC = () => {
 
       {/* Scene 1: tu teléfono también es un sistema */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile('videos/audio-es/ot-02-portable-devices/ot-02-scene1.wav')} />
-        <Scene1 />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-02-scene1.wav`)} />}
+        <Scene1 c={c.s1} />
       </Sequence>
 
       {/* Scene 2: Android */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile('videos/audio-es/ot-02-portable-devices/ot-02-scene2.wav')} />
-        <Scene2 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-02-scene2.wav`)} />}
+        <Scene2 fps={fps} c={c.s2} />
       </Sequence>
 
       {/* Scene 3: iOS */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile('videos/audio-es/ot-02-portable-devices/ot-02-scene3.wav')} />
-        <Scene3 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-02-scene3.wav`)} />}
+        <Scene3 fps={fps} c={c.s3} />
       </Sequence>
 
       {/* Scene 4: Raspberry Pi + cierre */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        <Audio src={staticFile('videos/audio-es/ot-02-portable-devices/ot-02-scene4.wav')} />
-        <Scene4 fps={fps} />
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-02-scene4.wav`)} />}
+        <Scene4 fps={fps} c={c.s4} />
       </Sequence>
     </AbsoluteFill>
   );

@@ -48,7 +48,7 @@ describe('useAutoRefresh', () => {
     const opts = makeOpts({ setHistory, blockingCommand: { cancelKey: 'q', clearScreen: true, message: 'top -' } });
     renderHook(() => useAutoRefresh(opts));
     act(() => { vi.advanceTimersByTime(1000); });
-    expect(opts.executor.executeCommand).toHaveBeenCalledWith('top', expect.anything(), expect.anything(), 1, undefined, '/root', undefined, undefined, undefined, 0o022, expect.anything(), {}, expect.anything());
+    expect(opts.executor.executeCommand).toHaveBeenCalledWith({ line: 'top', machine: expect.anything(), allMachines: expect.anything(), currentMissionId: 1, currentDir: '/root', umask: 0o022, setUmask: expect.anything(), env: {}, setEnv: expect.anything() });
     expect(setHistory).toHaveBeenCalled();
   });
 
@@ -57,7 +57,7 @@ describe('useAutoRefresh', () => {
     renderHook(() => useAutoRefresh(opts));
     act(() => { vi.advanceTimersByTime(1000); });
     expect(opts.executor.executeCommand).toHaveBeenCalled();
-    expect(opts.executor.executeCommand.mock.calls[0][0]).toBe('htop');
+    expect(opts.executor.executeCommand.mock.calls[0][0].line).toBe('htop');
   });
 
   it('no actualiza si el resultado es error', () => {

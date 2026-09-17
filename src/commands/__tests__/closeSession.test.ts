@@ -20,13 +20,13 @@ describe('cierre de sesiones interactivas (SSH/FTP)', () => {
     const attacker = machines.find(m => m.id.includes('attacker'))!;
     const t = machines.find(m => !m.id.includes('attacker'))!;
 
-    executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
-    executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
-    executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
+    executeCommand({ line: `ftp ${t.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    executeCommand({ line: 'ftpuser', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    executeCommand({ line: 'ftp_dump_2024', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
     expect(isShellSessionActive()).toBe(true);
     expect(getCurrentShellName()).toBe('ftp');
 
-    const r = executeCommand('exit', attacker, machines, 6, undefined, '/root');
+    const r = executeCommand({ line: 'exit', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
     // El exit dentro de la sesión lo maneja FtpSession (221) y el
     // executor enruta por hybrid con metadatos ftpSession inactivos.
     expect(r.output).toContain('221 Goodbye');
@@ -44,11 +44,11 @@ describe('cierre de sesiones interactivas (SSH/FTP)', () => {
     const cred = t.scan_results?.ports?.find(p => p.service === 'ssh')?.credentials;
     if (!cred) return; // el lab no modela ssh: nada que probar acá
 
-    executeCommand(`ssh ${cred.user}@${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
-    executeCommand(cred.pass ?? '', attacker, machines, 6, undefined, '/root');
+    executeCommand({ line: `ssh ${cred.user}@${t.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    executeCommand({ line: cred.pass ?? '', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
     expect(getCurrentShellName()).toBe('ssh');
 
-    const r = executeCommand('exit', attacker, machines, 6, undefined, '/root');
+    const r = executeCommand({ line: 'exit', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
     expect('type' in r ? r.type : undefined).toBe('ssh');
     expect(r.output).not.toContain('221');
     expect(!isShellSessionActive()).toBe(true);
@@ -59,10 +59,10 @@ describe('cierre de sesiones interactivas (SSH/FTP)', () => {
     const attacker = machines.find(m => m.id.includes('attacker'))!;
     const t = machines.find(m => !m.id.includes('attacker'))!;
 
-    executeCommand(`ftp ${t.machine_info.ip}`, attacker, machines, 6, undefined, '/root');
-    executeCommand('ftpuser', attacker, machines, 6, undefined, '/root');
-    executeCommand('ftp_dump_2024', attacker, machines, 6, undefined, '/root');
-    executeCommand('exit', attacker, machines, 6, undefined, '/root');
+    executeCommand({ line: `ftp ${t.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    executeCommand({ line: 'ftpuser', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    executeCommand({ line: 'ftp_dump_2024', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
+    executeCommand({ line: 'exit', machine: attacker, allMachines: machines, currentMissionId: 6, currentDir: '/root' });
 
     expect(getCurrentShellName()).toBeNull();
     expect(getShellPrompt()).toBe('');

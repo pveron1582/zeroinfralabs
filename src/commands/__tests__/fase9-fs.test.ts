@@ -208,7 +208,7 @@ describe('Fase 9 - ln/symlinks', () => {
 
   it('executeCommand: ln -s integrado', () => {
     const machine = makeRootMachine();
-    const r = executeCommand('ln -s /etc/passwd /home/admin/pwlink', machine, [machine], 1);
+    const r = executeCommand({ line: 'ln -s /etc/passwd /home/admin/pwlink', machine: machine, allMachines: [machine], currentMissionId: 1, currentDir: '/' });
     expect(r.isError).not.toBe(true);
     applyResult(machine, r);
     expect(machine.files.some(f => f.path === '/home/admin/pwlink' && f.type === 'symlink')).toBe(true);
