@@ -1,6 +1,7 @@
 // ── components/Terminal.tsx ───────────────────────────────────────
 // Terminal UI component — solo render, lógica delegada a useCommandRunner
 
+import { useEffect } from 'react';
 import { useCommandRunner, type CommandRunnerProps } from '../hooks/useCommandRunner';
 import { getAutocompleteSuggestions } from '../utils/autocomplete';
 import { renderKaliPrompt, renderKaliPromptSymbol } from './TerminalPrompt';
@@ -52,8 +53,8 @@ function TerminalInput({
   );
 }
 
-export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacity?: number; isWindowed?: boolean }) {
-  const { fontSize, opacity = 1, isWindowed = false } = props;
+export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacity?: number; isWindowed?: boolean; isMobileKey?: string | null }) {
+  const { fontSize, opacity = 1, isWindowed = false, isMobileKey = null } = props;
   const {
     history, input, setInput, busy, prompt, color, isRoot,
     scrollRef, inputRef, ftpSession, sshSession, isMsfActive: isMsfActiveFn,
@@ -63,6 +64,28 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
     setNanoFile, setBusy, handleNanoSave,
     pendingSu,
   } = useCommandRunner(props);
+
+  // Mobile KeyRow injection
+  useEffect(() => {
+    if (!isMobileKey) return;
+    if (isMobileKey === '__CTRL_C__') {
+      const e = { key: 'c', ctrlKey: true, preventDefault: () => {} } as unknown as React.KeyboardEvent<HTMLInputElement>;
+      handleKeyDown(e);
+      return;
+    }
+    if (isMobileKey === '__ARROW_UP__') {
+      const e = { key: 'ArrowUp', preventDefault: () => {} } as unknown as React.KeyboardEvent<HTMLInputElement>;
+      handleKeyDown(e);
+      return;
+    }
+    if (isMobileKey === '\t') {
+      const e = { key: 'Tab', preventDefault: () => {} } as unknown as React.KeyboardEvent<HTMLInputElement>;
+      handleKeyDown(e);
+      return;
+    }
+    setInput(prev => prev + isMobileKey);
+    inputRef.current?.focus();
+  }, [isMobileKey]);
 
   return (
     <div 
@@ -112,7 +135,7 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
           ref={scrollRef}
           role="log"
           aria-label="Terminal output"
-          className="flex-1 overflow-y-auto p-5 space-y-3 cursor-text select-text"
+          className={`flex-1 overflow-y-auto space-y-3 cursor-text select-text ${fontSize && fontSize <= 13 ? 'p-3' : 'p-5'}`}
           style={{ scrollbarWidth: 'thin', scrollbarColor: '#374151 transparent' }}
           onClick={() => inputRef.current?.focus()}
         >

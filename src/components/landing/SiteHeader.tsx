@@ -86,7 +86,7 @@ export function SiteHeader({
           <LangToggle language={language} onSwitch={switchLang} />
           {showCta && ctaTo && ctaLabel && (
             <Link to={ctaTo}
-              className="hidden sm:inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
+              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
               style={{ background: `linear-gradient(135deg, ${colors.emerald}, ${colors.emeraldDark})` }}>
               {ctaLabel}
             </Link>

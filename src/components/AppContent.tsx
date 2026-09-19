@@ -18,8 +18,10 @@ import { useHistorySync, useAnalyticsEffects } from './appContent/useAppContentE
 import { WorkspaceTopBar } from './appContent/WorkspaceTopBar';
 import { WorkspaceOverlays } from './appContent/WorkspaceOverlays';
 import { LandingView } from './appContent/LandingView';
+import { MobileWorkspace } from './appContent/MobileWorkspace';
 import { useAppContentState, useAppContentActions } from './appContent/useAppContentStore';
 import { useMissionCompletion } from '../hooks/useMissionCompletion';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export function AppContent() {
   const navigate = useNavigate();
@@ -72,6 +74,7 @@ export function AppContent() {
   } = useAppContentActions();
 
   const activeMachine = machines.find(m => m.id === activeMachineId) || machines[0];
+  const isMobile = useIsMobile(768);
 
   useHistorySync(navigate, lang, setView);
   useAnalyticsEffects(view, currentScenario, missions, openFoxyTour, foxyTourOpen);
@@ -103,6 +106,57 @@ export function AppContent() {
         loadingMachine={loadingMachine}
         language={language}
       />
+    );
+  }
+
+  // ── Mobile branch: full viewport, no margins, dedicated layout ──
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col" style={{ fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
+        <div className="flex flex-col bg-gray-900 overflow-hidden relative flex-1 min-h-0" ref={workspaceRef} style={{ height: '100dvh', width: '100vw' }}>
+          <WorkspaceTopBar
+            scenarioName={currentScenario.name}
+            uiMode={uiMode}
+            scenarioCategory={currentScenario.category}
+            activeApp={activeApp}
+            onGoHome={handleGoHome}
+            onSetActiveApp={setActiveApp}
+            onRefreshBrowser={refreshBrowser}
+          />
+          {showMachineLoader && loadingMachine ? (
+            <div className="flex-1 flex items-center justify-center" style={DEFAULT_WALLPAPER.style}>
+              <MachineLoader machineName={loadingMachine.machine_info.hostname} machineIp={loadingMachine.machine_info.ip} machineOs={loadingMachine.machine_info.os} onComplete={() => {}} language={language} />
+            </div>
+          ) : (
+            <MobileWorkspace
+              scenarioId={currentScenario.id}
+              scenarioName={currentScenario.name}
+              scenarioCategory={currentScenario.category}
+              networkRange={currentScenario.network_range}
+              machines={machines}
+              missions={missions}
+              activeMachineId={activeMachineId}
+              currentMissionId={currentMissionId}
+              activeApp={activeApp}
+              termColor={termColor}
+              onMissionComplete={completeMission}
+              onCredentialsFound={findCredentials}
+              onVerifyCredentials={verifyCredentials}
+              onChangeMachine={changeMachine}
+              onFailedUser={addFailedUser}
+              onSudoPrivileges={setSudoPrivileges}
+              onSetActiveApp={setActiveApp}
+              onRefreshBrowser={refreshBrowser}
+              onGoHome={handleGoHome}
+              onToggleNetworkMap={toggleNetworkMap}
+              onExit={() => setShowExitConfirm(true)}
+            />
+          )}
+          <ExitConfirm open={showExitConfirm} onCancel={() => setShowExitConfirm(false)} onConfirm={() => { setShowExitConfirm(false); handleGoHome(); }} />
+          {showNetworkMap && <NetworkMap scenario={{ ...currentScenario, machines }} activeMachineId={activeMachineId} msfState={msfState} ftpSession={ftpSession} onClose={() => toggleNetworkMap(false)} />}
+        </div>
+        <WorkspaceOverlays notification={notification} showCompletionOverlay={showCompletionOverlay} showSurvey={showSurvey} pendingSurveyScenario={pendingSurveyScenario} currentScenario={currentScenario} totalMissions={missions.length} completedCount={missions.filter(m => m.status === 'completed').length} language={language} onCloseCompletion={() => setShowCompletionOverlay(false)} onSurveySubmit={() => { useScenarioStore.getState().resetWorkspace(); const validLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es'; navigate(`/${validLang}/labs`, { replace: true }); }} />
+      </div>
     );
   }
 
