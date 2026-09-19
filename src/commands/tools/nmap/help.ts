@@ -8,7 +8,10 @@ USAGE: nmap [Scan Type] [Options] <target>
 SCAN TYPES:
   -sS       TCP SYN Stealth Scan
   -sT       TCP Connect Scan (default)
+  -sU       UDP Scan
   -sV       Probe open ports for service/version info
+  -sC       Default script scan (equivalent to --script=default)
+  --script <name>  Run NSE scripts (e.g. --script=vuln, --script=default)
   -sn       Ping Scan (host discovery only, no port scan)
   -sP       Ping Scan (legacy, same as -sn)
 
@@ -20,11 +23,19 @@ PORT SPECIFICATION:
   -p-           Scan all 65535 ports
   -p22          Shorthand for -p 22
   --open        Show only open (or possibly open) ports
+  --top-ports <n>  Scan n most common ports
+  -F            Fast mode: scan 100 most common ports
   (default)     Top ~1000 ports: 1-1024 + common high ports
 
 OUTPUT:
   -oN <file>    Save output in normal format to file
   -oG <file>    Save output in grepable format to file
+  -oX <file>    Save output in XML format
+  -oA <base>    Save output in all formats (normal + grepable + xml)
+
+TIMING:
+  -T <0-5>      Timing template (0 paranoid .. 5 insane)
+  --min-rate <n>  Minimum packet rate (ignored, for compatibility)
 
 VERBOSITY:
   -v            Increase verbosity level

@@ -166,10 +166,14 @@ describe('Fase 9 - ln/symlinks', () => {
     expect(link?.linkTarget).toBe('/etc/passwd');
   });
 
-  it('ln -s: destino inexistente falla', () => {
+  it('ln -s: permite destino inexistente (broken symlink)', () => {
     const machine = makeRootMachine();
     const r = cmd_ln.execute(['-s', '/no/target', '/home/admin/x'], ctx(machine));
-    expect(r.isError).toBe(true);
+    expect(r.isError).not.toBe(true);
+    applyResult(machine, r);
+    const link = machine.files.find(f => f.path === '/home/admin/x');
+    expect(link?.type).toBe('symlink');
+    expect(link?.linkTarget).toBe('/no/target');
   });
 
   it('ln -s: sin -f y el link ya existe falla', () => {

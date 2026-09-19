@@ -31,11 +31,7 @@ export const cmd_ln = {
       const fullLinkPath = normalizePath(resolvePath(linkName, ctx.currentDir || '/', homeDir));
       const cleanLinkPath = fullLinkPath.endsWith('/') && fullLinkPath.length > 1 ? fullLinkPath.slice(0, -1) : fullLinkPath;
 
-      // El destino debe existir (target o link ya existente)
-      const targetResolved = findFile(machine, normalizePath(resolvePath(target, ctx.currentDir || '/', homeDir)));
-      if (!targetResolved) {
-        return { output: `ln: failed to create symbolic link '${linkName}': No such file or directory`, isError: true };
-      }
+      // En Unix real `ln -s` permite broken symlink (target puede no existir)
 
       const existing = findFile(machine, cleanLinkPath);
       if (existing) {

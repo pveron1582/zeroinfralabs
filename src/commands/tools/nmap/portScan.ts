@@ -15,13 +15,14 @@ export function performPortScan(
   flags: NmapScanFlags,
   ctx: CommandContext
 ): CommandResponse {
-  const { isSYNScan, isVersionScan, vLevel, osDetect, noPing, aggressive, outputFileNormal, outputFileGrep } = flags;
+  const { isSYNScan, isVersionScan, isUdpScan, vLevel, osDetect, noPing, aggressive, script, timing, outputFileNormal, outputFileGrep, outputFileXml, outputFileAll } = flags;
 
   const ports = parsePorts(args, target);
 
-  const scanLabel = isSYNScan ? 'SYN Stealth Scan' : 'Connect Scan';
+  const scanLabel = isUdpScan ? 'UDP Scan' : isSYNScan ? 'SYN Stealth Scan' : 'Connect Scan';
   const scanTime = (ports.length * 0.02 + 0.5).toFixed(2);
   const attackerIp = ctx.machine?.machine_info?.ip || '192.168.1.5';
+  const timingLabel = timing ? ` (timing: T${timing})` : '';
 
   let output = `Starting Nmap 7.92 ( https://nmap.org ) at ${new Date().toLocaleString()}\n`;
 
@@ -30,7 +31,11 @@ export function performPortScan(
   }
 
   if (isSYNScan && vLevel === 0) {
-    output += `Scanning ${target.machine_info.hostname} (${ip}) [1 host] - SYN Stealth Scan\n`;
+    output += `Scanning ${target.machine_info.hostname} (${ip}) [1 host] - ${scanLabel}${timingLabel}\n`;
+  }
+
+  if (timing && vLevel >= 1) {
+    output += `Timing template: T${timing}\n`;
   }
 
   if (noPing && vLevel >= 1) {
@@ -109,12 +114,19 @@ export function performPortScan(
     }
   }
 
-  // ── Aggressive mode (-A): scripts NSE por defecto + Service Info ──
-  if (aggressive) {
+  // ── NSE scripts (--script / -sC) ──
+  const effectiveScript = script || (aggressive ? 'default' : null);
+  if (effectiveScript) {
     const scriptResults = buildHostScriptResults(target, openPorts);
     if (scriptResults) {
-      output += `\n${scriptResults}`;
+      output += `\nHost script results (${effectiveScript}):\n${scriptResults.replace('Host script results:\n', '')}`;
+    } else {
+      output += `\nNSE: Script '${effectiveScript}' completed (no results).\n`;
     }
+  }
+
+  // ── Aggressive mode (-A): Service Info ──
+  if (aggressive) {
     output += `Service Info: OS: ${target.machine_info.os.split(' ')[0]}\n`;
   }
 
@@ -146,6 +158,28 @@ export function performPortScan(
       grepOutput += `Host: ${ip} (${target.machine_info.hostname})\tPorts: ${p.port}/${p.state}/${p.protocol}//${p.service}//${isVersionScan ? p.version : ''}\n`;
     });
     writer.tryAddCreatedFile(outputFileGrep, grepOutput);
+  }
+
+  if (outputFileXml) {
+    let xmlOutput = `<?xml version="1.0"?>\n<nmaprun scanner="nmap" args="${args.join(' ')}">\n  <host><address addr="${ip}" addrtype="ipv4"/>\n    <ports>\n`;
+    openPorts.forEach(p => {
+      xmlOutput += `      <port protocol="${p.protocol}" portid="${p.port}"><state state="${p.state}"/><service name="${p.service}" product="${p.version || ''}"/></port>\n`;
+    });
+    xmlOutput += `    </ports>\n  </host>\n</nmaprun>\n`;
+    writer.tryAddCreatedFile(outputFileXml, xmlOutput);
+  }
+
+  if (outputFileAll) {
+    writer.tryAddCreatedFile(outputFileAll + '.nmap', output);
+    let grepAll = `# Nmap ${new Date().toLocaleString()} scan initiated with ${args.join(' ')}\n`;
+    openPorts.forEach(p => {
+      grepAll += `Host: ${ip} (${target.machine_info.hostname})\tPorts: ${p.port}/${p.state}/${p.protocol}//${p.service}\n`;
+    });
+    writer.tryAddCreatedFile(outputFileAll + '.gnmap', grepAll);
+    let xmlAll = `<?xml version="1.0"?>\n<nmaprun scanner="nmap" args="${args.join(' ')}"><host><address addr="${ip}"/><ports>`;
+    openPorts.forEach(p => { xmlAll += `<port protocol="${p.protocol}" portid="${p.port}"/>`; });
+    xmlAll += `</ports></host></nmaprun>\n`;
+    writer.tryAddCreatedFile(outputFileAll + '.xml', xmlAll);
   }
 
   // ── Update discovery level ──

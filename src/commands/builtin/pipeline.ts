@@ -150,14 +150,14 @@ export const cmd_uniq = {
     if (data === null) {
       return { output: `uniq: cannot read: No such file or directory`, isError: true };
     }
-    const seen = new Set<string>();
     const out: string[] = [];
-    linesOf(data).forEach(line => {
-      if (!seen.has(line)) {
-        seen.add(line);
+    let prev: string | null = null;
+    for (const line of linesOf(data)) {
+      if (line !== prev) {
         out.push(line);
+        prev = line;
       }
-    });
+    }
     return { output: out.join('\n') };
   }
 };

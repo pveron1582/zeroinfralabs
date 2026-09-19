@@ -62,7 +62,9 @@ export function splitArgs(line: string): string[] {
   return tokens;
 }
 
-/** Extrae redirecciones de nivel superior (>, >>, <) fuera de comillas. */
+/** Extrae redirecciones de nivel superior (>, >>, <) fuera de comillas.
+ *  También detecta y descarta redirecciones de stderr como `2>/dev/null`, `2>>file`, `2>&1`
+ *  (se eliminan del comando sin tratarlas como redirección de stdout). */
 export function extractRedirection(line: string): ShellRedirection | null {
   let inSingle = false;
   let inDouble = false;
@@ -78,6 +80,22 @@ export function extractRedirection(line: string): ShellRedirection | null {
     if (ch === "'" && !inDouble) { inSingle = !inSingle; i++; continue; }
     if (ch === '"' && !inSingle) { inDouble = !inDouble; i++; continue; }
     if (!inSingle && !inDouble && (ch === '<' || ch === '>')) {
+      // Detectar stderr redirection: `2>` o `2>>` inmediatamente antes
+      const isStderr = i > 0 && line[i - 1] === '2' && (i - 1 >= last || /\s/.test(line[i - 2] ?? ' ') || line[i - 2] === ' ');
+      // Si es stderr, el `2` está en cmd slice; lo removemos
+      if (isStderr && ch === '>') {
+        // Remover el `2` del cmd acumulado
+        const cmdPart = line.slice(last, i - 1);
+        cmd += cmdPart;
+        const isAppend = line[i + 1] === '>';
+        let j = i + (isAppend ? 2 : 1);
+        while (j < line.length && /\s/.test(line[j])) j++;
+        // Consumir target (p.ej. /dev/null, &1) pero ignorarlo
+        while (j < line.length && !/\s/.test(line[j])) j++;
+        i = j;
+        last = j;
+        continue;
+      }
       cmd += line.slice(last, i);
       const isAppend = ch === '>' && line[i + 1] === '>';
       const op = ch === '>' ? (isAppend ? '>>' : '>') : '<';

@@ -15,6 +15,14 @@ const HIGH_TOP_PORTS = new Set([
 export function parsePorts(args: string[], target: Machine): Port[] {
   const allPorts = target.scan_results.ports || [];
   const openOnly = args.includes('--open');
+  const fastMode = args.includes('-F');
+  const topPortsArg = (() => {
+    const idx = args.indexOf('--top-ports');
+    if (idx !== -1) return parseInt(args[idx + 1], 10) || null;
+    const eq = args.find(a => a.startsWith('--top-ports='));
+    if (eq) return parseInt(eq.split('=')[1], 10) || null;
+    return null;
+  })();
 
   // Find -p flag: could be '-p22,80' or '-p' followed by '22,80'
   let portSpec: string | null = null;
@@ -54,6 +62,18 @@ export function parsePorts(args: string[], target: Machine): Port[] {
       }
     });
     result = allPorts.filter(p => requestedPorts.has(p.port));
+  }
+
+  // -F: top 100 ports
+  if (fastMode && portSpec === null && topPortsArg === null) {
+    const top100 = new Set([...Array.from(HIGH_TOP_PORTS).slice(0, 20), ...Array.from({ length: 80 }, (_, i) => i + 1)].slice(0, 100));
+    result = result.filter(p => top100.has(p.port) || p.port <= 80);
+    result = result.slice(0, 100);
+  }
+
+  // --top-ports N
+  if (topPortsArg !== null && portSpec === null) {
+    result = result.slice(0, topPortsArg);
   }
 
   // Estado efectivo: el firewall puede filtrar puertos (DROP/REJECT ufw

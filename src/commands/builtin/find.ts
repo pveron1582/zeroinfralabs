@@ -5,7 +5,7 @@
 
 import type { CommandContext, CommandResponse } from '../../types';
 import { getCurrentUser } from '../../utils/users';
-import { canExecute } from '../../utils/permissions';
+import { canExecute, canRead, canWrite } from '../../utils/permissions';
 import { findDirEntry } from '../../utils/fs';
 
 const FIND_HELP = `Usage: find [path...] [expression]
@@ -13,7 +13,10 @@ const FIND_HELP = `Usage: find [path...] [expression]
   find / -perm -4000        buscar archivos SUID
   find / -user root         buscar archivos de un usuario
   find / -type f            solo archivos regulares
-  find / -type d            solo directorios`;
+  find / -type d            solo directorios
+  find / -writable          archivos escribibles por el usuario
+  find / -readable          archivos legibles
+  find / -executable        archivos ejecutables`;
 
 function globToRegExp(pattern: string): RegExp {
   const escaped = pattern
@@ -54,6 +57,9 @@ export const cmd_find = {
     let perm: number | null = null;
     let fileUser: string | null = null;
     let type: string | null = null;
+    let writable = false;
+    let readable = false;
+    let executable = false;
 
     for (let i = 0; i < exprArgs.length; i++) {
       const a = exprArgs[i];
@@ -61,7 +67,10 @@ export const cmd_find = {
       else if (a === '-perm') perm = parseInt((exprArgs[i + 1] ?? '').replace(/^-/, ''), 8) || 0;
       else if (a === '-user') fileUser = exprArgs[i + 1];
       else if (a === '-type') type = exprArgs[i + 1];
-      else if (a === '-maxdepth') { /* ignorado: simulación de un solo nivel de opciones */ }
+      else if (a === '-maxdepth') { /* ignorado */ }
+      else if (a === '-writable') writable = true;
+      else if (a === '-readable') readable = true;
+      else if (a === '-executable') executable = true;
     }
 
     const baseDirEntry = findDirEntry(machine, base);
@@ -83,6 +92,9 @@ export const cmd_find = {
       if (namePattern && !matchName(displayPath, namePattern)) continue;
       if (perm !== null && ((f.mode ?? 0) & perm) !== perm) continue;
       if (fileUser && (f.owner ?? 'root') !== fileUser) continue;
+      if (writable && !canWrite(machine, f, user)) continue;
+      if (readable && !canRead(machine, f, user)) continue;
+      if (executable && !canExecute(machine, f, user)) continue;
 
       results.push(displayPath);
     }

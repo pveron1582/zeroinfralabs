@@ -3,6 +3,7 @@
 // Nota: Este comando es "libre" - no conoce laboratorios ni misiones.
 
 import type { CommandContext, CommandResponse } from '../../types';
+import { isInstalled } from '../../frameworks/packages/packageManager';
 
 // Comandos disponibles en el sistema y sus paths
 const COMMAND_PATHS: Record<string, string> = {
@@ -107,24 +108,58 @@ const COMMAND_PATHS: Record<string, string> = {
   'tee': '/usr/bin/tee',
 };
 
+const CMD_TO_PACKAGE: Record<string, string> = {
+  nmap: 'nmap',
+  hydra: 'hydra',
+  gobuster: 'gobuster',
+  curl: 'curl',
+  wget: 'wget',
+  python3: 'python3',
+  python: 'python3',
+  vim: 'vim',
+  vi: 'vim',
+  nano: 'nano',
+  iptables: 'iptables',
+  ufw: 'ufw',
+  ifconfig: 'net-tools',
+  netstat: 'net-tools',
+  ip: 'iproute2',
+  ss: 'iproute2',
+  hashcat: 'hashcat',
+  john: 'john',
+  msfconsole: 'metasploit-framework',
+  ssh: 'openssh-client',
+  scp: 'openssh-client',
+  nc: 'netcat-traditional',
+  netcat: 'netcat-traditional',
+  git: 'git',
+};
+
 export const cmd_which = {
   name: 'which',
-  execute: (args: string[], _ctx: CommandContext): CommandResponse => {
+  execute: (args: string[], ctx: CommandContext): CommandResponse => {
     if (args.length === 0) {
       return { output: '', isError: false };
     }
+
+    const showAll = args.includes('-a') || args.includes('--all');
+    void showAll;
 
     let output = '';
     const notFound: string[] = [];
 
     for (const cmd of args) {
       if (cmd.startsWith('-')) {
-        // Skip options (like --all)
         continue;
       }
-      
-      const path = COMMAND_PATHS[cmd.toLowerCase()];
+      const key = cmd.toLowerCase();
+      const path = COMMAND_PATHS[key];
       if (path) {
+        const pkg = CMD_TO_PACKAGE[key];
+        if (pkg && ctx.machine?.id && !isInstalled(ctx.machine, pkg)) {
+          notFound.push(cmd);
+          continue;
+        }
         if (output) output += '\n';
         output += path;
       } else {
@@ -133,7 +168,6 @@ export const cmd_which = {
     }
 
     if (notFound.length > 0 && output === '') {
-      // No commands found - return empty (like real which)
       return { output: '' };
     }
 
