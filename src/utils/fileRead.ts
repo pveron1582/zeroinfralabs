@@ -3,7 +3,11 @@
 // editores (nano, futuros vim/vi) la reutilizan: así leer flags/notas/
 // payloads con cualquier herramienta valida la misión del laboratorio.
 
-import type { Machine, FileEntry, FileReadData, PossibleUsersData } from '../types';
+import type { Machine, FileEntry, FileReadData, PossibleUsersData, User } from '../types';
+import { normalizePath, resolvePath } from './path';
+import { isWinPath, resolveWinPath } from './winPath';
+import { findFile, resolveSymlink } from './fs';
+import { canRead } from './permissions';
 
 // Detecta usuarios mencionados en el contenido
 function extractMentionedUsers(content: string): string[] {
@@ -31,6 +35,42 @@ function extractMentionedUsers(content: string): string[] {
 // verdad: lo usan cat/nano (metadata) y el validador de descargas.
 export function isFlagContent(content: string): boolean {
   return /(?:ZIL|THM|FLAG)\{[^}]+\}/.test(content);
+}
+
+// ── Lectura centralizada con permisos ─────────────────────────────
+// Resuelve ruta canónica + symlinks y valida canRead. Todos los comandos
+// que lean archivos (cat, head, awk, sed, grep, ...) deben usarlo para
+// no bypassear permisos Unix (ver docs/PERMISSIONS.md).
+export type ReadVirtualResult =
+  | { ok: true; content: string; resolved: FileEntry; cleanPath: string }
+  | { ok: false; error: 'not-found' | 'is-directory' | 'permission-denied' };
+
+export function toCleanFilePath(rawPath: string, currentDir: string | undefined, home: string): string {
+  const dir = currentDir || '/';
+  // Windows: C:\..., cwd /C:/... o home /C:/... → resolución win (PLAN_WINDOWS W0)
+  if (isWinPath(rawPath) || isWinPath(dir) || isWinPath(home)) {
+    return resolveWinPath(rawPath, dir, home);
+  }
+  const full = normalizePath(resolvePath(rawPath, dir, home));
+  return full.endsWith('/') && full.length > 1 ? full.slice(0, -1) : full;
+}
+
+export function readVirtualFile(
+  machine: Machine,
+  rawPath: string,
+  currentDir: string | undefined,
+  user: User | null,
+): ReadVirtualResult {
+  const home = user?.home ?? '/';
+  const cleanPath = toCleanFilePath(rawPath, currentDir, home);
+  const file = findFile(machine, cleanPath);
+  if (!file) return { ok: false, error: 'not-found' };
+  if (file.path.endsWith('/.dir')) return { ok: false, error: 'is-directory' };
+  const resolved = file.type === 'symlink' ? (resolveSymlink(machine, file) ?? file) : file;
+  if (resolved.type === 'symlink') return { ok: false, error: 'not-found' };
+  if (resolved.path.endsWith('/.dir')) return { ok: false, error: 'is-directory' };
+  if (!canRead(machine, resolved, user)) return { ok: false, error: 'permission-denied' };
+  return { ok: true, content: resolved.content ?? '', resolved, cleanPath };
 }
 
 // Construye la metadata `fileRead` (+ possibleUsers) a partir del archivo

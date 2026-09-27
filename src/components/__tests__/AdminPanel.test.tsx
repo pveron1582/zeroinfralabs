@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AdminPanel } from '../AdminPanel';
 import { useScenarioStore } from '../../store/scenarioStore';
+import { SCENARIOS } from '../../laboratorios/laboratorios';
 
 vi.mock('../DesktopTerminal', () => ({
   DesktopTerminal: () => <div data-testid="mock-terminal">terminal</div>,
@@ -152,6 +153,13 @@ describe('AdminPanel', () => {
       fireEvent.change(select, { target: { value: select.options[1].value } });
       await waitFor(() => expect(screen.getByText('DEBUG')).toBeInTheDocument());
       expect(screen.queryByText('Cargando escenario...')).not.toBeInTheDocument();
+    });
+
+    it('loadScenario resetea managers y limpia el marker de reset global', async () => {
+      useScenarioStore.setState({ globalResetDoneForScenario: SCENARIOS[0].id });
+      renderAdmin();
+      await enterSandbox();
+      expect(useScenarioStore.getState().globalResetDoneForScenario).toBeNull();
     });
 
     it('permite apagar y encender el panel de debug', async () => {

@@ -169,4 +169,39 @@ describe('cmd_chmod', () => {
     expect(result.isError).toBe(true);
     expect(result.output).toContain('invalid option');
   });
+
+  it('debe soportar +X solo si es dir o ya ejecutable', () => {
+    const machine = makeMachine();
+    const context = { currentDir: '/home/user/', machine } as CommandContext;
+    // archivo 644 sin x: a+X no cambia nada
+    let result = cmd_chmod.execute(['a+X', 'file.txt'], context);
+    expect(result.isError).toBe(false);
+    expect(machine.files.find(f => f.path === '/home/user/file.txt')?.mode).toBe(0o644);
+    // archivo 744 (con algún x): a+X completa a 755
+    cmd_chmod.execute(['744', 'script.sh'], context);
+    result = cmd_chmod.execute(['a+X', 'script.sh'], context);
+    expect(result.isError).toBe(false);
+    expect(machine.files.find(f => f.path === '/home/user/script.sh')?.mode).toBe(0o755);
+  });
+
+  it('debe quitar x con a-X solo donde hay x', () => {
+    const machine = makeMachine();
+    const context = { currentDir: '/home/user/', machine } as CommandContext;
+    cmd_chmod.execute(['755', 'script.sh'], context);
+    const result = cmd_chmod.execute(['a-X', 'script.sh'], context);
+    expect(result.isError).toBe(false);
+    expect(machine.files.find(f => f.path === '/home/user/script.sh')?.mode).toBe(0o644);
+  });
+
+  it('debe reevaluar +X por hijo en -R', () => {
+    const machine = makeMachine();
+    const context = { currentDir: '/home/', machine } as CommandContext;
+    cmd_chmod.execute(['744', '/home/user/script.sh'], { ...context, currentDir: '/home/user/' } as CommandContext);
+    const result = cmd_chmod.execute(['-R', 'a+X', 'user'], context);
+    expect(result.isError).toBe(false);
+    // file.txt 644 sin x queda igual; script.sh 744 pasa a 755; el dir sigue 755
+    expect(machine.files.find(f => f.path === '/home/user/file.txt')?.mode).toBe(0o644);
+    expect(machine.files.find(f => f.path === '/home/user/script.sh')?.mode).toBe(0o755);
+    expect(machine.files.find(f => f.path === '/home/user/.dir')?.mode).toBe(0o755);
+  });
 });

@@ -131,6 +131,36 @@ describe('Fase 6 - iptables', () => {
     const badTarget = cmd_iptables.execute(['-A', 'INPUT', '--dport', '22', '-j', 'FOO'], ctx(machine));
     expect(badTarget.isError).toBe(true);
   });
+
+  it('iptables -I inserta al inicio por defecto y gana a la regla previa', () => {
+    const machine = makeRootMachine();
+    cmd_iptables.execute(['-A', 'INPUT', '-p', 'tcp', '--dport', '22', '-j', 'DROP'], ctx(machine));
+    expect(isPortFiltered(machine, { port: 22, protocol: 'tcp' })).toBe(true);
+    const res = cmd_iptables.execute(['-I', 'INPUT', '-p', 'tcp', '--dport', '22', '-j', 'ACCEPT'], ctx(machine));
+    expect(res.isError).toBeFalsy();
+    expect(res.output).toContain('position 1');
+    expect(isPortFiltered(machine, { port: 22, protocol: 'tcp' })).toBe(false);
+  });
+
+  it('iptables -I con posición inserta en el lugar indicado', () => {
+    const machine = makeRootMachine();
+    cmd_iptables.execute(['-A', 'INPUT', '-p', 'tcp', '--dport', '22', '-j', 'ACCEPT'], ctx(machine));
+    cmd_iptables.execute(['-A', 'INPUT', '-p', 'tcp', '--dport', '22', '-j', 'DROP'], ctx(machine));
+    // DROP queda segundo: ACCEPT gana
+    expect(isPortFiltered(machine, { port: 22, protocol: 'tcp' })).toBe(false);
+    const res = cmd_iptables.execute(['-I', 'INPUT', '1', '-p', 'tcp', '--dport', '22', '-j', 'DROP'], ctx(machine));
+    expect(res.isError).toBeFalsy();
+    const list = cmd_iptables.execute(['-L', 'INPUT'], ctx(machine));
+    const lines = list.output.split('\n');
+    expect(lines.findIndex(l => l.startsWith('DROP'))).toBeLessThan(lines.findIndex(l => l.startsWith('ACCEPT')));
+    expect(isPortFiltered(machine, { port: 22, protocol: 'tcp' })).toBe(true);
+  });
+
+  it('iptables -I valida la cadena', () => {
+    const machine = makeRootMachine();
+    const res = cmd_iptables.execute(['-I', 'LOOP', '-j', 'DROP'], ctx(machine));
+    expect(res.isError).toBe(true);
+  });
 });
 
 describe('Fase 6 - ufw', () => {
@@ -280,6 +310,15 @@ describe('Fase 6 - ss / netstat', () => {
     const res = cmd_netstat.execute(['-an'], ctx(machine));
     expect(res.output).toContain('LISTEN');
     expect(res.output).toContain('ESTABLISHED');
+  });
+
+  it('ss -s muestra resumen de sockets', () => {
+    const machine = makeMachine();
+    const res = cmd_ss.execute(['-s'], ctx(machine));
+    expect(res.isError).toBeFalsy();
+    expect(res.output).toContain('Total:');
+    expect(res.output).toContain('TCP:');
+    expect(res.output).toContain('estab');
   });
 });
 

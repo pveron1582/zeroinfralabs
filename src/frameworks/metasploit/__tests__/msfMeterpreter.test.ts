@@ -1,9 +1,11 @@
 // ── frameworks/metasploit/__tests__/msfMeterpreter.test.ts ──
 // @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { executeMeterpreterCommand } from '../orchestrators/msfMeterpreter';
 import type { MsfState } from '../core/msfTypes';
 import type { Machine, CommandContext } from '../../../types';
+import { createWindowsFileSystem } from '../../../fs-models/fs-windows';
+import { withWindowsSampleFiles } from '../../../fs-models/__fixtures__/windowsSampleFiles';
 
 // Create mock context
 const createMockContext = (machines: Machine[] = []): CommandContext => ({
@@ -116,5 +118,75 @@ describe('executeMeterpreterCommand', () => {
     const result = executeMeterpreterCommand('comando_inexistente', [], meterpreterState, createMockContext());
     expect(result).not.toBeNull();
     expect(result!.output).toContain('Unknown command');
+  });
+});
+
+describe('executeMeterpreterCommand - Stdapi filesystem', () => {
+  const HOME = '/C:/Users/win7user';
+
+  function winCtx(currentDir = HOME): CommandContext {
+    return {
+      machine: {
+        id: 'target-01',
+        machine_info: {
+          hostname: 'WIN7-LAB', ip: '192.168.1.10', mac: '00:00:00:00:00:00',
+          os: 'Windows 7', status: 'up', type: 'server', family: 'windows',
+        },
+        discovery_level: 4,
+        scan_results: { ports: [] },
+        web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+        learning_steps: [],
+        files: withWindowsSampleFiles(
+          createWindowsFileSystem({ username: 'win7user', computerName: 'WIN7-LAB' }),
+          'win7user',
+        ),
+        win: { currentUser: 'win7user', isAdmin: false, computerName: 'WIN7-LAB' },
+      } as Machine,
+      allMachines: [],
+      currentMissionId: 5,
+      currentDir,
+      setCurrentDir: vi.fn(),
+    };
+  }
+
+  const sessionState: MsfState = {
+    active: true,
+    module: 'exploit/windows/smb/ms17_010_eternalblue',
+    moduleType: 'exploit',
+    options: { RHOSTS: '192.168.1.10' },
+    sessionOpen: true,
+    shellMode: false,
+    uidChecked: false,
+    auxChecked: true,
+    cwd: HOME,
+  };
+
+  it('cd cambia el cwd de la sesión', () => {
+    const ctx = winCtx();
+    const result = executeMeterpreterCommand('cd', ['Documents'], sessionState, ctx);
+    expect(result!.msfStateUpdate?.cwd).toBe(`${HOME}/Documents`);
+    expect(ctx.setCurrentDir).toHaveBeenCalledWith(`${HOME}/Documents`);
+  });
+
+  it('pwd/getwd imprimen el cwd en formato Windows', () => {
+    const state: MsfState = { ...sessionState, cwd: `${HOME}/Documents` };
+    expect(executeMeterpreterCommand('pwd', [], state, winCtx())!.output)
+      .toContain('C:\\Users\\win7user\\Documents');
+    expect(executeMeterpreterCommand('getwd', [], state, winCtx())!.output)
+      .toContain('C:\\Users\\win7user\\Documents');
+  });
+
+  it('ls y dir listan el FS real según el cwd de la sesión', () => {
+    const state: MsfState = { ...sessionState, cwd: `${HOME}/Documents` };
+    for (const cmd of ['ls', 'dir']) {
+      const result = executeMeterpreterCommand(cmd, [], state, winCtx('/root'));
+      expect(result!.output).toContain('notes.txt');
+    }
+  });
+
+  it('cat lee el archivo con la ruta relativa al cwd', () => {
+    const state: MsfState = { ...sessionState, cwd: `${HOME}/Documents` };
+    const result = executeMeterpreterCommand('cat', ['notes.txt'], state, winCtx('/root'));
+    expect(result!.output).toContain('P@ssw0rd123!');
   });
 });

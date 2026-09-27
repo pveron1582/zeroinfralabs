@@ -11,10 +11,11 @@ interface Props {
   networkRange: string;
   onOpenBrowser: () => void;
   onOpenNetworkMap: () => void;
+  onOpenEnumeration?: () => void;
   onExit: () => void;
 }
 
-export function MissionPanel({ missions, allMachines, networkRange, onOpenNetworkMap, onExit }: Props) {
+export function MissionPanel({ missions, allMachines, networkRange, onOpenNetworkMap, onOpenEnumeration, onExit }: Props) {
   const hasNewNetworkInfo = useScenarioStore(s => s.hasNewNetworkInfo);
   const t = useT();
   const language = useLanguage();
@@ -35,12 +36,18 @@ export function MissionPanel({ missions, allMachines, networkRange, onOpenNetwor
 
   return (
     <div className="flex flex-col w-72 flex-shrink-0 bg-gray-900 border-l border-gray-800" data-tour="mission-panel">
-      {/* Header - solo botón de red, más grande */}
+      {/* Header - botón de red + enumeración (móvil) */}
       <div className="px-4 py-3 border-b border-gray-800 flex flex-col items-center gap-3">
         <button onClick={onOpenNetworkMap} data-tour="network-map-btn" className={`flex items-center justify-center gap-3 px-6 py-3 rounded-lg text-sm font-medium border transition-all w-full max-w-xs ${hasNewNetworkInfo ? 'animate-pulse border-violet-400 text-violet-400 bg-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.3)]' : 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600'}`} title="Network Map">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="2" width="6" height="6"/><rect x="2" y="16" width="6" height="6"/><rect x="16" y="16" width="6" height="6"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="5" y1="14" x2="12" y2="14"/><line x1="19" y1="14" x2="12" y2="14"/></svg>
           <span>{t('viewNetwork')}</span>
         </button>
+        {onOpenEnumeration && (
+          <button onClick={onOpenEnumeration} className="flex items-center justify-center gap-3 px-6 py-3 rounded-lg text-sm font-medium border border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-gray-200 hover:border-gray-600 transition-all w-full max-w-xs">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span>{language === 'es' ? 'Ver Enumeración' : 'View Enumeration'}</span>
+          </button>
+        )}
         <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/60 border border-gray-700/50 w-full max-w-xs">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
             <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>

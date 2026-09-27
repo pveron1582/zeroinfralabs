@@ -3,6 +3,7 @@
 
 import type { FileEntry } from '../types';
 import type { ExtraLinuxUser } from './fs-linux-types';
+import { MACHINE_HOSTNAME_PLACEHOLDER } from './placeholders';
 
 type ExtraBlock = (fn: (eu: ExtraLinuxUser, i: number) => string) => string;
 
@@ -136,13 +137,21 @@ ${u}:x:1000:${extraUsersBlock((eu, i) => `${eu.username}:x:${1001 + i}:`)}`, typ
   ];
 }
 
-/** Archivos estáticos de configuración en /etc. */
+/**
+ * Archivos estáticos de configuración en /etc.
+ *
+ * Plantilla NEUTRA: el hostname real de cada laboratorio lo inyecta
+ * `buildScenario` reemplazando el placeholder `MACHINE_HOSTNAME` por
+ * `machine_info.hostname` (única fuente de verdad — es lo que imprime el
+ * comando `hostname`). Sin él, `cat /etc/hostname` decía `target-server`
+ * en todos los labs, que era distinto al hostname real de cada uno.
+ */
 export const ETC_STATIC_FILES: FileEntry[] = [
-    { path: '/etc/hostname', content: 'target-server', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
-    { path: '/etc/hosts', content: '127.0.0.1\tlocalhost\n127.0.1.1\ttarget-server\n::1\t\tlocalhost ip6-localhost ip6-loopback\nff02::1\t\tip6-allnodes\nff02::2\t\tip6-allrouters', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
+    { path: '/etc/hostname', content: MACHINE_HOSTNAME_PLACEHOLDER, type: 'text', owner: 'root', group: 'root', mode: 0o644 },
+    { path: '/etc/hosts', content: `127.0.0.1\tlocalhost\n127.0.1.1\t${MACHINE_HOSTNAME_PLACEHOLDER}\n::1\t\tlocalhost ip6-localhost ip6-loopback\nff02::1\t\tip6-allnodes\nff02::2\t\tip6-allrouters`, type: 'text', owner: 'root', group: 'root', mode: 0o644 },
     { path: '/etc/os-release', content: 'NAME="Ubuntu"\nVERSION="20.04.6 LTS (Focal Fossa)"\nID=ubuntu\nID_LIKE=debian\nPRETTY_NAME="Ubuntu 20.04.6 LTS"\nVERSION_ID="20.04"\nHOME_URL="https://www.ubuntu.com/"\nSUPPORT_URL="https://help.ubuntu.com/"\nBUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"\nPRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"\nVERSION_CODENAME=focal', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
     { path: '/etc/issue', content: 'Ubuntu 20.04.6 LTS \\n \\l\n', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
-    { path: '/etc/motd', content: '\nWelcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-169-generic x86_64)\n\n * Documentation:  https://help.ubuntu.com\n * Management:     https://landscape.canonical.com\n * Support:        https://ubuntu.com/advantage\n\nLast login: Mon Mar 18 14:23:45 2024 from 192.168.1.100\n', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
+    { path: '/etc/motd', content: '\nWelcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-169-generic x86_64)\n\n * Documentation:  https://help.ubuntu.com\n * Management:     https://landscape.canonical.com\n * Support:        https://ubuntu.com/advantage\n', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
     { path: '/etc/resolv.conf', content: '# This file is managed by man:systemd-resolved(8). Do not edit.\n#\n# This is a dynamic resolv.conf file for connecting local clients to the\n# internal DNS stub resolver of systemd-resolved.\nnameserver 127.0.0.53\noptions edns0 trust-ad\nsearch localdomain', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
     { path: '/etc/fstab', content: '# /etc/fstab: static file system information.\n#\n# Use blkid to print the universally unique identifier for a\n# device; this may be used with UUID= as a more robust way to name devices\n# that works even if disks are added and removed.\n# <file system> <mount point>   <type>  <options>       <dump>  <pass>\nUUID=12345678-1234-1234-1234-123456789012 /               ext4    errors=remount-ro 0       1\nUUID=87654321-4321-4321-4321-210987654321 /boot           ext4    defaults        0       2\n/swapfile                                 none            swap    sw              0       0', type: 'text', owner: 'root', group: 'root', mode: 0o644 },
     { path: '/etc/crontab', content: '# /etc/crontab: system-wide crontab\nSHELL=/bin/sh\nPATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n\n# Example of job definition:\n# .---------------- minute (0 - 59)\n# |  .------------- hour (0 - 23)\n# |  |  .---------- day of month (1 - 31)\n# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...\n# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat\n# |  |  |  |  |\n# *  *  *  *  * user-name command to be executed\n17 *    * * *   root    cd / && run-parts --report /etc/cron.hourly\n25 6    * * *   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )\n47 6    * * 7   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )\n52 6    1 * *   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )', type: 'text', owner: 'root', group: 'root', mode: 0o600 },

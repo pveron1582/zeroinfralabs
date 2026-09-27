@@ -130,4 +130,31 @@ describe('cmd_ping', () => {
     expect(result.isError).toBe(true);
     expect(result.output).toContain('Name or service not known');
   });
+
+  it('debe resolver hostname virtual a su IP', () => {
+    const machine = createMockMachine('target-01', '192.168.1.10');
+    machine.machine_info.hostname = 'webserver';
+
+    const result = cmd_ping.execute(['-c', '1', 'webserver'], {
+      machine: { machine_info: { ip: '192.168.1.5' } } as any,
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('PING webserver (192.168.1.10)');
+    expect(result.output).toContain('bytes from webserver (192.168.1.10)');
+    expect(result.output).toContain('0% packet loss');
+  });
+
+  it('debe rechazar hostname desconocido', () => {
+    const result = cmd_ping.execute(['google.com'], {
+      machine: { machine_info: { ip: '192.168.1.5' } } as any,
+      allMachines: [],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBe(true);
+    expect(result.output).toContain('Name or service not known');
+  });
 });

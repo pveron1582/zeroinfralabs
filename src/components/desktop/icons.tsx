@@ -111,6 +111,17 @@ export const InfoIcon: React.FC<IconProps> = ({ size = 16 }) => (
   </svg>
 );
 
+/** RDP / Remote Desktop: monitor azul Windows con flecha de conexión */
+export const RdpAppIcon: React.FC<IconProps> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+    {SQUIRCLE_GRADIENTS}
+    <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#zi-icon-dark)" stroke="#3b4757" strokeWidth="1" />
+    <rect x="6" y="8" width="16" height="12" rx="1.5" fill="#0078d4" stroke="#38bdf8" strokeWidth="1" />
+    <rect x="11" y="22" width="6" height="2" rx="1" fill="#64748b" />
+    <path d="M18 14h6m0 0l-2.5-2.5M24 14l-2.5 2.5" fill="none" stroke="#7dd3fc" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 // ── Símbolos de controles de ventana (estilo Adwaita/GTK) ──────────
 
 /** Minimizar: línea horizontal */

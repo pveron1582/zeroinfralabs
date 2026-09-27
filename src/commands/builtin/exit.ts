@@ -7,10 +7,12 @@ import type { CommandContext, CommandResponse } from '../../types';
 
 export const cmd_exit = {
   name: 'exit',
-  execute: (_args: string[], { machine, allMachines }: CommandContext): CommandResponse => {
+  execute: (_args: string[], { machine, allMachines, suUserOverride }: CommandContext): CommandResponse => {
     // Salir de un cambio de usuario (su): el runner vuelve al usuario previo
-    // sin cerrar la terminal (misma máquina, prompt anterior).
-    if (machine.su_user) {
+    // sin cerrar la terminal (misma máquina, prompt anterior). En modo
+    // aislado la identidad vive en el frame local (suUserOverride); el
+    // check legacy de machine.su_user se mantiene sin terminalId.
+    if (machine.su_user || suUserOverride) {
       return { output: 'logout\n', isError: false, identityExit: true };
     }
 

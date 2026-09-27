@@ -3,7 +3,7 @@ import type { ScenarioState } from '../types';
 import type { Machine, Scenario, Mission, FileEntry } from '../../types';
 import { SCENARIOS, TEST_SCENARIO } from '../../laboratorios/laboratorios';
 import { createEnumerationSnapshot, hasEnumerationChanged, type EnumerationSnapshot } from '../../utils/networkAlert';
-import { shellManager } from '../../frameworks/shells/ShellManager';
+import { resetScenarioManagers } from '../../frameworks/resetManagers';
 import {
   updateMachine, bumpDiscoveryLevel, addFoundCredential, verifyCredentials,
   setPossibleUsers, addFailedUser, setSudoPrivileges,
@@ -53,7 +53,10 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
     const scenario = id === TEST_SCENARIO.id ? TEST_SCENARIO : SCENARIOS.find(s => s.id === id);
     if (!scenario) return;
 
-    shellManager.reset();
+    // Entrada de sesión: los managers arrancan de cero y el marker de
+    // "reset global ya hecho" se limpia para que la primera terminal que
+    // monte resetee también sesiones/identidad (useCommandRunner).
+    resetScenarioManagers();
     set({
       loadingMachine: scenario.machines[0],
       showMachineLoader: true,
@@ -80,6 +83,10 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
         currentMissionId: 1,
         activeMachineId: scenario.initialMachineId,
         activeApp: 'terminal',
+        // Salir de un RDP abierto del lab anterior al cargar uno nuevo.
+        uiMode: get().uiMode === 'windows-desktop' ? (get()._prevUiMode ?? 'desktop') : get().uiMode,
+        _prevUiMode: null,
+        rdpMachineId: null,
         showNetworkMap: false,
         hasNewNetworkInfo: false,
         view: 'workspace',
@@ -92,8 +99,11 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
         listeningPort: null,
         blockingCommand: null,
         msfState: null,
+        psState: null,
         ftpSession: null,
         sshSession: null,
+        rdpSession: null,
+        globalResetDoneForScenario: null,
         currentDir: '/root/',
         _prevMachinesSnapshot: createEnumerationSnapshot(newMachines),
         showCompletionOverlay: false,

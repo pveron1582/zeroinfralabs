@@ -2,7 +2,7 @@ import type { DesktopWindow } from '../hooks/useDesktopWindows';
 import { FONT_DESKTOP } from './landing/constants';
 import {
   TerminalAppIcon, ChromeAppIcon, BurpAppIcon,
-  ManualAppIcon, WallpaperAppIcon, FoxyAppIcon, InfoIcon,
+  ManualAppIcon, WallpaperAppIcon, FoxyAppIcon, InfoIcon, RdpAppIcon,
   WifiIcon, VolumeIcon, BatteryIcon, PowerIcon,
 } from './desktop/icons';
 
@@ -13,6 +13,7 @@ interface DesktopTopBarProps {
   wallpaperWindows: DesktopWindow[];
   guideWindows: DesktopWindow[];
   burpWindows: DesktopWindow[];
+  rdpWindows: DesktopWindow[];
   topWindowId: string | undefined;
   showAppMenu: boolean;
   time: Date;
@@ -34,7 +35,7 @@ interface DesktopTopBarProps {
 }
 
 export function DesktopTopBar({
-  termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows, topWindowId,
+  termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows, rdpWindows, topWindowId,
   showAppMenu, time, isEs, currentScenarioCategory,
   onToggleAppMenu, onCloseAppMenu,
   onAddTerminal, onAddBrowser, onOpenGuide, onOpenWallpaperPicker, onAddBurp,
@@ -164,6 +165,18 @@ export function DesktopTopBar({
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-orange-600 text-slate-950 font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-orange-400'}`}>
               <BurpAppIcon size={14} />
               <span>{bw.title}</span>
+            </button>
+          );
+        })}
+
+        {rdpWindows.map((rw) => {
+          const isActive = !rw.minimized && rw.id === topWindowId;
+          return (
+            <button key={rw.id}
+              onClick={() => { if (rw.minimized) { onRestoreWindow(rw.id); onBringToFront(rw.id); } else if (rw.id !== topWindowId) { onBringToFront(rw.id); } else { onMinimizeWindow(rw.id); } }}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${isActive ? 'bg-blue-600 text-white font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-sky-400'}`}>
+              <RdpAppIcon size={14} />
+              <span>{rw.title}</span>
             </button>
           );
         })}

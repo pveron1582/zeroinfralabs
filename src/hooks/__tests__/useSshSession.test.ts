@@ -8,6 +8,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useSshSession, getSshPromptFor } from '../useSshSession';
 import type { SessionRunnerDeps } from '../useFtpSession';
 import type { SshSessionData } from '../../types';
+import { createMockExecutor } from './executor-helpers';
 
 const storeRef = vi.hoisted(() => ({ current: { sshSession: null as SshSessionData | null, setSshSession: vi.fn() } }));
 
@@ -18,9 +19,9 @@ vi.mock('../../store/scenarioStore', () => ({
   ),
 }));
 
-function makeDeps(executeCommand: ReturnType<typeof vi.fn>): SessionRunnerDeps {
+function makeDeps(executeCommand: SessionRunnerDeps['executor']['executeCommand']): SessionRunnerDeps {
   return {
-    executor: { executeCommand } as SessionRunnerDeps['executor'],
+    executor: createMockExecutor(executeCommand),
     machine: { id: 'attacker-01' } as SessionRunnerDeps['machine'],
     allMachines: [],
     currentMissionId: 1,
@@ -100,5 +101,18 @@ describe('useSshSession', () => {
     expect(storeRef.current.setSshSession).toHaveBeenCalledWith(
       expect.objectContaining({ active: true, step: 'password' }),
     );
+  });
+
+  it('con terminalId la fuente de verdad es local y el store espeja para display', () => {
+    const ss: SshSessionData = {
+      active: true, targetIp: '10.0.0.1', targetId: 'v1', username: 'john',
+      authenticated: true, step: 'connected',
+    };
+    const executeCommand = vi.fn(() => ({ output: 'ok', sshSession: ss }));
+    const { result } = renderHook(() => useSshSession('term-1'));
+    let out: ReturnType<ReturnType<typeof useSshSession>['runSshPassword']> | undefined;
+    act(() => { out = result.current.runSshPassword('pw', makeDeps(executeCommand)); });
+    expect(result.current.sshSession?.authenticated).toBe(true);
+    expect(storeRef.current.setSshSession).toHaveBeenCalledWith(out!.updatedSession);
   });
 });

@@ -4,7 +4,7 @@ import { TERM_COLORS } from './termColors';
 import { FONT_DESKTOP } from './landing/constants';
 import {
   TerminalAppIcon, ChromeAppIcon, BurpAppIcon,
-  ManualAppIcon, WallpaperAppIcon,
+  ManualAppIcon, WallpaperAppIcon, RdpAppIcon,
   MinimizeSymbol, MaximizeSymbol, RestoreSymbol, CloseSymbol,
 } from './desktop/icons';
 
@@ -16,6 +16,7 @@ function TitleBarAppIcon({ type }: { type: DesktopWindow['type'] }) {
     case 'browser': return <ChromeAppIcon size={size} />;
     case 'burpsuite': return <BurpAppIcon size={size} />;
     case 'guide': return <ManualAppIcon size={size} />;
+    case 'rdp': return <RdpAppIcon size={size} />;
     default: return <WallpaperAppIcon size={size} />;
   }
 }

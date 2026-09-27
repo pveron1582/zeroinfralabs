@@ -7,7 +7,7 @@ import { useScenarioStore } from '../../store/scenarioStore';
 
 vi.mock('../Terminal', () => ({
   Terminal: (props: any) => (
-    <div data-testid="mock-terminal-inner">
+    <div data-testid="mock-terminal-inner" data-terminal-id={props.terminalId}>
       terminal-{props.scenarioId || 'unknown'}
     </div>
   ),
@@ -59,6 +59,18 @@ describe('LabMiniTerminal inline en practical-exercise', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
     expect(screen.queryByTestId('mock-terminal-inner')).not.toBeInTheDocument();
+  });
+
+  it('pasa un terminalId propio (labmini-<labId>) para aislar su stack de shells', () => {
+    goToExerciseInLinux02();
+    expect(screen.getByTestId('mock-terminal-inner'))
+      .toHaveAttribute('data-terminal-id', 'labmini-scenario-01');
+  });
+
+  it('limpia el marker de reset global al entrar a la lección (nueva sesión del lab)', () => {
+    useScenarioStore.setState({ globalResetDoneForScenario: 'scenario-01' });
+    goToExerciseInLinux02();
+    expect(useScenarioStore.getState().globalResetDoneForScenario).toBeNull();
   });
 
   it('el banner menciona Foxy abajo a la derecha', () => {

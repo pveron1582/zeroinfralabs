@@ -2,7 +2,7 @@
 // Scenario 3 — EternalBlue / MS17-010 Windows 7
 // Datos y configuración específicos para este escenario
 
-import { buildScenario, COMMON_PORTS, createFile } from './templates';
+import { buildScenario, COMMON_PORTS, createFile, createWindowsFileSystem } from './templates';
 import type { Scenario } from '../types';
 
 // Re-exportar resetAttackerCounter desde templates para compatibilidad
@@ -31,6 +31,7 @@ export const SCENARIO_TEMPLATES_ETERNAL = {
         os: 'Windows 7 Professional SP1 x64',
         status: 'up' as const,
         type: 'workstation',
+        family: 'windows' as const,
       },
       discovery_level: 0,
       scan_results: { ports: [] },
@@ -46,9 +47,18 @@ export const SCENARIO_TEMPLATES_ETERNAL = {
         cms: 'none',
         directories: [],
       },
+      // Identidad Windows (PLAN_WINDOWS W0): sin `win` caía al usuario
+      // fallback de Linux y el prompt quedaba inconsistente con family.
+      win: { currentUser: 'Administrator', isAdmin: true, computerName: 'WIN7-TARGET' },
       files: [
-        createFile('C:\\\\Users\\\\Administrator\\\\Desktop\\\\flag.txt', 'ZIL{ETERNALBLUE_SYSTEM_PWNED}'),
-        createFile('C:\\\\Windows\\\\System32\\\\config\\\\SAM', '[SAM Database — use hashdump]', 'binary'),
+        // FS base neutro de Win7 (paths en /C:/... como el resto del dual
+        // Windows — los paths con `C:\\` no existían en el modelo).
+        ...createWindowsFileSystem({ username: 'Administrator', computerName: 'WIN7-TARGET' }),
+        createFile(
+          '/C:/Users/Administrator/Desktop/flag.txt',
+          'ZIL{ETERNALBLUE_SYSTEM_PWNED}',
+          'text', 'Administrator', 'Administrators', 0o644,
+        ),
       ],
     },
     learningSteps: [

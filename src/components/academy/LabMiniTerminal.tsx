@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { useScenarioStore } from '../../store/scenarioStore';
 import { Terminal } from '../Terminal';
 import { SCENARIOS } from '../../laboratorios/laboratorios';
+import { resetScenarioManagers } from '../../frameworks/resetManagers';
 import { FONT_MONO, FONT_SANS } from '../landing/constants';
 
 interface LabMiniTerminalProps {
@@ -27,6 +28,8 @@ export function LabMiniTerminal({ labId, isEs }: LabMiniTerminalProps) {
       return;
     }
 
+    // Entrada de sesión: managers de cero + marker limpio (ver scenarioSlice).
+    resetScenarioManagers();
     useScenarioStore.setState({
       currentScenario: scenario,
       machines: scenario.machines.map(m => ({ ...m, discovery_level: 0 })),
@@ -39,6 +42,8 @@ export function LabMiniTerminal({ labId, isEs }: LabMiniTerminalProps) {
       msfState: null,
       ftpSession: null,
       sshSession: null,
+      rdpSession: null,
+      globalResetDoneForScenario: null,
       currentDir: '/root/',
       _prevMachinesSnapshot: [],
       showCompletionOverlay: false,
@@ -87,6 +92,7 @@ export function LabMiniTerminal({ labId, isEs }: LabMiniTerminalProps) {
       <div style={{ height: '320px' }}>
         <Terminal
           scenarioId={labId}
+          terminalId={`labmini-${labId}`}
           machine={activeMachine}
           allMachines={machines}
           currentMissionId={0}

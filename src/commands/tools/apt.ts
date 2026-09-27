@@ -12,7 +12,7 @@ import {
   getPackage, installPackage, isInstalled, listInstalled, removePackage, searchPackages,
 } from '../../frameworks/packages/packageManager';
 
-const APT_HELP = `Usage: apt <command> [options]
+export const APT_HELP = `Usage: apt <command> [options]
   update                Update list of available packages
   install <pkg>         Install a package (adds its binaries)
   remove <pkg>          Remove a package

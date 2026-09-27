@@ -155,4 +155,40 @@ describe('cmd_curl', () => {
     expect('foundVulnerability' in result).toBe(false);
     expect('foundCredentials' in result).toBe(false);
   });
+
+  it('debe enviar headers -H en el httpRequest', () => {
+    const target = createWebMachine('target-01', '192.168.40.11');
+    const result = cmd_curl.execute(['-H', 'X-Forwarded-For: 127.0.0.1', 'http://192.168.40.11/login'], {
+      allMachines: [target],
+      currentMissionId: 1
+    } as any);
+    expect(result.isError).toBeUndefined();
+    const req = 'httpRequest' in result ? result.httpRequest : undefined;
+    expect(req).toBeDefined();
+    expect(req?.headers['X-Forwarded-For']).toBe('127.0.0.1');
+    expect(req?.headers['Host']).toBe('192.168.40.11');
+  });
+
+  it('debe enviar -A, -b y -u como headers', () => {
+    const target = createWebMachine('target-01', '192.168.40.11');
+    const result = cmd_curl.execute(
+      ['-A', 'Mozilla/5.0', '-b', 'PHPSESSID=abc123', '-u', 'admin:s3cret', 'http://192.168.40.11/login'],
+      { allMachines: [target], currentMissionId: 1 } as any
+    );
+    expect(result.isError).toBeUndefined();
+    const req = 'httpRequest' in result ? result.httpRequest : undefined;
+    expect(req?.headers['User-Agent']).toBe('Mozilla/5.0');
+    expect(req?.headers['Cookie']).toBe('PHPSESSID=abc123');
+    expect(req?.headers['Authorization']).toBe(`Basic ${btoa('admin:s3cret')}`);
+  });
+
+  it('debe aceptar -k y mostrarlo en verbose', () => {
+    const target = createWebMachine('target-01', '192.168.40.11');
+    const result = cmd_curl.execute(['-k', '-v', 'http://192.168.40.11/login'], {
+      allMachines: [target],
+      currentMissionId: 1
+    } as any);
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('SSL certificate verify skipped (-k)');
+  });
 });

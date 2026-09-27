@@ -381,4 +381,62 @@ describe('cmd_sudo', () => {
       expect(result.isError).toBe(true);
     });
   });
+
+  describe('sudo -u', () => {
+    const allMachine = {
+      ...createMockMachine(true),
+      files: [
+        { path: '/etc/sudoers', content: 'developer ALL=(ALL:ALL) NOPASSWD: ALL', type: 'text' },
+        { path: '/etc/group', content: 'sudo:x:27:developer\n', type: 'text' },
+        { path: '/etc/passwd', content: 'developer:x:1001:1001:Developer:/home/developer:/bin/bash\n', type: 'text' },
+      ],
+    };
+
+    it('debe correr el comando como otro usuario', () => {
+      const result = cmd_sudo.execute(['-u', 'www-data', 'whoami'], createMockContext(allMachine));
+
+      expect(result.isError).toBe(false);
+      expect(result.output).toContain('como www-data');
+    });
+
+    it('debe pedir el usuario si falta', () => {
+      const result = cmd_sudo.execute(['-u'], createMockContext(allMachine));
+
+      expect(result.isError).toBe(true);
+      expect(result.output).toContain("option requires an argument -- 'u'");
+    });
+
+    it('debe pedir comando si solo hay -u <user>', () => {
+      const result = cmd_sudo.execute(['-u', 'www-data'], createMockContext(allMachine));
+
+      expect(result.isError).toBe(true);
+      expect(result.output).toContain('usage: sudo -u');
+    });
+
+    it('debe denegar con el run-as en el mensaje si no hay permiso', () => {
+      const machine: Machine = {
+        ...createMockMachine(true),
+        files: [{ path: '/etc/sudoers', content: 'developer ALL=(ALL) NOPASSWD: /usr/bin/vim', type: 'text' }],
+      };
+      const result = cmd_sudo.execute(['-u', 'nobody', 'id'], createMockContext(machine));
+
+      expect(result.isError).toBe(true);
+      expect(result.output).toContain('as nobody');
+    });
+
+    it('no debe escalar con -u distinto de root', () => {
+      const result = cmd_sudo.execute(['-u', 'nobody', 'bash'], createMockContext(allMachine));
+
+      expect(result.isError).toBe(false);
+      expect(result.output).toContain('como nobody');
+      expect('privescCompleted' in result).toBe(false);
+    });
+
+    it('debe rechazar shell -i con -u no-root', () => {
+      const result = cmd_sudo.execute(['-u', 'www-data', '-i'], createMockContext(allMachine));
+
+      expect(result.isError).toBe(true);
+      expect(result.output).toContain('no soportada');
+    });
+  });
 });

@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import { scenario_06 } from '../../laboratorios/laboratorio06';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { executeCommand, resetShellSessions } from '../index';
+import { executeCommand, resetShellManager } from '../index';
 import { validateMission } from '../../utils/labValidator';
 import { setupBeforeEach } from './happyPathHelpers';
 
@@ -73,7 +73,7 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
       })),
       currentMissionId: 6,
     });
-    resetShellSessions();
+    resetShellManager();
 
     const active = () => useScenarioStore.getState().missions.find(m => m.status === 'active')!;
 
@@ -95,14 +95,14 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
     r = executeCommand({ line: 'get database_dump.sql', machine: attacker, allMachines: machines, currentMissionId: active().id, currentDir: '/root' });
     expect('downloadedFile' in r && r.downloadedFile?.path).toBe('/root/database_dump.sql');
 
-    resetShellSessions();
+    resetShellManager();
   });
 
   it('paso 6: anonymous no puede leer el dump (solo ftpuser)', () => {
     const machines = scenario_06.machines;
     const attacker = machines.find(m => m.id.includes('attacker'))!;
     const target = machines.find(m => !m.id.includes('attacker'))!;
-    resetShellSessions();
+    resetShellManager();
 
     executeCommand({ line: `ftp ${target.machine_info.ip}`, machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     executeCommand({ line: 'anonymous', machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
@@ -111,7 +111,7 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
 
     r = executeCommand({ line: 'get database_dump.sql', machine: attacker, allMachines: machines, currentMissionId: 1, currentDir: '/root' });
     expect(r.output).toContain('Permission denied');
-    resetShellSessions();
+    resetShellManager();
   });
 
   it('paso 7 y 8: leer el dump descargado valida la flag por contenido', () => {
@@ -127,7 +127,7 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
       })),
       currentMissionId: 8,
     });
-    resetShellSessions();
+    resetShellManager();
 
     // Simular el archivo descargado en el atacante (lo que hace handleDownloadedFile)
     useScenarioStore.getState().addFileToMachine(attacker.id, {
@@ -164,7 +164,7 @@ describe('Happy Path: Scenario 06 - flujo completo vía store', () => {
       })),
       currentMissionId: 8,
     });
-    resetShellSessions();
+    resetShellManager();
 
     const attackerWithFile = {
       ...attacker,

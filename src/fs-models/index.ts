@@ -6,3 +6,5 @@ export type { LinuxFileSystemConfig } from './fs-linux';
 
 export { createWindowsFileSystem } from './fs-windows';
 export type { WindowsFileSystemConfig } from './fs-windows';
+
+export { MACHINE_HOSTNAME_PLACEHOLDER } from './placeholders';

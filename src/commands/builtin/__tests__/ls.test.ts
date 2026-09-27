@@ -263,5 +263,24 @@ describe('cmd_ls', () => {
       expect(result.output).toContain('root');
       expect(result.output).toContain('4096');
     });
+
+    // Las fechas varían por archivo (no todo "Jan 01 00:00") y el total
+    // deriva de los tamaños (dirs 4 bloques, archivos chicos 1)
+    it('debe mostrar fechas variadas y total derivado de tamaños', () => {
+      const machine = createMachine([
+        { path: '/d/.dir', content: '', type: 'text' },
+        { path: '/d/a.txt', content: 'a', type: 'text' },
+        { path: '/d/b.txt', content: 'b', type: 'text' },
+        { path: '/d/c.txt', content: 'c', type: 'text' },
+      ]);
+      const result = cmd_ls.execute(['-l', '/d'], { machine, currentDir: '/' } as any);
+      const lines = result.output.split('\n');
+      expect(lines[0]).toBe('total 3');
+      const dateRe = /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +\d{1,2} +(\d{2}:\d{2}|\d{4}) /;
+      for (const line of lines.slice(1)) {
+        expect(line).toMatch(dateRe);
+      }
+      expect(result.output).not.toContain('Jan 01 00:00');
+    });
   });
 });

@@ -3,9 +3,10 @@
 // Expone API estable para useCommandRunner y sincroniza el stack
 // con la máquina inicial cuando cambia de escenario.
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
+import { initialCwd } from '../utils/users';
 
 export interface IdentityFrame {
   machineId: string;
@@ -18,16 +19,24 @@ interface UseIdentityStackOptions {
   initialMachine: Machine;
   /** Callback legacy para cambiar máquina (se mantiene por compatibilidad) */
   onChangeMachine: (machineId: string) => void;
+  /** Restaura el cwd local al hacer pop (aislado: no se escribe el store) */
+  setCurrentDir?: (dir: string) => void;
+  terminalId?: string;
 }
 
-export function useIdentityStack({ initialMachine, onChangeMachine }: UseIdentityStackOptions) {
-  // Acceso defensivo: tests que mockean el store con estado parcial pueden
-  // no incluir identityStack → undefined. Lo colapsamos a [] para que el
-  // hook siga funcionando y el efecto lo inicialice en el siguiente tick.
-  const identityStack = useScenarioStore(state => state.identityStack) ?? [];
-  const pushIdentity = useScenarioStore(state => state.pushIdentity);
+export function useIdentityStack({ initialMachine, onChangeMachine, setCurrentDir, terminalId }: UseIdentityStackOptions) {
+  // Estado local cuando hay terminalId (aislamiento por ventana de terminal)
+  const [localStack, setLocalStack] = useState<IdentityFrame[]>(() => [{
+    machineId: initialMachine.id,
+    suUser: initialMachine.su_user,
+    cwd: initialCwd(initialMachine),
+  }]);
+
+  // Acceso al store (fallback / legacy sin terminalId)
+  const storeStack = useScenarioStore(state => state.identityStack) ?? [];
+  const pushIdentityStore = useScenarioStore(state => state.pushIdentity);
   const popIdentityStore = useScenarioStore(state => state.popIdentity);
-  const resetIdentity = useScenarioStore(state => state.resetIdentity);
+  const resetIdentityStore = useScenarioStore(state => state.resetIdentity);
   const applyIdentityStore = useScenarioStore(state => state.applyIdentity);
 
   // Sincronizar cuando cambia la máquina inicial (nuevo escenario)
@@ -35,16 +44,35 @@ export function useIdentityStack({ initialMachine, onChangeMachine }: UseIdentit
     const baseFrame: IdentityFrame = {
       machineId: initialMachine.id,
       suUser: initialMachine.su_user,
-      cwd: '/root',
+      cwd: initialCwd(initialMachine),
     };
-    if (identityStack.length === 0) {
-      resetIdentity(baseFrame);
+    if (terminalId) {
+      // Solo se resetea si la máquina nueva NO es la del frame superior: ese
+      // caso viene de un push/pop propio (SSH/pivot o `exit`), que apila el
+      // frame remoto y recién después cambia la prop `machine`. Resetear ahí
+      // borraba el frame anterior y `exit` no podía volver a la máquina de
+      // origen — el stack ES la memoria de a dónde está conectada la terminal.
+      setLocalStack(curr => {
+        const top = curr[curr.length - 1];
+        return top?.machineId === initialMachine.id ? curr : [baseFrame];
+      });
+    } else if (storeStack.length === 0) {
+      resetIdentityStore(baseFrame);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialMachine.id]);
 
-  // Wrapper que combina pop + apply + notificación legacy
   const popIdentity = (): boolean => {
+    if (terminalId) {
+      if (localStack.length <= 1) return false;
+      const prev = localStack[localStack.length - 2];
+      setLocalStack(curr => curr.slice(0, -1));
+      // Pop LOCAL: nunca applyIdentityStore — escribía suUser/cwd/privesc
+      // compartidos y borraba el su de las demás terminales (bug HIGH #2).
+      onChangeMachine(prev.machineId);
+      setCurrentDir?.(prev.cwd);
+      return true;
+    }
     const prev = popIdentityStore();
     if (!prev) return false;
     applyIdentityStore(prev);
@@ -52,16 +80,27 @@ export function useIdentityStack({ initialMachine, onChangeMachine }: UseIdentit
     return true;
   };
 
-  // Wrapper para push que no hace side-effects extra (el caller los maneja)
   const pushAndNotify = (frame: IdentityFrame) => {
-    pushIdentity(frame);
+    if (terminalId) {
+      setLocalStack(curr => [...curr, frame]);
+    } else {
+      pushIdentityStore(frame);
+    }
   };
+
+  const identityStack = terminalId ? localStack : storeStack;
+
+  // su del frame superior cuando corresponde a la máquina activa: alimenta
+  // prompt/env/ejecución de la terminal (aislamiento HIGH #2).
+  const topFrame = identityStack[identityStack.length - 1];
+  const topSuUser = topFrame?.machineId === initialMachine.id ? topFrame.suUser : undefined;
 
   return {
     identityStack,
+    topSuUser,
     pushIdentity: pushAndNotify,
     popIdentity,
     applyIdentity: applyIdentityStore,
-    resetIdentity,
+    resetIdentity: resetIdentityStore,
   };
 }

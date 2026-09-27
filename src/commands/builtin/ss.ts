@@ -11,6 +11,7 @@ const SS_HELP = `Usage: ss [options]
   -u  Show UDP sockets
   -l  Show listening sockets
   -a  Show all sockets (listening + established)
+  -s  Show socket summary statistics
   -p  Show process information
   -n  Do not resolve names
   -h  Show help
@@ -18,7 +19,8 @@ const SS_HELP = `Usage: ss [options]
 Examples:
   ss -tlnp        # Listening TCP sockets with process
   ss -tnp         # Established TCP connections
-  ss -tulnp       # Listening TCP + UDP sockets`;
+  ss -tulnp       # Listening TCP + UDP sockets
+  ss -s           # Summary statistics`;
 
 const NETSTAT_HELP = `Usage: netstat [options]
   -t  Show TCP sockets
@@ -65,13 +67,23 @@ export const cmd_ss = {
     if (args.includes('-h') || args.includes('--help')) return { output: SS_HELP };
     if (!args.length) return { output: SS_HELP };
 
+    const allListening = getListeningPorts(ctx.machine!);
+
+    // Resumen de sockets (ss -s): derivado de los mismos datos que el listado
+    if (hasFlag(args, 's')) {
+      const tcp = allListening.filter(p => p.protocol === 'tcp').length;
+      const udp = allListening.filter(p => p.protocol === 'udp').length;
+      return {
+        output: `Total: ${tcp + udp}\nTCP:   ${tcp} (estab ${tcp}, closed 0, orphaned 0, synrecv 0, timewait 0/0, finwait 0/0)\nUDP:   ${udp} (estab 0)`,
+      };
+    }
+
     const showUdp = hasFlag(args, 'u');
     const showAll = hasFlag(args, 'a');
     const showListening = hasFlag(args, 'l') || showAll;
     const showEstablished = showAll || !showListening;
 
-    const listening = getListeningPorts(ctx.machine!);
-    const ports = showUdp ? listening : listening.filter(p => p.protocol === 'tcp');
+    const ports = showUdp ? allListening : allListening.filter(p => p.protocol === 'tcp');
 
     let out = `State    Recv-Q  Send-Q  Local Address:Port  Peer Address:Port Process\n`;
     if (showListening) {

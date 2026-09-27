@@ -768,4 +768,37 @@ describe('cmd_nmap', () => {
     expect(result.isError).toBe(true);
     expect(result.output).toContain('especifica una IP o red válida');
   });
+
+  it('-sU debe mostrar puertos /udp como open|filtered sin cambiar la metadata', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+
+    const result = cmd_nmap.execute(['-sU', '-v', '--open', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('UDP Scan');
+    expect(result.output).toContain('22/udp');
+    expect(result.output).toContain('open|filtered');
+    expect(result.output).not.toContain('22/tcp');
+    // La metadata para el validador sigue con datos TCP
+    const sr = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr).toBeDefined();
+    expect(sr?.ports.some(p => p.port === 22 && p.protocol === 'tcp')).toBe(true);
+  });
+
+  it('-sU combinado realista con -sC, --script, -T y -p-', () => {
+    const machines = [createMockMachine('target-01', '192.168.1.10', 1)];
+
+    const result = cmd_nmap.execute(['-sU', '-sC', '--script=vuln', '-T4', '-p-', '--open', '192.168.1.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('22/udp');
+    const sr = 'scanResults' in result ? result.scanResults : undefined;
+    expect(sr).toBeDefined();
+  });
 });

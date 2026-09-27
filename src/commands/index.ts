@@ -7,19 +7,23 @@ import * as builtin from './builtin';
 import * as tools from './tools';
 import { useScenarioStore } from '../store/scenarioStore';
 import { getContextPrompt } from '../frameworks/metasploit/orchestrators/msfContextHelp';
-import { createMsfCommand, executeCommandInternal, type Command } from './executor';
-import type { CommandContext, CommandRequest, MsfState } from '../types';
+import { createMsfCommand, executeCommandInternal, type Command, type PsStateGetter, type PsStateSetter } from './executor';
+import { WINDOWS_COMMANDS } from './windows';
+import type { CommandContext, CommandRequest, MsfState, PsState } from '../types';
 
 // Re-export de la integración con ShellManager (sesiones SSH/FTP/NC)
 export {
   isShellSessionActive, getCurrentShellName, getShellPrompt,
   startShellSession, executeShellCommand, closeShellSession,
-  resetShellManager, resetShellSessions,
+  resetShellManager,
 } from './shellIntegration';
 
 // ── MSF state backed by Zustand store (non-isolated / test use) ─
 const _getMsf = () => useScenarioStore.getState().msfState ?? null;
 const _setMsf = (s: MsfState | null) => useScenarioStore.getState().setMsfState(s);
+// ── PS state (sesión PowerShell) backed by Zustand store ──────────
+const _getPs: PsStateGetter = () => useScenarioStore.getState().psState ?? null;
+const _setPs: PsStateSetter = (s) => useScenarioStore.getState().setPsState(s);
 
 // ── Auto-registro de comandos ─────────────────────────────────────
 // Construye el Map a partir de las exportaciones de los barrel files.
@@ -60,13 +64,25 @@ export const AVAILABLE_COMMAND_NAMES: string[] = Array.from(COMMANDS.keys())
 // hooks — evita repetir 13 parámetros posicionales) y la firma posicional
 // legada, que se mantiene por compatibilidad con tests y call sites.
 
+/** Tabla de alias por registro (aislada por terminal en executors aislados). */
+const aliasTables = new WeakMap<Map<string, Command>, Map<string, string>>();
+function tableFor(commands: Map<string, Command>): Map<string, string> {
+  let t = aliasTables.get(commands);
+  if (!t) {
+    t = new Map();
+    aliasTables.set(commands, t);
+  }
+  return t;
+}
+
 /** Ensambla el CommandContext a partir de un CommandRequest. */
-function buildCommandCtx(req: CommandRequest): CommandContext {
+function buildCommandCtx(req: CommandRequest, commands: Map<string, Command>): CommandContext {
   return {
     machine: req.machine,
     allMachines: req.allMachines,
     currentMissionId: req.currentMissionId,
     terminalId: req.terminalId,
+    suUserOverride: req.suUserOverride,
     currentDir: req.currentDir ?? '/',
     setCurrentDir: req.setCurrentDir,
     ftpSession: req.ftpSession,
@@ -75,11 +91,20 @@ function buildCommandCtx(req: CommandRequest): CommandContext {
     setUmask: req.setUmask,
     env: req.env,
     setEnv: req.setEnv,
+    cmdHistory: req.cmdHistory,
+    shellAliases: tableFor(commands),
+    // En máquinas Windows también existen los comandos cmd.exe (W1).
+    hasCommand: (name: string) =>
+      commands.has(name) ||
+      (req.machine?.machine_info?.family === 'windows' && WINDOWS_COMMANDS.has(name)),
   };
 }
 
 export function executeCommand(req: CommandRequest): ReturnType<typeof executeCommandInternal> {
-  return executeCommandInternal(req.line, buildCommandCtx(req), COMMANDS, _getMsf, req.onMsfStateChange);
+  return executeCommandInternal(
+    req.line, buildCommandCtx(req, COMMANDS), COMMANDS, _getMsf, req.onMsfStateChange,
+    _getPs, _setPs, req.onPsStateChange,
+  );
 }
 
 // ── MSF state management (backed by store; `restoreMsfState` removed) ─
@@ -95,8 +120,17 @@ export const getMsfState = () => {
   return s ? { ...s } : null;
 };
 
+// ── PS state management (store-backed) ────────────────────────────
+
+export const resetPsState = () => useScenarioStore.getState().setPsState(null);
+export const isPsActive = () => !!useScenarioStore.getState().psState?.active;
+export const getPsState = () => {
+  const s = useScenarioStore.getState().psState;
+  return s ? { ...s } : null;
+};
+
 // ── Re-export types for consumers ────────────────────────────────
-export type { MsfState } from '../types';
+export type { MsfState, PsState } from '../types';
 export type { Command } from './executor';
 
 // ── Isolated Executor ─────────────────────────────────────────────
@@ -107,13 +141,19 @@ export interface IsolatedExecutor {
   getMsfState: () => MsfState | null;
   resetMsfState: () => void;
   getMsfStateSnapshot: () => MsfState | null;
+  isPsActive: () => boolean;
+  getPsState: () => PsState | null;
+  resetPsState: () => void;
 }
 
 export function createIsolatedExecutor(): IsolatedExecutor {
   let _isolatedMsfState: MsfState | null = null;
+  let _isolatedPsState: PsState | null = null;
 
   const _getIsolated = () => _isolatedMsfState;
   const _setIsolated = (s: MsfState | null) => { _isolatedMsfState = s; };
+  const _getIsolatedPs: PsStateGetter = () => _isolatedPsState;
+  const _setIsolatedPs: PsStateSetter = (s) => { _isolatedPsState = s; };
 
   const _isolatedCommands = new Map([
     ...Array.from(COMMANDS.entries()).filter(([name]) => name !== 'msfconsole'),
@@ -121,7 +161,11 @@ export function createIsolatedExecutor(): IsolatedExecutor {
   ]);
 
   const _execute: typeof executeCommand = (req: CommandRequest) => {
-    return executeCommandInternal(req.line, buildCommandCtx(req), _isolatedCommands, _getIsolated, req.onMsfStateChange);
+    return executeCommandInternal(
+      req.line, buildCommandCtx(req, _isolatedCommands), _isolatedCommands,
+      _getIsolated, req.onMsfStateChange,
+      _getIsolatedPs, _setIsolatedPs, req.onPsStateChange,
+    );
   };
 
   return {
@@ -131,5 +175,8 @@ export function createIsolatedExecutor(): IsolatedExecutor {
     getMsfState: () => _isolatedMsfState ? { ..._isolatedMsfState } : null,
     resetMsfState: () => { _isolatedMsfState = null; },
     getMsfStateSnapshot: () => _isolatedMsfState ? { ..._isolatedMsfState } : null,
+    isPsActive: () => !!_isolatedPsState?.active,
+    getPsState: () => _isolatedPsState ? { ..._isolatedPsState } : null,
+    resetPsState: () => { _isolatedPsState = null; },
   };
 }

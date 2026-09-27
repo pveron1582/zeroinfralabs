@@ -32,12 +32,18 @@ function ScenarioLauncher() {
     setLanguage(validLang);
   }
 
+  // Cebo: si este mount seleccionó un lab válido, NO hay que redirigir a
+  // /labs desde el otro efecto del mismo commit (evita el bucle lab→labs).
+  const startedLabRef = useRef(false);
+
   useEffect(() => {
     if (!validLang || !id) return;
 
     const scenario = SCENARIOS.find(s => s.id === id);
-    if (!scenario || scenario.hidden) {
-      // Lab inexistente u oculto (incompleto): no accesible por URL.
+    if (!scenario) {
+      // Lab inexistente: no hay nada que cargar → grilla.
+      // Los labs `hidden` (fuera del menú) SÍ son accesibles por URL
+      // directa (ej. /scenario/scenario-07), igual que los visibles.
       navigate(`/${validLang}/labs`, { replace: true });
       return;
     }
@@ -47,6 +53,7 @@ function ScenarioLauncher() {
     }
 
     logger.debug(`[ScenarioLauncher] Loading scenario: ${id}, lang: ${validLang}`);
+    startedLabRef.current = true;
     selectScenario(scenario.id);
     // Deps intencionalmente acotadas: este efecto sincroniza ruta → escenario
     // y SOLO debe dispararse cuando cambia el id/lang de la URL. Agregar
@@ -54,6 +61,16 @@ function ScenarioLauncher() {
     // landing y reabriría el loader de máquina (ver mejoras_glm.md P1-12).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validLang, id]);
+
+  // Solo redirigimos a /labs cuando este mount NO seleccionó un lab.
+  // Antes: el efecto navegaba en el primer render (view === 'landing'
+  // mientras el loader todavía no había arrancado) y el usuario tenía que
+  // re-ingresar al lab 2-3 veces.
+  useEffect(() => {
+    if (view === 'landing' && !startedLabRef.current) {
+      navigate(`/${validLang}/labs`, { replace: true });
+    }
+  }, [view, validLang, navigate]);
 
   if (showMachineLoader && loadingMachine) {
     return (
@@ -75,8 +92,6 @@ function ScenarioLauncher() {
   }
 
   if (view === 'landing') {
-    const validNavLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es';
-    navigate(`/${validNavLang}/labs`, { replace: true });
     return <LabGrid />;
   }
 

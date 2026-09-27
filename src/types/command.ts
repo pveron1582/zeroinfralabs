@@ -4,6 +4,7 @@
 
 import type { FileEntry, Machine } from './machine';
 import type { MsfState } from './msf';
+import type { PsState } from './powershell';
 
 export interface BlockingCommand {
   message: string;
@@ -33,6 +34,12 @@ export interface SshSessionData extends SessionBase {
   connected?: boolean;
   authenticated?: boolean;
   step?: 'connecting' | 'password' | 'connected';
+}
+
+export interface RdpSessionData extends SessionBase {
+  connected?: boolean;
+  authenticated?: boolean;
+  step?: 'connecting' | 'username' | 'password' | 'connected';
 }
 
 export interface FoundCredentialsData {
@@ -108,6 +115,15 @@ export interface BrowserActionData {
   machineId?: string;
 }
 
+/** Acción del escritorio RDP simulado (PLAN_WINDOWS W3). Los comandos
+ *  `mstsc` (Windows) y `xrdp` (Linux) la emiten y processCommandResult
+ *  abre uiMode 'windows-desktop'. */
+export interface DesktopActionData {
+  action: 'connect' | 'disconnect';
+  machineId?: string;
+  ip?: string;
+}
+
 export interface HttpRequestData {
   method: string;
   url: string;
@@ -144,6 +160,9 @@ interface CmdResponseBase {
   // Resultado inmutable de operaciones sobre el filesystem (crear/editar/borrar/
   // cambiar permisos). El CommandRunner lo aplica al store vía setMachineFiles().
   filesChanged?: FileEntry[];
+  // Archivo descargado (scp download, wget, curl -o, ftp get): lo consume
+  // useDownloadedFile y el validador validateFileDownloaded.
+  downloadedFile?: FileEntry;
   // `su` pidió password y está esperando entrada. El Terminal muestra un prompt
   // tipo "Password:" y, al recibirla, la pasa a un suPasswordSubmit callback.
   requiresPassword?: boolean;
@@ -171,9 +190,15 @@ interface CmdResponseBase {
   // Reemplaza al antiguo prefijo `MSF_STATE:` en el output: los comandos MSF
   // lo emiten explícitamente y el dispatcher lo aplica al estado global.
   msfStateUpdate?: MsfState | null;
+  // Estado de la sesión PowerShell interactiva (W2): powershell la activa,
+  // exit la desactiva. El executor la aplica al store / executor aislado.
+  psStateUpdate?: PsState | null;
   // Acción del navegador simulado (FakeBrowser). El componente emite la
   // acción y LabValidator la evalúa contra el criterio browserAction.
   browserAction?: BrowserActionData;
+  // Acción del escritorio Windows/RDP (W3): mstsc/xrdp connect → abre el
+  // escritorio simulado en uiMode 'windows-desktop'.
+  desktopAction?: DesktopActionData;
   // Transacción HTTP sintética emitida por Burp Suite (Repeater/Proxy).
   // El store la usa para alimentar el historial del proxy y la pestaña Target.
   httpRequest?: HttpRequestData;
@@ -196,7 +221,7 @@ export type CommandResponse = CmdResponseBase & (
   | { type: 'vuln'; foundVulnerability: FoundVulnerabilityData; newMachineId?: string }
   | { type: 'sshLogin'; newMachineId?: string; sshLoginUser: string; sshSessionClosed?: boolean; foundCredentials?: FoundCredentialsData }
   | { type: 'exit'; exitTerminal?: boolean; newMachineId?: string; sshSessionClosed?: boolean }
-  | { type: 'hybrid'; newMachineId?: string; blockingCommand?: BlockingCommand; downloadedFile?: FileEntry; foundCredentials?: FoundCredentialsData; failedUser?: FailedUserData; foundVulnerability?: FoundVulnerabilityData; sshSessionClosed?: boolean; sshLoginUser?: string; ftpSession?: FtpSessionData; sshSession?: SshSessionData }
+  | { type: 'hybrid'; newMachineId?: string; blockingCommand?: BlockingCommand; downloadedFile?: FileEntry; foundCredentials?: FoundCredentialsData; failedUser?: FailedUserData; foundVulnerability?: FoundVulnerabilityData; sshSessionClosed?: boolean; sshLoginUser?: string; ftpSession?: FtpSessionData; sshSession?: SshSessionData; rdpSession?: RdpSessionData; desktopAction?: DesktopActionData }
   | { type: 'http'; httpRequest: HttpRequestData; httpResponse: HttpResponseData; foundVulnerability?: FoundVulnerabilityData; foundCredentials?: FoundCredentialsData; foundDirectories?: FoundDirectoriesData }
 );
 
@@ -208,6 +233,10 @@ export interface CommandContext {
   // Id único del terminal que ejecuta (P2-13/C1): aísla las sesiones de shell
   // interactivas por terminal (cada terminal tiene su propio stack de shells).
   terminalId?: string;
+  // su del frame de identidad de ESTA terminal (aislamiento por terminal).
+  // El executor lo vuelca a utils/users como override de ejecución; sin él,
+  // getCurrentUser cae al modo legacy (machine.su_user compartido).
+  suUserOverride?: string;
   setCurrentDir?: (dir: string) => void;
   listeningPort?: number | null;
   isSshSession?: boolean;
@@ -243,6 +272,19 @@ export interface CommandContext {
   // `sudo <editor>` marca el contexto como elevado: los editores (nano) usan
   // la identidad root para abrir/guardar archivos restringidos.
   elevatedEdit?: boolean;
+  // Historial de líneas ejecutadas en este terminal (para `history`).
+  cmdHistory?: string[];
+  // Tabla de alias del executor que ejecuta (aislada por terminal).
+  shellAliases?: Map<string, string>;
+  // ¿Existe el comando en el registro? (para `type`, sin ciclos de import).
+  hasCommand?: (name: string) => boolean;
+  // Ejecuta otra línea con el MISMO dispatcher (gates MSF/PowerShell, pipes,
+  // redirección, alias). Lo inyecta executeCommandInternal; lo usan
+  // `cmd /c <comando>` y equivalentes de otros shells.
+  runChild?: (line: string) => CommandResponse;
+  // Cadena de líneas ya ejecutadas en esta anidación: corta los ciclos
+  // (`alias foo='cmd /c foo'` expandiría sin fin, nivel por nivel).
+  childLines?: string[];
 }
 
 // ── CommandRequest ────────────────────────────────────────────────
@@ -255,7 +297,9 @@ export interface CommandRequest {
   allMachines: Machine[];
   currentMissionId: number;
   terminalId?: string;
+  suUserOverride?: string;
   onMsfStateChange?: (state: MsfState | null) => void;
+  onPsStateChange?: (state: PsState | null) => void;
   currentDir?: string;
   setCurrentDir?: (dir: string) => void;
   ftpSession?: CommandContext['ftpSession'];
@@ -264,4 +308,6 @@ export interface CommandRequest {
   setUmask?: (mask: number) => void;
   env?: Record<string, string>;
   setEnv?: (env: Record<string, string>) => void;
+  // Historial de líneas del terminal (para `history`).
+  cmdHistory?: string[];
 }

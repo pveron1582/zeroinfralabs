@@ -28,11 +28,14 @@ interface UseAutoRefreshOptions {
   setEnv: (e: Record<string, string> | undefined) => void;
   prompt: string;
   setHistory: React.Dispatch<React.SetStateAction<RefreshEntry[]>>;
+  // su del frame local (los refrescos de top/htop leen identidades de procesos).
+  suUserOverride?: string;
 }
 
 export function useAutoRefresh({
   busy, blockingCommand, executor, machine, allMachines,
   currentMissionId, currentDir, umask, setUmask, env, setEnv, prompt, setHistory,
+  suUserOverride,
 }: UseAutoRefreshOptions) {
   useEffect(() => {
     if (busy && blockingCommand?.cancelKey === 'q' && blockingCommand?.clearScreen) {
@@ -40,7 +43,7 @@ export function useAutoRefresh({
       const refreshInterval = setInterval(() => {
         const result = executor.executeCommand({
           line: cmdName, machine, allMachines, currentMissionId,
-          currentDir, umask, setUmask, env, setEnv,
+          currentDir, umask, setUmask, env, setEnv, suUserOverride,
         });
         if (!result.isError && result.output) {
           const out = result.output;

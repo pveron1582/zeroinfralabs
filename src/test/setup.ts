@@ -67,6 +67,9 @@ beforeEach(() => {
     browserIsLoggedIn: false,
     browserNavHistory: ['https://www.google.com'],
     browserNavIdx: 0,
+    // Sesiones interactivas de REPL: no deben filtrarse entre tests
+    msfState: null,
+    psState: null,
   }), true);
 });
 

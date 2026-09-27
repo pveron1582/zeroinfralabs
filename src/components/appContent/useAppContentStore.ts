@@ -26,6 +26,7 @@ export function useAppContentState() {
     showCompletionOverlay: s.showCompletionOverlay,
     language: s.language,
     uiMode: s.uiMode,
+    rdpMachineId: s.rdpMachineId,
     currentMissionId: s.currentMissionId,
     foxyTourOpen: s.foxyTourOpen,
   })));
@@ -48,5 +49,7 @@ export function useAppContentActions() {
     setShowCompletionOverlay: s.setShowCompletionOverlay,
     openFoxyTour: s.openFoxyTour,
     closeFoxyTour: s.closeFoxyTour,
+    openWindowsDesktop: s.openWindowsDesktop,
+    closeWindowsDesktop: s.closeWindowsDesktop,
   })));
 }

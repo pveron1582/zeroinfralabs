@@ -109,14 +109,15 @@ src/
 │   ├── useKeyboardShortcuts.ts       #   Atajos de teclado, autocomplete, historial
 │   └── useTerminalIdentity.ts        #   Identidad SSH (usuario, root, prompt)
 │
-├── laboratorios/                     # Definición de 7 escenarios de laboratorio
+├── laboratorios/                     # Definición de 8 escenarios (01-08; 07 hidden → 7 visibles)
 │   ├── laboratorio01.ts              #   Lab 01 — WordPress (medium)
 │   ├── laboratorio02.ts              #   Lab 02 — Web OSINT & SSH (easy)
 │   ├── laboratorio03.ts              #   Lab 03 — EternalBlue MS17-010 (easy)
 │   ├── laboratorio04.ts              #   Lab 04 — LFI to RCE (medium)
 │   ├── laboratorio05.ts              #   Lab 05 — FTP Enum & PrivEsc (medium)
 │   ├── laboratorio06.ts              #   Lab 06 — SQL Injection (medium)
-│   ├── laboratorio07.ts              #   Lab 07 — Burp Suite (medium)
+│   ├── laboratorio07.ts              #   Lab 07 — Burp Suite (medium, hidden)
+│   ├── laboratorio08.ts              #   Lab 08 — EternalBlue + cmd.exe (easy)
 │   ├── attackers/                    #   Máquinas atacantes (Kali)
 │   └── templates.ts                  #   Plantillas reutilizables
 │

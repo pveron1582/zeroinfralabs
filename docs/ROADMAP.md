@@ -3,7 +3,7 @@
 Plan de implementación para un sistema virtual lo más realista posible.
 Dividido en fases con tareas concretas, ordenadas por dependencias.
 
-> ✅ = Completado | ⏳ = En progreso / Próximo | Fecha última actualización: 2026-08-24
+> ✅ = Completado | ⏳ = En progreso / Próximo | Fecha última actualización: 2026-09-23
 
 ---
 
@@ -15,6 +15,8 @@ Dividido en fases con tareas concretas, ordenadas por dependencias.
 - **`docs/PROYECTO_ACADEMY.md`** — arquitectura pedagógica de la Academy (8 paths, 58 lecciones, quizzes).
 - **`docs/ARCHITECTURE.md`** — arquitectura general del simulador, validadores y ciclo de comandos.
 - **`docs/MEJORAS.md`** — hygiene del codebase y plan unificado completado.
+- **`docs/ROADMAP_TOPOLOGY_SOC.md`** — roadmap de topología dinámica, SIEM/Wazuh virtual y objetivos Windows.
+- **`docs/PLAN_WINDOWS.md`** — plan W0–W5 de soporte Windows (cmd, PowerShell, escritorio RDP, lab EternalBlue). **W0–W5 listos** (2026-09-23), incluye RDP como servicio con credenciales.
 
 ---
 
@@ -380,7 +382,10 @@ Cuando un binario tiene SUID (`mode & 0o4000`), ejecutarlo como el `owner` del a
 
 **Archivos:** `src/fs-models/fs-linux.ts`
 
-Test verifica 5 binarios SUID (`su`, `sudo`, `passwd`, `find`, `vim`) y sticky bit en `/tmp`.
+Test verifica 3 binarios SUID (`su`, `sudo`, `passwd`) y sticky bit en `/tmp`.
+`find`/`vim` quedaron en 755 en el pase de neutralidad del filesystem Linux
+(2026-09): con 4755 el executor marcaba `privescCompleted` en cualquier lab
+solo por ejecutarlos.
 
 ### 3.4 Escalada de privilegios vía SUID ✅
 
@@ -400,7 +405,7 @@ Test:
 - Sticky bit: root puede borrar subdirectorio ajeno en `/tmp`
 - Sticky bit: usuario no puede borrar subdirectorio ajeno en `/tmp`
 - Sticky bit: dueño puede borrar su propio subdirectorio en `/tmp`
-- Verificación de 5 SUID binaries en fs-linux
+- Verificación de 3 SUID binaries en fs-linux (su, sudo, passwd)
 
 ---
 

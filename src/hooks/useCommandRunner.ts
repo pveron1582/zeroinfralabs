@@ -5,16 +5,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import type { Machine, BlockingCommand } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
-import { createIsolatedExecutor, resetShellManager, type MsfState } from '../commands';
-import { resetProcessManager } from '../frameworks/process/processManager';
-import { resetNetworkState } from '../frameworks/network/networkState';
-import { resetPackageManager } from '../frameworks/packages/packageManager';
-import { resetCron } from '../frameworks/cron/cronRunner';
-import { resetMounts } from '../frameworks/fs/mounts';
+import { createIsolatedExecutor, type MsfState, type PsState } from '../commands';
+import { shellManager } from '../frameworks/shells/ShellManager';
 import { useMissionCompletion } from './useMissionCompletion';
 import { DEFAULT_ENV } from '../utils/environment';
+import { initialCwd } from '../utils/users';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
-import { useTerminalIdentity, getShortPath } from './useTerminalIdentity';
+import { useTerminalIdentity, buildBasePrompt } from './useTerminalIdentity';
 import { useIdentityStack } from './useIdentityStack';
 import { useNanoSave } from './useNanoSave';
 import { useTerminalEffects } from './useTerminalEffects';
@@ -22,10 +19,14 @@ import { useAutoRefresh } from './useAutoRefresh';
 import { useReverseShell } from './useReverseShell';
 import { usePendingSu } from './usePendingSu';
 import { usePendingPythonInput } from './usePendingPythonInput';
-import { useFtpSession, getFtpPromptFor, type SessionRunnerDeps } from './useFtpSession';
-import { useSshSession, getSshPromptFor } from './useSshSession';
+import { useFtpSession, type SessionRunnerDeps } from './useFtpSession';
+import { useSshSession } from './useSshSession';
+import { useRdpSession } from './useRdpSession';
 import { useDownloadedFile } from './useDownloadedFile';
-import type { ProcessDeps, HistoryEntry } from './processCommandResult';
+import { makeWelcome, type ProcessDeps, type HistoryEntry } from './processCommandResult';
+import { useScenarioGlobalReset } from './useScenarioGlobalReset';
+import { useTerminalMountReset } from './useTerminalMountReset';
+import { buildPrompt } from './terminalPrompt';
 import { useRunCommand } from './useRunCommand';
 
 export interface CommandRunnerProps {
@@ -59,7 +60,8 @@ export function useCommandRunner({
 
   // ── Per-instance state (local, no compartido entre terminales) ──
   const [msfState, setMsfState] = useState<MsfState | null>(null);
-  const [currentDir, setCurrentDir] = useState('/root');
+  const [psState, setPsState] = useState<PsState | null>(null);
+  const [currentDir, setCurrentDir] = useState(() => initialCwd(machine));
   const [blockingCommand, setBlockingCommand] = useState<BlockingCommand | null>(null);
   const [listeningPort, setListeningPort] = useState<number | null>(null);
   const [nanoFile, setNanoFile] = useState<NanoFileState | null>(null);
@@ -71,9 +73,13 @@ export function useCommandRunner({
   const [env, setEnv] = useState<Record<string, string> | undefined>(() => DEFAULT_ENV(machine));
 
   // ── Stack de identidades ─────────────────────────────────────────
-  const { pushIdentity, popIdentity } = useIdentityStack({
+  // topSuUser: su del frame superior de ESTA terminal (aislamiento HIGH #2)
+  // — deriva prompt, env y ejecución del frame local, nunca del store.
+  const { topSuUser: suUserOverride, pushIdentity, popIdentity } = useIdentityStack({
     initialMachine: machine,
     onChangeMachine,
+    setCurrentDir,
+    terminalId,
   });
 
   // ── Store (lectura) ──────────────────────────────────────────────
@@ -86,24 +92,18 @@ export function useCommandRunner({
   const executor = useMemo(() => createIsolatedExecutor(), []);
 
   // ── Identidad actual / prompt base ───────────────────────────────
-  const { sshUser, isRoot } = useTerminalIdentity(machine);
-  const displayPath = getShortPath(currentDir || '/', isRoot);
-  const basePrompt = `${sshUser}@${machine.machine_info.hostname}:${displayPath}${isRoot ? '#' : '$'}`;
+  const { sshUser, isRoot } = useTerminalIdentity(machine, suUserOverride);
+  const { displayPath, basePrompt } = buildBasePrompt(machine, currentDir, sshUser, isRoot);
 
   // ── Sesiones interactivas ────────────────────────────────────────
-  const { ftpSession, setFtpSession, runFtpCommand, startFtpSession } = useFtpSession();
-  const { sshSession, setSshSession, runSshPassword, startSshSession } = useSshSession();
+  const { ftpSession, runFtpCommand, startFtpSession } = useFtpSession(terminalId);
+  const { sshSession, runSshPassword, startSshSession } = useSshSession(terminalId);
+  const { rdpSession, runRdpInput, startRdpSession } = useRdpSession(terminalId);
   const { pendingSu, setPendingSu, handleSuPassword } = usePendingSu({
-    machine, currentDir, setCurrentDir, pushIdentity,
+    machine, currentDir, setCurrentDir, pushIdentity, terminalId,
   });
 
   // ── Historial ────────────────────────────────────────────────────
-  const makeWelcome = (_machines: Machine[]): HistoryEntry => ({
-    command: null, streaming: false,
-    output: '',
-    timestamp: Date.now()
-  });
-
   const [history, setHistory]       = useState<HistoryEntry[]>([makeWelcome(allMachines)]);
   const [input, setInput]           = useState('');
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
@@ -113,71 +113,37 @@ export function useCommandRunner({
   const inputRef  = useRef<HTMLInputElement>(null);
 
   // ── Efectos de UI (scroll, focus) ────────────────────────────────
+  // scrollDeps (fuerza): tras cada comando/salida el prompt de entrada
+  // queda visible en la última línea. softDeps (tipeo): solo se mantiene
+  // el fondo si el usuario ya estaba cerca — si está leyendo salida vieja
+  // no se lo arrastra al final con cada tecla.
   useTerminalEffects({
     scrollRef, inputRef, busy, blockingCommand,
-    scrollDeps: [history, busy, input],
+    scrollDeps: [history, busy],
+    softDeps: [input],
   });
 
-  // ── Reset LOCAL al montar cada terminal ──────────────────────────
-  // Cada ventana arranca limpia (historial, cwd, env, msf aislado) sin
-  // tocar estado GLOBAL compartido: sesiones SSH/FTP, shells apiladas,
-  // managers de red/procesos/cron/mounts e identidad. Así abrir una
-  // segunda terminal no reinicia el laboratorio de la primera.
-  useEffect(() => {
-    setHistory([makeWelcome(allMachines)]);
-    setCmdHistory([]); setHistIdx(-1); setInput(''); setBusy(false);
-    setBlockingCommand(null);
-    setListeningPort(null);
-    setCurrentDir('/root');
-    setMsfState(null);
-    setPendingPython(null);
-    executor.resetMsfState();
-    setUmask(0o022);
-    setEnv(DEFAULT_ENV(machine));
-    const timer = setTimeout(() => inputRef.current?.focus(), 150);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioId]);
+  // ── Reset GLOBAL una sola vez por escenario (ver useScenarioGlobalReset) ──
+  useScenarioGlobalReset(scenarioId, machine);
 
-  // ── Reset GLOBAL una sola vez por escenario ─────────────────────
-  // Lo dispara la PRIMERA terminal que monta con este scenarioId.
-  // Tampoco se re-dispara al ganar máquinas nuevas (antes,
-  // `allMachines.length` en las deps mataba firewall/servicios/cron
-  // configurados justo después de un exploit).
+  // ── Cleanup al desmontar ───────────────────────────────────────
+  // Destruye el stack de shells de ESTA terminal (cierre, cambio de
+  // modo, salir de lección). Sin esto, ids reutilizables
+  // ('classic-terminal', 'labmini-*', 'win-rdp-*') heredan sesiones viejas.
+  // Sin terminalId no se toca el stack compartido 'default' (puede ser
+  // usado por otros componentes simultáneos).
   useEffect(() => {
-    const store = useScenarioStore.getState();
-    if (store.globalResetDoneForScenario === scenarioId) return;
-    store.markGlobalResetDone(scenarioId);
-    store.setFtpSession(null);
-    store.setSshSession(null);
-    resetShellManager();
-    resetProcessManager();
-    resetNetworkState();
-    resetPackageManager();
-    resetCron();
-    resetMounts();
-    store.resetIdentity({
-      machineId: machine.id,
-      suUser: machine.su_user,
-      cwd: '/root',
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioId]);
-
-  // ── Entorno por máquina/usuario ──────────────────────────────────
-  // Re-deriva las variables por defecto (PATH/HOME/USER/SHELL...) cuando
-  // cambia la máquina activa (SSH a otro host) o el usuario efectivo (su),
-  // preservando los `export` custom del usuario (como `su` en bash real).
-  useEffect(() => {
-    setEnv(prev => ({ ...prev, ...DEFAULT_ENV(machine) }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [machine.id, sshUser]);
+    if (!terminalId) return;
+    return () => shellManager.destroyOwner(terminalId);
+  }, [terminalId]);
 
   // ── Deps compartidas para ejecutar comandos ──────────────────────
   const sessionDeps: SessionRunnerDeps = {
     executor, machine, allMachines, currentMissionId, currentDir,
     setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState,
+    setPsState,
     terminalId,
+    suUserOverride,
   };
 
   // python3 esperando input() (necesita sessionDeps para re-ejecutar).
@@ -185,17 +151,30 @@ export function useCommandRunner({
     sessionDeps,
   });
 
-  const prompt = pendingSu
-    ? `${pendingSu.targetUser}@${machine.machine_info.hostname}'s password: `
-    : pendingPython
-      ? '' // el prompt del script ya está en el output; la línea entra tal cual
-      : executor.isMsfActive()
-      ? (executor.getMsfPrompt() || 'msf6 >')
-      : ftpSession?.active
-        ? (getFtpPromptFor(ftpSession) || 'ftp> ')
-        : sshSession?.active
-          ? (getSshPromptFor(sshSession) || '')
-          : basePrompt;
+  // ── Reset LOCAL al montar cada terminal (ver useTerminalMountReset) ──
+  useTerminalMountReset({
+    scenarioId, machine, allMachines, executor, inputRef, makeWelcome,
+    setHistory, setCmdHistory, setHistIdx, setInput, setBusy,
+    setBlockingCommand, setListeningPort, setCurrentDir, setMsfState,
+    setPsState, setPendingPython, setUmask, setEnv,
+  });
+
+  // ── Entorno por máquina/usuario ──────────────────────────────────
+  // Re-deriva las variables por defecto (PATH/HOME/USER/SHELL...) cuando
+  // cambia la máquina activa (SSH a otro host) o el usuario efectivo (su),
+  // preservando los `export` custom del usuario (como `su` en bash real).
+  useEffect(() => {
+    setEnv(prev => ({ ...prev, ...DEFAULT_ENV(machine, suUserOverride) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [machine.id, sshUser]);
+
+  const prompt = buildPrompt({
+    pendingSu, pendingPython,
+    isPsActive: executor.isPsActive(), isMsfActive: executor.isMsfActive(),
+    msfPrompt: executor.getMsfPrompt(),
+    ftpSession, sshSession, rdpSession,
+    hostname: machine.machine_info.hostname, displayPath, basePrompt,
+  });
 
   const { checkMissionCompletion } = useMissionCompletion(onMissionComplete);
   const { handleDownloadedFile } = useDownloadedFile({ attackerMachineId, allMachines, language, setHistory });
@@ -206,8 +185,9 @@ export function useCommandRunner({
     onMissionComplete, onChangeMachine, onCredentialsFound,
     onVerifyCredentials, onFailedUser, onSudoPrivileges,
     setBlockingCommand, setListeningPort, setNanoFile, setBusy,
-    setHistory, setFtpSession, setSshSession, setPendingSu, setPendingPython,
+    setHistory, setPendingSu, setPendingPython,
     reportVulnerability,
+    terminalId,
   };
 
   // ── Reverse shell (listener nc) ──────────────────────────────────
@@ -219,12 +199,14 @@ export function useCommandRunner({
     setBlockingCommand, setBusy, setListeningPort, setCurrentDir,
     pushIdentity, onChangeMachine, onMissionComplete, onVerifyCredentials,
     appendOutput,
+    terminalId,
   });
 
   // ── Auto-refresh top/htop ────────────────────────────────────────
   useAutoRefresh({
     busy, blockingCommand, executor, machine, allMachines,
     currentMissionId, currentDir, umask, setUmask, env, setEnv, prompt, setHistory,
+    suUserOverride,
   });
 
   // ── Ejecutor principal (extraído a useRunCommand) ────────────────
@@ -233,9 +215,10 @@ export function useCommandRunner({
     pendingPython, handlePythonInput,
     ftpSession, runFtpCommand, startFtpSession,
     sshSession, runSshPassword, startSshSession,
-    busy, setBusy, setHistory, setInput, setHistIdx, setCmdHistory,
+    rdpSession, runRdpInput, startRdpSession,
+    busy, setBusy, setHistory, setInput, setHistIdx, setCmdHistory, cmdHistory,
     prompt, checkMissionCompletion, sessionDeps, processDeps, executor,
-    setMsfState, onCredentialsFound, onVerifyCredentials, onChangeMachine,
+    setMsfState, setPsState, onCredentialsFound, onVerifyCredentials, onChangeMachine,
     pushIdentity, handleDownloadedFile, onMissionComplete, onExitTerminal,
     inputRef,
   });
@@ -247,6 +230,10 @@ export function useCommandRunner({
   };
 
   // ── Wrapper: resetear también el executor al salir de MSF ────────
+  // Invariante: las mutaciones non-null del estado MSF local vienen solo
+  // de los comandos, que ya actualizan el closure del executor; los
+  // shortcuts (Ctrl+D) solo limpian (null), por eso basta sincronizar
+  // ese caso. No introducir mutaciones non-null externas al executor.
   const handleSetMsfState = (state: MsfState | null) => {
     setMsfState(state);
     if (state === null) {
@@ -255,7 +242,7 @@ export function useCommandRunner({
   };
 
   // ── Nano save ────────────────────────────────────────────────────
-  const { handleNanoSave: nanoSave } = useNanoSave({ machine, currentDir });
+  const { handleNanoSave: nanoSave } = useNanoSave({ machine, currentDir, suUser: suUserOverride });
   const handleNanoSave = (content: string, filenameToSave?: string) =>
     nanoSave(nanoFile, content, filenameToSave);
 
@@ -290,8 +277,9 @@ export function useCommandRunner({
     // Derived
     color, prompt, isRoot, sshUser,
     // Store connections
-    ftpSession, sshSession, isMsfActive: executor.isMsfActive,
-    blockingCommand, msfState, nanoFile,
+    ftpSession, sshSession, rdpSession, isMsfActive: executor.isMsfActive,
+    isPsActive: executor.isPsActive,
+    blockingCommand, msfState, psState, nanoFile,
     // Props passthrough (needed by Terminal render)
     machine, currentDir,
     // Actions

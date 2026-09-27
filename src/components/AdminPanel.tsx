@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../store/scenarioStore';
 import { SCENARIOS } from '../laboratorios/laboratorios';
+import { resetScenarioManagers } from '../frameworks/resetManagers';
 import { DesktopTerminal } from './DesktopTerminal';
 import { MissionPanel } from './MissionPanel';
 import { NetworkMap } from './NetworkMap';
@@ -88,6 +89,8 @@ export function AdminPanel() {
     const scenario = SCENARIOS.find(s => s.id === scenarioId);
     if (!scenario) return;
 
+    // Entrada de sesión: managers de cero + marker limpio (ver scenarioSlice).
+    resetScenarioManagers();
     useScenarioStore.setState({
       currentScenario: scenario,
       machines: scenario.machines.map(m => ({ ...m, discovery_level: 0 })),
@@ -110,8 +113,11 @@ export function AdminPanel() {
       listeningPort: null,
       blockingCommand: null,
       msfState: null,
+      psState: null,
       ftpSession: null,
       sshSession: null,
+      rdpSession: null,
+      globalResetDoneForScenario: null,
       currentDir: '/root/',
       _prevMachinesSnapshot: [],
       showCompletionOverlay: false,

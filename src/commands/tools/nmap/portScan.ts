@@ -69,10 +69,22 @@ export function performPortScan(
     output += 'PORT      STATE    SERVICE\n';
   }
 
+  // Display UDP: el modelo virtual solo conoce servicios TCP, así que un -sU
+  // muestra los puertos conocidos como <puerto>/udp en estado ambiguo
+  // open|filtered (comportamiento clásico del nmap real en UDP).
+  // La metadata scanResults NO cambia: sigue con datos TCP para el validador.
+  const dispProto = (p: { protocol: string }) => (isUdpScan ? 'udp' : p.protocol);
+  const dispState = (p: { state: string }) => (isUdpScan && p.state === 'open' ? 'open|filtered' : p.state);
+  const allShown = [...openPorts, ...filteredPorts, ...closedPorts];
+  const stateWidth = Math.max(9, ...allShown.map(p => dispState(p).length));
+  // TCP conserva el layout histórico (pad 9); UDP necesita +2 para que
+  // 'open|filtered' no quede pegado al servicio.
+  const statePad = (s: string) => s.padEnd(isUdpScan ? stateWidth + 2 : 9);
+
   // Open ports always shown
   openPorts.forEach(p => {
-    const portStr = `${p.port}/${p.protocol}`.padEnd(10);
-    const stateStr = p.state.padEnd(9);
+    const portStr = `${p.port}/${dispProto(p)}`.padEnd(10);
+    const stateStr = statePad(dispState(p));
     const svcStr = p.service.padEnd(12);
     output += isVersionScan
       ? `${portStr}${stateStr}${svcStr}${p.version}\n`
@@ -82,8 +94,8 @@ export function performPortScan(
   // Filtered ports: shown with -v OR when -p- is used
   if (showFiltered && filteredPorts.length > 0) {
     filteredPorts.forEach(p => {
-      const portStr = `${p.port}/${p.protocol}`.padEnd(10);
-      const stateStr = p.state.padEnd(9);
+      const portStr = `${p.port}/${dispProto(p)}`.padEnd(10);
+      const stateStr = statePad(dispState(p));
       output += `${portStr}${stateStr}${p.service}\n`;
     });
   }
@@ -91,8 +103,8 @@ export function performPortScan(
   // Closed ports: shown individually when explicitly requested with -p
   if (showClosed) {
     closedPorts.forEach(p => {
-      const portStr = `${p.port}/${p.protocol}`.padEnd(10);
-      const stateStr = p.state.padEnd(9);
+      const portStr = `${p.port}/${dispProto(p)}`.padEnd(10);
+      const stateStr = statePad(dispState(p));
       output += `${portStr}${stateStr}${p.service}\n`;
     });
   }

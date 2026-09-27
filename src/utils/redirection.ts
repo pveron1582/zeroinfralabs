@@ -7,6 +7,7 @@ import { getCurrentUser } from './users';
 import { canCreateInDir, canEditFile } from './permissions';
 import { findFile, findParentDir, defaultOwnership, buildNewFile } from './fs';
 import { normalizePath, resolvePath } from './path';
+import { isWinPath, resolveWinPath } from './winPath';
 import { applyUmask } from '../commands/builtin/umask';
 
 export interface RedirectionResult {
@@ -45,8 +46,12 @@ export function writeOutputToFile(
 ): WriteResult {
   const currentUser = getCurrentUser(machine);
   const homeDir = currentUser.home;
-  const fullPath = normalizePath(resolvePath(rawPath, currentDir || '/', homeDir));
-  const cleanPath = fullPath.endsWith('/') && fullPath.length > 1 ? fullPath.slice(0, -1) : fullPath;
+  const dir = currentDir || '/';
+  // Windows: raw/cwd/home con forma win → resolución win (PLAN_WINDOWS W1).
+  const raw = (isWinPath(rawPath) || isWinPath(dir) || isWinPath(homeDir))
+    ? resolveWinPath(rawPath, dir, homeDir)
+    : normalizePath(resolvePath(rawPath, dir, homeDir));
+  const cleanPath = raw.endsWith('/') && raw.length > 1 ? raw.slice(0, -1) : raw;
 
   const parentDir = findParentDir(machine, cleanPath);
   if (!parentDir) {

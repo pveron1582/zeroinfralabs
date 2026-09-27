@@ -2,11 +2,11 @@
 // Maneja el ciclo de vida de una sesión FTP interactiva: estado, prompt,
 // y ejecución de sub-comandos (USER/PASS/GET/PUT/QUIT...) dentro de la sesión.
 //
-// El estado vive en el store (terminalSlice) — no hay estado local React.
-// Esto permite que AppContent, AdminPanel y NetworkMap lean la sesión
-// directamente sin pasar por el hook.
+// Con `terminalId` el estado vive local (aislado por ventana); sin él
+// (modo legacy/tests) cae al store compartido — igual que SSH/RDP.
 
-import type { Machine, CommandResponse, FtpSessionData } from '../types';
+import { useState } from 'react';
+import type { Machine, CommandResponse, FtpSessionData, PsState } from '../types';
 import { isShellSessionActive, startShellSession } from '../commands';
 import type { IsolatedExecutor } from '../commands';
 import type { MsfState } from '../commands';
@@ -25,8 +25,12 @@ export interface SessionRunnerDeps {
   setEnv: (e: Record<string, string> | undefined) => void;
   language: 'es' | 'en';
   setMsfState: (s: MsfState | null) => void;
+  setPsState?: (s: PsState | null) => void;
   // Id de terminal que aísla las sesiones de shell (P2-13/C1).
   terminalId?: string;
+  // su del frame de identidad local de la terminal (aislamiento HIGH #2):
+  // el executor lo vuelve override de getCurrentUser durante la ejecución.
+  suUserOverride?: string;
 }
 
 export interface SessionRunResult {
@@ -50,17 +54,26 @@ export const getFtpPromptFor = (ftpSession: FtpSessionData | null): string => {
   }
 };
 
-export function useFtpSession() {
-  const ftpSession = useScenarioStore(state => state.ftpSession);
-  const setFtpSession = useScenarioStore(state => state.setFtpSession);
+export function useFtpSession(terminalId?: string) {
+  const storeFtpSession = useScenarioStore(state => state.ftpSession);
+  const setStoreFtpSession = useScenarioStore(state => state.setFtpSession);
+  const [localFtpSession, setLocalFtpSession] = useState<FtpSessionData | null>(null);
+
+  const ftpSession = terminalId ? localFtpSession : storeFtpSession;
+  // Con terminalId la fuente de verdad es el estado local; el store se
+  // espeja solo para display (AdminPanel/AppContentStore/NetworkMap).
+  const setFtpSession = (session: FtpSessionData | null) => {
+    if (terminalId) setLocalFtpSession(session);
+    setStoreFtpSession(session);
+  };
 
   /** Ejecuta un comando dentro de la sesión FTP activa. */
   const runFtpCommand = (cmd: string, deps: SessionRunnerDeps): SessionRunResult => {
-    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState, terminalId } = deps;
+    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState, setPsState, terminalId, suUserOverride } = deps;
     const result = executor.executeCommand({
       line: cmd,
-      machine, allMachines, currentMissionId, terminalId,
-      onMsfStateChange: setMsfState, currentDir, setCurrentDir,
+      machine, allMachines, currentMissionId, terminalId, suUserOverride,
+      onMsfStateChange: setMsfState, onPsStateChange: setPsState, currentDir, setCurrentDir,
       language, umask, setUmask, env, setEnv,
     });
 

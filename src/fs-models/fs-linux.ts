@@ -1,6 +1,8 @@
 // ── fs-models/fs-linux.ts ─────────────────────────────────────────
-// Modelo de sistema de archivos Linux para laboratorios
-// Estructura base de un sistema Linux, template para diferentes escenarios.
+// Plantilla NEUTRA de un sistema Linux instalado desde cero: estructura
+// de directorios + archivos de sistema. NO trae flags, credenciales ni
+// narrativa de laboratorio — eso lo agrega cada escenario en
+// src/laboratorios/* (buildScenario dedupea por path y gana el último).
 // Subárboles extraídos en módulos: fs-etc, fs-var, fs-wordlists.
 
 import type { FileEntry } from '../types';
@@ -47,15 +49,19 @@ const ROOT_HOME_FILES: FileEntry[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// /usr/ - Programas y datos de usuario (incluyendo binarios SUID)
+// /usr/ - Programas y datos de usuario
 // ═══════════════════════════════════════════════════════════════
+// SUID solo en los binarios que lo traen en Ubuntu (su, sudo, passwd).
+// find/vim quedan en 755: con 4755 el executor los trataba como escalada
+// (getSuidEffectiveUser → privescCompleted) y cualquier `find` en cualquier
+// lab completaba la misión de privesc sin pasar por la vía del escenario.
 const USR_FILES: FileEntry[] = [
   { path: '/usr/bin/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
   { path: '/usr/bin/su', content: '[ELF binary - su]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
   { path: '/usr/bin/sudo', content: '[ELF binary - sudo]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
   { path: '/usr/bin/passwd', content: '[ELF binary - passwd]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
-  { path: '/usr/bin/find', content: '[ELF binary - find]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
-  { path: '/usr/bin/vim', content: '[ELF binary - vim]', type: 'binary', owner: 'root', group: 'root', mode: 0o4755 },
+  { path: '/usr/bin/find', content: '[ELF binary - find]', type: 'binary', owner: 'root', group: 'root', mode: 0o755 },
+  { path: '/usr/bin/vim', content: '[ELF binary - vim]', type: 'binary', owner: 'root', group: 'root', mode: 0o755 },
   { path: '/usr/sbin/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
   { path: '/usr/lib/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },
   { path: '/usr/local/.dir', content: '', type: 'text', owner: 'root', group: 'root', mode: 0o755 },

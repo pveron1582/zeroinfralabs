@@ -1,7 +1,7 @@
 // ── store/types.ts ─────────────────────────────────────────────────
 // Type definitions for the scenario store
 
-import type { Machine, Scenario, Mission, FileEntry, BlockingCommand, FtpSessionData, SshSessionData, MsfState } from '../types';
+import type { Machine, Scenario, Mission, FileEntry, FtpSessionData, SshSessionData, RdpSessionData } from '../types';
 import type { EnumerationSnapshot } from '../utils/networkAlert';
 import type { IdentitySlice } from './slices/identitySlice';
 import type { AcademySlice } from './slices/academySlice';
@@ -16,10 +16,11 @@ export interface Notification {
 
 export type FtpSessionState = FtpSessionData;
 export type SshSessionState = SshSessionData;
+export type RdpSessionState = RdpSessionData;
 
 export type AppView = 'landing' | 'workspace' | 'blog';
 
-export interface ScenarioState extends IdentitySlice, AcademySlice {
+export interface ScenarioState extends IdentitySlice, AcademySlice, TerminalSlice {
   view: AppView;
   setView: (view: AppView) => void;
 
@@ -43,20 +44,10 @@ export interface ScenarioState extends IdentitySlice, AcademySlice {
   browserNavHistory: string[];
   browserNavIdx: number;
 
-  listeningPort: number | null;
-  blockingCommand: BlockingCommand | null;
-
-  currentDir: string;
-
-  msfState: MsfState | null;
-
-  ftpSession: FtpSessionState | null;
-
-  sshSession: SshSessionState | null;
-
-  // Reset global de managers compartidos: una sola vez por escenario
-  // (ver TerminalSlice en slices/terminalSlice.ts).
-  globalResetDoneForScenario: string | null;
+  // Note: listeningPort, blockingCommand, currentDir, msfState, psState,
+  // ftpSession, sshSession, rdpSession, globalResetDoneForScenario,
+  // activeTerminals, hasHadTerminals and their setters/actions are all
+  // inherited from TerminalSlice above.
 
   _prevMachinesSnapshot: EnumerationSnapshot[];
 
@@ -66,9 +57,13 @@ export interface ScenarioState extends IdentitySlice, AcademySlice {
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
 
-  uiMode: 'classic' | 'desktop';
+  uiMode: 'classic' | 'desktop' | 'windows-desktop';
+  _prevUiMode: 'classic' | 'desktop' | null;
+  rdpMachineId: string | null;
   toggleUiMode: () => void;
-  setUiMode: (mode: 'classic' | 'desktop') => void;
+  setUiMode: (mode: 'classic' | 'desktop' | 'windows-desktop') => void;
+  openWindowsDesktop: (machineId: string) => void;
+  closeWindowsDesktop: () => void;
 
   showSurvey: boolean;
   pendingSurveyScenario: Scenario | null;
@@ -111,16 +106,13 @@ export interface ScenarioState extends IdentitySlice, AcademySlice {
   setBrowserUrl: (url: string) => void;
   setBrowserLoggedIn: (loggedIn: boolean) => void;
   setBrowserNavHistory: (history: string[], idx: number) => void;
-  setListeningPort: (port: number | null) => void;
-  setBlockingCommand: (command: BlockingCommand | null) => void;
-  setCurrentDir: (dir: string) => void;
-  setMsfState: (state: MsfState | null) => void;
-  setFtpSession: (session: FtpSessionState | null) => void;
-  setSshSession: (session: SshSessionState | null) => void;
-  markGlobalResetDone: (scenarioId: string) => void;
+  // setListeningPort, setBlockingCommand, setCurrentDir, setMsfState, setPsState,
+  // setFtpSession, setSshSession, setRdpSession, markGlobalResetDone,
+  // registerTerminal, unregisterTerminal, setTerminalMachine
+  // → all inherited from TerminalSlice
   reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 
-  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay'>;
-  resetTerminalState: () => Pick<TerminalSlice, 'listeningPort' | 'blockingCommand' | 'msfState' | 'ftpSession' | 'sshSession' | 'globalResetDoneForScenario'>;
+  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay' | 'rdpMachineId'> & Partial<Pick<UISlice, 'uiMode' | '_prevUiMode'>>;
+  resetTerminalState: () => Pick<TerminalSlice, 'listeningPort' | 'blockingCommand' | 'msfState' | 'psState' | 'ftpSession' | 'sshSession' | 'rdpSession' | 'activeTerminals' | 'hasHadTerminals' | 'globalResetDoneForScenario'>;
   resetScenarioWorkspaceState: () => Pick<ScenarioSlice, '_prevMachinesSnapshot'>;
 }

@@ -1,14 +1,32 @@
 // ── frameworks/metasploit/orchestrators/msfShell.ts ──────────────
 // Windows CMD shell commands: cls, whoami, hostname, dir, ipconfig, etc.
+// Los comandos de filesystem (cd/dir/type) delegan en los de cmd.exe
+// (commands/windows/fs.ts) contra el FS virtual real: la shell de
+// meterpreter corre SOBRE la víctima, no en un mock aparte. El cwd vive
+// en MsfState.cwd (aislado por terminal) y se replica en ctx.setCurrentDir
+// para que la terminal quede alineada al salir de la sesión.
 
-import type { CommandResponse } from '../../../types';
+import type { CommandContext, CommandResponse } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { withState } from '../core/msfHelpers';
+import { cmd_dir, cmd_type, resolveCdTarget } from '../../../commands/windows/fs';
+import { winDisplay } from '../../../utils/winPath';
+
+/** Cwd de la sesión: estado MSF si existe, si no el de la terminal. */
+function sessionCwd(state: MsfState, ctx: CommandContext): string {
+  return state.cwd ?? ctx.currentDir ?? '/';
+}
+
+/** ctx con currentDir fijado al cwd de la sesión (para delegar en cmd.exe). */
+function sessionCtx(ctx: CommandContext, cwd: string): CommandContext {
+  return { ...ctx, currentDir: cwd };
+}
 
 export const executeShellCommand = (
   cmd: string,
   args: string[],
-  state: MsfState
+  state: MsfState,
+  ctx: CommandContext
 ): CommandResponse | null => {
   if (!state.shellMode) return null;
 
@@ -29,24 +47,32 @@ export const executeShellCommand = (
     return withState(`WIN7-TARGET\n`, state);
   }
 
+  // ── cd / chdir ──────────────────────────────────────────────────
+  if (cmd === 'cd' || cmd === 'chdir') {
+    const cwd = sessionCwd(state, ctx);
+    if (args.length === 0) {
+      return withState(`${winDisplay(cwd)}\n`, state);
+    }
+    const res = resolveCdTarget(ctx, args[0], cwd);
+    if (!res.ok) return withState(`${res.message}\n`, state);
+    ctx.setCurrentDir?.(res.canonical);
+    return withState('', { ...state, cwd: res.canonical });
+  }
+
+  if (cmd === 'pwd') {
+    return withState(`${winDisplay(sessionCwd(state, ctx))}\n`, state);
+  }
+
+  // ── dir (lista el FS real de la víctima) ────────────────────────
   if (cmd === 'dir') {
-    const path = args.join(' ') || 'C:\\Windows\\system32';
-    return withState(` Volume in drive C has no label.
- Volume Serial Number is A8B2-C4D1
+    const res = cmd_dir.execute(args, sessionCtx(ctx, sessionCwd(state, ctx)));
+    return { ...withState(res.output.endsWith('\n') ? res.output : `${res.output}\n`, state), isError: res.isError };
+  }
 
- Directory of ${path}
-
-03/14/2017  12:00 AM    <DIR>          .
-03/14/2017  12:00 AM    <DIR>          ..
-03/14/2017  12:00 AM    <DIR>          config
-03/14/2017  12:00 AM    <DIR>          drivers
-03/14/2017  12:00 AM    <DIR>          en-US
-03/14/2017  12:00 AM         1,093,120 ntoskrnl.exe
-03/14/2017  12:00 AM           360,448 cmd.exe
-03/14/2017  12:00 AM           247,296 conhost.exe
-               3 File(s)      1,700,864 bytes
-               3 Dir(s)   8,192,000,000 bytes free
-`, state);
+  // ── type / cat (lee el FS real de la víctima) ───────────────────
+  if (cmd === 'type' || cmd === 'cat') {
+    const res = cmd_type.execute(args, sessionCtx(ctx, sessionCwd(state, ctx)));
+    return { ...res, msfStateUpdate: state };
   }
 
   if (cmd === 'ipconfig') {
@@ -82,10 +108,6 @@ OS Manufacturer:           Microsoft Corporation
 System Type:               x64-based PC
 Total Physical Memory:     2,048 MB
 `, state);
-  }
-
-  if (cmd === 'type') {
-    return withState(`Access is denied.\n`, state);
   }
 
   return withState(`'${cmd}' is not recognized as an internal or external command,\noperable program or batch file.\n`, state);

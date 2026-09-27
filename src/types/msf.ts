@@ -18,6 +18,10 @@ export interface MsfState {
   moduleOptions?: Record<string, string>;
   sessionOpen: boolean;
   shellMode: boolean;
+  // Cwd de la sesión sobre la víctima (Windows). Vive en el estado MSF
+  // (aislado por terminal) para que el prompt de meterpreter/cmd refleje
+  // el directorio real sin depender del cwd de la terminal atacante.
+  cwd?: string;
   auxChecked: boolean;
   uidChecked: boolean;
   hashdumpExecuted?: boolean;

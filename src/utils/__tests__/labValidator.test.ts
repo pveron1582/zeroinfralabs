@@ -361,7 +361,7 @@ describe('labValidator', () => {
     it('debe exigir escalada REAL en privesc (no alcanza el intento)', () => {
       const attempt: CommandResponse = { output: 'test', privescAttempted: true };
       expect(validateMission(attempt, createMission({ type: 'privesc' }))).toBe(false);
-      const real: CommandResponse = { output: 'test', privescCompleted: true };
+      const real: CommandResponse = { output: 'test', privescCompleted: 'machine-under-test' };
       expect(validateMission(real, createMission({ type: 'privesc' }))).toBe(true);
     });
 

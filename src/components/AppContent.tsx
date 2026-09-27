@@ -4,21 +4,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useScenarioStore } from '../store/scenarioStore';
-import { Terminal } from './Terminal';
-import { DesktopTerminal } from './DesktopTerminal';
-import { FakeBrowser } from './FakeBrowser';
-import { BurpSuite } from './burpsuite';
 import { MissionPanel } from './MissionPanel';
 import { NetworkMap } from './NetworkMap';
-import { MachineLoader } from './MachineLoader';
 import { ExitConfirm } from './ExitConfirm';
 import { FoxyTour } from './tour/FoxyTour';
+import { MachineLoader } from './MachineLoader';
 import { DEFAULT_WALLPAPER } from './desktopWallpapers';
 import { useHistorySync, useAnalyticsEffects } from './appContent/useAppContentEffects';
 import { WorkspaceTopBar } from './appContent/WorkspaceTopBar';
 import { WorkspaceOverlays } from './appContent/WorkspaceOverlays';
 import { LandingView } from './appContent/LandingView';
 import { MobileWorkspace } from './appContent/MobileWorkspace';
+import { WorkspaceBody } from './appContent/WorkspaceBody';
 import { useAppContentState, useAppContentActions } from './appContent/useAppContentStore';
 import { useMissionCompletion } from '../hooks/useMissionCompletion';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -51,6 +48,7 @@ export function AppContent() {
     showCompletionOverlay,
     language,
     uiMode,
+    rdpMachineId,
     currentMissionId,
     foxyTourOpen,
   } = useAppContentState();
@@ -71,9 +69,13 @@ export function AppContent() {
     setShowCompletionOverlay,
     openFoxyTour,
     closeFoxyTour,
+    closeWindowsDesktop,
   } = useAppContentActions();
 
   const activeMachine = machines.find(m => m.id === activeMachineId) || machines[0];
+  const rdpMachine = rdpMachineId
+    ? machines.find(m => m.id === rdpMachineId) ?? null
+    : null;
   const isMobile = useIsMobile(768);
 
   useHistorySync(navigate, lang, setView);
@@ -82,6 +84,8 @@ export function AppContent() {
   const { checkMissionCompletion } = useMissionCompletion(completeMission);
 
   const handleGoHome = () => {
+    // Un RDP abierto no debe sobrevivir al salir del workspace.
+    closeWindowsDesktop();
     const completedCount = missions.filter(m => m.status === 'completed').length;
     const totalMissions = missions.length;
     const allComplete = totalMissions > 0 && completedCount === totalMissions;
@@ -110,10 +114,11 @@ export function AppContent() {
   }
 
   // ── Mobile branch: full viewport, no margins, dedicated layout ──
+  // Scroll solo dentro de la ventana negra (Terminal), las 3 barras quedan fijas.
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col" style={{ fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
-        <div className="flex flex-col bg-gray-900 overflow-hidden relative flex-1 min-h-0" ref={workspaceRef} style={{ height: '100dvh', width: '100vw' }}>
+      <div className="h-[100dvh] bg-gray-950 flex flex-col overflow-hidden" style={{ fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" }}>
+        <div className="flex flex-col bg-gray-900 overflow-hidden relative flex-1 min-h-0 w-screen" ref={workspaceRef}>
           <WorkspaceTopBar
             scenarioName={currentScenario.name}
             uiMode={uiMode}
@@ -122,6 +127,9 @@ export function AppContent() {
             onGoHome={handleGoHome}
             onSetActiveApp={setActiveApp}
             onRefreshBrowser={refreshBrowser}
+            rdpActive={!!rdpMachineId}
+            compact
+            onExit={() => setShowExitConfirm(true)}
           />
           {showMachineLoader && loadingMachine ? (
             <div className="flex-1 flex items-center justify-center" style={DEFAULT_WALLPAPER.style}>
@@ -139,6 +147,10 @@ export function AppContent() {
               currentMissionId={currentMissionId}
               activeApp={activeApp}
               termColor={termColor}
+              scenario={currentScenario}
+              currentScenario={currentScenario}
+              msfState={msfState}
+              ftpSession={ftpSession}
               onMissionComplete={completeMission}
               onCredentialsFound={findCredentials}
               onVerifyCredentials={verifyCredentials}
@@ -153,7 +165,7 @@ export function AppContent() {
             />
           )}
           <ExitConfirm open={showExitConfirm} onCancel={() => setShowExitConfirm(false)} onConfirm={() => { setShowExitConfirm(false); handleGoHome(); }} />
-          {showNetworkMap && <NetworkMap scenario={{ ...currentScenario, machines }} activeMachineId={activeMachineId} msfState={msfState} ftpSession={ftpSession} onClose={() => toggleNetworkMap(false)} />}
+          {showNetworkMap && <NetworkMap compact scenario={{ ...currentScenario, machines }} activeMachineId={activeMachineId} msfState={msfState} ftpSession={ftpSession} onClose={() => toggleNetworkMap(false)} />}
         </div>
         <WorkspaceOverlays notification={notification} showCompletionOverlay={showCompletionOverlay} showSurvey={showSurvey} pendingSurveyScenario={pendingSurveyScenario} currentScenario={currentScenario} totalMissions={missions.length} completedCount={missions.filter(m => m.status === 'completed').length} language={language} onCloseCompletion={() => setShowCompletionOverlay(false)} onSurveySubmit={() => { useScenarioStore.getState().resetWorkspace(); const validLang = (lang === 'es' ? 'es' : 'en') as 'en' | 'es'; navigate(`/${validLang}/labs`, { replace: true }); }} />
       </div>
@@ -176,89 +188,39 @@ export function AppContent() {
           onGoHome={handleGoHome}
           onSetActiveApp={setActiveApp}
           onRefreshBrowser={refreshBrowser}
+          rdpActive={!!rdpMachineId}
+          onExit={() => setShowExitConfirm(true)}
         />
 
         <div className="flex flex-1 min-h-0">
           <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
-
-            {uiMode === 'classic' ? (
-              <>
-              <div className={`flex-1 overflow-hidden ${activeApp !== 'terminal' ? 'hidden' : ''}`}>
-                {showMachineLoader && loadingMachine ? (
-                  <div className="h-full w-full" style={DEFAULT_WALLPAPER.style}>
-                    <MachineLoader
-                      machineName={loadingMachine.machine_info.hostname}
-                      machineIp={loadingMachine.machine_info.ip}
-                      machineOs={loadingMachine.machine_info.os}
-                      onComplete={() => {}}
-                      language={language}
-                    />
-                  </div>
-                ) : (
-                  <Terminal
-                    scenarioId={currentScenario.id}
-                    machine={activeMachine}
-                    allMachines={machines}
-                    currentMissionId={currentMissionId}
-                    onMissionComplete={completeMission}
-                    onCredentialsFound={findCredentials}
-                    onVerifyCredentials={verifyCredentials}
-                    onChangeMachine={changeMachine}
-                    onFailedUser={addFailedUser}
-                    onSudoPrivileges={setSudoPrivileges}
-                    termColor={termColor}
-                  />
-                )}
-              </div>
-
-              {currentScenario.category === 'Web' && (
-              <div className={`flex-1 overflow-hidden ${activeApp !== 'browser' ? 'hidden' : ''}`}>
-                <FakeBrowser
-                  key={browserKey}
-                  allMachines={machines}
-                  onClose={() => setActiveApp('terminal')}
-                  onMissionComplete={completeMission}
-                  onCredentialsFound={findCredentials}
-                  onVerifyCredentials={verifyCredentials}
-                  scenarioHasWeb={true}
-                  onSetPossibleUsers={setPossibleUsers}
-                  onReportVulnerability={reportVulnerability}
-                  checkMissionCompletion={checkMissionCompletion}
-                />
-              </div>
-              )}
-
-              {currentScenario.category === 'Web' && (
-              <div className={`flex-1 overflow-hidden ${activeApp !== 'burpsuite' ? 'hidden' : ''}`}>
-                <BurpSuite
-                  allMachines={machines}
-                  onClose={() => setActiveApp('terminal')}
-                  onReportVulnerability={reportVulnerability}
-                  onCredentialsFound={findCredentials}
-                  checkMissionCompletion={checkMissionCompletion}
-                />
-              </div>
-              )}
-              </>
-            ) : (
-              <div className="flex-1 overflow-hidden relative">
-                <DesktopTerminal
-                  scenarioId={currentScenario.id}
-                  machine={activeMachine}
-                  allMachines={machines}
-                  currentMissionId={currentMissionId}
-                  onMissionComplete={completeMission}
-                  onCredentialsFound={findCredentials}
-                  onVerifyCredentials={verifyCredentials}
-                  onChangeMachine={changeMachine}
-                  onFailedUser={addFailedUser}
-                  onSudoPrivileges={setSudoPrivileges}
-                  termColor={termColor}
-                  onRequestExit={() => setShowExitConfirm(true)}
-                  onOpenTour={openFoxyTour}
-                />
-              </div>
-            )}
+            <WorkspaceBody
+              uiMode={uiMode}
+              rdpMachine={rdpMachine}
+              activeMachine={activeMachine}
+              machines={machines}
+              currentScenario={currentScenario}
+              currentMissionId={currentMissionId}
+              activeApp={activeApp}
+              browserKey={browserKey}
+              showMachineLoader={showMachineLoader}
+              loadingMachine={loadingMachine}
+              language={language}
+              termColor={termColor}
+              completeMission={completeMission}
+              findCredentials={findCredentials}
+              verifyCredentials={verifyCredentials}
+              changeMachine={changeMachine}
+              addFailedUser={addFailedUser}
+              setSudoPrivileges={setSudoPrivileges}
+              setPossibleUsers={setPossibleUsers}
+              reportVulnerability={reportVulnerability}
+              setActiveApp={setActiveApp}
+              closeWindowsDesktop={closeWindowsDesktop}
+              onRequestExit={() => setShowExitConfirm(true)}
+              openFoxyTour={openFoxyTour}
+              checkMissionCompletion={checkMissionCompletion}
+            />
           </div>
 
           <MissionPanel

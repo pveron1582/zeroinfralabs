@@ -4,12 +4,14 @@
 
 import type { CommandContext, CommandResponse, FileEntry } from '../types';
 import { shellManager } from '../frameworks/shells';
-import { getCurrentUser } from '../utils/users';
+import { getCurrentUser, getExecutionSuUser, setExecutionSuUser } from '../utils/users';
 import { writeOutputToFile } from '../utils/redirection';
 import { splitTopLevel, extractRedirection, expandCommandLine, splitArgs } from '../utils/shellParse';
 import { getSuidEffectiveUser } from './suid';
 import { cmd_msfconsole, executeMsfCommand } from './tools';
-import type { MsfState } from '../types';
+import { WINDOWS_COMMANDS } from './windows';
+import { executePsLine } from './powershell';
+import type { MsfState, PsState } from '../types';
 import { executeShellCommand } from './shellIntegration';
 
 export interface Command {
@@ -19,6 +21,8 @@ export interface Command {
 
 export type MsfStateGetter = () => MsfState | null;
 export type MsfStateSetter = (state: MsfState | null) => void;
+export type PsStateGetter = () => PsState | null;
+export type PsStateSetter = (state: PsState | null) => void;
 
 function parseMsfResponse(
   result: CommandResponse,
@@ -28,6 +32,17 @@ function parseMsfResponse(
   const state = result.msfStateUpdate ?? null;
   setState(state?.active ? state : null);
   const { msfStateUpdate: _discarded, ...rest } = result;
+  return rest;
+}
+
+function parsePsResponse(
+  result: CommandResponse,
+  setState: PsStateSetter
+): CommandResponse {
+  if (!('psStateUpdate' in result)) return result;
+  const state = result.psStateUpdate ?? null;
+  setState(state?.active ? state : null);
+  const { psStateUpdate: _discarded, ...rest } = result;
   return rest;
 }
 
@@ -50,12 +65,49 @@ export function createMsfCommand(
   };
 }
 
+// ── Expansión de alias (primera palabra de cada segmento) ─────────
+// Reemplazo textual del primer token preservando el resto verbatim
+// (no se re-tokeniza: el quoting del resto queda intacto). Sin
+// recursión infinita: máximo 8 niveles y corte en ciclos.
+function firstTokenSpan(s: string): { token: string; start: number; end: number } | null {
+  let i = 0;
+  while (i < s.length && /\s/.test(s[i])) i++;
+  if (i >= s.length) return null;
+  if (s[i] === '"' || s[i] === "'") {
+    const q = s[i];
+    const j = s.indexOf(q, i + 1);
+    const end = j === -1 ? s.length : j + 1;
+    return { token: s.slice(i + 1, j === -1 ? s.length : j), start: i, end };
+  }
+  let j = i;
+  while (j < s.length && !/\s/.test(s[j])) j++;
+  return { token: s.slice(i, j), start: i, end: j };
+}
+
+export function expandAlias(line: string, aliases?: Map<string, string>): string {
+  if (!aliases || aliases.size === 0) return line;
+  let cur = line;
+  const seen = new Set<string>();
+  for (let d = 0; d < 8; d++) {
+    const span = firstTokenSpan(cur);
+    if (!span) return cur;
+    const val = aliases.get(span.token);
+    if (val === undefined || seen.has(span.token)) return cur;
+    seen.add(span.token);
+    cur = cur.slice(0, span.start) + val + cur.slice(span.end);
+  }
+  return cur;
+}
+
 function runPipeline(
   segments: string[],
   ctx: CommandContext,
   commands: Map<string, Command>,
   getMsfState: MsfStateGetter,
-  onMsfStateChange?: (state: MsfState | null) => void
+  onMsfStateChange?: (state: MsfState | null) => void,
+  getPsState?: PsStateGetter,
+  setPsState?: PsStateSetter,
+  onPsStateChange?: (state: PsState | null) => void
 ): CommandResponse {
   let pipedInput: string | undefined;
   let result: CommandResponse = { output: '' };
@@ -63,13 +115,21 @@ function runPipeline(
 
   for (let i = 0; i < segments.length; i++) {
     const segCtx: CommandContext = i === 0 ? ctx : { ...ctx, pipedInput };
-    const segResult = executeCommandInternal(segments[i], segCtx, commands, getMsfState, onMsfStateChange);
+    const segResult = executeCommandInternal(
+      segments[i], segCtx, commands, getMsfState, onMsfStateChange,
+      getPsState, setPsState, onPsStateChange,
+    );
     if (segResult.filesChanged) allChanged.push(...segResult.filesChanged);
     if (i === 0) {
       result = segResult;
     } else {
-      result = { ...result, output: segResult.output };
-      if (segResult.isError) result = { ...result, isError: true };
+      // Merge de metadatos: la salida es la del último segmento, pero los
+      // metadatos (fileRead, privesc, blockingCommand, foundCredentials,
+      // httpRequest, ...) de TODOS los segmentos se preservan para el
+      // LabValidator (ej. `cat flag | grep x` debe validar fileRead).
+      const hadError = result.isError || segResult.isError;
+      result = { ...result, ...segResult, output: segResult.output };
+      if (hadError) result.isError = true;
     }
     pipedInput = segResult.output;
   }
@@ -85,7 +145,52 @@ export function executeCommandInternal(
   ctx: CommandContext,
   commands: Map<string, Command>,
   getMsfState: MsfStateGetter,
-  onMsfStateChange?: (state: MsfState | null) => void
+  onMsfStateChange?: (state: MsfState | null) => void,
+  getPsState?: PsStateGetter,
+  setPsState?: PsStateSetter,
+  onPsStateChange?: (state: PsState | null) => void
+): CommandResponse {
+  // Identidad de ejecución (aislamiento por terminal): el su del frame de
+  // ESTA terminal gana sobre machine.su_user compartido mientras corre el
+  // comando y se restaura siempre (try/finally). Cubre los ~72 call sites de
+  // getCurrentUser sin tocarlos — pipes, MSF y PowerShell pasan por aquí.
+  const prevSu = getExecutionSuUser();
+  setExecutionSuUser(ctx.suUserOverride);
+  try {
+    // `cmd /c <comando>` (y análogos) necesita reentrar al dispatcher con el
+    // mismo registro/estado. Se inyecta acá para que el comando no tenga que
+    // conocer los getters de MSF/PowerShell; `childLines` corta los ciclos de
+    // alias que expanden a `cmd /c <mismo alias>` (un guard por nivel no basta).
+    const chain = [...(ctx.childLines ?? []), line];
+    const childCtx: CommandContext = {
+      ...ctx,
+      runChild: (childLine: string): CommandResponse => {
+        if (chain.includes(childLine)) {
+          return {
+            output: `Ciclo detectado al expandir '${childLine}' (alias recursivo).`,
+            isError: true,
+          };
+        }
+        return executeCommandInternal(
+          childLine, { ...ctx, childLines: chain },
+          commands, getMsfState, onMsfStateChange,
+          getPsState, setPsState, onPsStateChange,
+        );
+      },
+    };
+    return executeCommandBody(
+      line, childCtx, commands, getMsfState, onMsfStateChange,
+      getPsState, setPsState, onPsStateChange,
+    );
+  } finally {
+    setExecutionSuUser(prevSu);
+  }
+}
+
+function executeCommandBody(
+  line: string, ctx: CommandContext, commands: Map<string, Command>, getMsfState: MsfStateGetter,
+  onMsfStateChange?: (state: MsfState | null) => void, getPsState?: PsStateGetter,
+  setPsState?: PsStateSetter, onPsStateChange?: (state: PsState | null) => void
 ): CommandResponse {
   if (shellManager.isActive(ctx.terminalId)) {
     // executeShellCommand emite los metadatos de cierre del tipo correcto
@@ -102,21 +207,61 @@ export function executeCommandInternal(
     return result;
   }
 
+  // ── Sesión PowerShell activa (W2): toda la línea va al dispatcher PS ──
+  // Antes del split de pipes: executePsLine maneja pipes internamente.
+  const psState = getPsState?.();
+  if (psState?.active) {
+    // PowerShell ejecuta exes nativos cuando el nombre no es cmdlet/alias.
+    // Mismo dual que el camino normal: WINDOWS_COMMANDS en máquinas
+    // Windows y el registro base como fallback.
+    const nativeDispatch = (rawStage: string): CommandResponse | null => {
+      const parts = splitArgs(rawStage);
+      const name = parts[0];
+      if (!name) return null;
+      const isWin = ctx.machine?.machine_info?.family === 'windows';
+      const nativeCmd = (isWin ? WINDOWS_COMMANDS.get(name) : undefined) ?? commands.get(name);
+      if (!nativeCmd) return null;
+      return nativeCmd.execute(parts.slice(1), ctx);
+    };
+    const result = executePsLine(line, ctx, nativeDispatch);
+    if ('psStateUpdate' in result) {
+      const state = result.psStateUpdate ?? null;
+      const next: PsState | null = state?.active ? state : null;
+      setPsState?.(next);
+      onPsStateChange?.(next);
+      const { psStateUpdate: _out, ...rest } = result;
+      return rest;
+    }
+    return result;
+  }
+
   // ── Normal command path: env expansion + pipes + redirection ──
   const expanded = ctx.env ? expandCommandLine(line, ctx.env) : line;
 
-  const pipeSegments = splitTopLevel(expanded, '|');
+  // Alias por segmento de pipe (solo primera palabra, como bash)
+  const aliased = ctx.shellAliases && ctx.shellAliases.size > 0
+    ? splitTopLevel(expanded, '|').map(seg => expandAlias(seg, ctx.shellAliases)).join(' | ')
+    : expanded;
+
+  const pipeSegments = splitTopLevel(aliased, '|');
   if (pipeSegments.length > 1) {
-    return runPipeline(pipeSegments, ctx, commands, getMsfState, onMsfStateChange);
+    return runPipeline(
+      pipeSegments, ctx, commands, getMsfState, onMsfStateChange,
+      getPsState, setPsState, onPsStateChange,
+    );
   }
 
-  const redir = extractRedirection(expanded);
-  const cmdLine = redir ? redir.command : expanded;
+  const redir = extractRedirection(aliased);
+  const cmdLine = redir ? redir.command : aliased;
   const parts = splitArgs(cmdLine);
   const cmdName = parts[0] ?? '';
   const args = parts.slice(1);
 
-  const cmd = commands.get(cmdName);
+  // Dispatch dual: máquinas Windows usan WINDOWS_COMMANDS (cmd.exe);
+  // los nombres no listados caen al registro POSIX base.
+  const isWinMachine = ctx.machine?.machine_info?.family === 'windows';
+  const cmd = (isWinMachine ? WINDOWS_COMMANDS.get(cmdName) : undefined)
+    ?? commands.get(cmdName);
   if (!cmd) return {
     output: `Command not found: ${cmdName}\nEscribe 'help' para ver los comandos disponibles.`,
     isError: true
@@ -172,7 +317,16 @@ export function executeCommandInternal(
     result = { ...result, filesChanged: write.filesChanged };
   }
 
+  // Aplicar actualizaciones de estado PS emitidas por cmd_powershell
+  // (inicio de sesión o one-shot que emita psStateUpdate).
+  if (setPsState && 'psStateUpdate' in result) {
+    result = parsePsResponse(result, setPsState);
+    // Tras aplicar, notificar al hook con el estado ya mutado
+    onPsStateChange?.(getPsState?.() ?? null);
+  }
+
   if (onMsfStateChange) onMsfStateChange(getMsfState());
 
   return result;
 }
+

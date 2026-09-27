@@ -105,4 +105,30 @@ describe('cmd_traceroute', () => {
     expect(result.isError).toBe(true);
     expect(result.output).toContain('Name or service not known');
   });
+
+  it('debe resolver hostname virtual a su IP', () => {
+    const machine = createMockMachine('target-01', '192.168.1.10');
+    machine.machine_info.hostname = 'webserver';
+
+    const result = cmd_traceroute.execute(['webserver'], {
+      machine: { machine_info: { ip: '192.168.1.5' } } as any,
+      allMachines: [machine],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('traceroute to webserver (192.168.1.10)');
+    expect(result.output).toContain('webserver (192.168.1.10)');
+  });
+
+  it('debe rechazar hostname desconocido', () => {
+    const result = cmd_traceroute.execute(['google.com'], {
+      machine: { machine_info: { ip: '192.168.1.5' } } as any,
+      allMachines: [],
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBe(true);
+    expect(result.output).toContain('Name or service not known');
+  });
 });

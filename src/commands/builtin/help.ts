@@ -13,6 +13,13 @@ export const cmd_help = {
 
 --- System Commands ---
   help           - Show this help
+  man <cmd>      - Manual page of a command
+  whatis <cmd>   - One-line description
+  apropos <kw>   - Search manuals by keyword
+  history [N]    - Command history
+  alias          - Define or list aliases
+  unalias        - Remove aliases
+  type <name>    - Describe a name (alias/cmd)
   clear          - Clear the terminal
   whoami         - Current user info
   id [user]      - Display user identity
@@ -27,6 +34,7 @@ export const cmd_help = {
   touch file     - Create empty file
   echo           - Display text or write file
   nano file      - File editor
+  vi/vim file    - File editor (emulated)
   mkdir [-p] dir - Create directories
   rmdir [-p] dir - Remove empty directories
   rm [-rf] file  - Remove files
@@ -41,6 +49,7 @@ export const cmd_help = {
   htop           - Interactive process viewer
   kill [pid]     - Terminate processes
   systemctl      - Control system services
+  service [cmd]  - Alias of systemctl
   journalctl     - Query system logs
   iptables       - Manage firewall rules
   ufw            - Uncomplicated Firewall
@@ -58,6 +67,16 @@ export const cmd_help = {
   wc             - Count lines/words/chars
   sort           - Sort lines
   uniq           - Remove duplicate lines
+  cut            - Remove sections from lines
+  tr             - Translate/squeeze/delete chars
+  tac            - Reverse line order
+  nl             - Number lines
+  rev            - Reverse characters
+  column -t      - Align into table
+  sed            - Stream editor (subset)
+  awk            - Pattern scan with fields
+  diff           - Compare files line by line
+  tee            - stdin to files + stdout
   crontab        - Manage scheduled tasks (-l, -e, -r)
   date           - Show current (virtual) time
   sleep [secs]   - Wait: advances time and runs cron jobs
@@ -67,7 +86,23 @@ export const cmd_help = {
   du             - Show directory sizes
   ln [-s]        - Create links (symbolic/hard)
   find           - Search files by name/perm/user
-  python3        - Run Python scripts (simulated)
+  stat file      - File status (size/owner/dates)
+  file [f]       - Determine file type
+  basename/dirname/realpath - Path utilities
+  md5sum/sha256sum  - Checksums
+  base64         - Encode/decode
+  strings        - Printable sequences
+  less/more file - Show file contents
+  uname [-a]     - System and kernel info
+  hostname [n]   - Show or set host name
+  uptime         - System uptime
+  free           - Memory usage
+  arch           - Machine architecture
+  hostnamectl    - Host name and OS info
+  lsb_release    - Distribution info
+  w / last       - Who is on / login history
+  lscpu          - CPU info
+  python3/python - Run Python scripts (simulated)
   which [cmd]    - Locate command path
   exit           - Close session / return
   end            - Exit the lab
@@ -75,6 +110,12 @@ export const cmd_help = {
 --- Network Commands ---
   ping [host]    - Test network connectivity
   traceroute [h] - Trace route to host
+  dig/nslookup   - DNS lookup
+  wget [url]     - Download from web server
+  curl [url]     - HTTP client (GET/POST)
+  scp s d        - Secure copy over SSH
+  whois host     - Ownership record
+  tcpdump        - Dump network traffic
   arp-scan [net] - Discover active hosts
   netdiscover    - Network host discovery
   nc [args]      - Netcat utility
@@ -86,6 +127,7 @@ export const cmd_help = {
   hashcat [args] - Password cracking
   ssh user@ip    - Connect via SSH
   ftp [ip]       - Connect via FTP
+  xrdp /v:<ip>   - Connect via RDP (Linux)
   msfconsole     - Start Metasploit Framework
 
 Usage: help <command> for more information about a specific command.`,

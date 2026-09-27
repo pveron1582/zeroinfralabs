@@ -6,7 +6,7 @@
 import type { CommandContext, CommandResponse } from '../../types';
 import { getCurrentUser, isRoot } from '../../utils/users';
 import {
-  addRule, deleteRule, flushRules, listRules, setPolicy,
+  addRule, insertRule, deleteRule, flushRules, listRules, setPolicy,
   getPolicy, type FirewallChain, type FirewallRule, type FirewallTarget,
 } from '../../frameworks/network/networkState';
 
@@ -17,6 +17,7 @@ const IPTABLES_HELP = `Usage: iptables [options]
   -L, --list          List rules in all chains (or one chain)
   -S                  Show rules as commands
   -A, --append <chain> <rulespec>   Append a rule
+  -I, --insert <chain> [rulenum] <rulespec>   Insert a rule (default position 1)
   -D, --delete <chain> <rulenum>    Delete rule by number
   -F, --flush [chain] Flush rules (all chains if none given)
   -P, --policy <chain> <target>     Set default policy (DROP/ACCEPT)
@@ -24,6 +25,7 @@ const IPTABLES_HELP = `Usage: iptables [options]
 Examples:
   iptables -L
   iptables -A INPUT -p tcp --dport 22 -j DROP
+  iptables -I INPUT 1 -s 192.168.1.5 -j DROP
   iptables -A INPUT -s 192.168.1.5 -j DROP
   iptables -P INPUT DROP
   iptables -D INPUT 1
@@ -87,7 +89,28 @@ export const cmd_iptables = {
       return { output: `Added rule ${rule.id} (${rule.target}) to chain ${rule.chain}` };
     }
 
-    return { output: 'Usage: iptables -L | -A <chain> <rulespec> | -D <chain> <n> | -F [chain] | -P <chain> <target>\nTry "iptables -h" for full help.', isError: true };
+    // ── Insert (-I CHAIN [rulenum] rulespec, default 1) ──
+    const insIdx = args.indexOf('-I') >= 0 ? args.indexOf('-I') : args.indexOf('--insert');
+    if (insIdx >= 0) {
+      const chain = args[insIdx + 1] as FirewallChain;
+      if (!CHAINS.includes(chain)) return { output: `iptables: cadena inválida: ${chain}`, isError: true };
+      // rulenum solo si es número suelto seguido de otro flag o fin
+      // (evita confundir `--dport 22` con posición).
+      let rulenum = 1;
+      let specStart = insIdx + 2;
+      const maybeNum = args[insIdx + 2];
+      const afterNum = args[insIdx + 3];
+      if (maybeNum !== undefined && /^\d+$/.test(maybeNum) && (afterNum === undefined || afterNum.startsWith('-'))) {
+        rulenum = Number(maybeNum);
+        specStart = insIdx + 3;
+      }
+      const parsed = parseRuleSpec(args, chain, specStart);
+      if (!parsed.ok) return { output: parsed.error, isError: true };
+      const rule = insertRule(machine.id, chain, rulenum, parsed.rule);
+      return { output: `Inserted rule ${rule.id} (${rule.target}) at position ${rulenum} in chain ${rule.chain}` };
+    }
+
+    return { output: 'Usage: iptables -L | -A <chain> <rulespec> | -I <chain> [n] <rulespec> | -D <chain> <n> | -F [chain] | -P <chain> <target>\nTry "iptables -h" for full help.', isError: true };
   }
 };
 
@@ -99,10 +122,17 @@ function parseAppend(
 ): { ok: true; rule: Omit<FirewallRule, 'id' | 'sourceType'> & { sourceType?: 'iptables' | 'ufw' } } | { ok: false; error: string } {
   const chain = args[appIdx + 1] as FirewallChain;
   if (!CHAINS.includes(chain)) return { ok: false, error: `iptables: cadena inválida: ${chain}` };
+  return parseRuleSpec(args, chain, appIdx + 2);
+}
 
+function parseRuleSpec(
+  args: string[],
+  chain: FirewallChain,
+  start: number
+): { ok: true; rule: Omit<FirewallRule, 'id' | 'sourceType'> & { sourceType?: 'iptables' | 'ufw' } } | { ok: false; error: string } {
   const rule: Omit<FirewallRule, 'id' | 'sourceType'> & { sourceType?: 'iptables' | 'ufw' } = { chain, target: 'ACCEPT', sourceType: 'iptables' };
 
-  for (let i = appIdx + 2; i < args.length; i++) {
+  for (let i = start; i < args.length; i++) {
     const tok = args[i];
     switch (tok) {
       case '-p':

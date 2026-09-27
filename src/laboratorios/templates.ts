@@ -4,7 +4,7 @@
 
 import { assignDHCP } from '../utils/network';
 import type { Machine, Scenario, MachineInfo, Port, LearningStep, Mission, FileEntry } from '../types';
-import { createLinuxFileSystem, createWindowsFileSystem } from '../fs-models';
+import { createLinuxFileSystem, createWindowsFileSystem, MACHINE_HOSTNAME_PLACEHOLDER } from '../fs-models';
 import type { LinuxFileSystemConfig, WindowsFileSystemConfig } from '../fs-models';
 import { createKaliMachine, resetKaliCounter } from './attackers';
 
@@ -65,6 +65,21 @@ export function buildScenario(config: ScenarioBuilderConfig): Scenario {
     ),
   };
   const machines = assignDHCP(config.networkRange, [attacker, target]);
+
+  // Hostname real de cada máquina (fuente única: machine_info.hostname, que es
+  // lo que imprime el comando `hostname`). La plantilla Linux escribe el
+  // placeholder en /etc/hostname, /etc/hosts y los logs: sin este paso,
+  // `cat /etc/hostname` decía `target-server` en todos los labs mientras
+  // `hostname` imprimía el hostname propio de cada escenario.
+  for (const m of machines) {
+    const hn = m.machine_info?.hostname;
+    if (!hn || !m.files?.some(f => f.content.includes(MACHINE_HOSTNAME_PLACEHOLDER))) continue;
+    m.files = m.files.map(f =>
+      f.content.includes(MACHINE_HOSTNAME_PLACEHOLDER)
+        ? { ...f, content: f.content.split(MACHINE_HOSTNAME_PLACEHOLDER).join(hn) }
+        : f,
+    );
+  }
 
   // Reemplazar placeholders en archivos del atacante (payloads, etc.)
   // IMPORTANTE: se aplica a machines[0] porque assignDHCP crea nuevos objetos via spread

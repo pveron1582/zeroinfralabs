@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDesktopWindows } from '../useDesktopWindows';
+import { shellManager } from '../../frameworks/shells/ShellManager';
 import { WALLPAPERS, DEFAULT_WALLPAPER_ID } from '../../components/desktopWallpapers';
 
 const mockState = {
@@ -8,6 +9,9 @@ const mockState = {
   currentScenario: { id: 'scenario-01', initialMachineId: 'attacker-01', category: 'General' },
   missions: [],
   language: 'es',
+  registerTerminal: vi.fn(),
+  unregisterTerminal: vi.fn(),
+  setTerminalMachine: vi.fn(),
 };
 
 vi.mock('../../store/scenarioStore', () => ({
@@ -235,6 +239,40 @@ describe('useDesktopWindows', () => {
     });
   });
 
+  describe('openRdp / closeRdp', () => {
+    it('debe abrir una ventana RDP singleton por machineId', () => {
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.openRdp('win-01', 'RDP - WIN7-LAB'); });
+      expect(result.current.rdpWindows).toHaveLength(1);
+      expect(result.current.rdpWindows[0].machineId).toBe('win-01');
+      expect(result.current.rdpWindows[0].title).toBe('RDP - WIN7-LAB');
+      act(() => { result.current.openRdp('win-01', 'RDP - WIN7-LAB'); });
+      expect(result.current.rdpWindows).toHaveLength(1);
+    });
+
+    it('debe traer al frente una ventana RDP minimizada al reabrirla', () => {
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.openRdp('win-01', 'RDP - A'); });
+      const id = result.current.rdpWindows[0].id;
+      act(() => { result.current.minimizeWindow(id); });
+      act(() => { result.current.addTerminal(); });
+      act(() => { result.current.openRdp('win-01', 'RDP - A'); });
+      expect(result.current.rdpWindows).toHaveLength(1);
+      expect(result.current.rdpWindows[0].minimized).toBe(false);
+      const maxZ = Math.max(...result.current.windows.map(w => w.zIndex));
+      expect(result.current.rdpWindows[0].zIndex).toBe(maxZ);
+    });
+
+    it('closeRdp debe remover la ventana RDP sin tocar otras', () => {
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.addTerminal(); });
+      act(() => { result.current.openRdp('win-01', 'RDP - A'); });
+      act(() => { result.current.closeRdp(); });
+      expect(result.current.rdpWindows).toHaveLength(0);
+      expect(result.current.termWindows).toHaveLength(1);
+    });
+  });
+
   describe('closeWindow', () => {
     it('debe agregar a closingWindowIds y remover luego de 300ms', async () => {
       vi.useFakeTimers();
@@ -246,6 +284,26 @@ describe('useDesktopWindows', () => {
       act(() => { vi.advanceTimersByTime(300); });
       expect(result.current.windows).toHaveLength(0);
       expect(result.current.closingWindowIds).not.toContain(termId);
+    });
+
+    it('cerrar una terminal destruye su stack de shells (sin closeWindow)', () => {
+      const spy = vi.spyOn(shellManager, 'destroyOwner');
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.addTerminal(); });
+      const termId = result.current.windows[0].id;
+      act(() => { result.current.closeWindow(termId); });
+      expect(spy).toHaveBeenCalledWith(termId);
+      spy.mockRestore();
+    });
+
+    it('cerrar una ventana no-terminal NO destruye stacks de shells', () => {
+      const spy = vi.spyOn(shellManager, 'destroyOwner');
+      const { result } = renderHook(() => useDesktopWindows());
+      act(() => { result.current.addGuide(); });
+      const guideId = result.current.windows[0].id;
+      act(() => { result.current.closeWindow(guideId); });
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
     });
   });
 

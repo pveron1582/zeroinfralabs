@@ -83,4 +83,36 @@ describe('cmd_exit', () => {
     const nmId = 'newMachineId' in result ? result.newMachineId : undefined;
     expect(nmId).toBe('attacker-01');
   });
+
+  it('debe devolver identityExit con suUserOverride aunque machine.su_user esté vacío (aislamiento)', () => {
+    const machine = createMockMachine();
+    const ctx: CommandContext = {
+      ...createMockContext(machine),
+      suUserOverride: 'root',
+    };
+    const result = cmd_exit.execute([], ctx);
+
+    expect('identityExit' in result && result.identityExit).toBe(true);
+    expect('exitTerminal' in result ? result.exitTerminal : undefined).toBeUndefined();
+  });
+
+  it('en víctima con suUserOverride hace pop de identidad en vez de cerrar la sesión', () => {
+    const attackerMachine = createMockMachine();
+    const targetMachine: Machine = {
+      ...createMockMachine(),
+      id: 'target-01',
+      machine_info: { ...createMockMachine().machine_info, type: 'server' },
+    };
+    const ctx: CommandContext = {
+      machine: targetMachine,
+      allMachines: [attackerMachine, targetMachine],
+      currentMissionId: 1,
+      currentDir: '/',
+      suUserOverride: 'developer',
+    };
+    const result = cmd_exit.execute([], ctx);
+
+    expect('identityExit' in result && result.identityExit).toBe(true);
+    expect('newMachineId' in result ? result.newMachineId : undefined).toBeUndefined();
+  });
 });

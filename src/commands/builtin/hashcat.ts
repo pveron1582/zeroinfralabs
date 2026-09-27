@@ -19,6 +19,19 @@ function extractHash(content: string): string {
   return trimmed.split('\n')[0].trim().slice(0, 32);
 }
 
+// Todos los hashes MD5 del contenido (para filtrar --show por hashfile)
+function extractHashes(content: string): string[] {
+  const all = content.match(/[a-fA-F0-9]{32}/g);
+  if (all) return [...new Set(all.map(h => h.toLowerCase()))];
+  const first = content.trim().split('\n')[0]?.trim() ?? '';
+  return first ? [first.slice(0, 32)] : [];
+}
+
+function potfilePath(home: string | undefined): string {
+  const h = (home ?? '/root').replace(/\/$/, '') || '/root';
+  return `${h}/.hashcat/hashcat.potfile`;
+}
+
 export const cmd_hashcat = {
   name: 'hashcat',
   execute: (args: string[], ctx?: CommandContext): CommandResponse => {
@@ -38,11 +51,23 @@ export const cmd_hashcat = {
       return true;
     }).filter(a => !a.startsWith('-'));
 
-    // Modo --show: mostrar cracks previos (simulado)
+    // Modo --show: lee el potfile real (~/.hashcat/hashcat.potfile).
+    // Si se pasa un hashfile, filtra a esos hashes (como el hashcat real).
     if (hasShow) {
-      const demoHash = '5d41402abc4b2a76b9719d911017c592';
-      const out = `${demoHash}:hello\n`;
-      return { output: out };
+      const pot = findFile(safeCtx.machine, potfilePath(getCurrentUser(safeCtx.machine).home));
+      const entries = (pot?.content ?? '').split('\n').map(s => s.trim()).filter(Boolean);
+      let shown = entries;
+      const showFilter = filtered[0];
+      if (showFilter) {
+        const showFile = findFile(safeCtx.machine, showFilter)
+          ?? safeCtx.machine.files?.find(f => f.path.endsWith('/' + showFilter) || f.path === showFilter);
+        const wanted = showFile?.content ? extractHashes(showFile.content) : [];
+        if (wanted.length > 0) shown = entries.filter(e => wanted.some(h => e.toLowerCase().startsWith(h)));
+      }
+      if (shown.length === 0) {
+        return { output: 'No hay hashes crackeados en el potfile para mostrar.\nCrackea primero con: hashcat -m 0 hash.txt rockyou.txt' };
+      }
+      return { output: shown.join('\n') + '\n' };
     }
 
     if (mIdx === -1) return { output: 'Uso: hashcat -m 0 [-a 0] hash.txt rockyou.txt [--show] [-o cracked.txt]', isError: true };
@@ -94,6 +119,30 @@ export const cmd_hashcat = {
           const entry = buildNewFile(fullPath, content, 'text', ownership);
           filesChanged = [...safeCtx.machine.files.filter(f => f.path !== fullPath), entry];
         }
+      }
+    }
+
+    // ── Potfile: el hashcat real persiste cracks en ~/.hashcat/hashcat.potfile ──
+    // Así `--show` muestra lo realmente crackeado en esta máquina.
+    {
+      const user = getCurrentUser(safeCtx.machine);
+      const home = (user.home ?? '/root').replace(/\/$/, '') || '/root';
+      const potPath = `${home}/.hashcat/hashcat.potfile`;
+      const dirMarker = `${home}/.hashcat/.dir`;
+      const base = filesChanged ?? [...safeCtx.machine.files];
+      const homeEntry = findFile(safeCtx.machine, `${home}/.dir`);
+      if (homeEntry && canCreateInDir(safeCtx.machine, homeEntry, user)) {
+        if (!base.some(f => f.path === dirMarker)) {
+          base.push(buildNewFile(dirMarker, '', 'text', defaultOwnership(safeCtx.machine, user, applyUmask(0o755, safeCtx.umask ?? 0o022))));
+        }
+        const potLine = `${demoHash}:${cracked}\n`;
+        const potIdx = base.findIndex(f => f.path === potPath);
+        if (potIdx === -1) {
+          base.push(buildNewFile(potPath, potLine, 'text', defaultOwnership(safeCtx.machine, user, applyUmask(0o644, safeCtx.umask ?? 0o022))));
+        } else if (!base[potIdx].content?.includes(potLine.trim())) {
+          base[potIdx] = { ...base[potIdx], content: (base[potIdx].content ?? '') + potLine };
+        }
+        filesChanged = base;
       }
     }
 

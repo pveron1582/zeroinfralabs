@@ -4,6 +4,7 @@
 import type { CommandResponse } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { withState } from '../core/msfHelpers';
+import { winDisplay } from '../../../utils/winPath';
 import {
   type MsfContextType,
 } from '../core/ContextRegistry';
@@ -155,7 +156,7 @@ export function getContextPrompt(state: MsfState): string {
     case 'meterpreter':
       return 'meterpreter > ';
     case 'windows_shell':
-      return 'C:\\Windows\\system32> ';
+      return `${winDisplay(state.cwd || 'C:\\Windows\\system32')}> `;
     default:
       return '> ';
   }

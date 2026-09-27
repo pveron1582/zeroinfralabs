@@ -11,7 +11,8 @@ import { describe, it, expect } from 'vitest';
 import { SCENARIOS } from '../laboratorios';
 import type { Machine } from '../../types';
 
-const LINUX_TARGETS = SCENARIOS.filter(s => s.id !== 'scenario-03');
+// scenario-03: target Windows (sin /etc/passwd). scenario-08: target Windows 7 (cmd.exe).
+const LINUX_TARGETS = SCENARIOS.filter(s => s.id !== 'scenario-03' && s.id !== 'scenario-08');
 
 const EXPECTED_USERS: Record<string, string[]> = {
   'scenario-01': ['mario', 'sara'],

@@ -21,9 +21,12 @@ interface UsePendingSuOptions {
   currentDir: string;
   setCurrentDir: (dir: string) => void;
   pushIdentity: (frame: IdentityFrame) => void;
+  // Con terminalId el su vive en el frame local: no se escribe el
+  // machine.su_user compartido (aislamiento por terminal — HIGH #2).
+  terminalId?: string;
 }
 
-export function usePendingSu({ machine, currentDir, setCurrentDir, pushIdentity }: UsePendingSuOptions) {
+export function usePendingSu({ machine, currentDir, setCurrentDir, pushIdentity, terminalId }: UsePendingSuOptions) {
   const [pendingSu, setPendingSu] = useState<PendingSu | null>(null);
 
   /**
@@ -39,7 +42,7 @@ export function usePendingSu({ machine, currentDir, setCurrentDir, pushIdentity 
     if (accepted) {
       if (pendingSu.sudoEscalation) {
         useScenarioStore.getState().setPrivescCompleted(machine.id);
-        useScenarioStore.getState().setSuUser(machine.id, 'root');
+        if (!terminalId) useScenarioStore.getState().setSuUser(machine.id, 'root');
         const sudoCwd = pendingSu.sudoCwd ?? currentDir;
         setCurrentDir(sudoCwd);
         pushIdentity({ machineId: machine.id, suUser: 'root', cwd: sudoCwd });
@@ -48,7 +51,7 @@ export function usePendingSu({ machine, currentDir, setCurrentDir, pushIdentity 
         // que `sudo <shell>` en modo NOPASSWD).
         return { type: 'hybrid', output: '', privescCompleted: machine.id };
       }
-      useScenarioStore.getState().setSuUser(machine.id, target);
+      if (!terminalId) useScenarioStore.getState().setSuUser(machine.id, target);
       pushIdentity({ machineId: machine.id, suUser: target, cwd: currentDir });
       setPendingSu(null);
       return { type: 'hybrid', output: '' };

@@ -86,6 +86,35 @@ function buildSyntheticUser(username: string): User {
   return { username, uid: 1000, gid: 1000, home: `/home/${username}`, shell: '/bin/bash', groups: [1000] };
 }
 
+/** Resuelve un usuario por nombre: /etc/passwd o sintético si no existe. */
+export function resolveUsername(machine: Machine, username: string): User {
+  return getUser(machine, username) ?? buildSyntheticUser(username);
+}
+
+// ── Override de su_user por ejecución ─────────────────────────────
+// El executor lo fija desde ctx.suUserOverride antes de correr un comando
+// y lo restaura al terminar (aislamiento por terminal): cada ventana deriva
+// su identidad del frame local, nunca del campo compartido machine.su_user.
+// `undefined` ⇒ sin override ⇒ la regla `su_user` cae al modo legacy.
+let executionSuUser: string | undefined;
+
+export function setExecutionSuUser(suUser?: string): void {
+  executionSuUser = suUser;
+}
+
+export function getExecutionSuUser(): string | undefined {
+  return executionSuUser;
+}
+
+/** Usuario efectivo para UI/prompt/env: con `suUser` de frame resuelve ese
+ *  nombre; sin él deriva de la máquina (legacy + credenciales verificadas). */
+export function getUserWithSu(machine: Machine, suUser?: string): User {
+  if (suUser !== undefined && machine.machine_info.family !== 'windows') {
+    return resolveUsername(machine, suUser);
+  }
+  return getCurrentUser(machine);
+}
+
 interface IdentityRule {
   id: string;
   match: (machine: Machine, getUser: (m: Machine, u: string) => User | null) => User | null;
@@ -93,10 +122,29 @@ interface IdentityRule {
 
 const IDENTITY_RULES: IdentityRule[] = [
   {
+    // Windows: identidad declarada en machine.win (no hay /etc/passwd).
+    // Administrators ⇒ uid 0 ⇒ bypass de permisos (mismo camino que root).
+    // Un privesc completado (Potato, etc.) también eleva a admin.
+    id: 'windows',
+    match: (m) => {
+      if (!m.win) return null;
+      const isAdmin = m.win.isAdmin || !!m.privesc_completed;
+      return {
+        username: m.win.currentUser,
+        uid: isAdmin ? 0 : 1000,
+        gid: isAdmin ? 0 : 1000,
+        home: `/C:/Users/${m.win.currentUser}`,
+        shell: 'C:\\Windows\\System32\\cmd.exe',
+        groups: isAdmin ? [0] : [1000],
+      };
+    },
+  },
+  {
     id: 'su_user',
     match: (m, getUser) => {
-      if (!m.su_user) return null;
-      return getUser(m, m.su_user) ?? buildSyntheticUser(m.su_user);
+      const su = executionSuUser !== undefined ? executionSuUser : m.su_user;
+      if (!su) return null;
+      return getUser(m, su) ?? buildSyntheticUser(su);
     },
   },
   {
@@ -155,6 +203,11 @@ export function getCurrentUser(machine: Machine): User {
     if (result) return result;
   }
   return FALLBACK_USER;
+}
+
+/** Cwd inicial según la familia del SO: /root en Linux, home win en Windows. */
+export function initialCwd(m: Machine): string {
+  return m.machine_info.family === 'windows' ? getCurrentUser(m).home : '/root';
 }
 
 export function isRoot(user: User | null): boolean {

@@ -3,13 +3,26 @@
 // Unit tests for individual command handlers are in src/frameworks/metasploit/__tests__
 import { describe, it, expect } from 'vitest';
 import { cmd_msfconsole, executeMsfCommand, type MsfState } from '../msfconsole';
+import { getContextPrompt } from '../../../frameworks/metasploit/orchestrators/msfContextHelp';
+import { createWindowsFileSystem } from '../../../fs-models/fs-windows';
+import { withWindowsSampleFiles } from '../../../fs-models/__fixtures__/windowsSampleFiles';
 import type { Machine, CommandContext } from '../../../types';
 
-// Create mock context
+// Create mock context — FS Windows real para que la shell de meterpreter
+// pueda listar/navegar (cd/dir delegan en los comandos de cmd.exe).
 const createMockContext = (machines: Machine[] = []): CommandContext => ({
-  machine: machines[0] || { id: 'target-01', machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '00:00:00:00:00:00', os: 'Windows 7', status: 'up', type: 'server' }, discovery_level: 2, scan_results: { ports: [{ port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' }] }, web_enumeration: { web_server: 'none', cms: 'none', directories: [] }, learning_steps: [], files: [] },
+  machine: machines[0] || {
+    id: 'target-01',
+    machine_info: { hostname: 'target', ip: '192.168.1.10', mac: '00:00:00:00:00:00', os: 'Windows 7', status: 'up', type: 'server', family: 'windows' },
+    discovery_level: 2,
+    scan_results: { ports: [{ port: 445, protocol: 'tcp', state: 'open', service: 'microsoft-ds', version: '' }] },
+    web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
+    learning_steps: [],
+    files: withWindowsSampleFiles(createWindowsFileSystem()),
+    win: { currentUser: 'Administrator', isAdmin: true, computerName: 'WIN7-TARGET' },
+  },
   allMachines: machines,
-  currentMissionId: 4, currentDir: '/root',
+  currentMissionId: 4, currentDir: '/C:/Users/Administrator',
 });
 
 // Create mock machine for testing
@@ -127,7 +140,8 @@ describe('executeMsfCommand - integration tests', () => {
 
       // Now execute a shell command
       result = executeMsfCommand('dir', state, createMockContext());
-      expect(result.output).toContain('Directory of');
+      expect(result.output).toContain('El directorio de');
+      expect(result.output).toContain('C:\\Users\\Administrator');
 
       // Exit shell
       result = executeMsfCommand('exit', state, createMockContext());
@@ -166,4 +180,57 @@ describe('executeMsfCommand - integration tests', () => {
     });
   });
 });
-;
+
+describe('Navegación en la sesión Windows (regresión lab 8)', () => {
+  it('exploit → shell → cd Documents → dir → type lee notes.txt', () => {
+    const base = createMockContext();
+    const ctx: CommandContext = { ...base, allMachines: [base.machine] };
+    let state: MsfState = {
+      active: true,
+      module: 'exploit/windows/smb/ms17_010_eternalblue',
+      moduleType: 'exploit',
+      options: { RHOSTS: '192.168.1.10', LHOST: '192.168.1.5' },
+      sessionOpen: false,
+      shellMode: false,
+      auxChecked: true,
+      uidChecked: false,
+    };
+
+    let r = executeMsfCommand('exploit', state, ctx);
+    state = r.msfStateUpdate!;
+    expect(state.sessionOpen).toBe(true);
+    expect(state.cwd).toBe('/C:/Users/Administrator');
+
+    r = executeMsfCommand('shell', state, ctx);
+    state = r.msfStateUpdate!;
+    expect(state.shellMode).toBe(true);
+
+    r = executeMsfCommand('cd Documents', state, ctx);
+    state = r.msfStateUpdate!;
+    expect(state.cwd).toBe('/C:/Users/Administrator/Documents');
+
+    r = executeMsfCommand('dir', state, ctx);
+    expect(r.output).toContain('notes.txt');
+
+    r = executeMsfCommand('type notes.txt', state, ctx);
+    expect(r.output).toContain('Administrator');
+    expect(r.output).toContain('P@ssw0rd123!');
+  });
+
+  it('pwd y el prompt reflejan el cwd de la sesión', () => {
+    const ctx = createMockContext();
+    const state: MsfState = {
+      active: true,
+      options: {},
+      sessionOpen: true,
+      shellMode: true,
+      auxChecked: true,
+      uidChecked: false,
+      cwd: '/C:/Users/Administrator/Documents',
+    };
+
+    const pwd = executeMsfCommand('pwd', state, ctx);
+    expect(pwd.output).toContain('C:\\Users\\Administrator\\Documents');
+    expect(getContextPrompt(state)).toBe('C:\\Users\\Administrator\\Documents> ');
+  });
+});

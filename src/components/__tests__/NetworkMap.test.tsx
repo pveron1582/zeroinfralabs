@@ -303,4 +303,53 @@ describe('NetworkMap', () => {
     const targetBadge = targetBadges[0];
     expect(targetBadge).toBeInTheDocument();
   });
+
+  it('debe ofrecer abrir el escritorio RDP en máquinas Windows descubiertas', async () => {
+    const { useScenarioStore } = await import('../../store/scenarioStore');
+    const openSpy = vi.spyOn(useScenarioStore.getState(), 'openWindowsDesktop');
+    const onClose = vi.fn();
+    const winMachine = createMockMachine({
+      id: 'win-01',
+      machine_info: {
+        hostname: 'WIN7-LAB',
+        ip: '192.168.60.10',
+        mac: '08:00:27:00:00:01',
+        os: 'Windows 7',
+        status: 'up',
+        type: 'workstation',
+        family: 'windows',
+      },
+      discovery_level: 2,
+    });
+    const scenario = {
+      ...mockScenario,
+      machines: [createAttackerMachine(), winMachine],
+    };
+
+    render(
+      <NetworkMap
+        scenario={scenario}
+        activeMachineId="attacker-01"
+        onClose={onClose}
+      />,
+    );
+
+    // Selecciona el objetivo descubierto por defecto y muestra el botón RDP.
+    const btn = await screen.findByTestId('open-rdp-desktop');
+    fireEvent.click(btn);
+    expect(openSpy).toHaveBeenCalledWith('win-01');
+    expect(onClose).toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+
+  it('no debe mostrar el botón RDP en máquinas Linux', async () => {
+    render(
+      <NetworkMap
+        scenario={mockScenario}
+        activeMachineId="attacker-01"
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.queryByTestId('open-rdp-desktop')).not.toBeInTheDocument();
+  });
 });

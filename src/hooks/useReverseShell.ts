@@ -23,12 +23,15 @@ interface UseReverseShellOptions {
   onMissionComplete: (id: number) => void;
   onVerifyCredentials?: (machineId: string, service?: string) => void;
   appendOutput: (output: string) => void;
+  // Con terminalId la identidad RCE va al frame local (no al store).
+  terminalId?: string;
 }
 
 export function useReverseShell({
   blockingCommand, busy, allMachines, attackerMachineId, listeningPort,
   setBlockingCommand, setBusy, setListeningPort, setCurrentDir,
   pushIdentity, onChangeMachine, onMissionComplete, onVerifyCredentials, appendOutput,
+  terminalId,
 }: UseReverseShellOptions) {
   // prompt ya no se usa aquí: appendOutput lo inyecta desde el orquestador
   const storeBlockingCommand = useScenarioStore(state => state.blockingCommand);
@@ -58,7 +61,7 @@ export function useReverseShell({
       // Registrar la identidad para que `exit` vuelva a la terminal del
       // atacante donde se ejecutó nc (sin cerrarla).
       const rceUser = victimMachine.id.includes('lfi') ? 'www-data' : 'admin';
-      useScenarioStore.getState().setSuUser(victimMachine.id, rceUser);
+      if (!terminalId) useScenarioStore.getState().setSuUser(victimMachine.id, rceUser);
       pushIdentity({ machineId: victimMachine.id, suUser: rceUser, cwd: '/var/www/html/' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

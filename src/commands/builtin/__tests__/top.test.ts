@@ -77,7 +77,7 @@ describe('cmd_top', () => {
     expect(result.output).toContain('System');
     expect(result.output).toContain('svchost.exe');
     expect(result.output).toContain('httpd.exe');
-    expect(result.output).toContain('bash');
+    expect(result.output).toContain('cmd.exe');
   });
 
   it('debe incluir métricas de CPU y Memoria', () => {

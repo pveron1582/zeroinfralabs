@@ -39,7 +39,7 @@ export const executeMsfCommand = (
 
   // ── WINDOWS SHELL SESSION ────────────────────────────────────────
   // When shellMode=true the user is inside a Windows cmd shell.
-  const shellResult = executeShellCommand(cmd, args, state);
+  const shellResult = executeShellCommand(cmd, args, state, ctx);
   if (shellResult) return shellResult;
 
   // ── METERPRETER SESSION ──────────────────────────────────────────

@@ -5,9 +5,10 @@ interface EnumerationPanelProps {
   onClose?: () => void;
   msfState?: MsfState | null;
   inline?: boolean;
+  hideHeader?: boolean;
 }
 
-export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onClose, inline }) => {
+export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onClose, inline, hideHeader = false }) => {
   const discoveryLevel = machine.discovery_level ?? 0;
 
   // Función interna para parsear credenciales si existen
@@ -49,22 +50,24 @@ export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onC
 
   const content = (
       <div className={`${inline ? 'w-full h-full border-0 rounded-none' : 'bg-gray-900 border border-gray-700 rounded-3xl w-full max-w-sm shadow-2xl'} overflow-hidden flex flex-col h-full animate-in fade-in flex-1 bg-gradient-to-b from-gray-900 to-black`} onClick={e => e.stopPropagation()}>
-        {/* Cabecera */}
-        <div className="flex items-center justify-center px-6 py-5 border-b border-gray-800 bg-gray-900/50 flex-shrink-0 relative">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className={`w-2.5 h-2.5 rounded-full ${machine.machine_info.status === 'up' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-gray-600'}`} />
-              <p className="text-sm font-black text-emerald-500 uppercase tracking-[0.2em]">Target Enumeration</p>
+        {/* Cabecera — ocultar en móvil enumeración para ganar espacio */}
+        {!hideHeader && (
+          <div className="flex items-center justify-center px-6 py-5 border-b border-gray-800 bg-gray-900/50 flex-shrink-0 relative">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${machine.machine_info.status === 'up' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-gray-600'}`} />
+                <p className="text-sm font-black text-emerald-500 uppercase tracking-[0.2em]">Target Enumeration</p>
+              </div>
+              <p className="text-2xl font-black text-gray-100 tracking-tight">{machine.machine_info.hostname}</p>
+              <p className="text-sm font-mono text-gray-500 mt-2">{machine.machine_info.ip}</p>
             </div>
-            <p className="text-2xl font-black text-gray-100 tracking-tight">{machine.machine_info.hostname}</p>
-            <p className="text-sm font-mono text-gray-500 mt-2">{machine.machine_info.ip}</p>
+            {!inline && onClose && (
+              <button onClick={onClose} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 transition-transform hover:scale-110 active:scale-95 text-gray-600 hover:text-white">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            )}
           </div>
-          {!inline && onClose && (
-            <button onClick={onClose} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 transition-transform hover:scale-110 active:scale-95 text-gray-600 hover:text-white">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          )}
-        </div>
+        )}
 
         {/* Contenido Scrollable */}
         <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">

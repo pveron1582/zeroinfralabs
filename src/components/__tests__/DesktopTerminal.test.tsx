@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { DesktopTerminal } from '../DesktopTerminal';
+import { shellManager } from '../../frameworks/shells/ShellManager';
 import type { Machine } from '../../types';
 
 // Mock del store
@@ -19,7 +20,9 @@ const mockState = {
   ftpSession: null,
   setFtpSession: vi.fn(),
   sshSession: null,
+  rdpSession: null,
   setSshSession: vi.fn(),
+  setRdpSession: vi.fn(),
   globalResetDoneForScenario: null,
   markGlobalResetDone: vi.fn(),
   // Identity slice (necesario para useIdentityStack)
@@ -38,6 +41,13 @@ const mockState = {
   toggleUiMode: vi.fn(),
   setTermColor: vi.fn(),
   termColor: '#10b981',
+  rdpMachineId: null as string | null,
+  closeWindowsDesktop: vi.fn(),
+  setPossibleUsers: vi.fn(),
+  // Registro de terminales (P2-13/C1) — useDesktopWindows lo llama al abrir/cerrar
+  registerTerminal: vi.fn(),
+  unregisterTerminal: vi.fn(),
+  setTerminalMachine: vi.fn(),
 };
 
 vi.mock('../../store/scenarioStore', () => ({
@@ -175,6 +185,20 @@ describe('DesktopTerminal', () => {
     await waitFor(() => {
       expect(screen.queryByText('Terminal 1 - root@kali')).not.toBeInTheDocument();
     });
+  });
+
+  it('cerrar una terminal destruye su stack de shells (destroyOwner)', async () => {
+    const spy = vi.spyOn(shellManager, 'destroyOwner');
+    renderDesktop();
+
+    fireEvent.click(screen.getByText('Terminal', { selector: 'span' }));
+    const closeButton = screen.getAllByTitle('Cerrar')[0];
+    fireEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('term-'));
+    });
+    spy.mockRestore();
   });
 
   it('debe alternar la transparencia de la terminal desde el panel de configuración', async () => {

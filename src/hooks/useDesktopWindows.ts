@@ -1,11 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import React from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useScenarioStore } from '../store/scenarioStore';
+import { shellManager } from '../frameworks/shells/ShellManager';
 import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type Wallpaper } from '../components/desktopWallpapers';
+import {
+  toggleMaximizeWindow, startWindowDrag, startWindowResize,
+  type ResizeCorner,
+} from './desktopWindowGeometry';
 
 export interface DesktopWindow {
   id: string;
-  type: 'terminal' | 'wallpaper' | 'browser' | 'guide' | 'burpsuite';
+  type: 'terminal' | 'wallpaper' | 'browser' | 'guide' | 'burpsuite' | 'rdp';
   title: string;
   x: number;
   y: number;
@@ -17,6 +21,9 @@ export interface DesktopWindow {
   minimized?: boolean;
   maximized?: boolean;
   prevBounds?: { x: number; y: number; w: number; h: number };
+  /** Máquina Windows objetivo (solo type === 'rdp') o máquina activa para type === 'terminal'. */
+  machineId?: string;
+  termNumber?: number;
 }
 
 export function useDesktopWindows() {
@@ -66,80 +73,116 @@ export function useDesktopWindows() {
   const CASCADE_MAX = 6;
   const cascadeOffset = (count: number) => (count % CASCADE_MAX) * CASCADE_STEP;
 
+  // Los side-effects (showNotification/registerTerminal/restore) van FUERA
+  // de los updaters de setWindows: StrictMode doble-invoca updaters y
+  // duplicaba toasts/registros (MEDIUM de bugs_terminales.md).
   const addTerminal = () => {
-    setWindows(prev => {
-      const termWindows = prev.filter(w => w.type === 'terminal');
-      if (termWindows.length >= 5) {
-        showNotification(isEs ? 'Límite de 5 terminales alcanzado.' : 'Limit of 5 terminals reached.');
-        return prev;
+    const termWindows = windows.filter(w => w.type === 'terminal');
+    if (termWindows.length >= 5) {
+      showNotification(isEs ? 'Límite de 5 terminales alcanzado.' : 'Limit of 5 terminals reached.');
+      return;
+    }
+    let maxNum = 0;
+    for (const w of windows) {
+      if (w.type === 'terminal') {
+        const m = w.title.match(/Terminal (\d+)/);
+        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
       }
-      let maxNum = 0;
-      for (const w of prev) {
-        if (w.type === 'terminal') {
-          const m = w.title.match(/Terminal (\d+)/);
-          if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
-        }
-      }
-      const id = `term-${Date.now()}`;
-      const offset = cascadeOffset(prev.length);
-      return [...prev, { id, type: 'terminal' as const, title: `Terminal ${maxNum + 1} - root@kali`, x: 90 + offset, y: 60 + offset, w: 820, h: 520, opacity: 0.92, fontSize: 15, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
-    });
+    }
+    const termNumber = maxNum + 1;
+    const initialMachineId = currentScenario?.initialMachineId || 'attacker-01';
+    const id = `term-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    useScenarioStore.getState().registerTerminal(id, termNumber, initialMachineId);
+    const offset = cascadeOffset(windows.length);
+    setWindows(prev => [...prev, {
+      id,
+      type: 'terminal' as const,
+      termNumber,
+      machineId: initialMachineId,
+      title: `Terminal ${termNumber} - root@kali`,
+      x: 90 + offset, y: 60 + offset, w: 820, h: 520,
+      opacity: 0.92, fontSize: 15,
+      zIndex: Math.max(0, ...windows.map(w => w.zIndex)) + 1,
+      minimized: false
+    }]);
   };
 
   const addBrowser = () => {
-    setWindows(prev => {
-      const browserWindows = prev.filter(w => w.type === 'browser');
-      if (browserWindows.length >= 3) {
-        showNotification(isEs ? 'Límite de 3 ventanas de Chrome alcanzado.' : 'Limit of 3 Chrome windows reached.');
-        return prev;
-      }
-      const id = `browser-${Date.now()}`;
-      const nextNum = getNextBrowserNum();
-      const offset = cascadeOffset(prev.length);
-      return [...prev, { id, type: 'browser' as const, title: `Chrome ${nextNum}`, x: 240 + offset, y: 60 + offset, w: 800, h: 520, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
-    });
+    const browserWindows = windows.filter(w => w.type === 'browser');
+    if (browserWindows.length >= 3) {
+      showNotification(isEs ? 'Límite de 3 ventanas de Chrome alcanzado.' : 'Limit of 3 Chrome windows reached.');
+      return;
+    }
+    const id = `browser-${Date.now()}`;
+    const nextNum = getNextBrowserNum();
+    const offset = cascadeOffset(windows.length);
+    setWindows(prev => [...prev, { id, type: 'browser' as const, title: `Chrome ${nextNum}`, x: 240 + offset, y: 60 + offset, w: 800, h: 520, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...windows.map(w => w.zIndex)) + 1, minimized: false }]);
   };
 
   const openWallpaperPicker = () => {
-    setWindows(prev => {
-      if (prev.some(w => w.type === 'wallpaper')) {
-        showNotification(isEs ? 'El selector de fondos ya está abierto.' : 'Wallpaper picker is already open.');
-        return prev;
-      }
-      const id = `wallpaper-${Date.now()}`;
-      const offset = cascadeOffset(prev.length);
-      return [...prev, { id, type: 'wallpaper' as const, title: isEs ? 'Configuración de Fondo' : 'Wallpaper Settings', x: 150 + offset, y: 90 + offset, w: 660, h: 540, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
-    });
+    if (windows.some(w => w.type === 'wallpaper')) {
+      showNotification(isEs ? 'El selector de fondos ya está abierto.' : 'Wallpaper picker is already open.');
+      return;
+    }
+    const id = `wallpaper-${Date.now()}`;
+    const offset = cascadeOffset(windows.length);
+    setWindows(prev => [...prev, { id, type: 'wallpaper' as const, title: isEs ? 'Configuración de Fondo' : 'Wallpaper Settings', x: 150 + offset, y: 90 + offset, w: 660, h: 540, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...windows.map(w => w.zIndex)) + 1, minimized: false }]);
   };
 
   const addBurp = () => {
-    setWindows(prev => {
-      if (prev.some(w => w.type === 'burpsuite')) {
-        const win = prev.find(w => w.type === 'burpsuite');
-        if (win?.minimized) restoreWindow(win.id);
-        bringToFront(win!.id);
-        return prev;
-      }
-      const id = `burp-${Date.now()}`;
-      const offset = cascadeOffset(prev.length);
-      return [...prev, { id, type: 'burpsuite' as const, title: 'Burp Suite', x: 200 + offset, y: 80 + offset, w: 900, h: 560, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
-    });
+    const existing = windows.find(w => w.type === 'burpsuite');
+    if (existing) {
+      if (existing.minimized) restoreWindow(existing.id);
+      bringToFront(existing.id);
+      return;
+    }
+    const id = `burp-${Date.now()}`;
+    const offset = cascadeOffset(windows.length);
+    setWindows(prev => [...prev, { id, type: 'burpsuite' as const, title: 'Burp Suite', x: 200 + offset, y: 80 + offset, w: 900, h: 560, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...windows.map(w => w.zIndex)) + 1, minimized: false }]);
   };
 
   const addGuide = () => {
-    setWindows(prev => {
-      if (prev.some(w => w.type === 'guide')) {
-        const win = prev.find(w => w.type === 'guide');
-        if (win?.minimized) restoreWindow(win.id);
-        return prev;
-      }
-      const id = `guide-${Date.now()}`;
-      const offset = cascadeOffset(prev.length);
-      return [...prev, { id, type: 'guide' as const, title: isEs ? 'Manual de uso - manual.pdf' : 'User Manual - manual-en.pdf', x: 390 + offset, y: 60 + offset, w: 640, h: 520, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false }];
-    });
+    const existing = windows.find(w => w.type === 'guide');
+    if (existing) {
+      if (existing.minimized) restoreWindow(existing.id);
+      return;
+    }
+    const id = `guide-${Date.now()}`;
+    const offset = cascadeOffset(windows.length);
+    setWindows(prev => [...prev, { id, type: 'guide' as const, title: isEs ? 'Manual de uso - manual.pdf' : 'User Manual - manual-en.pdf', x: 390 + offset, y: 60 + offset, w: 640, h: 520, opacity: 1, fontSize: 13, zIndex: Math.max(0, ...windows.map(w => w.zIndex)) + 1, minimized: false }]);
   };
 
+  /** Abre (o enfoca) la ventana RDP para una máquina Windows. Singleton por machineId. */
+  const openRdp = useCallback((machineId: string, title: string) => {
+    setWindows(prev => {
+      const existing = prev.find(w => w.type === 'rdp' && w.machineId === machineId);
+      if (existing) {
+        const maxZ = Math.max(0, ...prev.map(w => w.zIndex));
+        return prev.map(w => w.id === existing.id ? { ...w, minimized: false, zIndex: maxZ + 1 } : w);
+      }
+      const id = `rdp-${machineId}`;
+      const offset = cascadeOffset(prev.filter(w => w.type === 'rdp').length);
+      return [...prev, {
+        id, type: 'rdp' as const, title, machineId,
+        x: 120 + offset, y: 48 + offset, w: 960, h: 600,
+        opacity: 1, fontSize: 13,
+        zIndex: Math.max(0, ...prev.map(w => w.zIndex)) + 1, minimized: false,
+      }];
+    });
+  }, []);
+
+  /** Cierra todas las ventanas RDP (o la de una máquina puntual). */
+  const closeRdp = useCallback((machineId?: string) => {
+    setWindows(prev => prev.filter(w => !(w.type === 'rdp' && (!machineId || w.machineId === machineId))));
+  }, []);
+
   const closeWindow = (id: string) => {
+    const win = windows.find(w => w.id === id);
+    if (win?.type === 'terminal') {
+      // Destruir el stack de shells de ESA terminal (SSH/FTP/NC) — no el global.
+      shellManager.destroyOwner(id);
+    }
+    useScenarioStore.getState().unregisterTerminal(id);
     setClosingWindowIds(prev => [...prev, id]);
     setTimeout(() => {
       setWindows(prev => prev.filter(w => w.id !== id));
@@ -166,32 +209,8 @@ export function useDesktopWindows() {
 
   const desktopRef = useRef<HTMLDivElement>(null);
 
-  // Mantiene las ventanas dentro del área del escritorio: nunca pueden subir
-  // por encima de la barra de tareas (y = 0) y siempre queda visible una parte
-  // de la ventana para poder volver a agarrarla si se arrastra hacia los bordes.
-  const clampToDesktop = (w: DesktopWindow): DesktopWindow => {
-    const container = desktopRef.current;
-    const cw = container?.clientWidth ?? window.innerWidth;
-    const ch = container?.clientHeight ?? window.innerHeight;
-    const MIN_VISIBLE = 80;
-    return {
-      ...w,
-      x: Math.min(Math.max(w.x, -w.w + MIN_VISIBLE), cw - MIN_VISIBLE),
-      y: Math.min(Math.max(w.y, 0), ch - MIN_VISIBLE),
-    };
-  };
-
   const toggleMaximize = (id: string) => {
-    setWindows(prev => prev.map(w => {
-      if (w.id !== id) return w;
-      if (w.maximized) {
-        return { ...w, maximized: false, x: w.prevBounds?.x ?? w.x, y: w.prevBounds?.y ?? w.y, w: w.prevBounds?.w ?? w.w, h: w.prevBounds?.h ?? w.h, prevBounds: undefined };
-      }
-      const container = desktopRef.current;
-      const cw = container?.clientWidth ?? window.innerWidth;
-      const ch = container?.clientHeight ?? window.innerHeight;
-      return { ...w, maximized: true, prevBounds: { x: w.x, y: w.y, w: w.w, h: w.h }, x: 8, y: 8, w: cw - 16, h: ch - 16, minimized: false };
-    }));
+    toggleMaximizeWindow(id, setWindows, desktopRef.current);
   };
 
   const changeFontSize = (id: string, delta: number) => {
@@ -199,65 +218,11 @@ export function useDesktopWindows() {
   };
 
   const startDrag = (id: string, e: React.PointerEvent) => {
-    if (e.button !== 0) return;
-    const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('input')) return;
-    e.preventDefault();
-    bringToFront(id);
-    const win = windows.find(w => w.id === id);
-    if (!win) return;
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const initialX = win.x;
-    const initialY = win.y;
-    const handlePointerMove = (moveEvent: PointerEvent) => {
-      const deltaX = moveEvent.clientX - startX;
-      const deltaY = moveEvent.clientY - startY;
-      setWindows(prev => prev.map(w => w.id === id
-        ? clampToDesktop({ ...w, x: initialX + deltaX, y: initialY + deltaY })
-        : w));
-    };
-    const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    startWindowDrag(id, e, windows, setWindows, desktopRef.current, bringToFront);
   };
 
-  const startResize = (id: string, e: React.PointerEvent, corner: 'nw' | 'n' | 'ne' | 'w' | 'e' | 'sw' | 's' | 'se' = 'se') => {
-    e.preventDefault();
-    e.stopPropagation();
-    bringToFront(id);
-    const win = windows.find(w => w.id === id);
-    if (!win) return;
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const initialX = win.x;
-    const initialY = win.y;
-    const initialW = win.w;
-    const initialH = win.h;
-    const minW = win.type === 'wallpaper' ? 400 : 320;
-    const minH = win.type === 'wallpaper' ? 240 : 200;
-    const handlePointerMove = (moveEvent: PointerEvent) => {
-      const deltaX = moveEvent.clientX - startX;
-      const deltaY = moveEvent.clientY - startY;
-      setWindows(prev => prev.map(w => {
-        if (w.id !== id) return w;
-        let newX = w.x, newY = w.y, newW = w.w, newH = w.h;
-        if (corner.includes('e')) newW = Math.max(minW, initialW + deltaX);
-        if (corner.includes('w')) { const potentialW = Math.max(minW, initialW - deltaX); newX = initialX + initialW - potentialW; newW = potentialW; }
-        if (corner.includes('s')) newH = Math.max(minH, initialH + deltaY);
-        if (corner.includes('n')) { const potentialH = Math.max(minH, initialH - deltaY); newY = initialY + initialH - potentialH; newH = potentialH; }
-        return clampToDesktop({ ...w, x: newX, y: newY, w: newW, h: newH });
-      }));
-    };
-    const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+  const startResize = (id: string, e: React.PointerEvent, corner: ResizeCorner = 'se') => {
+    startWindowResize(id, e, corner, windows, setWindows, desktopRef.current, bringToFront);
   };
 
   const termWindows = windows.filter(w => w.type === 'terminal');
@@ -265,6 +230,7 @@ export function useDesktopWindows() {
   const wallpaperWindows = windows.filter(w => w.type === 'wallpaper');
   const guideWindows = windows.filter(w => w.type === 'guide');
   const burpWindows = windows.filter(w => w.type === 'burpsuite');
+  const rdpWindows = windows.filter(w => w.type === 'rdp');
   const topWindow = windows.reduce<DesktopWindow | null>((best, w) =>
     !w.minimized && (!best || w.zIndex > best.zIndex) ? w : best, null);
   const topWindowId = topWindow?.id;
@@ -272,8 +238,8 @@ export function useDesktopWindows() {
   return {
     time, windows, setWindows, closingWindowIds, activeWallpaper, setActiveWallpaper,
     selectedWallpaper, activeSettingsId, setActiveSettingsId, showAppMenu, setShowAppMenu,
-    showSysMenu, setShowSysMenu, termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows,
-    topWindowId, addTerminal, addBrowser, addGuide, addBurp, openWallpaperPicker, closeWindow,
+    showSysMenu, setShowSysMenu, termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows, rdpWindows,
+    topWindowId, addTerminal, addBrowser, addGuide, addBurp, openWallpaperPicker, openRdp, closeRdp, closeWindow,
     minimizeWindow, restoreWindow, toggleMaximize, bringToFront, changeFontSize,
     startDrag, startResize, desktopRef, isEs, currentScenario, missions, showNotification,
   };

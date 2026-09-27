@@ -4,19 +4,24 @@
 // Valores por defecto derivados de la máquina + usuario actual.
 
 import type { Machine } from '../types';
-import { getCurrentUser } from './users';
+import { getUserWithSu } from './users';
 
-export const DEFAULT_ENV = (machine: Machine): Record<string, string> => {
-  const user = getCurrentUser(machine);
+// `suUser` (opcional) es el su del frame de identidad de la terminal:
+// aísla USER/HOME/LOGNAME por ventana en vez de leer machine.su_user.
+export const DEFAULT_ENV = (machine: Machine, suUser?: string): Record<string, string> => {
+  const user = getUserWithSu(machine, suUser);
+  const isWin = machine.machine_info.family === 'windows';
   return {
-    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+    PATH: isWin
+      ? 'C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem'
+      : '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
     HOME: user.home,
     USER: user.username,
     LOGNAME: user.username,
-    SHELL: user.shell || '/bin/bash',
-    EDITOR: 'nano',
+    SHELL: user.shell || (isWin ? 'C:\\Windows\\System32\\cmd.exe' : '/bin/bash'),
+    EDITOR: isWin ? 'notepad' : 'nano',
     TERM: 'xterm-256color',
-    PWD: '/',
+    PWD: isWin ? user.home : '/',
   };
 };
 

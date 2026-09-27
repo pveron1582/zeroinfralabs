@@ -67,20 +67,58 @@
 
 ### 1.4 Plan 80/20 (más realismo por menos esfuerzo)
 
-**P1 — inmersión crítica (hacer primero)**
-- [ ] `hashcat`: `-a/--show/-o`, leer archivo real.
-- [ ] `hydra`: `-L/-p/-t`, alias `-V/-f` ignorados con gracia.
-- [ ] `gobuster`: `-x/-t`, wordlist flexible.
-- [ ] `nmap`: `-sU/--script/-T4/-oX`, mensaje `no soportado` en vez de `Failed to resolve`.
-- [ ] `cat` multi-file + `ls -R` + `find -writable` + `2>/dev/null` vacío.
-- [ ] Fix `uniq` global, `which` consulte `PackageManager`, unificar parser `nc`, `nc -e` payload.
+> **2026-09-20 — P1 completado** (lotes "Pentest flags" + hashcat/grep/nc).
+> Antes de codificar se probó cada item tal cual lo tipearía un usuario:
+> varios ya existían y NO se tocaron (`-L`, `-x`/`-t`, `-sU`, `--script`,
+> `-T`, `--top-ports`, `--open`, `-oX`, `cat` multi/`-n`, `ls -R`/`-h`,
+> `find -perm`/`-writable`, `uniq` adyacente, `which`+PackageManager,
+> `ln -s` broken, `2>/dev/null`). Detalle de lo hecho abajo.
 
-**P2 — red realista**
-- [ ] `ping/traceroute` DNS (lookup `allMachines` por hostname).
-- [ ] `iptables -I`, `ss -s`, `curl -k/-u/-b/-A`.
+**P1 — inmersión crítica (hecho 2026-09-20)**
+- [x] `hashcat`: potfile real en `~/.hashcat/hashcat.potfile` (el crack persiste
+  vía `filesChanged`); `--show` lee el potfile y filtra por hashfile.
+  (`-a`/`-m`/`-o`/lectura de archivo real ya existían.)
+- [x] `hydra`: `-t` visible en banner, `-V` imprime `[VERBOSE]` por usuario,
+  `-f` anunciado; fix: flags sin valor (`-V`/`-f`) ya no tragan el posicional
+  siguiente. (`-L`/`-p`/URI ya existían.)
+- [x] `gobuster`: wordlist flexible (cualquiera, no solo `common.txt`);
+  `-s`/`-b` (filtro por códigos, default real `200,204,301,302,307,401,403`),
+  `-e` (URLs expandidas), `--wildcard` anunciado. (`-x`/`-t` ya existían.)
+- [x] `nmap`: `-sU` muestra `puerto/udp open|filtered` (metadata `scanResults`
+  intacta en TCP); fix: `-V`/`-f`-style — columna STATE con padding dinámico
+  solo en UDP, TCP byte-idéntico.
+  (`-sU`/`--script`/`-sC`/`-T`/`--top-ports`/`-oN`/`-oG`/`-oX`/`-oA`/`--open`
+  ya existían.)
+- [x] `grep`: `-n` (línea, `archivo:N:línea` con `-r`), `-c` (conteo, por
+  archivo con `-r`), `-o` (solo match). (`-r`/`-v`/`-i` ya existían.)
+- [x] `nc`: parser unificado en `frameworks/shells/nc/ncArgs.ts` (elimina el
+  duplicado `tools/nc` ↔ `NcSession`); conexión por estado virtual
+  (abierto→`succeeded`, filtrado→timeout, cerrado→refused); `-e` aceptado;
+  `-u` conecta a host conocido. Metadata `blockingCommand` intacta.
+- [x] `cat` multi-file + `ls -R` + `find -writable` + `2>/dev/null` + `uniq`
+  adyacente + `which`→PackageManager: verificados con probe, ya funcionaban.
+- [x] Suite: 2139 tests (165 archivos) + `tsc --noEmit` 0.
 
-**P3 — pulido**
-- [ ] Fechas/tamaños menos obvios, `sudo -u`, `chmod X`, desacoplar MSF de `currentMissionId===3` (`tools/msfconsole.ts`).
+**P2 — red realista (hecho 2026-09-20)**
+- [x] `ping`/`traceroute` resuelven hostname virtual (`PING web (10.0.0.1)`);
+  desconocido sigue → `Name or service not known`.
+- [x] `iptables -I CHAIN [n] rulespec` (nuevo `insertRule` en `networkState`;
+  default posición 1; misma validación que `-A`).
+- [x] `ss -s` (resumen Total/TCP/UDP derivado de `getListeningPorts`).
+- [x] `curl`: `-H`/`-A`/`-b`/`-u` viajan en `httpRequest.headers` (visibles en
+  Burp; `-u` → `Authorization: Basic`); `-k` aceptado y anunciado en `-v`.
+- [x] Suite: 2150 tests (165 archivos) + `tsc --noEmit` 0.
+
+**P3 — pulido (hecho 2026-09-20)**
+- [x] `ls -l`: fechas determinísticas por path (hora o año, formato real) en
+  vez de `Jan 01 00:00`; `total` derivado de tamaños (dirs 4 bloques).
+- [x] `sudo -u <user> <cmd>` (corre como otro usuario, `como <user>` en salida;
+  privesc y `elevated` solo con run-as root; `-i`/`-s` no-root → mensaje guía).
+- [x] `chmod +X`/`-X` condicional (solo dir o ya ejecutable), reevaluado por
+  hijo en `-R`. (Octal/simbólico/`-R`/SUID ya existían.)
+- [x] MSF desacoplado: el gate "corre el auxiliary primero" depende de
+  `auxChecked`, no de `currentMissionId===3` (`msfExploits.ts:64`).
+- [x] Suite: 2161 tests (165 archivos) + `tsc --noEmit` 0.
 
 **Transversal:** mensaje unificado `"<flag> no soportado en este simulador. Soportados: ..."` (evita `Usage:` seco) y mantener `<300 líneas` por archivo (`AGENTS.md:79`).
 
@@ -138,7 +176,37 @@ Cada lote: `pnpm exec tsc --noEmit` + `pnpm lint` + `pnpm test:run` + `pnpm buil
 
 ---
 
-## 4. Seguimiento
+## 4. Tier 1 — lotes A, B, C (2026-09-20, con Muse Spark)
+
+Inventario: 74 → 97 nombres. Cada alta con barrel + `names.ts` +
+`help <cmd>` + línea en `help` + path en `which` + tests ES.
+
+**Lote A (80 nombres):** `uname` (kernel por SO, largos `--all`),
+`hostname` (muestra, `-I`, cambio con root), `stat` (formato real +
+`-c %n%s%a%U%G%F`), `file` (magic/shebang/extensión), `less`/`more`
+(dump no interactivo documentado, `-N`, pipe, permisos como cat).
+
+**Lote B (87 nombres):** `alias`/`unalias` (tabla por executor, expansión
+en primera palabra de cada segmento preservando quoting, anti-ciclos),
+`type` (alias vs comando vía contexto, sin ciclos de import), `history`
+(`cmdHistory` por terminal: hooks → request → contexto), `man`
+(reutiliza páginas de `help`), `whatis`/`apropos` (índice `WHATIS` de
+87 entradas; lo no implementado se marca, no se inventa).
+
+**Lote C (97 nombres):** `cut` (`-d/-f/-c/-s/--complement`), `tr`
+(rangos, escapes, `-d/-s/-c`), `tac`, `nl` (`-b/-i/-v/-w/-s`), `rev`,
+`column -t` (`-s/-o`), `sed` (`s///[gip]` con `&` y `\1`, `d/p/q`,
+direcciones `N/N,M//re/`), `awk` (`/re/`, comparaciones `== ~`,
+`BEGIN/END`, `NR/NF/FNR/$NF`, coma vs concatenación), `diff` (normal
+`2c2`/`3a4`, `-u` con hunks `@@`, `-q`, LCS con tope), `tee` (`-a`,
+permisos vía `writeOutputToFile`).
+
+Resto Tier 1 pendiente: ~~sistema, archivos, red, editor~~ — **completado
+el 2026-09-21** (sysinfo.ts + tools/{wget,dns,scp,whois,tcpdump}.ts +
+builtin/vi.ts). Inventario final Tier 1: 120 nombres; suite 2295 tests
+(182 archivos).
+
+## 5. Seguimiento
 
 - [ ] Revisar `roadmap_comandos.md` tiers tras P1 (re-evaluar si ~240 nombres sigue siendo horizonte).
 - [ ] Publicar corpus de tareas (Academy + labs) para medir `tareas compatibles / tareas evaluadas` (ver `roadmap_comandos.md:82`).

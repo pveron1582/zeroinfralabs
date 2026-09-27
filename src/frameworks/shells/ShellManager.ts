@@ -143,6 +143,20 @@ export class ShellManager {
   }
 
   // ── Reset completo ──────────────────────────────────────────────
+  /** Destruye y limpia SOLO el stack de un propietario (terminal cerrada). */
+  destroyOwner(ownerId?: ShellOwnerId | null): void {
+    const key = this.ownerKey(ownerId);
+    const stack = this.stacks.get(key);
+    if (!stack) return;
+    while (stack.length > 0) {
+      const frame = stack.pop();
+      if (frame?.shell.destroy) {
+        frame.shell.destroy(frame.state);
+      }
+    }
+    this.stacks.delete(key);
+  }
+
   reset(): void {
     // Destruir todos los shells de todas las stacks
     for (const stack of this.stacks.values()) {

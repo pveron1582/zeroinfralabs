@@ -7,7 +7,7 @@
 // en el directorio listado se devuelve "Permission denied" como hace Unix real.
 
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
-import { ensureTrailingSlash } from '../../utils/path';
+import { ensureTrailingSlash, resolvePath } from '../../utils/path';
 import { canExecute, canRead, formatModeFromFile } from '../../utils/permissions';
 import { getCurrentUser } from '../../utils/users';
 import { findDirEntry } from '../../utils/fs';
@@ -102,8 +102,32 @@ function collectItems(machine: CommandContext['machine'], targetDir: string, sho
   return items;
 }
 
-function renderLong(items: Map<string, LsItem>, humanReadable: boolean): string {
-  let out = `total ${items.size * 4}\n`;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Fecha determinística por path (estable entre corridas): formato `ls -l`
+// real — hora para fechas recientes, año para antiguas.
+function stableDate(path: string): string {
+  let h = 0;
+  for (let i = 0; i < path.length; i++) h = ((h << 5) - h + path.charCodeAt(i)) | 0;
+  h = Math.abs(h);
+  const mon = MONTHS[h % 12];
+  const day = String(((h >> 4) % 28) + 1).padStart(2, ' ');
+  if ((h >> 9) % 3 === 0) {
+    const year = 2022 + ((h >> 12) % 3);
+    return `${mon} ${day}  ${year}`;
+  }
+  const hh = String((h >> 12) % 24).padStart(2, '0');
+  const mm = String((h >> 17) % 60).padStart(2, '0');
+  return `${mon} ${day} ${hh}:${mm}`;
+}
+
+function renderLong(items: Map<string, LsItem>, humanReadable: boolean, baseDir: string): string {
+  // total en bloques 1K derivado de los tamaños mostrados (dirs: 4, resto: 1+)
+  let total = 0;
+  for (const info of items.values()) {
+    total += info.isDir ? 4 : Math.max(1, Math.ceil(info.size / 1024));
+  }
+  let out = `total ${total}\n`;
   Array.from(items.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .forEach(([name, info]) => {
@@ -113,7 +137,8 @@ function renderLong(items: Map<string, LsItem>, humanReadable: boolean): string 
       const linkCount = info.isDir ? '2' : '1';
       const sizeStr = humanReadable ? humanSize(info.size) : String(info.size).padStart(5);
       const suffix = info.linkTarget ? ` -> ${info.linkTarget}` : '';
-      out += `${perms}  ${linkCount} ${owner.padEnd(8)} ${group.padEnd(8)} ${humanReadable ? sizeStr.padStart(5) : sizeStr} Jan 01 00:00 ${name}${suffix}\n`;
+      const date = stableDate(info.entry?.path ?? (baseDir + name));
+      out += `${perms}  ${linkCount} ${owner.padEnd(8)} ${group.padEnd(8)} ${humanReadable ? sizeStr.padStart(5) : sizeStr} ${date} ${name}${suffix}\n`;
     });
   return out;
 }
@@ -122,6 +147,7 @@ export const cmd_ls = {
   name: 'ls',
   execute: (args: string[], { machine, currentDir }: CommandContext): CommandResponse => {
     if (!machine.files) machine.files = [];
+    const home = getCurrentUser(machine).home ?? '/';
 
     let showAll = false;
     let showLong = false;
@@ -136,7 +162,7 @@ export const cmd_ls = {
         if (arg.includes('R')) showRecursive = true;
         if (arg.includes('h')) humanReadable = true;
       } else {
-        targetDir = ensureTrailingSlash(arg);
+        targetDir = resolvePath(arg, currentDir || '/', home);
       }
     }
 
@@ -151,13 +177,13 @@ export const cmd_ls = {
     }
 
     // ── Función para generar salida de un directorio ──
-    const buildOutput = (_dir: string, items: Map<string, LsItem>): string => {
+    const buildOutput = (dir: string, items: Map<string, LsItem>): string => {
       if (items.size === 0) {
         if (showLong) return 'total 0';
         return '';
       }
       if (showLong) {
-        return renderLong(items, humanReadable).trimEnd();
+        return renderLong(items, humanReadable, dir).trimEnd();
       }
       const names = Array.from(items.entries())
         .filter(([, info]) => {

@@ -5,7 +5,7 @@
 // en la terminal B (shellManager global). Ahora cada terminal tiene su stack.
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { executeCommand, resetShellManager } from '../index';
+import { executeCommand, resetShellManager, createIsolatedExecutor } from '../index';
 import { useScenarioStore } from '../../store/scenarioStore';
 import type { Machine } from '../../types';
 
@@ -66,5 +66,48 @@ describe('ShellManager routing por terminal (P2-13)', () => {
     const b = executeCommand(req('B', 'echo hola', target, all));
     expect(b.output).toContain('hola');
     expect('sshSession' in b).toBe(false);
+  });
+
+  it('abrir una terminal nueva no hereda la sesión SSH de otra', () => {
+    const target = makeTarget();
+    const all = [target];
+
+    // Terminal A conectada por SSH
+    const a = executeCommand(req('term-1', 'ssh user@10.0.0.5', target, all));
+    expect('sshSession' in a && a.sshSession?.active).toBe(true);
+
+    // Terminal recién abierta (term-2): sin sesión propia, prompt no-ssh
+    const fresh = executeCommand(req('term-2', 'whoami', target, all));
+    expect('sshSession' in fresh).toBe(false);
+    expect(fresh.output).not.toContain('Connection to');
+
+    // A sigue en su sesión
+    const a2 = executeCommand(req('term-1', 'id', target, all));
+    expect('sshSession' in a2).toBe(true);
+  });
+});
+
+describe('Aislamiento MSF por terminal (createIsolatedExecutor)', () => {
+  it('msfconsole en una terminal no activa msf en la otra', () => {
+    const exA = createIsolatedExecutor();
+    const exB = createIsolatedExecutor();
+    const target = makeTarget();
+
+    exA.executeCommand({ line: 'msfconsole', machine: target, allMachines: [target], currentMissionId: 1, terminalId: 'A' });
+    expect(exA.isMsfActive()).toBe(true);
+
+    // Terminal B: recién abierta, sin msf
+    expect(exB.isMsfActive()).toBe(false);
+    expect(exB.getMsfPrompt()).toBeNull();
+
+    // B puede abrir su propio msf sin afectar el de A
+    exB.executeCommand({ line: 'msfconsole', machine: target, allMachines: [target], currentMissionId: 1, terminalId: 'B' });
+    expect(exB.isMsfActive()).toBe(true);
+    expect(exA.isMsfActive()).toBe(true);
+
+    // Cerrar msf en B no cierra el de A
+    exB.resetMsfState();
+    expect(exB.isMsfActive()).toBe(false);
+    expect(exA.isMsfActive()).toBe(true);
   });
 });

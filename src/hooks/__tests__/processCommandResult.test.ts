@@ -17,6 +17,9 @@ const storeRef = vi.hoisted(() => ({
     setPrivescCompleted: vi.fn(),
     setPossibleUsers: vi.fn(),
     addFileToMachine: vi.fn(),
+    openWindowsDesktop: vi.fn(),
+    closeWindowsDesktop: vi.fn(),
+    setRdpSession: vi.fn(),
   },
 }));
 
@@ -46,8 +49,6 @@ function makeDeps(overrides: Partial<ProcessDeps> = {}): ProcessDeps {
     setNanoFile: vi.fn(),
     setBusy: vi.fn(),
     setHistory: vi.fn(),
-    setFtpSession: vi.fn(),
-    setSshSession: vi.fn(),
     setPendingSu: vi.fn(),
     setPendingPython: vi.fn(),
     reportVulnerability: vi.fn(),
@@ -88,6 +89,27 @@ describe('processCommandResult', () => {
     processCommandResult(deps, { output: 'ok', newMachineId: 'victim-02', sshSessionClosed: true } as any, false);
     expect(deps.popIdentity).toHaveBeenCalled();
     expect(deps.onChangeMachine).toHaveBeenCalledWith('victim-02');
+  });
+
+  it('newMachineId resetea el cwd al home del nuevo SO (exploit → Windows)', () => {
+    const win = {
+      id: 'win-01',
+      machine_info: { type: 'server', hostname: 'WIN7-LAB', family: 'windows' },
+      win: { currentUser: 'win7user', isAdmin: false, computerName: 'WIN7-LAB' },
+    } as any;
+    const base = makeDeps();
+    const deps = makeDeps({ allMachines: [...base.allMachines, win], currentDir: '/root' });
+    processCommandResult(deps, { output: 'ok', newMachineId: 'win-01' } as any, false);
+    expect(deps.setCurrentDir).toHaveBeenCalledWith('/C:/Users/win7user');
+    expect(deps.pushIdentity).toHaveBeenCalledWith({ machineId: 'win-01', cwd: '/C:/Users/win7user' });
+  });
+
+  it('newMachineId + sshLoginUser usa el home del usuario conectado', () => {
+    const deps = makeDeps({ currentDir: '/root' });
+    processCommandResult(
+      deps, { output: 'ok', newMachineId: 'victim-02', sshLoginUser: 'bob' } as any, false
+    );
+    expect(deps.pushIdentity).toHaveBeenCalledWith({ machineId: 'victim-02', cwd: '/home/bob' });
   });
 
   it('sshLoginUser cambia el directorio a /home/<user>', () => {
@@ -179,9 +201,44 @@ describe('processCommandResult', () => {
     expect(deps.pushIdentity).toHaveBeenCalledWith({ machineId: 'victim-01', suUser: 'developer', cwd: '/home/user' });
   });
 
+  it('con terminalId suUserApplied NO escribe el su compartido (aislamiento HIGH #2)', () => {
+    const deps = makeDeps({ terminalId: 't-A' });
+    processCommandResult(deps, { output: 'ok', suUserApplied: 'developer' } as any, false);
+    expect(storeRef.current.setSuUser).not.toHaveBeenCalled();
+    expect(deps.pushIdentity).toHaveBeenCalledWith({ machineId: 'victim-01', suUser: 'developer', cwd: '/home/user' });
+  });
+
+  it('con terminalId privescCompleted NO escribe el su compartido pero sí apila el frame', () => {
+    const deps = makeDeps({ terminalId: 't-A' });
+    processCommandResult(deps, { output: 'ok', privescCompleted: 'victim-01' } as any, false);
+    expect(storeRef.current.setPrivescCompleted).toHaveBeenCalledWith('victim-01');
+    expect(storeRef.current.setSuUser).not.toHaveBeenCalled();
+    expect(deps.pushIdentity).toHaveBeenCalledWith({ machineId: 'victim-01', suUser: 'root', cwd: '/home/user' });
+  });
+
   it('pythonPendingInput captura la próxima línea', () => {
     const deps = makeDeps();
     processCommandResult(deps, { output: 'Pregunta? ', pythonPendingInput: { argv: ['x.py'], sourceName: 'x.py' } } as any, false);
     expect(deps.setPendingPython).toHaveBeenCalledWith(expect.objectContaining({ argv: ['x.py'] }));
+  });
+
+  it('desktopAction connect abre el escritorio Windows', () => {
+    const deps = makeDeps();
+    processCommandResult(deps, {
+      output: 'ok',
+      desktopAction: { action: 'connect', machineId: 'win-01', ip: '10.0.0.5' },
+    } as any, false);
+    expect(storeRef.current.openWindowsDesktop).toHaveBeenCalledWith('win-01');
+    expect(storeRef.current.closeWindowsDesktop).not.toHaveBeenCalled();
+  });
+
+  it('desktopAction disconnect cierra el escritorio Windows', () => {
+    const deps = makeDeps();
+    processCommandResult(deps, {
+      output: 'ok',
+      desktopAction: { action: 'disconnect' },
+    } as any, false);
+    expect(storeRef.current.closeWindowsDesktop).toHaveBeenCalled();
+    expect(storeRef.current.openWindowsDesktop).not.toHaveBeenCalled();
   });
 });

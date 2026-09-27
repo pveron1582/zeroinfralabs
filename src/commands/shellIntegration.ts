@@ -1,15 +1,11 @@
 // ── commands/shellIntegration.ts ─────────────────────────────────
 // Integración del executor de comandos con el ShellManager
-// (sesiones interactivas SSH/FTP/NC apiladas)
-
-// ── commands/shellIntegration.ts ─────────────────────────────────
-// Integración del executor de comandos con el ShellManager
-// (sesiones interactivas SSH/FTP/NC apiladas)
+// (sesiones interactivas SSH/FTP/NC/RDP apiladas)
 
 import type { CommandContext, CommandResponse } from '../types';
 import { shellManager, type ShellContext as ManagerContext } from '../frameworks/shells';
 
-export function toShellContext(ctx: CommandContext): ManagerContext {
+export function toShellContext(ctx: CommandContext, clientName?: string): ManagerContext {
   return {
     machine: ctx.machine,
     allMachines: ctx.allMachines,
@@ -18,6 +14,7 @@ export function toShellContext(ctx: CommandContext): ManagerContext {
     setCurrentDir: ctx.setCurrentDir || (() => {}),
     language: ctx.language,
     umask: ctx.umask,
+    clientName,
   };
 }
 
@@ -36,9 +33,16 @@ export const getCurrentShellName = (ownerId?: string) => shellManager.getCurrent
 /** Obtiene el prompt del shell activo del propietario. */
 export const getShellPrompt = (ownerId?: string) => shellManager.getPrompt(ownerId);
 
-/** Iniciar una sesión de shell (llamado desde comandos como ftp, ssh -i, etc.) */
-export const startShellSession = (shellName: string, args: string[], ctx: CommandContext, ownerId: string = ctx.terminalId || 'default'): CommandResponse => {
-  const shellCtx = toShellContext(ctx);
+/** Iniciar una sesión de shell (llamado desde comandos como ftp, ssh -i, etc.)
+ *  `clientName` nombra al cliente RDP en los mensajes de error (mstsc/xrdp). */
+export const startShellSession = (
+  shellName: string,
+  args: string[],
+  ctx: CommandContext,
+  ownerId: string = ctx.terminalId || 'default',
+  clientName?: string,
+): CommandResponse => {
+  const shellCtx = toShellContext(ctx, clientName);
   const result = shellManager.startSession(shellName, args, shellCtx, ownerId);
 
   if (result.isError) return result;
@@ -70,6 +74,26 @@ export const startShellSession = (shellName: string, args: string[], ctx: Comman
         targetIp: state.targetIp, targetId: state.targetId,
         username: state.username, authenticated: state.authenticated, step: state.step,
       }
+    };
+  }
+
+  if (shellName === 'rdp' && current) {
+    const state = current.state;
+    if (!state.connected) {
+      shellManager.closeCurrentSession(ownerId);
+      return {
+        output: `${clientName ?? 'mstsc'}: no se pudo conectar a ${args[0] ?? ''} — el host no existe o el puerto 3389 no está abierto.`,
+        isError: true,
+      };
+    }
+    return {
+      type: 'hybrid',
+      output: `Conectando a ${state.targetIp}:3389...`,
+      rdpSession: {
+        active: true, connected: state.connected,
+        targetIp: state.targetIp, targetId: state.targetId,
+        username: state.username, authenticated: state.authenticated, step: state.step,
+      },
     };
   }
 
@@ -107,6 +131,7 @@ export const executeShellCommand = (line: string, ctx: CommandContext, ownerId: 
     foundVulnerability: result.foundVulnerability,
     sshSessionClosed: result.sshSessionClosed,
     sshLoginUser: result.sshLoginUser,
+    desktopAction: result.desktopAction,
     ...(effectiveName === 'ftp' ? {
       ftpSession: {
         active: activeNow, connected: state?.connected,
@@ -116,6 +141,13 @@ export const executeShellCommand = (line: string, ctx: CommandContext, ownerId: 
     } : {}),
     ...(effectiveName === 'ssh' ? {
       sshSession: {
+        active: activeNow, connected: state?.connected,
+        targetIp: state?.targetIp, targetId: state?.targetId,
+        username: state?.username, authenticated: state?.authenticated, step: state?.step,
+      }
+    } : {}),
+    ...(effectiveName === 'rdp' ? {
+      rdpSession: {
         active: activeNow, connected: state?.connected,
         targetIp: state?.targetIp, targetId: state?.targetId,
         username: state?.username, authenticated: state?.authenticated, step: state?.step,
@@ -144,11 +176,16 @@ export const closeShellSession = (ownerId?: string): CommandResponse => {
   if (closingName === 'ftp') {
     return { type: 'ftp', output: '221 Goodbye.', ftpSession: { active: false, connected: false } };
   }
+  if (closingName === 'rdp') {
+    return {
+      type: 'hybrid',
+      output: 'Desconexión del Escritorio remoto.',
+      desktopAction: { action: 'disconnect' },
+      rdpSession: { active: false, connected: false },
+    };
+  }
   return { type: 'hybrid', output: 'Connection closed.' };
 };
 
-/** Reset del ShellManager al cambiar de escenario */
+/** Reset del ShellManager al cambiar de escenario (SSOT: única exportación). */
 export const resetShellManager = () => shellManager.reset();
-
-/** Resetea todas las sesiones de shell (útil al cambiar de escenario) */
-export const resetShellSessions = () => shellManager.reset();

@@ -3,13 +3,15 @@
 // (su pendiente / FTP / SSH / comando normal) y streaming línea por línea.
 // Extraído de useCommandRunner.ts para mantenerlo <300 líneas.
 
-import type { CommandResponse, FtpSessionData, SshSessionData } from '../types';
+import type { CommandResponse, FtpSessionData, SshSessionData, RdpSessionData, PsState } from '../types';
 import type { IsolatedExecutor, MsfState } from '../commands';
 import type { HistoryEntry, ProcessDeps } from './processCommandResult';
 import { processCommandResult } from './processCommandResult';
 import type { SessionRunnerDeps, SessionRunResult } from './useFtpSession';
 import { getFtpPromptFor } from './useFtpSession';
 import type { SshRunResult } from './useSshSession';
+import { getRdpPromptFor } from './useRdpSession';
+import type { RdpRunResult } from './useRdpSession';
 import type { PendingSu } from './usePendingSu';
 import type { PendingPython, PythonInputResult } from './usePendingPythonInput';
 import type { IdentityFrame } from './useIdentityStack';
@@ -27,18 +29,23 @@ export interface RunCommandDeps {
   sshSession: { active?: boolean; step?: string } | null;
   runSshPassword: (password: string, deps: SessionRunnerDeps) => SshRunResult;
   startSshSession: (s: SshSessionData) => void;
+  rdpSession: { active?: boolean; step?: string } | null;
+  runRdpInput: (line: string, deps: SessionRunnerDeps) => RdpRunResult;
+  startRdpSession: (s: RdpSessionData) => void;
   busy: boolean;
   setBusy: (b: boolean) => void;
   setHistory: React.Dispatch<React.SetStateAction<HistoryEntry[]>>;
   setInput: (v: string) => void;
   setHistIdx: (i: number) => void;
   setCmdHistory: (fn: (prev: string[]) => string[]) => void;
+  cmdHistory?: string[];
   prompt: string;
   checkMissionCompletion: (result: CommandResponse) => void;
   sessionDeps: SessionRunnerDeps;
   processDeps: ProcessDeps;
   executor: IsolatedExecutor;
   setMsfState: (s: MsfState | null) => void;
+  setPsState?: (s: PsState | null) => void;
   onCredentialsFound: (machineId: string, user: string, pass: string, file?: string, service?: string) => void;
   onVerifyCredentials?: (machineId: string, service?: string) => void;
   onChangeMachine: (id: string) => void;
@@ -55,9 +62,10 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
     pendingPython, handlePythonInput,
     ftpSession, runFtpCommand, startFtpSession,
     sshSession, runSshPassword, startSshSession,
-    busy, setBusy, setHistory, setInput, setHistIdx, setCmdHistory,
+    rdpSession, runRdpInput, startRdpSession,
+    busy, setBusy, setHistory, setInput, setHistIdx, setCmdHistory, cmdHistory,
     prompt, checkMissionCompletion, sessionDeps, processDeps, executor,
-    setMsfState, onCredentialsFound, onVerifyCredentials, onChangeMachine,
+    setMsfState, setPsState, onCredentialsFound, onVerifyCredentials, onChangeMachine,
     pushIdentity, handleDownloadedFile, onMissionComplete, onExitTerminal,
     inputRef,
   } = deps;
@@ -103,7 +111,7 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
       return;
     }
 
-    if ((!trimmed && !ftpSession?.active && !sshSession?.active) || busy) return;
+    if ((!trimmed && !ftpSession?.active && !sshSession?.active && !rdpSession?.active) || busy) return;
     setCmdHistory(prev => [trimmed, ...prev]);
     setInput(''); setHistIdx(-1);
     const currentPrompt = prompt;
@@ -120,6 +128,23 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
       }]);
       checkMissionCompletion(result);
       handleDownloadedFile(result, () => getFtpPromptFor(updatedSession) || 'ftp> ');
+      return;
+    }
+
+    // ── RDP session esperando usuario o password ───────────────────
+    if (rdpSession?.active) {
+      const { result, updatedSession } = runRdpInput(trimmed, sessionDeps);
+      setHistory(prev => [...prev, {
+        command: trimmed,
+        output: result.output,
+        streaming: false,
+        prompt: currentPrompt,
+        timestamp: Date.now()
+      }]);
+      processCommandResult(processDeps, result, false);
+      handleDownloadedFile(result, () =>
+        getRdpPromptFor(updatedSession) || currentPrompt,
+      );
       return;
     }
 
@@ -156,10 +181,13 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
       line: trimmed,
       machine: sessionDeps.machine, allMachines: sessionDeps.allMachines,
       currentMissionId: sessionDeps.currentMissionId, terminalId: sessionDeps.terminalId,
-      onMsfStateChange: setMsfState, currentDir: sessionDeps.currentDir,
+      suUserOverride: sessionDeps.suUserOverride,
+      onMsfStateChange: setMsfState, onPsStateChange: setPsState,
+      currentDir: sessionDeps.currentDir,
       setCurrentDir: sessionDeps.setCurrentDir, language: sessionDeps.language,
       umask: sessionDeps.umask, setUmask: sessionDeps.setUmask,
       env: sessionDeps.env, setEnv: sessionDeps.setEnv,
+      cmdHistory,
     });
 
     // Inicio de sesión FTP nuevo
@@ -186,6 +214,20 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
         prompt: currentPrompt,
         timestamp: Date.now()
       }]);
+      return;
+    }
+
+    // Inicio de sesión RDP nueva (mstsc/xrdp interactivo)
+    if ('rdpSession' in result && result.rdpSession?.active && !rdpSession?.active) {
+      startRdpSession(result.rdpSession);
+      setHistory(prev => [...prev, {
+        command: trimmed,
+        output: result.output,
+        streaming: false,
+        prompt: currentPrompt,
+        timestamp: Date.now()
+      }]);
+      processCommandResult(processDeps, result, false);
       return;
     }
 

@@ -6,14 +6,16 @@ import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { findFile } from '../../utils/fs';
 
-function parseSymbolicMode(expr: string, currentMode: number): number | null {
-  // Formato POSIX simplificado: cláusulas [ugoa]*[+-=][rwxst]* separadas
+function parseSymbolicMode(expr: string, currentMode: number, isDir: boolean): number | null {
+  // Formato POSIX simplificado: cláusulas [ugoa]*[+-=][rwxXst]* separadas
   // por comas. Bits especiales: `s` = SUID en u / SGID en g, `t` = sticky
-  // en o/a. Ej: `u+s`, `g-w,o=t`, `a+x,u=rw`.
+  // en o/a. `X` (mayúscula) solo agrega `x` si es directorio o si algún
+  // bit de ejecución ya está prendido (como el chmod real).
+  // Ej: `u+s`, `g-w,o=t`, `a+x,u=rw`, `a-X`, `chmod -R a+X dir`.
   let result = currentMode;
 
   for (const rawClause of expr.split(',')) {
-    const match = rawClause.match(/^([ugoa]*)([+\-=])([rwxst]*)$/);
+    const match = rawClause.match(/^([ugoa]*)([+\-=])([rwxXst]*)$/);
     // Solo se aceptan permisos vacíos con '=' (limpia los bits del scope).
     if (!match || (!match[3] && match[2] !== '=')) return null;
 
@@ -22,11 +24,14 @@ function parseSymbolicMode(expr: string, currentMode: number): number | null {
     const op = match[2];
     const perms = match[3];
 
+    // X condicional: solo actúa si es dir o ya hay algún x
+    const xApplies = !perms.includes('X') || isDir || (result & 0o111) !== 0;
+
     const applyScope = (shift: number) => {
       let bits = 0;
       if (perms.includes('r')) bits |= 4;
       if (perms.includes('w')) bits |= 2;
-      if (perms.includes('x')) bits |= 1;
+      if (perms.includes('x') || (perms.includes('X') && xApplies)) bits |= 1;
       if (op === '+') result |= bits << shift;
       else if (op === '-') result &= ~(bits << shift);
       else {
@@ -128,8 +133,9 @@ export const cmd_chmod = {
       if (octalMatch) {
         newMode = parseInt(octalMatch[1], 8);
       } else {
-        // Try symbolic mode
-        newMode = parseSymbolicMode(modeArg, currentMode);
+        // Try symbolic mode (X necesita saber si es directorio)
+        const isDirTarget = file.path.endsWith('/.dir');
+        newMode = parseSymbolicMode(modeArg, currentMode, isDirTarget);
       }
 
       if (newMode === null || newMode < 0 || newMode > 0o7777) {
@@ -145,11 +151,19 @@ export const cmd_chmod = {
         // también modificaría paths hermanos como /homebackup/...
         const dirPrefix = file.path.slice(0, -4);
         const childPrefix = dirPrefix.endsWith('/') ? dirPrefix : `${dirPrefix}/`;
+        // +X se reevalúa por hijo (dir o ya ejecutable), no se hereda
+        const perChildX = !octalMatch && modeArg.includes('X');
         for (let i = 0; i < newFiles.length; i++) {
           const f = newFiles[i];
           if (f.path.startsWith(childPrefix) && f.path !== file.path) {
             if (!isRoot && f.owner !== currentUser.username) continue;
-            newFiles[i] = { ...f, mode: newMode };
+            let childMode = newMode;
+            if (perChildX) {
+              const childIsDir = f.path.endsWith('/.dir');
+              const childCurrent = f.mode ?? (childIsDir ? 0o755 : 0o644);
+              childMode = parseSymbolicMode(modeArg, childCurrent, childIsDir) ?? childCurrent;
+            }
+            newFiles[i] = { ...f, mode: childMode };
           }
         }
       }

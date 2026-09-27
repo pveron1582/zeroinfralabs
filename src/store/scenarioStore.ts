@@ -66,7 +66,8 @@ export const useScenarioStore = create<ScenarioState>()(
           ...current,
           language: p.language ?? current.language,
           theme: p.theme ?? current.theme,
-          uiMode: p.uiMode ?? current.uiMode,
+          // No rehidratar un RDP huérfano: windows-desktop es solo de sesión.
+          uiMode: p.uiMode === 'windows-desktop' ? 'desktop' : (p.uiMode ?? current.uiMode),
           activeApp: p.activeApp ?? current.activeApp,
           termColor: p.termColor ?? current.termColor,
           completedLessons: p.completedLessons ?? current.completedLessons,

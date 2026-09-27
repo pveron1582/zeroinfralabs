@@ -90,4 +90,44 @@ describe('cmd_hydra', () => {
     expect(result.isError).toBe(true);
     expect(result.output).toContain('servicio ftp no encontrado');
   });
+
+  it('debe mostrar las tareas con -t', () => {
+    const machines = [createMockMachine(2), createMockAttacker()];
+    const result = cmd_hydra.execute(['-l', 'gonzalo', '-P', '/usr/share/wordlists/rockyou.txt', '-t', '4', '10.10.10.10', 'ssh'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('tasks 4');
+    expect(result.output).toContain('login: gonzalo');
+  });
+
+  it('debe mostrar intentos con -V', () => {
+    const machines = [createMockMachine(2), createMockAttacker()];
+    const result = cmd_hydra.execute(['-l', 'gonzalo', '-P', '/usr/share/wordlists/rockyou.txt', '-V', '10.10.10.10', 'ssh'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('[VERBOSE]');
+    expect(result.output).toContain('gonzalo');
+  });
+
+  it('debe aceptar el uso realista con -L, -t, -V, -f y URI', () => {
+    const attacker = createMockAttacker();
+    attacker.files!.push({ path: '/home/kali/users.txt', content: 'root\ngonzalo\n', type: 'file' });
+    const machines = [createMockMachine(2), attacker];
+    const result = cmd_hydra.execute(['-L', '/home/kali/users.txt', '-P', '/usr/share/wordlists/rockyou.txt', '-t', '4', '-V', '-f', 'ssh://10.10.10.10'], {
+      allMachines: machines,
+      currentMissionId: 1
+    } as any);
+
+    expect(result.isError).toBeUndefined();
+    expect(result.output).toContain('tasks 4');
+    expect(result.output).toContain('-f');
+    expect(result.output).toContain('login: gonzalo');
+    expect(result.output).toContain('password: Quier0unaunment0');
+  });
 });

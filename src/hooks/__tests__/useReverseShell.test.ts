@@ -4,7 +4,7 @@
 // store, máquina víctima lfi vs normal, y onVerifyCredentials opcional.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useReverseShell } from '../useReverseShell';
 
 const storeRef = vi.hoisted(() => ({
@@ -61,15 +61,13 @@ describe('useReverseShell', () => {
 
   it('no hace nada si no hay conexión o no está busy', () => {
     const opts = makeOpts();
-    const { result } = renderHook(() => useReverseShell(opts));
-    act(() => { result.current; });
+    renderHook(() => useReverseShell(opts));
     expect(opts.appendOutput).not.toHaveBeenCalled();
   });
 
   it('procesa la conexión entrante (máquina normal) y apila identidad', () => {
     const opts = makeOpts({ busy: true, blockingCommand: { connected: true, message: 'x' } });
-    const { result } = renderHook(() => useReverseShell(opts));
-    act(() => { result.current; });
+    renderHook(() => useReverseShell(opts));
     expect(opts.appendOutput).toHaveBeenCalledOnce();
     expect(opts.onChangeMachine).toHaveBeenCalledWith('target-01');
     expect(opts.setCurrentDir).toHaveBeenCalledWith('/var/www/html/');
@@ -82,24 +80,21 @@ describe('useReverseShell', () => {
 
   it('usa www-data cuando la víctima es lfi', () => {
     const opts = makeOpts({ busy: true, blockingCommand: { connected: true }, allMachines: [makeVictim('lab-lfi-01')] });
-    const { result } = renderHook(() => useReverseShell(opts));
-    act(() => { result.current; });
+    renderHook(() => useReverseShell(opts));
     expect(opts.pushIdentity).toHaveBeenCalledWith(expect.objectContaining({ suUser: 'www-data' }));
   });
 
   it('lee la conexión desde el store si blockingCommand no la trae', () => {
     storeRef.current.blockingCommand = { connected: true };
     const opts = makeOpts({ busy: true });
-    const { result } = renderHook(() => useReverseShell(opts));
-    act(() => { result.current; });
+    renderHook(() => useReverseShell(opts));
     expect(opts.appendOutput).toHaveBeenCalledOnce();
     expect(opts.onChangeMachine).toHaveBeenCalledWith('target-01');
   });
 
   it('funciona sin onVerifyCredentials', () => {
     const opts = makeOpts({ busy: true, blockingCommand: { connected: true }, onVerifyCredentials: undefined });
-    const { result } = renderHook(() => useReverseShell(opts));
-    act(() => { result.current; });
+    renderHook(() => useReverseShell(opts));
     expect(opts.appendOutput).toHaveBeenCalledOnce();
   });
 });

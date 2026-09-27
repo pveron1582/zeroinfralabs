@@ -4,10 +4,17 @@
 import type { CommandResponse, CommandContext } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { withState } from '../core/msfHelpers';
+import { cmd_dir, cmd_type, resolveCdTarget } from '../../../commands/windows/fs';
+import { winDisplay } from '../../../utils/winPath';
+
+/** Cwd de la sesión: estado MSF si existe, si no el de la terminal. */
+function sessionCwd(state: MsfState, ctx: CommandContext): string {
+  return state.cwd ?? ctx.currentDir ?? '/';
+}
 
 export const executeMeterpreterCommand = (
   cmd: string,
-  _args: string[],
+  args: string[],
   state: MsfState,
   ctx: CommandContext
 ): CommandResponse | null => {
@@ -16,6 +23,30 @@ export const executeMeterpreterCommand = (
   if (cmd === 'exit' || cmd === 'quit') {
     const newState: MsfState = { ...state, sessionOpen: false };
     return { ...withState(`[*] Shutting down Meterpreter...\n`, newState), type: 'meterpreter', newMachineId: 'attacker-01' };
+  }
+
+  // ── Stdapi: File system (delega en los comandos de cmd.exe) ─────
+  if (cmd === 'cd') {
+    const cwd = sessionCwd(state, ctx);
+    if (args.length === 0) return withState(`${winDisplay(cwd)}\n`, state);
+    const res = resolveCdTarget(ctx, args[0], cwd);
+    if (!res.ok) return withState(`[-] cd: ${res.message}\n`, state);
+    ctx.setCurrentDir?.(res.canonical);
+    return withState('', { ...state, cwd: res.canonical });
+  }
+
+  if (cmd === 'pwd' || cmd === 'getwd') {
+    return withState(`${winDisplay(sessionCwd(state, ctx))}\n`, state);
+  }
+
+  if (cmd === 'ls' || cmd === 'dir') {
+    const res = cmd_dir.execute(args, { ...ctx, currentDir: sessionCwd(state, ctx) });
+    return { ...withState(`${res.output}\n`, state), isError: res.isError };
+  }
+
+  if (cmd === 'cat') {
+    const res = cmd_type.execute(args, { ...ctx, currentDir: sessionCwd(state, ctx) });
+    return { ...res, msfStateUpdate: state };
   }
 
   if (cmd === 'help' || cmd === '?') {

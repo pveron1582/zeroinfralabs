@@ -29,7 +29,7 @@ describe('useDownloadedFile', () => {
     const { result } = renderHook(() => useDownloadedFile(makeOpts('es')));
     act(() => {
       result.current.handleDownloadedFile(
-        { output: 'ok', downloadedFile: { path: '/tmp/nota.txt', content: 'secreto' } },
+        { output: 'ok', downloadedFile: { path: '/tmp/nota.txt', content: 'secreto', type: 'text' } },
         () => 'ftp> ',
       );
     });
@@ -41,7 +41,7 @@ describe('useDownloadedFile', () => {
     const { result } = renderHook(() => useDownloadedFile(makeOpts('en')));
     act(() => {
       result.current.handleDownloadedFile(
-        { output: 'ok', downloadedFile: { path: '/tmp/note.txt', content: 'x', owner: 'root', group: 'root', mode: 0o600 } },
+        { output: 'ok', downloadedFile: { path: '/tmp/note.txt', content: 'x', type: 'text', owner: 'root', group: 'root', mode: 0o600 } },
         () => 'ftp> ',
       );
     });
@@ -56,7 +56,7 @@ describe('useDownloadedFile', () => {
     const { result } = renderHook(() => useDownloadedFile(makeOpts()));
     act(() => {
       result.current.handleDownloadedFile(
-        { output: 'ok', downloadedFile: { path: '/root/loot.zip', content: 'bin' } },
+        { output: 'ok', downloadedFile: { path: '/root/loot.zip', content: 'bin', type: 'text' } },
         () => 'ftp> ',
       );
     });

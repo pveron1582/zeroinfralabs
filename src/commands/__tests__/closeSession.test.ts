@@ -6,13 +6,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { scenario_06 } from '../../laboratorios/laboratorio06';
 import {
-  executeCommand, resetShellSessions,
+  executeCommand, resetShellManager,
   isShellSessionActive, getCurrentShellName, getShellPrompt,
 } from '../index';
 
 describe('cierre de sesiones interactivas (SSH/FTP)', () => {
   beforeEach(() => {
-    resetShellSessions();
+    resetShellManager();
   });
 
   it('exit en sesión FTP responde tipo ftp con 221 Goodbye', () => {

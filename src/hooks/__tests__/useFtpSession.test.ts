@@ -8,9 +8,13 @@ import { renderHook, act } from '@testing-library/react';
 import { useFtpSession, getFtpPromptFor } from '../useFtpSession';
 import type { SessionRunnerDeps } from '../useFtpSession';
 import type { FtpSessionData } from '../../types';
+import { createMockExecutor } from './executor-helpers';
 
 const storeRef = vi.hoisted(() => ({ current: { ftpSession: null as FtpSessionData | null, setFtpSession: vi.fn() } }));
-const commandsRef = vi.hoisted(() => ({ isShellSessionActive: vi.fn(() => false), startShellSession: vi.fn() }));
+const commandsRef = vi.hoisted(() => ({
+  isShellSessionActive: vi.fn((..._a: unknown[]) => false),
+  startShellSession: vi.fn((..._a: unknown[]) => undefined),
+}));
 
 vi.mock('../../store/scenarioStore', () => ({
   useScenarioStore: Object.assign(
@@ -24,9 +28,9 @@ vi.mock('../../commands', () => ({
   startShellSession: (...args: unknown[]) => commandsRef.startShellSession(...args),
 }));
 
-function makeDeps(executeCommand: ReturnType<typeof vi.fn>): SessionRunnerDeps {
+function makeDeps(executeCommand: SessionRunnerDeps['executor']['executeCommand']): SessionRunnerDeps {
   return {
-    executor: { executeCommand } as SessionRunnerDeps['executor'],
+    executor: createMockExecutor(executeCommand),
     machine: { id: 'attacker-01' } as SessionRunnerDeps['machine'],
     allMachines: [],
     currentMissionId: 1,
@@ -64,8 +68,8 @@ describe('useFtpSession', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     storeRef.current = { ftpSession: null, setFtpSession: vi.fn() };
-    commandsRef.isShellSessionActive = vi.fn(() => false);
-    commandsRef.startShellSession = vi.fn();
+    commandsRef.isShellSessionActive = vi.fn((..._a: unknown[]) => false);
+    commandsRef.startShellSession = vi.fn((..._a: unknown[]) => undefined);
   });
 
   it('runFtpCommand sin ftpSession en la respuesta deja la sesión intacta', () => {
@@ -114,7 +118,7 @@ describe('useFtpSession', () => {
   });
 
   it('startFtpSession NO inicia shell si ya hay una sesión activa', () => {
-    commandsRef.isShellSessionActive = vi.fn(() => true);
+    commandsRef.isShellSessionActive = vi.fn((..._a: unknown[]) => true);
     const { result } = renderHook(() => useFtpSession());
     act(() => result.current.startFtpSession(
       { active: true, targetIp: '10.0.0.1', targetId: 'v1' }, makeDeps(vi.fn()),
@@ -130,5 +134,19 @@ describe('useFtpSession', () => {
     ));
     expect(commandsRef.startShellSession).not.toHaveBeenCalled();
     expect(storeRef.current.setFtpSession).toHaveBeenCalled();
+  });
+
+  it('con terminalId la fuente de verdad es local y el store espeja para display', () => {
+    const fs: FtpSessionData = {
+      active: true, targetIp: '10.0.0.1', targetId: 'v1', username: 'anon',
+      loggedIn: true, step: 'connected',
+    };
+    const executeCommand = vi.fn(() => ({ output: 'lista', ftpSession: fs }));
+    const { result } = renderHook(() => useFtpSession('term-1'));
+    let out: ReturnType<ReturnType<typeof useFtpSession>['runFtpCommand']> | undefined;
+    act(() => { out = result.current.runFtpCommand('ls', makeDeps(executeCommand)); });
+    expect(result.current.ftpSession?.active).toBe(true);
+    expect(result.current.ftpSession?.step).toBe('connected');
+    expect(storeRef.current.setFtpSession).toHaveBeenCalledWith(out!.updatedSession);
   });
 });

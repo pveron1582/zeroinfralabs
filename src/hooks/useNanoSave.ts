@@ -5,7 +5,7 @@
 import type { Machine } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
 import { normalizePath, resolvePath } from '../utils/path';
-import { getCurrentUser, ROOT_USER } from '../utils/users';
+import { getUserWithSu, ROOT_USER } from '../utils/users';
 import { canEditFile, canCreateInDir } from '../utils/permissions';
 import { findFile, findParentDir, defaultOwnership, buildNewFile } from '../utils/fs';
 
@@ -26,9 +26,12 @@ interface NanoSaveResult {
 interface UseNanoSaveOptions {
   machine: Machine;
   currentDir: string;
+  // su del frame local de la terminal: los checks de guardado usan esa
+  // identidad (Ctrl+S corre fuera del executor, sin override de ejecución).
+  suUser?: string;
 }
 
-export function useNanoSave({ machine, currentDir }: UseNanoSaveOptions) {
+export function useNanoSave({ machine, currentDir, suUser }: UseNanoSaveOptions) {
   /**
    * Guarda un archivo abierto en nano. Realiza checks de permisos,
    * preserva owner/group/mode del archivo existente, y llama a
@@ -47,7 +50,7 @@ export function useNanoSave({ machine, currentDir }: UseNanoSaveOptions) {
     // ownership usan root, así un archivo restringido (p.ej. /etc/passwd) que
     // el usuario solo puede leer SÍ puede editarse y guardarse.
     const elevated = nanoFile.elevated === true;
-    const currentUserObj = elevated ? ROOT_USER : getCurrentUser(machine);
+    const currentUserObj = elevated ? ROOT_USER : getUserWithSu(machine, suUser);
     const homeDir = currentUserObj.home;
 
     const fullPath = normalizePath(resolvePath(rawPath, currentDir || '/', homeDir));

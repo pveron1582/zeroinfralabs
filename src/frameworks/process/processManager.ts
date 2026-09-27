@@ -86,8 +86,13 @@ export function buildProcessList(machine: Machine): SimProcess[] {
     }
   }
 
-  // Shell del usuario actual
-  procs.push({ pid: 500, name: 'bash', user: shellUser, cpu: 0.1, mem: 0.3, state: 'R+', tty: 'pts/0', time: '00:00:05', command: 'bash' });
+  // Shell del usuario actual (cmd.exe en Windows, bash en Linux)
+  const shellName = isWindows ? 'cmd.exe' : 'bash';
+  procs.push({
+    pid: 500, name: shellName, user: shellUser, cpu: 0.1, mem: 0.3,
+    state: 'R+', tty: isWindows ? 'console' : 'pts/0', time: '00:00:05',
+    command: shellName,
+  });
 
   return procs;
 }

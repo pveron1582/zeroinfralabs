@@ -16,7 +16,7 @@ export const cmd_hydra = {
     const userArgIdx = lIdx !== -1 ? lIdx : LIdx;
     const passArgIdx = pIdx !== -1 ? pIdx : PIdx;
     if (userArgIdx === -1 || passArgIdx === -1)
-      return { output: 'Usage: hydra -l <user>|-L <userfile> -p <pass>|-P <wordlist> <IP> <service>\nExample: hydra -l root -P rockyou.txt 10.10.10.11 ssh\n         hydra -L users.txt -P rockyou.txt ssh://10.10.10.11', isError: true };
+      return { output: 'Usage: hydra -l <user>|-L <userfile> -p <pass>|-P <wordlist> [-t <tasks>] [-V] [-f] <IP> <service>\nExample: hydra -l root -P rockyou.txt 10.10.10.11 ssh\n         hydra -L users.txt -P rockyou.txt -t 4 -V -f ssh://10.10.10.11', isError: true };
 
     const userArg = args[userArgIdx + 1];
     const wl = args[passArgIdx + 1];
@@ -36,11 +36,15 @@ export const cmd_hydra = {
     if (uriArg) {
       [svc, ip] = uriArg.split('://');
     } else {
-      const nf = args.filter((a, i) => !a.startsWith('-') && !(i > 0 && args[i - 1].startsWith('-')));
+      // Flags sin valor (-V, -f, ...) no consumen el arg siguiente;
+      // el resto (-l, -P, -t, ...) sí. Sin esto, `hydra -V 10.0.0.1 ssh`
+      // tragaba la IP como si fuera valor de -V.
+      const noValueFlags = new Set(['-V', '-f', '-v', '-d', '-I', '-R', '-q', '-u']);
+      const nf = args.filter((a, i) => !a.startsWith('-') && !(i > 0 && args[i - 1].startsWith('-') && !noValueFlags.has(args[i - 1])));
       if (nf.length >= 2) { ip = nf[nf.length - 2]; svc = nf[nf.length - 1]; }
     }
 
-    if (!ip || !svc) return { output: 'Usage: hydra -l <user> -P <wordlist> <IP> <service>', isError: true };
+    if (!ip || !svc) return { output: 'Usage: hydra -l <user> -P <wordlist> [-t <tasks>] [-V] [-f] <IP> <service>', isError: true };
 
     const target = allMachines.find(m => m.machine_info.ip === ip);
     if (!target) return { output: `Error: ${ip} no responde.`, isError: true };
@@ -74,7 +78,22 @@ export const cmd_hydra = {
       users = [userArg];
     }
 
-    let output = `Hydra v9.2 starting at ${new Date().toLocaleString()}\n[DATA] target: ${ip}, service: ${svc}, port: ${port.port}\n[ATTACK] users ${users.length} | wordlist "${wl}"\n`;
+    // Flags de ejecución: -t (tareas paralelas), -V (verbose), -f (salir al primer hallazgo).
+    // Se aceptan en cualquier posición; los valores que siguen a flags se excluyen
+    // del parseo de IP/servicio por el filtro de no-flags de abajo.
+    const tIdx = args.indexOf('-t');
+    const tasks = tIdx !== -1 ? parseInt(args[tIdx + 1], 10) || 16 : 16;
+    const verbose = args.includes('-V');
+    // -f ya es el comportamiento natural (se retorna al primer hallazgo);
+    // solo se refleja en el banner.
+    const exitFirst = args.includes('-f');
+
+    let output = `Hydra v9.2 starting at ${new Date().toLocaleString()}\n[DATA] target: ${ip}, service: ${svc}, port: ${port.port}\n[ATTACK] users ${users.length} | wordlist "${wl}" | tasks ${tasks}${exitFirst ? ' | salir al primer hallazgo (-f)' : ''}\n`;
+    if (verbose) {
+      for (const user of users) {
+        output += `[VERBOSE] Probando usuario "${user}" contra ${ip}:${port.port}...\n`;
+      }
+    }
 
     // Buscar la wordlist en todas las máquinas disponibles
     const wlFilename = wl.split('/').pop() || wl;

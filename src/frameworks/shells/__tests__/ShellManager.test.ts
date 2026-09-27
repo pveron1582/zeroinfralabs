@@ -244,5 +244,22 @@ describe('ShellManager', () => {
       expect(manager.getActiveOwners()).toEqual([]);
       expect(manager.getDepth()).toBe(0);
     });
+
+    it('destroyOwner limpia SOLO el stack del propietario cerrado', () => {
+      manager.startSession('mock', [], mockCtx, 'term-1');
+      manager.startSession('mock', [], mockCtx, 'term-2');
+      expect(manager.getActiveOwners().sort()).toEqual(['term-1', 'term-2']);
+
+      manager.destroyOwner('term-1');
+      expect(manager.isActive('term-1')).toBe(false);
+      expect(manager.isActive('term-2')).toBe(true);
+      expect(manager.getActiveOwners()).toEqual(['term-2']);
+      expect(manager.getDepth('term-2')).toBe(1);
+    });
+
+    it('destroyOwner es no-op si el propietario no existe', () => {
+      manager.destroyOwner('never-opened');
+      expect(manager.getActiveOwners()).toEqual([]);
+    });
   });
 });

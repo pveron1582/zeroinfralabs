@@ -6,15 +6,16 @@
 // password, inicio de sesión FTP/SSH nueva, streaming, CLEAR/EXIT y
 // exitTerminal.
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRunCommand } from '../useRunCommand';
 import type { SessionRunnerDeps } from '../useFtpSession';
 import type { RunCommandDeps } from '../useRunCommand';
+import { createMockExecutor } from './executor-helpers';
 
-const processRef = vi.hoisted(() => ({ process: vi.fn() }));
-const ftpRef = vi.hoisted(() => ({ getPrompt: vi.fn(() => 'ftp> ') }));
-const streamRef = vi.hoisted(() => ({ shouldStream: vi.fn(() => false) }));
+const processRef = vi.hoisted(() => ({ process: vi.fn((..._a: unknown[]) => ({ output: 'ok' })) }));
+const ftpRef = vi.hoisted(() => ({ getPrompt: vi.fn((..._a: unknown[]) => 'ftp> ') }));
+const streamRef = vi.hoisted(() => ({ shouldStream: vi.fn((..._a: unknown[]) => false) }));
 const storeRef = vi.hoisted(() => ({
   current: {
     missions: [{ id: 1, status: 'completed' }],
@@ -37,7 +38,7 @@ vi.mock('../../store/scenarioStore', () => ({
 
 function makeDeps(overrides: Partial<RunCommandDeps> = {}): RunCommandDeps {
   const sessionDeps = overrides.sessionDeps ?? ({
-    executor: { executeCommand: vi.fn(() => ({ output: 'ok' })) } as SessionRunnerDeps['executor'],
+    executor: createMockExecutor(vi.fn(() => ({ output: 'ok' }))),
     machine: { id: 'attacker-01' } as SessionRunnerDeps['machine'],
     allMachines: [],
     currentMissionId: 1,
@@ -61,8 +62,11 @@ function makeDeps(overrides: Partial<RunCommandDeps> = {}): RunCommandDeps {
     runFtpCommand: vi.fn(() => ({ result: { output: 'ftp-out' }, updatedSession: null })),
     startFtpSession: vi.fn(),
     sshSession: null,
-    runSshPassword: vi.fn(() => ({ result: { output: 'ssh-out' } })),
+    runSshPassword: vi.fn(() => ({ result: { output: 'ssh-out' }, updatedSession: null })),
     startSshSession: vi.fn(),
+    rdpSession: null,
+    runRdpInput: vi.fn(() => ({ result: { output: 'rdp-out' }, updatedSession: null })),
+    startRdpSession: vi.fn(),
     busy: false,
     setBusy: vi.fn(),
     setHistory: vi.fn(),
@@ -161,6 +165,7 @@ describe('useRunCommand - runCommand', () => {
         newMachineId: 'v1',
         sshLoginUser: 'root',
       },
+      updatedSession: null,
     }));
     const onCredentialsFound = vi.fn();
     const onVerifyCredentials = vi.fn();
@@ -181,7 +186,7 @@ describe('useRunCommand - runCommand', () => {
   });
 
   it('SSH en password sin credenciales ni equipo nuevo: solo chequea misión', () => {
-    const runSshPassword = vi.fn(() => ({ result: { output: 'ok', sshLoginUser: 'john' } }));
+    const runSshPassword = vi.fn(() => ({ result: { output: 'ok', sshLoginUser: 'john' }, updatedSession: null }));
     const sessionDeps = makeDeps().sessionDeps;
     const setCurrentDir = vi.fn();
     sessionDeps.setCurrentDir = setCurrentDir;
@@ -196,7 +201,7 @@ describe('useRunCommand - runCommand', () => {
   });
 
   it('comando normal: inicia sesión FTP nueva (connected)', () => {
-    const executor = { executeCommand: vi.fn(() => ({ output: 'ok', ftpSession: { active: true, connected: true, targetIp: '1.1.1.1' } })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'ok', ftpSession: { active: true, connected: true, targetIp: '1.1.1.1' } })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const startFtpSession = vi.fn();
     const onMissionComplete = vi.fn();
@@ -208,7 +213,7 @@ describe('useRunCommand - runCommand', () => {
   });
 
   it('comando normal: inicia sesión FTP nueva y completa misión', () => {
-    const executor = { executeCommand: vi.fn(() => ({ output: 'ok', ftpSession: { active: true, connected: true }, completedMissionId: 9 })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'ok', ftpSession: { active: true, connected: true }, completedMissionId: 9 })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const startFtpSession = vi.fn();
     const onMissionComplete = vi.fn();
@@ -219,7 +224,7 @@ describe('useRunCommand - runCommand', () => {
   });
 
   it('comando normal: inicia sesión SSH nueva', () => {
-    const executor = { executeCommand: vi.fn(() => ({ output: 'ok', sshSession: { active: true, targetIp: '1.1.1.1' } })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'ok', sshSession: { active: true, targetIp: '1.1.1.1' } })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const startSshSession = vi.fn();
     const deps = makeDeps({ sessionDeps, startSshSession });
@@ -229,7 +234,7 @@ describe('useRunCommand - runCommand', () => {
   });
 
   it('CLEAR_TERMINAL limpia el historial', () => {
-    const executor = { executeCommand: vi.fn(() => ({ output: 'CLEAR_TERMINAL' })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'CLEAR_TERMINAL' })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps, setHistory: vi.fn() });
     const { result } = renderHook(() => useRunCommand(deps));
@@ -239,7 +244,7 @@ describe('useRunCommand - runCommand', () => {
 
   it('EXIT_TO_LANDING con todas las misiones completas dispara survey', () => {
     storeRef.current.missions = [{ id: 1, status: 'completed' }];
-    const executor = { executeCommand: vi.fn(() => ({ output: 'EXIT_TO_LANDING' })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'EXIT_TO_LANDING' })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps });
     const { result } = renderHook(() => useRunCommand(deps));
@@ -250,7 +255,7 @@ describe('useRunCommand - runCommand', () => {
 
   it('EXIT_TO_LANDING con misiones incompletas resetea el workspace', () => {
     storeRef.current.missions = [{ id: 1, status: 'active' }];
-    const executor = { executeCommand: vi.fn(() => ({ output: 'EXIT_TO_LANDING' })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'EXIT_TO_LANDING' })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps });
     const { result } = renderHook(() => useRunCommand(deps));
@@ -260,7 +265,7 @@ describe('useRunCommand - runCommand', () => {
 
   it('exitTerminal: invoca onExitTerminal', () => {
     const onExitTerminal = vi.fn();
-    const executor = { executeCommand: vi.fn(() => ({ output: 'ok', exitTerminal: true })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'ok', exitTerminal: true })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps, onExitTerminal });
     const { result } = renderHook(() => useRunCommand(deps));
@@ -269,7 +274,7 @@ describe('useRunCommand - runCommand', () => {
   });
 
   it('comando normal no-streaming: procesa el resultado', () => {
-    const executor = { executeCommand: vi.fn(() => ({ output: 'hola' })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'hola' })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps });
     const { result } = renderHook(() => useRunCommand(deps));
@@ -280,7 +285,7 @@ describe('useRunCommand - runCommand', () => {
   it('comando con streaming: marca busy y procesa tras el delay', () => {
     vi.useFakeTimers();
     streamRef.shouldStream = vi.fn(() => true);
-    const executor = { executeCommand: vi.fn(() => ({ output: 'line1\nline2', streamingLineDelays: [10, 10] })) };
+    const executor = createMockExecutor(vi.fn(() => ({ output: 'line1\nline2', streamingLineDelays: [10, 10] })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const setBusy = vi.fn();
     const deps = makeDeps({ sessionDeps, setBusy });

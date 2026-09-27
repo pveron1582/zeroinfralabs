@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCommandRunner, type CommandRunnerProps } from '../useCommandRunner';
+import { shellManager } from '../../frameworks/shells/ShellManager';
+import { resetScenarioManagers } from '../../frameworks/resetManagers';
 
 const makeMachine = (overrides = {}) => ({
   id: 'attacker-01',
@@ -32,6 +34,9 @@ interface MockExecutor {
   getMsfPrompt: ReturnType<typeof vi.fn>;
   executeCommand: ReturnType<typeof vi.fn>;
   resetMsfState: ReturnType<typeof vi.fn>;
+  isPsActive: ReturnType<typeof vi.fn>;
+  getPsState: ReturnType<typeof vi.fn>;
+  resetPsState: ReturnType<typeof vi.fn>;
 }
 
 const mockExecutorRef = vi.hoisted(() => ({ current: null as MockExecutor | null }));
@@ -61,8 +66,9 @@ const baseStoreState = vi.hoisted(() => ({
   applyIdentity: vi.fn(),
   setFtpSession: vi.fn(),
   setSshSession: vi.fn(),
-  globalResetDoneForScenario: null,
-  markGlobalResetDone: vi.fn(),
+  setRdpSession: vi.fn(),
+  globalResetDoneForScenario: null as string | null,
+  markGlobalResetDone: (id: string) => { storeRef.current.globalResetDoneForScenario = id; },
   setCurrentDir: vi.fn(),
   changeMachine: vi.fn(),
 }));
@@ -85,17 +91,26 @@ vi.mock('../../commands', () => ({
   resetShellManager: vi.fn(),
   startShellSession: vi.fn(),
   isMsfActive: vi.fn(() => false),
+  isPsActive: vi.fn(() => false),
   resetMsfState: vi.fn(),
+  resetPsState: vi.fn(),
   createIsolatedExecutor: vi.fn(() => {
     const ex: MockExecutor = {
       isMsfActive: vi.fn(() => false),
       getMsfPrompt: vi.fn(() => null),
       executeCommand: vi.fn(() => ({ output: 'comando no encontrado', isError: true })),
       resetMsfState: vi.fn(),
+      isPsActive: vi.fn(() => false),
+      getPsState: vi.fn(() => null),
+      resetPsState: vi.fn(),
     };
     mockExecutorRef.current = ex;
     return ex;
   }),
+}));
+
+vi.mock('../../frameworks/resetManagers', () => ({
+  resetScenarioManagers: vi.fn(),
 }));
 
 vi.mock('../../utils/autocomplete', () => ({
@@ -118,6 +133,61 @@ beforeEach(() => {
 });
 
 describe('useCommandRunner', () => {
+  describe('cleanup al desmontar', () => {
+    it('debe destruir el stack de shells de la terminal con terminalId', () => {
+      const spy = vi.spyOn(shellManager, 'destroyOwner');
+      const { unmount } = renderHook(() => useCommandRunner({ ...defaultProps, terminalId: 'term-42' }));
+      unmount();
+      expect(spy).toHaveBeenCalledWith('term-42');
+      spy.mockRestore();
+    });
+
+    it('no debe tocar el stack compartido sin terminalId', () => {
+      const spy = vi.spyOn(shellManager, 'destroyOwner');
+      const { unmount } = renderHook(() => useCommandRunner(defaultProps));
+      unmount();
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('debe destruir el stack anterior si cambia el terminalId', () => {
+      const spy = vi.spyOn(shellManager, 'destroyOwner');
+      const { rerender } = renderHook(
+        ({ id }: { id: string }) => useCommandRunner({ ...defaultProps, terminalId: id }),
+        { initialProps: { id: 'term-a' } },
+      );
+      rerender({ id: 'term-b' });
+      expect(spy).toHaveBeenCalledWith('term-a');
+      expect(spy).not.toHaveBeenCalledWith('term-b');
+      spy.mockRestore();
+    });
+  });
+
+  describe('reset global por escenario (guard)', () => {
+    it('la primera terminal montada resetea managers y marca el escenario', () => {
+      renderHook(() => useCommandRunner(defaultProps));
+      expect(resetScenarioManagers).toHaveBeenCalledTimes(1);
+      expect(getStore().globalResetDoneForScenario).toBe('scenario-01');
+    });
+
+    it('una segunda terminal del mismo escenario NO vuelve a resetear', () => {
+      renderHook(() => useCommandRunner({ ...defaultProps, terminalId: 'term-1' }));
+      renderHook(() => useCommandRunner({ ...defaultProps, terminalId: 'term-2' }));
+      expect(resetScenarioManagers).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-entrar al mismo escenario con el marker limpio vuelve a resetear', () => {
+      renderHook(() => useCommandRunner({ ...defaultProps, terminalId: 'term-1' }));
+      expect(resetScenarioManagers).toHaveBeenCalledTimes(1);
+      // Entrada de escenario (selectScenario / AdminPanel / LabMiniTerminal)
+      // limpia el marker: la próxima terminal que monte debe resetear de nuevo.
+      getStore().globalResetDoneForScenario = null;
+      renderHook(() => useCommandRunner({ ...defaultProps, terminalId: 'term-3' }));
+      expect(resetScenarioManagers).toHaveBeenCalledTimes(2);
+      expect(getStore().globalResetDoneForScenario).toBe('scenario-01');
+    });
+  });
+
   describe('estado inicial', () => {
     it('debe iniciar con mensaje de bienvenida y prompt por defecto', () => {
       const { result } = renderHook(() => useCommandRunner(defaultProps));
@@ -414,6 +484,91 @@ describe('useCommandRunner', () => {
       // Switch aplicado al instante, sin prompt de password.
       expect(getStore().setSuUser).toHaveBeenCalledWith('victim-01', 'developer');
       expect(result.current.pendingSu).toBeNull();
+    });
+  });
+
+  describe('aislamiento de su por terminal (HIGH #2)', () => {
+    const makeVictim = () => makeMachine({ id: 'victim-01' });
+
+    it('suUserApplied con terminalId NO escribe el su compartido y cambia el prompt local', () => {
+      const target = makeVictim();
+      const props = { ...defaultProps, machine: target, allMachines: [target, makeMachine()], terminalId: 'iso-A' };
+      const { result } = renderHook(() => useCommandRunner(props));
+      const basePrompt = result.current.prompt;
+
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false, suUserApplied: 'developer',
+      }));
+      act(() => { result.current.runCommand('su developer'); });
+
+      expect(getStore().setSuUser).not.toHaveBeenCalled();
+      expect(target.su_user).toBeUndefined();
+      expect(result.current.prompt).toContain('developer@');
+      expect(result.current.prompt).not.toBe(basePrompt);
+    });
+
+    it('el su del frame se envía como suUserOverride al executor', () => {
+      const target = makeVictim();
+      const props = { ...defaultProps, machine: target, allMachines: [target, makeMachine()], terminalId: 'iso-A' };
+      const { result } = renderHook(() => useCommandRunner(props));
+
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false, suUserApplied: 'developer',
+      }));
+      act(() => { result.current.runCommand('su developer'); });
+
+      getExecutor().executeCommand = vi.fn(() => ({ output: 'user' }));
+      act(() => { result.current.runCommand('whoami'); });
+
+      const calls = getExecutor().executeCommand.mock.calls;
+      const req = calls[calls.length - 1]?.[0];
+      expect(req).toMatchObject({ terminalId: 'iso-A', suUserOverride: 'developer' });
+    });
+
+    it('dos terminales sobre la misma máquina: el su de A no contamina a B', () => {
+      const target = makeVictim();
+      const all = [target, makeMachine()];
+      const hookA = renderHook(() => useCommandRunner({ ...defaultProps, machine: target, allMachines: all, terminalId: 'iso-A' }));
+      const exA = getExecutor();
+      const hookB = renderHook(() => useCommandRunner({ ...defaultProps, machine: target, allMachines: all, terminalId: 'iso-B' }));
+      const exB = getExecutor();
+      const promptBBefore = hookB.result.current.prompt;
+
+      exA.executeCommand = vi.fn(() => ({
+        output: '', isError: false, suUserApplied: 'developer',
+      }));
+      act(() => { hookA.result.current.runCommand('su developer'); });
+
+      // B conserva su prompt base y su override propio (undefined).
+      expect(hookB.result.current.prompt).toBe(promptBBefore);
+      exB.executeCommand = vi.fn(() => ({ output: 'user' }));
+      act(() => { hookB.result.current.runCommand('whoami'); });
+      const callsB = exB.executeCommand.mock.calls;
+      expect(callsB[callsB.length - 1]?.[0].suUserOverride).toBeUndefined();
+
+      // A sí quedó como developer y el store compartido nunca se escribió.
+      expect(hookA.result.current.prompt).toContain('developer@');
+      expect(getStore().setSuUser).not.toHaveBeenCalled();
+      expect(target.su_user).toBeUndefined();
+    });
+
+    it('exit tras su hace pop local sin applyIdentity del store', () => {
+      const target = makeVictim();
+      const props = { ...defaultProps, machine: target, allMachines: [target, makeMachine()], terminalId: 'iso-A' };
+      const { result } = renderHook(() => useCommandRunner(props));
+      const basePrompt = result.current.prompt;
+
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '', isError: false, suUserApplied: 'developer',
+      }));
+      act(() => { result.current.runCommand('su developer'); });
+
+      getExecutor().executeCommand = vi.fn(() => ({ output: 'logout\n', identityExit: true }));
+      act(() => { result.current.runCommand('exit'); });
+
+      expect(getStore().applyIdentity).not.toHaveBeenCalled();
+      expect(getStore().setSuUser).not.toHaveBeenCalled();
+      expect(result.current.prompt).toBe(basePrompt);
     });
   });
 

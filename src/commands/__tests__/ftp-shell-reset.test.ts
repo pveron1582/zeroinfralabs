@@ -1,12 +1,12 @@
 // @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
 import { scenario_06 } from '../../laboratorios/laboratorio06';
-import { executeCommand, resetShellSessions } from '../index';
+import { executeCommand, resetShellManager } from '../index';
 import { useScenarioStore } from '../../store/scenarioStore';
 
 describe('repro: sesion FTP se limpia al resetear workspace', () => {
   it('tras resetWorkspace el ftp <ip> vuelve a conectar y loguear', () => {
-    resetShellSessions();
+    resetShellManager();
     const machines = scenario_06.machines;
     const attacker = machines.find(m => m.id.includes('attacker'))!;
     const t = machines.find(m => !m.id.includes('attacker'))!;

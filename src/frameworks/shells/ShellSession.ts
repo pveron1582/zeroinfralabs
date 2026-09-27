@@ -1,7 +1,7 @@
 // ── shells/ShellSession.ts ────────────────────────────────────────
 // Interfaz base para todos los shells modulares
 
-import type { Machine, BlockingCommand, FileEntry } from '../../types';
+import type { Machine, BlockingCommand, FileEntry, DesktopActionData } from '../../types';
 
 // ── Contexto que recibe cada shell ────────────────────────────────
 export interface ShellContext {
@@ -12,6 +12,9 @@ export interface ShellContext {
   setCurrentDir: (dir: string) => void;
   language?: 'en' | 'es';
   umask?: number;
+  /** Cliente que abrió la sesión (mstsc, xrdp…) — solo RDP lo usa para
+   *  que sus mensajes nombren al comando correcto. */
+  clientName?: string;
 }
 
 // ── Resultado de ejecutar un comando ──────────────────────────────
@@ -50,6 +53,8 @@ export interface ShellResult {
   sshSessionClosed?: boolean;
   // Usuario con el que se hizo login SSH
   sshLoginUser?: string;
+  // Acción del escritorio RDP (W5): emite al autenticar → abre/cierra WindowsDesktop
+  desktopAction?: DesktopActionData;
   // Indica que se debe forward el comando al sistema real
   forwardCommand?: string;
 }

@@ -109,6 +109,34 @@ describe('NcSession', () => {
       expect(result.output).toContain('missing arguments');
       expect(result.closeSession).toBe(true);
     });
+
+    it('debe conectar a puerto abierto de host conocido (mismo parser que tools/nc)', () => {
+      const web: Machine = {
+        ...createMockMachine('192.168.20.12'),
+        scan_results: {
+          ports: [{ port: 80, protocol: 'tcp', state: 'open', service: 'http', version: 'Apache' }],
+        },
+      };
+      const ctx: ShellContext = { ...ctxNoListener, allMachines: [web] };
+      const state = ncSession.createInitialState([], ctx);
+      const { result } = ncSession.executeCommand('192.168.20.12 80', state, ctx);
+      expect(result.isError).toBeFalsy();
+      expect(result.output).toContain('succeeded');
+    });
+
+    it('debe aceptar -e en modo conexión', () => {
+      const web: Machine = {
+        ...createMockMachine('192.168.20.12'),
+        scan_results: {
+          ports: [{ port: 4444, protocol: 'tcp', state: 'open', service: 'tcpwrapped', version: '' }],
+        },
+      };
+      const ctx: ShellContext = { ...ctxNoListener, allMachines: [web] };
+      const state = ncSession.createInitialState([], ctx);
+      const { result } = ncSession.executeCommand('-e /bin/bash 192.168.20.12 4444', state, ctx);
+      expect(result.isError).toBeFalsy();
+      expect(result.output).toContain('succeeded');
+    });
   });
 
   describe('isActive', () => {

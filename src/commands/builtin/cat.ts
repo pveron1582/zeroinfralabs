@@ -8,7 +8,7 @@ import { canRead } from '../../utils/permissions';
 import { findFile, resolveSymlink } from '../../utils/fs';
 import { buildFileReadMetadata } from '../../utils/fileRead';
 
-function resolveFile(machine: CommandContext['machine'], rawPath: string, currentDir: string | undefined) {
+export function resolveFile(machine: CommandContext['machine'], rawPath: string, currentDir: string | undefined) {
   const normalizedPath = rawPath.replace(/^\.\//, '');
   const fullPath = rawPath.startsWith('/') ? rawPath : (currentDir?.replace(/\/$/, '') || '') + '/' + rawPath;
   const cand = rawPath.startsWith('/') ? rawPath : fullPath;

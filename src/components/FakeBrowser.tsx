@@ -32,13 +32,15 @@ interface FakeBrowserProps {
   // CasinoVeo (Lab 07): cada submit del login emite un CommandResponse tipo
   // 'http' que el validador de misiones evalúa igual que una request de Burp.
   checkMissionCompletion?: (result: CommandResponse) => void;
+  compact?: boolean;
 }
 
 export function FakeBrowser({
   allMachines, onClose, onMinimize, onMaximizeToggle, onMissionComplete,
   onCredentialsFound, onVerifyCredentials,
   scenarioHasWeb,
-  onSetPossibleUsers, onReportVulnerability, checkMissionCompletion
+  onSetPossibleUsers, onReportVulnerability, checkMissionCompletion,
+  compact = false
 }: FakeBrowserProps) {
 
   const HOME_URL = 'https://www.google.com';
@@ -272,11 +274,13 @@ export function FakeBrowser({
   return (
     <div className="flex flex-col h-full w-full bg-gray-950">
       <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 border-b border-gray-700 flex-shrink-0">
-        <div className="flex gap-1.5">
-          <button onClick={onClose} className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors" title="Cerrar" />
-          <button onClick={onMaximizeToggle} className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors" title="Maximizar" />
-          <button onClick={onMinimize} className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors" title="Minimizar" />
-        </div>
+        {!compact && (
+          <div className="flex gap-1.5">
+            <button onClick={onClose} className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors" title="Cerrar" />
+            <button onClick={onMaximizeToggle} className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors" title="Maximizar" />
+            <button onClick={onMinimize} className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors" title="Minimizar" />
+          </div>
+        )}
         <div className="flex gap-0.5">
           <button onClick={goBack} disabled={navIdx === 0} className="p-1 rounded text-gray-400 disabled:opacity-30 hover:enabled:bg-gray-700 transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -300,9 +304,11 @@ export function FakeBrowser({
             data-gramm="false"
             data-enable-grammarly="false" />
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-700 rounded text-xs text-gray-400 font-mono">
-          <span>CyberBrowser</span>
-        </div>
+        {!compact && (
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-700 rounded text-xs text-gray-400 font-mono">
+            <span>CyberBrowser</span>
+          </div>
+        )}
       </div>
       <div className="flex-1 overflow-auto bg-white select-text">
         {renderPage()}

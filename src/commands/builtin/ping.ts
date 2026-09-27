@@ -43,38 +43,46 @@ export const cmd_ping = {
       return { output: 'ping: usage error: Destination address required\n\n' + PING_HELP, isError: true };
     }
 
+    // Resolución DNS virtual: hostname de allMachines (insensible a mayúsculas).
+    // El ping real muestra `PING host (ip)`; desconocido → Name or service not known.
+    const displayName = target;
+    let ip = target;
     if (!IP_REGEX.test(target)) {
-      return { output: `ping: ${target}: Name or service not known`, isError: true };
+      const found = ctx.allMachines.find(m => m.machine_info.hostname.toLowerCase() === target.toLowerCase());
+      if (!found) {
+        return { output: `ping: ${target}: Name or service not known`, isError: true };
+      }
+      ip = found.machine_info.ip;
     }
 
     // Check if target exists in network
-    const targetMachine = ctx.allMachines.find(m => m.machine_info.ip === target);
-    
+    const targetMachine = ctx.allMachines.find(m => m.machine_info.ip === ip);
+
     if (!targetMachine) {
       // Host doesn't exist - simulate unreachable
-      let output = `PING ${target} (${target}) ${packetSize}(${packetSize + 28}) bytes of data.\n`;
-      output += `\n--- ${target} ping statistics ---\n`;
+      let output = `PING ${displayName} (${ip}) ${packetSize}(${packetSize + 28}) bytes of data.\n`;
+      output += `\n--- ${displayName} ping statistics ---\n`;
       output += `${count} packets transmitted, 0 received, 100% packet loss, time ${count * interval * 1000}ms\n`;
       return { output };
     }
 
     // Host exists - simulate successful pings
-    let output = `PING ${target} (${target}) ${packetSize}(${packetSize + 28}) bytes of data.\n`;
-    
+    let output = `PING ${displayName} (${ip}) ${packetSize}(${packetSize + 28}) bytes of data.\n`;
+
     let received = 0;
     const times: number[] = [];
-    
+
     for (let i = 1; i <= count; i++) {
       // Simulate variable latency (0.3-2.0ms for local network)
       const time = (Math.random() * 1.7 + 0.3).toFixed(2);
       times.push(parseFloat(time));
-      
+
       // Simulate TTL (64 for Linux, 128 for Windows)
       const ttl = targetMachine.machine_info.os.toLowerCase().includes('windows') ? 128 : 64;
-      
-      output += `${packetSize + 28} bytes from ${target}: icmp_seq=${i} ttl=${ttl} time=${time} ms\n`;
+
+      output += `${packetSize + 28} bytes from ${displayName} (${ip}): icmp_seq=${i} ttl=${ttl} time=${time} ms\n`;
       received++;
-      
+
       // Simulate interval (only if not the last packet)
       if (i < count && interval > 0) {
         // In real ping this would wait, but for simulation we just note it
@@ -87,8 +95,8 @@ export const cmd_ping = {
     const avg = (times.reduce((a, b) => a + b, 0) / times.length).toFixed(2);
     const max = Math.max(...times).toFixed(2);
     const mdev = (Math.random() * 0.5 + 0.1).toFixed(3);
-    
-    output += `\n--- ${target} ping statistics ---\n`;
+
+    output += `\n--- ${displayName} ping statistics ---\n`;
     output += `${count} packets transmitted, ${received} received, 0% packet loss, time ${count * interval * 1000}ms\n`;
     output += `rtt min/avg/max/mdev = ${min}/${avg}/${max}/${mdev} ms\n`;
 

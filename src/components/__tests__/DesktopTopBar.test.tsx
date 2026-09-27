@@ -12,6 +12,7 @@ describe('DesktopTopBar', () => {
     wallpaperWindows: [],
     guideWindows: [],
     burpWindows: [],
+    rdpWindows: [],
     topWindowId: undefined,
     showAppMenu: false,
     time: new Date('2026-06-20T20:00:00Z'),

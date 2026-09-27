@@ -2,8 +2,10 @@
 // Maneja el ciclo de vida de una sesión SSH interactiva: estado, prompt
 // de password, y ejecución del intento de autenticación.
 //
-// El estado vive en el store (terminalSlice) — no hay estado local React.
+// Con `terminalId` el estado vive local (aislado por ventana); sin él
+// (modo legacy/tests) cae al store compartido — igual que FTP/RDP.
 
+import { useState } from 'react';
 import type { CommandResponse, SshSessionData } from '../types';
 import type { SessionRunnerDeps } from './useFtpSession';
 import { useScenarioStore } from '../store/scenarioStore';
@@ -24,17 +26,26 @@ export const getSshPromptFor = (sshSession: SshSessionData | null): string => {
   return '';
 };
 
-export function useSshSession() {
-  const sshSession = useScenarioStore(state => state.sshSession);
-  const setSshSession = useScenarioStore(state => state.setSshSession);
+export function useSshSession(terminalId?: string) {
+  const storeSshSession = useScenarioStore(state => state.sshSession);
+  const setStoreSshSession = useScenarioStore(state => state.setSshSession);
+  const [localSshSession, setLocalSshSession] = useState<SshSessionData | null>(null);
+
+  const sshSession = terminalId ? localSshSession : storeSshSession;
+  // Con terminalId la fuente de verdad es el estado local; el store se
+  // espeja solo para display (AdminPanel/AppContentStore/NetworkMap).
+  const setSshSession = (session: SshSessionData | null) => {
+    if (terminalId) setLocalSshSession(session);
+    setStoreSshSession(session);
+  };
 
   /** Ejecuta el password dentro de una sesión SSH en estado `password`. */
   const runSshPassword = (password: string, deps: SessionRunnerDeps): SshRunResult => {
-    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState, terminalId } = deps;
+    const { executor, machine, allMachines, currentMissionId, currentDir, setCurrentDir, umask, setUmask, env, setEnv, language, setMsfState, setPsState, terminalId, suUserOverride } = deps;
     const result = executor.executeCommand({
       line: password,
-      machine, allMachines, currentMissionId, terminalId,
-      onMsfStateChange: setMsfState, currentDir, setCurrentDir,
+      machine, allMachines, currentMissionId, terminalId, suUserOverride,
+      onMsfStateChange: setMsfState, onPsStateChange: setPsState, currentDir, setCurrentDir,
       language, umask, setUmask, env, setEnv,
     });
 

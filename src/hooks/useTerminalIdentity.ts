@@ -1,9 +1,12 @@
 import { useMemo } from 'react';
 import type { Machine } from '../types';
-import { getCurrentUser } from '../utils/users';
+import { getCurrentUser, getUserWithSu } from '../utils/users';
+import { isWinPath, winDisplay } from '../utils/winPath';
 
-export function useTerminalIdentity(machine: Machine) {
-  const user = useMemo(() => getCurrentUser(machine), [machine]);
+// `suUser` (opcional): su del frame de identidad local de la terminal.
+// Con él el prompt se deriva de ese frame; sin él, de la máquina (legacy).
+export function useTerminalIdentity(machine: Machine, suUser?: string) {
+  const user = useMemo(() => getUserWithSu(machine, suUser), [machine, suUser]);
   const sshUser = user.username;
   const isRoot = user.uid === 0;
   const rceCred = useMemo(() =>
@@ -27,4 +30,20 @@ export function getShortPath(dir: string, isRootUser: boolean = false): string {
     return '~/' + homeRelative.replace(/\/$/, '');
   }
   return dir.replace(/\/$/, '') || '/';
+}
+
+/** Path visible + prompt base según familia del SO, usuario y dir actual. */
+export function buildBasePrompt(
+  machine: Machine, currentDir: string, sshUser: string, isRootUser: boolean,
+): { displayPath: string; basePrompt: string } {
+  const isWinMachine = machine.machine_info.family === 'windows';
+  const displayPath = isWinMachine
+    ? (isWinPath(currentDir || '')
+        ? winDisplay(currentDir || '')
+        : winDisplay(getCurrentUser(machine).home))
+    : getShortPath(currentDir || '/', isRootUser);
+  const basePrompt = isWinMachine
+    ? `${displayPath}${isRootUser ? '#' : '>'}`
+    : `${sshUser}@${machine.machine_info.hostname}:${displayPath}${isRootUser ? '#' : '$'}`;
+  return { displayPath, basePrompt };
 }

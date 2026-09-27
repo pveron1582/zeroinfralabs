@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useScenarioStore } from '../scenarioStore';
 import { SCENARIOS } from '../../laboratorios/laboratorios';
+import { shellManager } from '../../frameworks/shells/ShellManager';
 
 // Mock de persistencia para que no interfiera con el estado limpio de los tests
 // Esto evita que Zustand persista el estado entre tests
@@ -59,6 +60,24 @@ describe('scenarioStore', () => {
     expect(state.view).toBe('workspace');
     expect(state.currentScenario.id).toBe(scenario2.id);
     expect(state.showMachineLoader).toBe(false);
+  });
+
+  // Reentrar al mismo escenario: el marker de reset global no debe quedar
+  // stale, si no la primera terminal del nuevo paseo saltaría el reset.
+  // Nota: se assertea sobre el efecto real (shellManager.reset) y no con
+  // vi.mock de resetManagers — setup.ts importa el store ANTES de que el
+  // mock del archivo se registre, y el slice quedaría con la fn real.
+  it('selectScenario resetea managers y limpia el marker de reset global', () => {
+    const spy = vi.spyOn(shellManager, 'reset');
+    const scenario = SCENARIOS[1];
+    useScenarioStore.setState({ globalResetDoneForScenario: scenario.id });
+
+    useScenarioStore.getState().selectScenario(scenario.id);
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(6500);
+    expect(useScenarioStore.getState().globalResetDoneForScenario).toBeNull();
+    spy.mockRestore();
   });
 
   // Verifica que al completar una misión se actualice el progreso y las máquinas

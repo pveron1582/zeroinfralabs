@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Terminal } from './Terminal';
 import { FakeBrowser } from './FakeBrowser';
 import { BurpSuite } from './burpsuite';
+import { WindowsDesktop } from './WindowsDesktop';
 import { DesktopTopBar } from './DesktopTopBar';
 import { WindowFrame } from './WindowFrame';
 import { WallpaperPicker } from './WallpaperPicker';
@@ -9,6 +11,7 @@ import { useScenarioStore } from '../store/scenarioStore';
 import { useDesktopWindows } from '../hooks/useDesktopWindows';
 import { useMissionCompletion } from '../hooks/useMissionCompletion';
 import { type CommandRunnerProps } from '../hooks/useCommandRunner';
+import { getCurrentUser } from '../utils/users';
 import { FONT_DESKTOP } from './landing/constants';
 import {
   TerminalAppIcon, ChromeAppIcon,
@@ -19,16 +22,63 @@ export function DesktopTerminal(props: CommandRunnerProps) {
   const setPossibleUsers = useScenarioStore(state => state.setPossibleUsers);
   const reportVulnerability = useScenarioStore(state => state.reportVulnerability);
   const setTermColor = useScenarioStore(state => state.setTermColor);
+  const rdpMachineId = useScenarioStore(state => state.rdpMachineId);
+  const closeWindowsDesktop = useScenarioStore(state => state.closeWindowsDesktop);
   const { checkMissionCompletion } = useMissionCompletion(props.onMissionComplete);
 
   const {
     time, windows, setWindows, closingWindowIds, activeWallpaper, setActiveWallpaper,
     selectedWallpaper, activeSettingsId, setActiveSettingsId, showAppMenu, setShowAppMenu,
-    termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows,
+    termWindows, browserWindows, wallpaperWindows, guideWindows, burpWindows, rdpWindows,
     topWindowId, addTerminal, addBrowser, addGuide, addBurp, openWallpaperPicker, closeWindow,
     minimizeWindow, restoreWindow, toggleMaximize, bringToFront,
     startDrag, startResize, desktopRef, isEs, currentScenario, showNotification,
+    openRdp, closeRdp,
   } = useDesktopWindows();
+
+  const rdpMachine = rdpMachineId
+    ? (props.allMachines ?? []).find(m => m.id === rdpMachineId) ?? null
+    : null;
+
+  // Sincroniza el store (rdpMachineId) con la ventana movable del escritorio Kali.
+  useEffect(() => {
+    if (rdpMachineId && rdpMachine) {
+      const host = rdpMachine.machine_info.hostname;
+      openRdp(rdpMachineId, isEs ? `RDP - ${host}` : `RDP - ${host}`);
+      return;
+    }
+    if (!rdpMachineId) {
+      // Retraso para dejar correr la animación de cierre del WindowFrame.
+      const t = setTimeout(() => closeRdp(), 320);
+      return () => clearTimeout(t);
+    }
+  }, [rdpMachineId, rdpMachine, isEs, openRdp, closeRdp]);
+
+  const handleRdpClose = (id: string) => {
+    closeWindow(id);
+    closeWindowsDesktop();
+  };
+
+  const handleTerminalChangeMachine = (windowId: string, newMachineId: string) => {
+    setWindows(prev => prev.map(win => {
+      if (win.id !== windowId) return win;
+      const targetMachine = props.allMachines?.find(m => m.id === newMachineId);
+      const host = targetMachine?.machine_info?.hostname || newMachineId;
+      const user = targetMachine ? getCurrentUser(targetMachine).username : 'root';
+      const newTitle = `Terminal ${win.termNumber || 1} - ${user}@${host}`;
+      return { ...win, machineId: newMachineId, title: newTitle };
+    }));
+    useScenarioStore.getState().setTerminalMachine(windowId, newMachineId);
+    props.onChangeMachine(newMachineId);
+  };
+
+  const handleBringToFront = (id: string) => {
+    bringToFront(id);
+    const win = windows.find(w => w.id === id);
+    if (win?.type === 'terminal' && win.machineId) {
+      props.onChangeMachine(win.machineId);
+    }
+  };
 
   return (
     <div className="relative w-full h-full flex flex-col overflow-hidden bg-slate-950 select-none"
@@ -51,7 +101,8 @@ export function DesktopTerminal(props: CommandRunnerProps) {
 
       <DesktopTopBar
         windows={windows} termWindows={termWindows} browserWindows={browserWindows}
-        wallpaperWindows={wallpaperWindows} guideWindows={guideWindows} burpWindows={burpWindows} topWindowId={topWindowId}
+        wallpaperWindows={wallpaperWindows} guideWindows={guideWindows} burpWindows={burpWindows}
+        rdpWindows={rdpWindows} topWindowId={topWindowId}
         showAppMenu={showAppMenu} time={time}
         isEs={isEs} currentScenarioCategory={currentScenario?.category || ''}
         onToggleAppMenu={() => { setShowAppMenu(!showAppMenu); }}
@@ -126,12 +177,12 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                 activeSettingsId={activeSettingsId}
                 isEs={isEs}
                 termColor={props.termColor ?? '#10b981'}
-                onBringToFront={bringToFront}
+                onBringToFront={handleBringToFront}
                 onStartDrag={startDrag}
                 onStartResize={startResize}
                 onMinimize={minimizeWindow}
                 onMaximize={toggleMaximize}
-                onClose={closeWindow}
+                onClose={w.type === 'rdp' ? handleRdpClose : closeWindow}
                 onToggleSettings={setActiveSettingsId}
                 onChangeOpacity={(id, val) => {
                   setWindows(prev => prev.map(win => win.id === id ? { ...win, opacity: val / 100 } : win));
@@ -142,8 +193,16 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                 onChangeTermColor={setTermColor}
               >
                 {w.type === 'terminal' ? (
-                  <Terminal {...props} terminalId={`${w.id}`} opacity={w.opacity} fontSize={w.fontSize} isWindowed={true}
-                    onExitTerminal={() => closeWindow(w.id)} />
+                  <Terminal
+                    {...props}
+                    machine={(w.machineId && props.allMachines?.find(m => m.id === w.machineId)) || props.allMachines?.find(m => m.id === currentScenario?.initialMachineId) || props.machine}
+                    terminalId={`${w.id}`}
+                    opacity={w.opacity}
+                    fontSize={w.fontSize}
+                    isWindowed={true}
+                    onChangeMachine={(newMachineId) => handleTerminalChangeMachine(w.id, newMachineId)}
+                    onExitTerminal={() => closeWindow(w.id)}
+                  />
                 ) : w.type === 'browser' ? (
                   <FakeBrowser key={w.id} allMachines={props.allMachines}
                     onClose={() => closeWindow(w.id)}
@@ -164,6 +223,13 @@ export function DesktopTerminal(props: CommandRunnerProps) {
                     onReportVulnerability={reportVulnerability}
                     onCredentialsFound={props.onCredentialsFound}
                     checkMissionCompletion={checkMissionCompletion}
+                  />
+                ) : w.type === 'rdp' && rdpMachine ? (
+                  <WindowsDesktop key={w.id}
+                    {...props}
+                    machine={rdpMachine}
+                    desktopMachine={rdpMachine}
+                    onDisconnect={() => handleRdpClose(w.id)}
                   />
                 ) : w.type === 'guide' ? (
                   <PdfReader key={w.id} isEs={isEs} />

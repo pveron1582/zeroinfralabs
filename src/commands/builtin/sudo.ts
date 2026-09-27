@@ -96,13 +96,27 @@ export const cmd_sudo = {
     const isRoot = currentUser.uid === 0;
     const hostname = machine.machine_info.hostname;
 
+    // ── sudo -u <user> <cmd> ── corre el comando como otro usuario ──
+    let runAs = 'root';
+    let rest = args;
+    if (args[0] === '-u' || args[0] === '--user') {
+      if (!args[1]) {
+        return { output: `sudo: option requires an argument -- 'u'`, isError: true };
+      }
+      runAs = args[1];
+      rest = args.slice(2);
+      if (rest.length === 0) {
+        return { output: 'usage: sudo -u <user> <command>', isError: true };
+      }
+    }
+
     // Root doesn't need sudo
     if (isRoot) {
-      if (args[0] === '-i' || args[0] === '-s') {
+      if (rest[0] === '-i' || rest[0] === '-s') {
         return { output: 'sudo: already root', isError: false };
       }
       // Root también puede consultar sus privilegios con sudo -l.
-      if (args[0] === '-l') {
+      if (rest[0] === '-l') {
         return {
           output: `Matching Defaults entries for root on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser root may run the following commands on ${hostname}:\n    (ALL : ALL) ALL`,
           type: 'sudo',
@@ -116,11 +130,11 @@ export const cmd_sudo = {
         };
       }
       // Root ejecutando un editor: `sudo nano <file>` abre el editor igualmente.
-      if (EDITOR_COMMANDS.includes(args[0])) {
-        return openEditorElevated(args.slice(1), context);
+      if (EDITOR_COMMANDS.includes(rest[0])) {
+        return openEditorElevated(rest.slice(1), context);
       }
       return {
-        output: `root@${hostname}# ${args.join(' ')}`,
+        output: `root@${hostname}# ${rest.join(' ')}`,
         isError: false,
       };
     }
@@ -149,8 +163,8 @@ export const cmd_sudo = {
       };
     }
 
-    // ── sudo -l ────────────────────────────────────────────────────
-    if (args[0] === '-l') {
+    // ── sudo -l (lista privilegios propios; -u no aplica acá) ───────
+    if (rest[0] === '-l') {
       if (rules.length === 0) {
         return {
           output: `Matching Defaults entries for ${username} on ${hostname}:\n    env_reset, mail_badpass,\n    secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\n\nUser ${username} may not run sudo on ${hostname}.`,
@@ -191,31 +205,37 @@ export const cmd_sudo = {
     // importar el usuario ni el sudoers. Al validarla, el CommandRunner
     // aplica el privesc y el prompt pasa a root@...# sin output extra.
     // `-s` deja la shell en /root; `-i` mantiene el directorio actual.
-    if (args[0] === '-i' || args[0] === '-s') {
+    // Con -u distinto de root no hay shell interactiva simulada.
+    if (rest[0] === '-i' || rest[0] === '-s') {
+      if (runAs !== 'root') {
+        return { output: `sudo: shell como '${runAs}' no soportada en este simulador. Soportados: -u root, -l, <comando>.`, isError: true };
+      }
       return {
         output: '',
         isError: false,
         requiresPassword: true,
         suTarget: 'root',
         sudoEscalation: true,
-        sudoCwd: args[0] === '-s' ? '/root' : undefined,
+        sudoCwd: rest[0] === '-s' ? '/root' : undefined,
       };
     }
 
-    // ── sudo <cmd> ────────────────────────────────────────────────────
-    const requestedCmd = args[0];
-    
+    // ── sudo [-u user] <cmd> ──────────────────────────────────────────
+    const requestedCmd = rest[0];
+
     // Verificar permisos
     if (!hasPermission(rules, requestedCmd)) {
       return {
-        output: `Sorry, user ${username} is not allowed to execute '${args.join(' ')}' as root on ${hostname}.\nThis incident will be reported.`,
+        output: `Sorry, user ${username} is not allowed to execute '${rest.join(' ')}' as ${runAs} on ${hostname}.\nThis incident will be reported.`,
         isError: true,
       };
     }
 
-    // Comandos que abren shell como root (vim con !bash, su, bash)
-    const joinedArgs = args.join(' ').toLowerCase();
-    const isShellEscalation = (
+    // Comandos que abren shell como root (vim con !bash, su, bash).
+    // El privesc solo aplica corriendo como root; con -u otro usuario el
+    // comando corre sin escalar (salida genérica de abajo).
+    const joinedArgs = rest.join(' ').toLowerCase();
+    const isShellEscalation = runAs === 'root' && (
       (requestedCmd === 'vim' && (joinedArgs.includes('!bash') || joinedArgs.includes('!sh'))) ||
       requestedCmd === 'su' ||
       requestedCmd === 'bash' ||
@@ -259,16 +279,17 @@ root`,
     }
 
     // ── sudo <editor> (nano/vi/vim) ──────────────────────────────────
-    // Corre el editor como root: puede abrir y modificar archivos restringidos
-    // (p.ej. /etc/passwd) que el usuario solo puede leer. El save se hace con
-    // identidad root (elevated). `vim -c "!bash"` ya fue manejado arriba.
+    // Como root abre con identidad elevada (puede modificar restringidos);
+    // con -u otro usuario corre con permisos normales (sin elevated).
+    // `vim -c "!bash"` ya fue manejado arriba.
     if (EDITOR_COMMANDS.includes(requestedCmd)) {
-      return openEditorElevated(args.slice(1), context);
+      if (runAs === 'root') return openEditorElevated(rest.slice(1), context);
+      return cmd_nano.execute(rest.slice(1), context);
     }
 
-    // Comando genérico ejecutado como root
+    // Comando genérico ejecutado como runAs (root por defecto)
     return {
-      output: `[sudo] Ejecutando '${args.join(' ')}' como root...`,
+      output: `[sudo] Ejecutando '${rest.join(' ')}' como ${runAs}...`,
       isError: false,
     };
   },

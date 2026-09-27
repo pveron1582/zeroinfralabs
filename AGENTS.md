@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 7 visible labs (laboratorio01-07), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 2106 tests across 162 files.
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 7 visible labs (laboratorio01-06 + 08; laboratorio07 hidden but reachable by direct URL), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 2686 tests across 218 files.
 
 ## Commands
 
@@ -43,6 +43,8 @@ Two stateful systems live outside the store:
 
 `createIsolatedExecutor()` (`src/commands/index.ts:106`) crea un executor con estado MSF aislado por terminal — cada terminal puede tener su propio `msfconsole` sin afectar a otras. El estado se guarda en un closure privado, no en el store global.
 
+**Identidad por terminal (aislamiento de `su_user`):** con `terminalId` el stack de identidades vive en `useIdentityStack` (estado local) y `machine.su_user` **no se escribe nunca** — el `su`/privesc de una terminal no contamina a las demás. Prompt/env/ejecución derivan del frame local: `topSuUser` → `ctx.suUserOverride` → override de ejecución en `utils/users` (`setExecutionSuUser`, con restore try/finally en `executor.ts` que cubre los ~72 call sites de `getCurrentUser`). `privesc_completed` y `found_credentials` siguen siendo **globales por diseño** (validación de misiones/LabValidator). Sin `terminalId` (modo legacy/tests) todo cae al store como antes.
+
 `blockingCommand` on `CommandResponse` flags commands that pause the prompt (e.g., `nc -lvnp 4444`). The Terminal component detects this and switches UI mode.
 
 `selectScenario()` has a 6.5s timeout for the machine loader animation. `resetWorkspace()` / `goHome()` reset the entire workspace state.
@@ -69,7 +71,7 @@ The `COMMANDS` Map in `src/commands/index.ts` auto-registers by iterating barrel
 
 ## Lab Pattern
 
-Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. `SCENARIOS` (`src/laboratorios/laboratorios.ts`) has 7 visible labs (laboratorio01-07); `TEST_SCENARIO` is a legacy alias of laboratorio_06, not a hidden lab. `SCENARIOS_META` drives dynamic LandingPage cards.
+Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. `SCENARIOS` (`src/laboratorios/laboratorios.ts`) has 8 labs (laboratorio01-08; 07 is `hidden`, so 7 visible); `TEST_SCENARIO` is a legacy alias of laboratorio_06, not a hidden lab. `SCENARIOS_META` drives dynamic LandingPage cards.
 
 To add a lab:
 1. Create `src/laboratorios/laboratorioXX.ts` with a `scenarioXXData` object
@@ -127,8 +129,8 @@ Resumen rápido:
 ```
 src/
 ├── commands/
-│   ├── builtin/        # 51 system commands (ls, cd, cat, sudo, ps, kill, systemctl, iptables, ufw, ip, ss, export, grep, crontab, mount, df, du, ln, find, python3, ...)
-│   ├── tools/          # 12 pentest/system tools (nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg; ssh/nc/ftp live in frameworks/shells and are re-exported)
+│   ├── builtin/        # ~100 system commands (Tier 1 completo: fs, permisos, procesos, red, aliases, man/whatis, text utils, hashes, sysinfo)
+│   ├── tools/          # 18 pentest/system tools (nmap, hydra, gobuster, curl, wget, dig, nslookup, scp, whois, tcpdump, nc, ssh, ftp, arp-scan, netdiscover, msfconsole, apt, dpkg)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
 ├── academy/            # 8 paths / 58 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
 ├── video/              # Remotion video lessons (remotion/compositions/ — 39 compositions li-/wi-/re-/ci-/pe-/hk-/ot-*)
@@ -142,7 +144,7 @@ src/
 │   ├── cron/           # CronRunner (virtual clock, parse/list/run cron jobs → syslog)
 │   ├── fs/             # mounts.ts (fstab parsing + mount state per machine)
 │   └── python/         # Mini-interprete de Python (subconjunto para Academy): lexer/parser/evaluator + stdlib simulada. socket puentea a effectivePortState(); open() al FS virtual. input() → pythonPendingInput (usePendingPythonInput re-ejecuta el script con la cola de entradas)
-├── laboratorios/       # 7 labs (laboratorio01-07.ts) + templates.ts (buildScenario, COMMON_PORTS) + attackers/
+├── laboratorios/       # 8 labs (laboratorio01-08.ts, 07 hidden) + templates.ts (buildScenario, COMMON_PORTS) + attackers/
 ├── store/              # Zustand: scenarioStore.ts + slices/{ui,terminal,scenario,identity,academy} + selectors.ts
 ├── fs-models/          # Virtual Linux/Windows/Kali filesystems
 ├── i18n/               # ES/EN translations

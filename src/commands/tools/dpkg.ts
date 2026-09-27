@@ -11,7 +11,7 @@ import {
   getPackage, installPackage, listInstalled,
 } from '../../frameworks/packages/packageManager';
 
-const DPKG_HELP = `Usage: dpkg <command> [options]
+export const DPKG_HELP = `Usage: dpkg <command> [options]
   -l, --list           List installed packages
   -i, --install <file.deb>  Install a local .deb package
   -h, --help           Show this help

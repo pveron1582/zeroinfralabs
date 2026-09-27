@@ -51,6 +51,17 @@ export interface MachineInfo {
   os: string;
   status: string;
   type: string;
+  /** Familia de SO: gobierna el registro de comandos (cmd/PowerShell vs POSIX). */
+  family?: 'linux' | 'windows';
+}
+
+/** Identidad Windows activa de la máquina (no hay /etc/passwd en Windows).
+ *  Administrators ⇒ uid efectivo 0 (bypass de permisos, igual que root). */
+export interface WinIdentity {
+  currentUser: string;
+  isAdmin: boolean;
+  computerName: string;
+  domain?: string;
 }
 
 export interface Machine {
@@ -95,4 +106,6 @@ export interface Machine {
     descriptionEs: string;
   };
   su_user?: string;
+  /** Identidad Windows (solo machines family 'windows'). Ver PLAN_WINDOWS W0. */
+  win?: WinIdentity;
 }

@@ -4,8 +4,9 @@
 // Extraído de useCommandRunner como función pura (sin React) para poder
 // testearla y reutilizarla desde varios hooks.
 
-import type { Machine, FileEntry, CommandResponse, BlockingCommand, FtpSessionData, SshSessionData } from '../types';
+import type { Machine, FileEntry, CommandResponse, BlockingCommand } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
+import { initialCwd } from '../utils/users';
 import type { IdentityFrame } from './useIdentityStack';
 import type { PendingSu } from './usePendingSu';
 import type { PendingPython } from './usePendingPythonInput';
@@ -20,6 +21,13 @@ export interface HistoryEntry {
   result?: CommandResponse;
   lineDelays?: number[];
 }
+
+/** Entrada de bienvenida (historial vacío al montar / resetear). */
+export const makeWelcome = (_machines: Machine[]): HistoryEntry => ({
+  command: null, streaming: false,
+  output: '',
+  timestamp: Date.now(),
+});
 
 export interface ProcessDeps {
   machine: Machine;
@@ -40,11 +48,26 @@ export interface ProcessDeps {
   setNanoFile: (f: NonNullable<CommandResponse['nanoFile']> | null) => void;
   setBusy: (busy: boolean) => void;
   setHistory: React.Dispatch<React.SetStateAction<HistoryEntry[]>>;
-  setFtpSession: (s: FtpSessionData | null) => void;
-  setSshSession: (s: SshSessionData | null) => void;
   setPendingSu: React.Dispatch<React.SetStateAction<PendingSu | null>>;
   setPendingPython: React.Dispatch<React.SetStateAction<PendingPython | null>>;
   reportVulnerability: (machineId: string, vulnId: string, status: string) => void;
+  // Con terminalId el su vive en el frame local: NO se escribe el
+  // machine.su_user compartido (aislamiento por terminal — HIGH #2).
+  terminalId?: string;
+}
+
+/**
+ * Cwd correcto al cambiar de máquina: home del nuevo SO (`initialCwd`).
+ * Si el mismo resultado trae `sshLoginUser`, manda el home del usuario
+ * recién conectado (misma regla que useRunCommand en el paso de password).
+ * Si la máquina no está en `allMachines`, se conserva la actual.
+ */
+function nextCwdFor(result: CommandResponse, allMachines: Machine[], currentDir: string): string {
+  const sshUser = 'sshLoginUser' in result ? result.sshLoginUser : undefined;
+  if (sshUser) return sshUser === 'root' ? '/root' : `/home/${sshUser}`;
+  const machineId = 'newMachineId' in result ? result.newMachineId : undefined;
+  const target = machineId ? allMachines.find(m => m.id === machineId) : undefined;
+  return target ? initialCwd(target) : currentDir;
 }
 
 /** Aplica todos los side-effects declarados en un CommandResponse. */
@@ -56,6 +79,7 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
     onVerifyCredentials, onFailedUser, onSudoPrivileges,
     setBlockingCommand, setListeningPort, setNanoFile, setBusy,
     setHistory, setPendingSu, setPendingPython, reportVulnerability,
+    terminalId,
   } = deps;
 
   if ('completedMissionId' in result && result.completedMissionId) {
@@ -79,6 +103,21 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
       setHistory([]);
     }
     if (!isStreaming) setBusy(true);
+  }
+
+  if ('desktopAction' in result && result.desktopAction) {
+    const da = result.desktopAction;
+    if (da.action === 'connect' && da.machineId) {
+      useScenarioStore.getState().openWindowsDesktop(da.machineId);
+      // Sesión RDP cerró el shell tras autenticar: limpiar estado de sesión.
+      useScenarioStore.getState().setRdpSession(null);
+      if ('foundCredentials' in result && result.foundCredentials && onVerifyCredentials) {
+        onVerifyCredentials(result.foundCredentials.machineId, result.foundCredentials.service);
+      }
+    } else if (da.action === 'disconnect') {
+      useScenarioStore.getState().closeWindowsDesktop();
+      useScenarioStore.getState().setRdpSession(null);
+    }
   }
 
   if ('nanoFile' in result && result.nanoFile) {
@@ -113,7 +152,13 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
       }
     } else {
       onChangeMachine(result.newMachineId);
-      pushIdentity({ machineId: result.newMachineId, cwd: currentDir });
+      // Cambio de máquina (exploit → víctima, fin de sesión → atacante):
+      // el cwd debe ser el home del nuevo SO. Sin esto seguía apuntando al
+      // directorio de la máquina saliente (p.ej. /root tras abrir una sesión
+      // Windows) y ls/pwd/cd quedaban en el SO anterior.
+      const nextCwd = nextCwdFor(result, allMachines, currentDir);
+      setCurrentDir(nextCwd);
+      pushIdentity({ machineId: result.newMachineId, cwd: nextCwd });
     }
   }
 
@@ -125,8 +170,10 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
     const machineId = result.privescCompleted;
     useScenarioStore.getState().setPrivescCompleted(machineId);
     // Abrir una shell root (sudo su / sudo vim): registrar la identidad
-    // para que `exit` vuelva al usuario anterior.
-    useScenarioStore.getState().setSuUser(machineId, 'root');
+    // para que `exit` vuelva al usuario anterior. privesc_completed y el
+    // frame son compartidos/local respectivamente; el su_user compartido
+    // solo en modo legacy (sin terminalId).
+    if (!terminalId) useScenarioStore.getState().setSuUser(machineId, 'root');
     pushIdentity({ machineId, suUser: 'root', cwd: currentDir });
   }
 
@@ -200,7 +247,7 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
 
   // `su` desde root cambió de usuario sin password (root authority).
   if ('suUserApplied' in result && result.suUserApplied) {
-    useScenarioStore.getState().setSuUser(machine.id, result.suUserApplied);
+    if (!terminalId) useScenarioStore.getState().setSuUser(machine.id, result.suUserApplied);
     pushIdentity({ machineId: machine.id, suUser: result.suUserApplied, cwd: currentDir });
   }
 }

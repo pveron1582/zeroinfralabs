@@ -137,16 +137,18 @@ describe('Fase 3: SUID, SGID, Sticky Bit', () => {
   });
 
   describe('3.5 SUID binaries in fs-linux model', () => {
-    it('should have 5 SUID binaries in the standard fs-linux', async () => {
+    it('should have 3 SUID binaries in the standard fs-linux (su, sudo, passwd)', async () => {
       const { createLinuxFileSystem } = await import('../../fs-models/fs-linux');
       const fs = createLinuxFileSystem();
       const suidBinaries = fs.filter(f => hasSuid(f.mode ?? 0o755));
-      expect(suidBinaries.length).toBe(5);
+      expect(suidBinaries.length).toBe(3);
       expect(suidBinaries.map(f => f.path)).toContain('/usr/bin/su');
       expect(suidBinaries.map(f => f.path)).toContain('/usr/bin/sudo');
       expect(suidBinaries.map(f => f.path)).toContain('/usr/bin/passwd');
-      expect(suidBinaries.map(f => f.path)).toContain('/usr/bin/find');
-      expect(suidBinaries.map(f => f.path)).toContain('/usr/bin/vim');
+      // find/vim sin SUID: con 4755 el executor marcaba privescCompleted en
+      // cualquier lab solo por ejecutarlos (atajo de la misión de privesc).
+      expect(suidBinaries.map(f => f.path)).not.toContain('/usr/bin/find');
+      expect(suidBinaries.map(f => f.path)).not.toContain('/usr/bin/vim');
     });
 
     it('should have sticky bit on /tmp in fs-linux', async () => {

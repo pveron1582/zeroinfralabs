@@ -112,69 +112,53 @@ describe('createWindowsFileSystem', () => {
     expect(softwareReg).toBeDefined();
   });
 
-  it('debe incluir directorios de servicios web', () => {
+  it('debe ser neutral: no instala servicios web (IIS/XAMPP)', () => {
     const files = createWindowsFileSystem();
-    
-    // Verificar que existe el directorio IIS
-    const iisDir = files.find(f => f.path === '/C:/inetpub/.dir');
-    expect(iisDir).toBeDefined();
-    
-    // Verificar que existe el directorio wwwroot de IIS
-    const wwwrootDir = files.find(f => f.path === '/C:/inetpub/wwwroot/.dir');
-    expect(wwwrootDir).toBeDefined();
-    
-    // Verificar que existe el directorio XAMPP
-    const xamppDir = files.find(f => f.path === '/C:/xampp/.dir');
-    expect(xamppDir).toBeDefined();
-    
-    // Verificar que existe el directorio htdocs de XAMPP
-    const htdocsDir = files.find(f => f.path === '/C:/xampp/htdocs/.dir');
-    expect(htdocsDir).toBeDefined();
+    const paths = files.map(f => f.path);
+
+    // Ningún labo usa IIS/XAMPP: el admin de labo (o los fixtures de test)
+    // agrega esos directorios si el escenario los necesita.
+    expect(paths.some(p => p.startsWith('/C:/inetpub'))).toBe(false);
+    expect(paths.some(p => p.startsWith('/C:/xampp'))).toBe(false);
   });
 
-  it('debe incluir archivos de configuración de servicios web', () => {
+  it('debe ser neutral: sin archivos de usuario de escenario', () => {
     const files = createWindowsFileSystem();
-    
-    // Verificar que existe el archivo index.html de IIS
-    const iisIndex = files.find(f => f.path === '/C:/inetpub/wwwroot/index.html');
-    expect(iisIndex).toBeDefined();
-    expect(iisIndex?.content).toContain('IIS Windows Server');
-    
-    // Verificar que existe el archivo web.config de IIS
-    const webConfig = files.find(f => f.path === '/C:/inetpub/wwwroot/web.config');
-    expect(webConfig).toBeDefined();
-    
-    // Verificar que existe el archivo index.php de XAMPP
-    const xamppIndex = files.find(f => f.path === '/C:/xampp/htdocs/index.php');
-    expect(xamppIndex).toBeDefined();
-    
-    // Verificar que existe el archivo config.php de XAMPP
-    const xamppConfig = files.find(f => f.path === '/C:/xampp/htdocs/config.php');
-    expect(xamppConfig).toBeDefined();
+
+    // Solo existen los .dir de usuario; el contenido lo aporta cada labo.
+    const userFiles = files.filter(
+      f => f.path.startsWith('/C:/Users/Administrator/Desktop/') ||
+           f.path.startsWith('/C:/Users/Administrator/Documents/'),
+    );
+    expect(userFiles).toHaveLength(2);
+    expect(userFiles.every(f => f.path.endsWith('.dir'))).toBe(true);
+
+    // Sin flag, sin notas con credenciales, sin web.config
+    expect(files.some(f => /flag\.txt|notes\.txt|web\.config/.test(f.path))).toBe(false);
+    expect(files.some(f => f.content.includes('THM{'))).toBe(false);
+    expect(files.some(f => f.content.includes('P@ssw0rd123!'))).toBe(false);
+    expect(files.some(f => f.content.includes('Str0ngP@ss!'))).toBe(false);
   });
 
-  it('debe incluir archivos de usuario con credenciales', () => {
+  it('debe dejar hosts sin IP ni hostname de laboratorio', () => {
     const files = createWindowsFileSystem();
-    
-    // Verificar que existe el archivo notes.txt con credenciales
-    const notesFile = files.find(f => f.path === '/C:/Users/Administrator/Documents/notes.txt');
-    expect(notesFile).toBeDefined();
-    expect(notesFile?.content).toContain('Administrator');
-    expect(notesFile?.content).toContain('P@ssw0rd123!');
-    
-    // Verificar que existe el archivo web.config con credenciales de BD
-    const webConfig = files.find(f => f.path === '/C:/Users/Administrator/Documents/web.config');
-    expect(webConfig).toBeDefined();
-    expect(webConfig?.content).toContain('Str0ngP@ss!');
+    const hosts = files.find(f => f.path === '/C:/Windows/System32/drivers/etc/hosts');
+
+    expect(hosts).toBeDefined();
+    expect(hosts?.content).toContain('WIN-SERVER');
+    expect(hosts?.content).not.toContain('192.168.1.10');
+    expect(hosts?.content).not.toContain('target-server');
   });
 
-  it('debe incluir archivos de flags', () => {
+  it('debe dejar httperr.log sin IPs de escenario', () => {
     const files = createWindowsFileSystem();
-    
-    // Verificar que existe el archivo flag.txt en el Desktop
-    const flagFile = files.find(f => f.path === '/C:/Users/Administrator/Desktop/flag.txt');
-    expect(flagFile).toBeDefined();
-    expect(flagFile?.content).toContain('THM{USER_ACCESS_GRANTED}');
+    const httperr = files.find(f => f.path === '/C:/Windows/System32/LogFiles/HTTPERR/httperr1.log');
+
+    expect(httperr).toBeDefined();
+    expect(httperr?.content).not.toContain('192.168.1.');
+    // Rangos de documentación (RFC 5737) en lugar de las del laboratorio
+    expect(httperr?.content).toContain('203.0.113.45');
+    expect(httperr?.content).toContain('192.0.2.10');
   });
 
   it('debe incluir archivos de configuración de red', () => {

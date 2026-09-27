@@ -61,7 +61,7 @@ src/
 │   ├── packages/       # PackageManager (apt, dpkg)
 │   ├── cron/           # CronRunner (virtual clock, cron jobs)
 │   └── fs/             # mounts.ts (fstab, mount state)
-├── laboratorios/       # 7 lab definitions (laboratorio01-07.ts) + templates.ts (buildScenario, COMMON_PORTS) + attackers/
+├── laboratorios/       # 8 lab definitions (laboratorio01-08.ts, 07 hidden) + templates.ts (buildScenario, COMMON_PORTS) + attackers/
 ├── store/              # Zustand: 5 slices (ui, terminal, scenario, identity, academy) + selectors.ts
 ├── utils/              # labValidator.ts, permissions, fs, path, autocomplete, network, analytics, logger
 ├── fs-models/          # Virtual Linux/Windows filesystems
@@ -113,7 +113,7 @@ To add a new command:
 
 ## Lab Pattern
 
-Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. The template handles IP assignment (DHCP), attacker machine creation (`createKaliMachine`), file system creation, and mission generation. `SCENARIOS` has 7 labs; `TEST_SCENARIO` is a legacy alias of laboratorio_06.
+Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. The template handles IP assignment (DHCP), attacker machine creation (`createKaliMachine`), file system creation, and mission generation. `SCENARIOS` has 8 labs (07 hidden → 7 visible); `TEST_SCENARIO` is a legacy alias of laboratorio_06.
 
 To add a lab:
 1. Create `src/laboratorios/laboratorioXX.ts` with a `scenarioXXData` object

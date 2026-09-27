@@ -56,6 +56,21 @@ export function addRule(machineId: string, rule: Omit<FirewallRule, 'id' | 'sour
   return full;
 }
 
+/** Inserta una regla en la posición N (1-based) de la chain; sin N o fuera
+ *  de rango se comporta como append/prepend en los extremos. */
+export function insertRule(machineId: string, chain: FirewallChain, position: number, rule: Omit<FirewallRule, 'id' | 'sourceType'> & { sourceType?: 'iptables' | 'ufw' }): FirewallRule {
+  const s = getState(machineId);
+  const full: FirewallRule = { ...rule, id: s.nextRuleId++, sourceType: rule.sourceType ?? 'iptables' };
+  const chainRules = s.rules.filter(r => r.chain === chain);
+  const pos = Math.max(1, Math.min(Math.floor(position) || 1, chainRules.length + 1));
+  if (pos > chainRules.length) {
+    s.rules.push(full);
+  } else {
+    s.rules.splice(s.rules.indexOf(chainRules[pos - 1]), 0, full);
+  }
+  return full;
+}
+
 export function deleteRule(machineId: string, chain: FirewallChain, ruleNumber: number): boolean {
   const s = getState(machineId);
   const chainRules = s.rules.filter(r => r.chain === chain);

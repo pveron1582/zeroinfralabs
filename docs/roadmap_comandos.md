@@ -5,7 +5,7 @@
 
 ## 1. Inventario actual
 
-**74 nombres de comandos de primer nivel** en
+**74 nombres de comandos de primer nivel (inventario inicial, 2026-09-17; 120 tras Tier 1, 21-09)** en
 `/home/pablo/cyberops-v2/src/commands/names.ts`.
 El registro ejecutable es la fuente de verdad; el test
 `/home/pablo/cyberops-v2/src/commands/__tests__/commandNames.test.ts`
@@ -104,21 +104,41 @@ explotación de equipos externos. No implementar solamente respuestas fijas.
 
 ### Tier 1 — Flujos cotidianos (prioridad alta)
 
-- [ ] Lectura: `less`, `more`.
-- [ ] Ayuda: `man`, `whatis`, `apropos`; describir el subconjunto soportado.
-- [ ] Shell: `history`, `alias`, `unalias`, `type`.
-- [ ] Texto: `cut`, `tr`, `tac`, `sed` básico, `awk` básico, `tee`, `diff`,
-  `nl`, `rev`, `column`.
-- [ ] Sistema: `uname`, `hostname`, `hostnamectl`, `uptime`, `free`,
-  `lscpu`, `w`, `last`, `arch`, `lsb_release`.
-- [ ] Archivos: `stat`, `file`, `basename`, `dirname`, `realpath`,
-  `md5sum`, `sha256sum`, `base64`, `strings`.
-- [ ] Red virtual: `wget`, `dig`, `nslookup`, `scp`, `whois`,
-  `tcpdump` con capturas sintéticas.
-- [ ] Editor: `vi`/`vim` básico, con modos y límites documentados.
+- [x] Lectura: `less`, `more` (hecho 2026-09-20: dump no interactivo + `-N`, pipe, permisos).
+- [x] Ayuda: `man`, `whatis`, `apropos` (hecho 2026-09-20: `man` usa las
+  páginas de `help`, índice `WHATIS` compartido; subconjunto = comandos
+  implementados, el resto dice `No manual entry`).
+- [x] Shell: `history`, `alias`, `unalias`, `type` (hecho 2026-09-20: historial
+  por terminal vía contexto, tabla de alias aislada por executor con expansión
+  en primera palabra de cada segmento de pipe, `type` distingue alias/comando).
+- [x] Texto: `cut`, `tr`, `tac`, `sed` básico, `awk` básico, `tee`, `diff`,
+  `nl`, `rev`, `column` (hecho 2026-09-20: `cut -d/-f/-c/-s/--complement`,
+  `tr` con rangos/escapes/`-d/-s/-c`, `nl -b/-i/-v/-w/-s`, `column -t`,
+  `sed s///[gip]+d/p/q` con `&` y `\1`, `awk` con `/re/`, comparaciones,
+  `BEGIN/END`, `NR/NF/FNR/$NF`, `diff` normal/`-u`/`-q` con LCS, `tee -a`
+  con permisos; `text.ts` + `sed/awk/diff/tee.ts` por límite de 300 líneas).
+- [x] Sistema: `uname`, `hostname`, `hostnamectl`, `uptime`, `free`,
+  `lscpu`, `w`, `last`, `arch`, `lsb_release` (hecho 2026-09-20: uptime
+  por reloj virtual con `-p`/`-s`, free derivado del host, host
+  seed determinista).
+- [x] Archivos: `stat`, `file`, `basename`, `dirname`, `realpath`,
+  `md5sum`, `sha256sum`, `base64`, `strings` (hecho 2026-09-20:
+  crypto real vía `js-md5`/`js-sha256` (vectores RFC/FIPS), base64
+  RFC 4648 con UTF-8, strings con `-n`, realpath con `-e`/symlinks).
+- [x] Red virtual: `wget`, `dig`, `nslookup`, `scp`, `whois`,
+  `tcpdump` con capturas sintéticas (hecho 2026-09-21: wget escribe
+  con permisos reales vía nmap/outfiles, dig/nslookup resuelven el
+  DNS virtual del lab, scp exige 22 abierto + credencial verificada,
+  whois registro sintético, tcpdump tráfico sintético entre máquinas).
+- [x] Editor: `vi`/`vim` emulados sobre el editor del simulador (nano modal).
+  Documentado: los modos vi (normal/insert/visual, :wq) no se implementan;
+  `sudo vim` y `vim -c '!bash'` siguen como flujos de escalada (hecho 2026-09-21).
+  **Tier 1 completo (a 2026-09-21): 120 nombres en el inventario.**
 
-Primer lote sugerido: `uname`, `hostname`, `stat`, `file`, `less`.
-`wc` y `nano` ya existen y no cuentan como altas nuevas.
+Primer lote sugerido: `uname`, `hostname`, `stat`, `file`, `less` — hecho
+2026-09-20 (+ `more`). `wc` y `nano` ya existen y no cuentan como altas nuevas.
+Inventario tras el lote: 80 nombres (74 + `file`, `hostname`, `less`,
+`more`, `stat`, `uname`).
 
 ### Tier 2 — Ampliación educativa de seguridad (prioridad media)
 
