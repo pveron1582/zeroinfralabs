@@ -1,12 +1,12 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 2733 tests across 220 files.
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 2733 tests across 220 files.
 
 ## Commands
 
 ```bash
 pnpm dev                 # Dev server (port 5173)
-pnpm build               # Production build (Vite, chunkSizeWarningLimit: 1000)
+pnpm build               # Production build (Vite)
 pnpm preview             # Preview production build
 pnpm test                # Vitest watch mode
 pnpm test:run            # Single run (CI)
@@ -41,7 +41,7 @@ Two stateful systems live outside the store:
 - **ShellManager** (`src/frameworks/shells/ShellManager.ts`) — SSH/FTP/NC sessions (stack-based, nested shells). `shellManager` singleton.
 - **MSF state en Zustand store** — El estado de Metasploit vive en `useScenarioStore.getState().msfState`. `src/commands/index.ts` expone `resetMsfState()`, `isMsfActive()`, `getMsfPrompt()`, `getMsfState()` que leen del store. Los comandos MSF emiten `msfStateUpdate?: MsfState | null` en `CommandResponse` (tipo explícito desde 4.2).
 
-`createIsolatedExecutor()` (`src/commands/index.ts:106`) crea un executor con estado MSF aislado por terminal — cada terminal puede tener su propio `msfconsole` sin afectar a otras. El estado se guarda en un closure privado, no en el store global.
+`createIsolatedExecutor()` (`src/commands/index.ts:149`) crea un executor con estado MSF aislado por terminal — cada terminal puede tener su propio `msfconsole` sin afectar a otras. El estado se guarda en un closure privado, no en el store global.
 
 **Identidad por terminal (aislamiento de `su_user`):** con `terminalId` el stack de identidades vive en `useIdentityStack` (estado local) y `machine.su_user` **no se escribe nunca** — el `su`/privesc de una terminal no contamina a las demás. Prompt/env/ejecución derivan del frame local: `topSuUser` → `ctx.suUserOverride` → override de ejecución en `utils/users` (`setExecutionSuUser`, con restore try/finally en `executor.ts` que cubre los ~72 call sites de `getCurrentUser`). `privesc_completed` y `found_credentials` siguen siendo **globales por diseño** (validación de misiones/LabValidator). Sin `terminalId` (modo legacy/tests) todo cae al store como antes.
 
@@ -129,11 +129,11 @@ Resumen rápido:
 ```
 src/
 ├── commands/
-│   ├── builtin/        # ~100 system commands (Tier 1 completo: fs, permisos, procesos, red, aliases, man/whatis, text utils, hashes, sysinfo)
-│   ├── tools/          # 18 pentest/system tools (nmap, hydra, gobuster, curl, wget, dig, nslookup, scp, whois, tcpdump, nc, ssh, ftp, arp-scan, netdiscover, msfconsole, apt, dpkg)
+│   ├── builtin/        # 69 system commands (Tier 1 completo: fs, permisos, procesos, red, aliases, man/whatis, text utils, hashes, sysinfo)
+│   ├── tools/          # 19 comandos en 17 archivos (nmap, hydra, gobuster, curl, wget, dns (dig/nslookup), scp, whois, tcpdump, nc, ssh, ftp, arp-scan, netdiscover, msfconsole, xrdp, apt, dpkg)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
-├── academy/            # 8 paths / 58 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
-├── video/              # Remotion video lessons (remotion/compositions/ — 39 compositions li-/wi-/re-/ci-/pe-/hk-/ot-*)
+├── academy/            # 8 paths / 59 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
+├── video/              # Remotion video lessons (remotion/compositions/ — 132 compositions registradas en Root.tsx)
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid, academy/, tour/, ...
 ├── frameworks/
 │   ├── metasploit/     # core/ (module DB, ContextRegistry, types) + orchestrators/ (MSF + meterpreter commands)

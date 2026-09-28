@@ -5,7 +5,7 @@
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
 **Total Tests:** 2733 en 220 archivos  
 **Cobertura (v8):** 81.08% stmts / 68.80% branches / 77.52% funcs / 84.06% lines (medido 2026-09-27)  
-**E2E:** Playwright (7 specs en `e2e/`, no corren en CI aún)
+**E2E:** Playwright (7 specs en `e2e/`, corren en el job `e2e` de la CI)
 
 ## Comandos
 
@@ -38,7 +38,7 @@ nada lo hacía cumplir: la CI corría `pnpm test:run` sin `--coverage`.
 src/
 ├── commands/
 │   ├── __tests__/           # Happy path por lab + integración
-│   │   ├── happyPath-scenario01..07.test.ts
+│   │   ├── happyPath-scenario06/06-flow/07-flow/08.test.ts
 │   │   ├── happyPathHelpers.ts
 │   │   ├── fase3-suid-sticky.test.ts
 │   │   ├── fase4-editors.test.ts
@@ -77,7 +77,7 @@ Tests organizados por dominio de conocimiento:
 - **fase9:** Filesystem (mounts, permisos)
 
 ### 3. Tests de Hooks
-Cobertura de los 16 hooks especializados:
+Cobertura de los hooks (25 en `src/hooks/`):
 - `useCommandRunner` — orquestador principal (prompt, sesiones, streaming)
 - `useRunCommand` — routing por sesión (su, python, FTP, SSH)
 - `useFtpSession` / `useSshSession` — ciclo de vida de sesiones

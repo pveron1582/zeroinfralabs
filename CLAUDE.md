@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**ZeroInfra Labs** — a browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 progressive labs in the grid + 2 by direct URL, an Academy (8 paths / 58 lessons), and Remotion video lessons that teach offensive security through simulated Linux/Windows machines, a functional terminal, and a fake browser. No VMs, no real exploits — everything runs in the browser with deterministic, scripted responses.
+**ZeroInfra Labs** — a browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 progressive labs in the grid + 2 by direct URL, an Academy (8 paths / 59 lessons), and Remotion video lessons that teach offensive security through simulated Linux/Windows machines, a functional terminal, and a fake browser. No VMs, no real exploits — everything runs in the browser with deterministic, scripted responses.
 
 > All hashes and credentials in this repo are fictitious and for educational use only. See `docs/SECURITY.md`.
 
@@ -46,10 +46,10 @@ Commands (in `src/commands/`) know nothing about labs. Labs (in `src/laboratorio
 
 ```
 src/
-├── academy/            # 8 paths / 58 lessons + video-lession metadata
+├── academy/            # 8 paths / 59 lessons + video-lesson metadata
 ├── video/              # Remotion video compositions (39)
 ├── commands/
-│   ├── builtin/        # ls, cd, cat, sudo, whoami, ifconfig, hashcat, ping, traceroute, ps, top, htop, which (59)
+│   ├── builtin/        # 69 comandos: ls, cd, cat, sudo, whoami, ifconfig, hashcat, ping, traceroute, ps, top, htop, which, vi, awk, sed, man, ...
 │   ├── tools/          # nmap, hydra, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg; ssh/nc/ftp re-exported from frameworks/shells (12)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid, academy/, tour/, ...
@@ -66,7 +66,7 @@ src/
 ├── utils/              # labValidator.ts, permissions, fs, path, autocomplete, network, analytics, logger
 ├── fs-models/          # Virtual Linux/Windows filesystems
 ├── i18n/               # ES/EN translations
-├── hooks/              # 14 hooks: useCommandRunner, useKeyboardShortcuts, useTerminalIdentity, ...
+├── hooks/              # 25 hooks: useCommandRunner, useKeyboardShortcuts, useTerminalIdentity, ...
 ├── types/              # Shared types split by domain: command.ts, machine.ts, mission.ts, academy.ts (barrel: index.ts)
 ├── blog/               # Educational articles ES/EN
 └── test/setup.ts       # Vitest setup: mocks matchMedia/ResizeObserver, resets store + localStorage
@@ -149,7 +149,7 @@ No active open bugs (Bug #3 and Bug #6 verified resolved).
 
 ## Deployment
 
-Vercel SPA. `vercel.json` rewrites all non-asset paths to `/index.html` and adds `Cache-Control` headers (immutable for `/assets/`, must-revalidate for everything else). Routes: `/:lang/scenario/:id` and `/:lang/blog/:slug`. The Vite build uses `chunkSizeWarningLimit: 1000` to silence warnings on the bundle.
+Vercel SPA. `vercel.json` rewrites all non-asset paths to `/index.html` and adds `Cache-Control` headers (immutable for `/assets/`, must-revalidate for everything else). Routes: `/:lang/scenario/:id` and `/:lang/blog/:slug`. No usa `chunkSizeWarningLimit`: el default de Vite (500 kB) queda vigente.
 
 ## MCP Servers
 

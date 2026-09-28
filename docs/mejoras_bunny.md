@@ -134,7 +134,7 @@ pero ese campo es para comandos *bloqueantes* (`nc`): no correspondía.
 
 ## 3. P1 — mejoras de alto retorno
 
-### [ ] 3.1 Documentación desactualizada (verificado)
+### [x] 3.1 Documentación desactualizada — **RESUELTO 2026-09-27**
 
 | Archivo:línea | Afirma | Realidad |
 |---|---|---|
@@ -151,6 +151,29 @@ pero ese campo es para comandos *bloqueantes* (`nc`): no correspondía.
 | `docs/LABS.md` | guías 01–07 | falta la guía del Lab 08 |
 
 `AGENTS.md` es la referencia operativa de los agentes: mientras diga 58/39/`chunkSizeWarningLimit`, cualquier trabajo futuro parte de una base falsa.
+
+**Resolución (2026-09-27):** 15 correcciones, todas con el número **medido**
+en el código, no estimado:
+- Academy **59 lecciones** (docs decían 58): 7 archivos `*-lessons.ts` (29) +
+  7 archivos `path-*.ts` con lecciones inline (30); `path-scripting.ts` compone
+  las suyas desde `bash-lessons`/`python-lessons`. Los ids son únicos (59/59).
+- Remotion **132 compositions** en `Root.tsx` (docs decían 39).
+- `chunkSizeWarningLimit`: **no existe** en `vite.config.ts` → se sacó de
+  `AGENTS.md:9` y `CLAUDE.md:152` (y se aclara que sigue el default de Vite).
+- Playwright **sí corre en CI** (`ci.yml`, job `e2e`) → corregido en
+  `docs/TESTING.md:8`, y la lista de happyPath ahora es la real
+  (06/06-flow/07-flow/08).
+- `builtin/` son **69** archivos (no "~100" ni "59"); `tools/` son 19 comandos
+  en 17 archivos, con `xrdp` agregado a la lista.
+- Hooks: **25** en `src/hooks/` (no 14 ni 16).
+- Rutas que no existen: `docs/MEJORAS.md` → `docs/archive/MEJORAS.md`;
+  `getSuidEffectiveUser()` está en `src/commands/suid.ts:33` (no
+  `index.ts:107`); `/etc/group` lo define `fs-etc.ts:82` (no `fs-linux.ts:116`);
+  los tipos viven en `src/types/`.
+- ROADMAP: el "Lab 08 de Active Directory" marcado ⏳ ya no aplica — el
+  `laboratorio08.ts` existe con otro enfoque; el de AD pasa a ser un Lab 09.
+- **No se tocó `docs/mejoras-deep.md`**: es una revisión fechada (2026-09-15,
+  commit `2252bbc`) y sus números son correctos para esa fecha.
 
 ### [ ] 3.2 Segundo registro de comandos
 

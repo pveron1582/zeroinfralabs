@@ -12,9 +12,9 @@ Dividido en fases con tareas concretas, ordenadas por dependencias.
 - **`docs/PERMISSIONS.md`** — patrón transversal para comandos que tocan el filesystem
   (helpers `canRead`/`canCreateInDir`/`canDeleteInDir`/`canEditFile`, lookup de archivos,
   anti-patrones, tabla operación → helper).
-- **`docs/PROYECTO_ACADEMY.md`** — arquitectura pedagógica de la Academy (8 paths, 58 lecciones, quizzes).
+- **`docs/PROYECTO_ACADEMY.md`** — arquitectura pedagógica de la Academy (8 paths, 59 lecciones, quizzes).
 - **`docs/ARCHITECTURE.md`** — arquitectura general del simulador, validadores y ciclo de comandos.
-- **`docs/MEJORAS.md`** — hygiene del codebase y plan unificado completado.
+- **`docs/archive/MEJORAS.md`** — hygiene del codebase y plan unificado completado.
 - **`docs/ROADMAP_TOPOLOGY_SOC.md`** — roadmap de topología dinámica, SIEM/Wazuh virtual y objetivos Windows.
 - **`docs/PLAN_WINDOWS.md`** — plan W0–W5 de soporte Windows (cmd, PowerShell, escritorio RDP, lab EternalBlue). **W0–W5 listos** (2026-09-23), incluye RDP como servicio con credenciales.
 
@@ -24,7 +24,7 @@ Dividido en fases con tareas concretas, ordenadas por dependencias.
 
 ### 0.1 Tipos base `User` y `Group` ✅
 
-**Archivos:** `src/types.ts`
+**Archivos:** `src/types/machine.ts`
 
 Agregar al final (antes de `FileEntry`):
 ```typescript
@@ -46,7 +46,7 @@ export interface Group {
 
 ### 0.2 Extender `FileEntry` con permisos reales ✅
 
-**Archivos:** `src/types.ts`
+**Archivos:** `src/types/machine.ts`
 
 Agregar campos a `FileEntry`:
 ```typescript
@@ -156,7 +156,7 @@ Agregar `owner`, `group`, `mode` a cada `FileEntry` en el filesystem base:
 
 Agregar archivo `/etc/group` con grupos estándar (root, daemon, bin, sys, adm, shadow, www-data, etc.) y sus miembros.
 
-> Implementado: `fs-linux.ts:116` define `/etc/group` con grupos estándar y miembros (root, daemon, bin, sys, adm, tty, disk, lp, mail, news, uucp, man, proxy, kmem, etc.). El parser `parseGroup` vive en `src/utils/users.ts`.
+> Implementado: `fs-etc.ts:82` define `/etc/group` con grupos estándar y miembros (root, daemon, bin, sys, adm, tty, disk, lp, mail, news, uucp, man, proxy, kmem, etc.). El parser `parseGroup` vive en `src/utils/users.ts`.
 
 ### 0.8bis Nota: actualización de estado inmutable
 
@@ -364,7 +364,7 @@ En formato largo con `-a`, mostrar entradas `.` (directorio actual) y `..` (dire
 **Archivos:** `src/commands/index.ts` y sistema de ejecución
 
 Cuando un binario tiene SUID (`mode & 0o4000`), ejecutarlo como el `owner` del archivo en vez del usuario actual.
-- `getSuidEffectiveUser()` en `index.ts:107` busca el binario en `machine.files` y detecta SUID/SGID
+- `getSuidEffectiveUser()` en `src/commands/suid.ts:33` busca el binario en `machine.files` y detecta SUID/SGID
 - `executeCommandInternal()` establece `privesc_completed=true` durante la ejecución para que `getCurrentUser()` retorne root
 - `sudo` queda excluido del handler SUID porque maneja su propia escalada
 - SGID detectado pero no implementa cambio de grupo (no requerido por los labs actuales)
@@ -823,7 +823,7 @@ Registro en: `src/commands/builtin/index.ts` y `src/commands/index.ts`
 
 ## FASE 11 — Academy & Interactive Learning Engine ✅
 
-### 11.1 8 Rutas formativas con 58 lecciones interactivas ✅
+### 11.1 8 Rutas formativas con 59 lecciones interactivas ✅
 **Archivos:** `src/academy/paths.ts`, `src/academy/path-*.ts`, `src/academy/*-lessons.ts`
 - **Paths**: Fundamentos de redes, Linux, Windows, Protocolos I, Protocolos II, Bash scripting, Python para pentesting, Conceptos avanzados.
 - Componentes pedagógicos: Narrador explicativo, bloques teóricos interactivos, matching questions y terminales de práctica aisladas.
@@ -872,7 +872,7 @@ Registro en: `src/commands/builtin/index.ts` y `src/commands/index.ts`
 - **Kerberoasting** (`GetUserSPNs.py`): solicitud de tickets TGS para cuentas de servicio.
 
 ### 14.3 Laboratorio 08: Active Directory Enumeration & Exploitation
-**Archivo propuesto:** `src/laboratorios/laboratorio08.ts`
+**Archivo propuesto:** `src/laboratorios/laboratorio09.ts` (el `laboratorio08.ts` ya existe y es otro lab: SquirrelMail → xrdp → Potato; el 08 de AD sigue sin hacer)
 - Escenario corporativo con DC Windows y máquina Linux pivote.
 - 8-10 misiones guiadas de reconocimiento de dominio, AS-REP roasting y escalada a Domain Admin.
 
@@ -932,7 +932,7 @@ Registro en: `src/commands/builtin/index.ts` y `src/commands/index.ts`
                        ↓
 [FASE 13: UI/UX Desktop & Accessibility] ✅
                        ↓
-[FASE 14: Active Directory & Kerberos (Lab 08)] ⏳ (Próximo)
+[FASE 14: Active Directory & Kerberos (un Lab 09)] ⏳ (Próximo) — el Lab 08 ya está implementado con otro enfoque
                        ↓
 [FASE 15: Docker & Container Escape (Lab 09)] ⏳
                        ↓

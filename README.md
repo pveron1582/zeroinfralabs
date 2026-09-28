@@ -4,7 +4,7 @@
 
 ## 🎓 ZILabs Academy
 
-La **Academy** es el área de formación teórica de la plataforma: **8 paths de estudio con 58 lecciones** (quiz final incluido por lección), progreso persistente por usuario (guardado en `localStorage`, sin datos personales) y navegación ES/EN.
+La **Academy** es el área de formación teórica de la plataforma: **8 paths de estudio con 59 lecciones** (quiz final incluido por lección), progreso persistente por usuario (guardado en `localStorage`, sin datos personales) y navegación ES/EN.
 
 | Path | Tema |
 |------|------|
@@ -27,7 +27,7 @@ Cada lección se compone de pasos de distinto tipo:
 
 ## 🎥 Video-lecciones y hosting (jsDelivr CDN)
 
-Las video-lecciones se renderizan con **Remotion** (39 composiciones) y se exportan a `.mp4`. Los videos **no se sirven desde el dominio de la app** (para no inflar el deploy de Vercel ni gastar su ancho de banda) sino desde un **CDN global y gratuito**.
+Las video-lecciones se renderizan con **Remotion** (132 composiciones) y se exportan a `.mp4`. Los videos **no se sirven desde el dominio de la app** (para no inflar el deploy de Vercel ni gastar su ancho de banda) sino desde un **CDN global y gratuito**.
 
 **Servicio actual:** [jsDelivr](https://www.jsdelivr.com/) sirviendo un repo público de GitHub con los videos:
 - Repo: `https://github.com/pveron1582/zilabs-videos` (público, sin LFS — jsDelivr necesita el archivo crudo)
@@ -81,8 +81,8 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ## 🎯 Características Principales
 
-- **Academy** — 8 paths de estudio con 58 lecciones (SO, Redes I/II, Protocolos, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
-- **Video-lecciones Remotion** — 39 composiciones animadas que acompañan las lecciones de la Academy
+- **Academy** — 8 paths de estudio con 59 lecciones (SO, Redes I/II, Protocolos, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
+- **Video-lecciones Remotion** — 132 composiciones animadas que acompañan las lecciones de la Academy
 - **Terminal Linux realista** — 71 comandos funcionales con auto-registro (ls, cd, cat, nano, sudo, nmap, hydra, ssh, msfconsole, iptables, cron...)
 - **Modelo de permisos Linux avanzado** — Simulación de SUID, SGID, Sticky bit, umask y ownership por usuario
 - **7 Laboratorios progresivos** — De reconocimiento a Burp Suite (Proxy + Repeater)
@@ -120,7 +120,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ```
 src/
-├── academy/          # 8 paths / 58 lecciones: path-*.ts + *-lessons.ts
+├── academy/          # 8 paths / 59 lecciones: path-*.ts + *-lessons.ts
 ├── video/            # Composiciones Remotion de video-lecciones (39)
 ├── commands/
 │   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, python3, etc. (51)
@@ -144,7 +144,7 @@ src/
 │   ├── cron/        # CronRunner (reloj virtual + cron jobs → syslog)
 │   ├── fs/          # mounts.ts (fstab + estado de montajes)
 │   └── python/      # Mini-intérprete de Python (lexer/parser/evaluator + stdlib simulada)
-├── hooks/           # 16 hooks especializados: useCommandRunner (orquestador),
+├── hooks/           # 25 hooks especializados: useCommandRunner (orquestador),
 │                    # useIdentityStack, useFtpSession, useSshSession, usePendingSu,
 │                    # usePendingPythonInput, useReverseShell, useAutoRefresh,
 │                    # useDownloadedFile, useTerminalEffects, useNanoSave,
@@ -184,8 +184,8 @@ docs/
 - ✅ Shells interactivas (SSH, FTP, Netcat)
 - ✅ Desktop mode con ventanas flotantes y wallpapers
 - ✅ Network map con panel de enumeración
-- ✅ Academy: 8 paths / 58 lecciones con quizzes y progreso persistente
-- ✅ Video-lecciones Remotion (39 composiciones)
+- ✅ Academy: 8 paths / 59 lecciones con quizzes y progreso persistente
+- ✅ Video-lecciones Remotion (132 composiciones)
 - ✅ Blog con artículos ES/EN
 - ✅ Landing page + selección de labs
 - ✅ Dark/Light theme

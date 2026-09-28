@@ -133,7 +133,7 @@ src/
 │   └── *-lessons.ts                  #   Lecciones compartidas (linux, windows, bash, python...)
 │
 ├── video/                            # Video-lecciones Remotion
-│   └── remotion/compositions/        #   39 composiciones animadas (li-, wi-, re-, ci-, pe-, hk-, ot-*)
+│   └── remotion/compositions/        #   132 composiciones animadas (registradas en Root.tsx)
 │
 ├── fs-models/                        # Filesystems virtuales
 │   ├── fs-linux.ts                   #   Sistema de archivos Linux base (/etc, /home, /root…)
