@@ -6,6 +6,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { formatModeFromFile } from '../../utils/permissions';
 import { findFile, resolveSymlink } from '../../utils/fs';
+import { stableTimestamp, hashPath } from '../../utils/format';
 import { getUser, getGroup, getCurrentUser } from '../../utils/users';
 
 const STAT_HELP = `Usage: stat [OPTION] FILE...
@@ -20,24 +21,7 @@ Examples:
   stat /etc/passwd
   stat -c '%a %n' script.sh`;
 
-function hashPath(path: string): number {
-  let h = 0;
-  for (let i = 0; i < path.length; i++) h = ((h << 5) - h + path.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
 // Timestamp completo determinístico por path: `2024-03-14 09:32:11.000000000 +0000`
-export function stableTimestamp(path: string): string {
-  const h = hashPath(path || '/');
-  const year = 2023 + (h % 2);
-  const mon = String((Math.floor(h / 2) % 12) + 1).padStart(2, '0');
-  const day = String((Math.floor(h / 24) % 28) + 1).padStart(2, '0');
-  const hh = String(Math.floor(h / 672) % 24).padStart(2, '0');
-  const mm = String(Math.floor(h / 16128) % 60).padStart(2, '0');
-  const ss = String(Math.floor(h / 967680) % 60).padStart(2, '0');
-  return `${year}-${mon}-${day} ${hh}:${mm}:${ss}.000000000 +0000`;
-}
-
 function uidOf(machine: CommandContext['machine'], name: string): { id: number; label: string } {
   const u = getUser(machine, name);
   if (u) return { id: u.uid, label: u.username };
@@ -145,3 +129,7 @@ export const cmd_stat = {
     return { output: outputs.join('\n'), isError: failed ? true : undefined };
   },
 };
+
+// Re-export: la fecha virtual vive en utils/format para que `ls -l` y
+// `stat` muestren SIEMPRE el mismo mtime para el mismo archivo.
+export { stableTimestamp };

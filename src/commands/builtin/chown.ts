@@ -3,7 +3,7 @@
 
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
-import { getCurrentUser, getUsers, getGroups } from '../../utils/users';
+import { getCurrentUser, getUsers, getGroups , isRoot as isRootUser } from '../../utils/users';
 import { findFile, isUnderPath } from '../../utils/fs';
 
 export const cmd_chown = {
@@ -11,7 +11,7 @@ export const cmd_chown = {
   execute: (args: string[], context: CommandContext): CommandResponse => {
     const { currentDir, machine } = context;
     const currentUser = getCurrentUser(machine);
-    const isRoot = currentUser.uid === 0 || currentUser.username === 'root';
+    const isRoot = isRootUser(currentUser);
     const homeDir = currentUser.home;
 
     if (args.length < 2) {

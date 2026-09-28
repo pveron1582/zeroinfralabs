@@ -213,3 +213,13 @@ export function initialCwd(m: Machine): string {
 export function isRoot(user: User | null): boolean {
   return user?.uid === 0 || user?.username === 'root';
 }
+
+/**
+ * Home de un usuario por nombre. root NO vive en /home/root: hay tres
+ * copias de esta regla en los hooks y una de ellas se olvidaba del caso
+ * root, así que un `ssh root@victim` dejaba el cwd en /home/root.
+ */
+export function homeDirFor(username: string | undefined): string {
+  if (!username) return '/';
+  return username === 'root' ? '/root' : `/home/${username}`;
+}

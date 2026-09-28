@@ -3,7 +3,7 @@
 
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
-import { getCurrentUser } from '../../utils/users';
+import { getCurrentUser , isRoot as isRootUser } from '../../utils/users';
 import { findFile, isUnderPath } from '../../utils/fs';
 
 function parseSymbolicMode(expr: string, currentMode: number, isDir: boolean): number | null {
@@ -76,7 +76,7 @@ export const cmd_chmod = {
   execute: (args: string[], context: CommandContext): CommandResponse => {
     const { currentDir, machine } = context;
     const currentUser = getCurrentUser(machine);
-    const isRoot = currentUser.uid === 0 || currentUser.username === 'root';
+    const isRoot = isRootUser(currentUser);
     const homeDir = currentUser.home;
 
     if (args.length < 2) {

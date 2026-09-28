@@ -6,7 +6,7 @@
 
 import type { Machine, FileEntry, CommandResponse, BlockingCommand } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
-import { initialCwd } from '../utils/users';
+import { initialCwd, homeDirFor } from '../utils/users';
 import type { IdentityFrame } from './useIdentityStack';
 import type { PendingSu } from './usePendingSu';
 import type { PendingPython } from './usePendingPythonInput';
@@ -64,7 +64,7 @@ export interface ProcessDeps {
  */
 function nextCwdFor(result: CommandResponse, allMachines: Machine[], currentDir: string): string {
   const sshUser = 'sshLoginUser' in result ? result.sshLoginUser : undefined;
-  if (sshUser) return sshUser === 'root' ? '/root' : `/home/${sshUser}`;
+  if (sshUser) return homeDirFor(sshUser);
   const machineId = 'newMachineId' in result ? result.newMachineId : undefined;
   const target = machineId ? allMachines.find(m => m.id === machineId) : undefined;
   return target ? initialCwd(target) : currentDir;
@@ -163,7 +163,9 @@ export function processCommandResult(deps: ProcessDeps, result: CommandResponse,
   }
 
   if ('sshLoginUser' in result && result.sshLoginUser) {
-    setCurrentDir(`/home/${result.sshLoginUser}`);
+    // root vive en /root: con la interpolación directa el cwd quedaba
+    // en /home/root tras un `ssh root@victim`.
+    setCurrentDir(homeDirFor(result.sshLoginUser));
   }
 
   if ('privescCompleted' in result && result.privescCompleted) {

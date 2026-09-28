@@ -2,6 +2,7 @@ import type { CommandContext, CommandResponse } from '../../types';
 import { normalizePath, ensureTrailingSlash } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canExecute } from '../../utils/permissions';
+import { findDirEntry } from '../../utils/fs';
 
 export const cmd_cd = {
   name: 'cd',
@@ -36,9 +37,7 @@ export const cmd_cd = {
 
     // Find the directory entry
     const dirPath = resolvedPath === '/' ? '' : resolvedPath.replace(/\/$/, '');
-    const dirEntry = machine.files.find(f =>
-      f.path === dirPath + '/.dir'
-    );
+    const dirEntry = findDirEntry(machine, dirPath);
 
     if (!dirEntry) {
       return { output: `cd: ${target}: No such file or directory`, isError: true };

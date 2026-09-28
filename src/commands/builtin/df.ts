@@ -4,14 +4,10 @@
 
 import type { CommandContext, CommandResponse } from '../../types';
 import { getMounts } from '../../frameworks/fs/mounts';
+import { formatMegabytes } from '../../utils/format';
 
 const TOTAL_MB = 20 * 1024; // 20 GB
 const BASE_USED_MB = 4096;
-
-function human(sizeMb: number): string {
-  if (sizeMb >= 1024) return `${(sizeMb / 1024).toFixed(1)}G`;
-  return `${sizeMb}M`;
-}
 
 function usageFor(machine: CommandContext['machine']): number {
   return BASE_USED_MB + machine.files.length * 2;
@@ -21,7 +17,7 @@ function dfLine(mountpoint: string, total: number, used: number): string {
   const avail = Math.max(0, total - used);
   const pct = Math.round((used / total) * 100);
   const dev = mountpoint === '/' ? '/dev/sda1' : mountpoint;
-  return `${dev.padEnd(14)} ${human(total).padEnd(5)} ${human(used).padEnd(5)} ${human(avail).padEnd(5)} ${String(pct).padStart(2)}% ${mountpoint}`;
+  return `${dev.padEnd(14)} ${formatMegabytes(total).padEnd(5)} ${formatMegabytes(used).padEnd(5)} ${formatMegabytes(avail).padEnd(5)} ${String(pct).padStart(2)}% ${mountpoint}`;
 }
 
 export const cmd_df = {

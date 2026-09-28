@@ -1,5 +1,6 @@
 import type { CommandContext, CommandResponse } from '../../types';
 import { getCurrentUser, getGroups } from '../../utils/users';
+import { findFile } from '../../utils/fs';
 import { cmd_nano } from './nano';
 
 // Editores soportados: `sudo nano/vi/vim <file>` abre el editor como root.
@@ -139,7 +140,7 @@ export const cmd_sudo = {
       };
     }
 
-    const sudoersFile = machine.files?.find(f => f.path === '/etc/sudoers');
+    const sudoersFile = findFile(machine, '/etc/sudoers');
     if (!sudoersFile) {
       return {
         output: `sudo: unable to open /etc/sudoers: No such file or directory`,

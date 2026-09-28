@@ -2,7 +2,7 @@
 // Chequeo de permisos Unix (rwx) sobre FileEntry
 
 import type { Machine, FileEntry, User } from '../types';
-import { getGroups } from './users';
+import { getGroups , isRoot } from './users';
 
 const DIR_MODE_DEFAULT = 0o755;
 const FILE_MODE_DEFAULT = 0o644;
@@ -37,7 +37,7 @@ export function checkPermission(
   operation: 'read' | 'write' | 'execute'
 ): boolean {
   if (!user) return false;
-  if (user.uid === 0 || user.username === 'root') return true;
+  if (isRoot(user)) return true;
 
   const mode = getEffectiveMode(file);
   const owner = getOwner(file);
@@ -77,7 +77,7 @@ export function canEditFile(machine: Machine, file: FileEntry, user: User | null
 
 export function canCreateInDir(machine: Machine, parentDirEntry: FileEntry | null, user: User | null): boolean {
   if (!user) return false;
-  if (user.uid === 0 || user.username === 'root') return true;
+  if (isRoot(user)) return true;
   if (!parentDirEntry) return false;
   return canWrite(machine, parentDirEntry, user) && canExecute(machine, parentDirEntry, user);
 }
@@ -89,7 +89,7 @@ export function canDeleteInDir(
   user: User | null
 ): boolean {
   if (!user) return false;
-  if (user.uid === 0 || user.username === 'root') return true;
+  if (isRoot(user)) return true;
   if (!parentDirEntry) return false;
   if (!canWrite(machine, parentDirEntry, user) || !canExecute(machine, parentDirEntry, user)) {
     return false;

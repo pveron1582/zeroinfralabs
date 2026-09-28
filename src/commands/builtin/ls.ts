@@ -11,6 +11,7 @@ import { ensureTrailingSlash, resolvePath } from '../../utils/path';
 import { canExecute, canRead, formatModeFromFile } from '../../utils/permissions';
 import { getCurrentUser } from '../../utils/users';
 import { findDirEntry, isUnderPath } from '../../utils/fs';
+import { formatBytes, formatLsDate } from '../../utils/format';
 
 // Genera tamaños de archivo determinísticos (no aleatorios)
 // Usa un hash simple del path para generar un tamaño consistente
@@ -42,13 +43,6 @@ function getOwner(info: LsItem): string {
 
 function getGroup(info: LsItem): string {
   return info.entry?.group || 'root';
-}
-
-function humanSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes}`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}K`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}M`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}G`;
 }
 
 function getModeStr(info: LsItem): string {
@@ -102,25 +96,9 @@ function collectItems(machine: CommandContext['machine'], targetDir: string, sho
   return items;
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 // Fecha determinística por path (estable entre corridas): formato `ls -l`
 // real — hora para fechas recientes, año para antiguas.
-function stableDate(path: string): string {
-  let h = 0;
-  for (let i = 0; i < path.length; i++) h = ((h << 5) - h + path.charCodeAt(i)) | 0;
-  h = Math.abs(h);
-  const mon = MONTHS[h % 12];
-  const day = String(((h >> 4) % 28) + 1).padStart(2, ' ');
-  if ((h >> 9) % 3 === 0) {
-    const year = 2022 + ((h >> 12) % 3);
-    return `${mon} ${day}  ${year}`;
-  }
-  const hh = String((h >> 12) % 24).padStart(2, '0');
-  const mm = String((h >> 17) % 60).padStart(2, '0');
-  return `${mon} ${day} ${hh}:${mm}`;
-}
-
 function renderLong(items: Map<string, LsItem>, humanReadable: boolean, baseDir: string): string {
   // total en bloques 1K derivado de los tamaños mostrados (dirs: 4, resto: 1+)
   let total = 0;
@@ -135,9 +113,9 @@ function renderLong(items: Map<string, LsItem>, humanReadable: boolean, baseDir:
       const owner = getOwner(info);
       const group = getGroup(info);
       const linkCount = info.isDir ? '2' : '1';
-      const sizeStr = humanReadable ? humanSize(info.size) : String(info.size).padStart(5);
+      const sizeStr = humanReadable ? formatBytes(info.size) : String(info.size).padStart(5);
       const suffix = info.linkTarget ? ` -> ${info.linkTarget}` : '';
-      const date = stableDate(info.entry?.path ?? (baseDir + name));
+      const date = formatLsDate(info.entry?.path ?? (baseDir + name));
       out += `${perms}  ${linkCount} ${owner.padEnd(8)} ${group.padEnd(8)} ${humanReadable ? sizeStr.padStart(5) : sizeStr} ${date} ${name}${suffix}\n`;
     });
   return out;

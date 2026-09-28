@@ -4,6 +4,7 @@
 
 import type { CommandContext, CommandResponse } from '../../types';
 import { findDirEntry, isUnderPath } from '../../utils/fs';
+import { formatBytes } from '../../utils/format';
 import { getCurrentUser } from '../../utils/users';
 import { canExecute } from '../../utils/permissions';
 
@@ -28,13 +29,6 @@ function sizeOf(machine: CommandContext['machine'], dir: string): { bytes: numbe
     }
   }
   return { bytes, files };
-}
-
-function humanSize(bytes: number): string {
-  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}G`;
-  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}M`;
-  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)}K`;
-  return `${bytes}`;
 }
 
 function normalizeDir(raw: string, currentDir: string): string {
@@ -65,7 +59,7 @@ export const cmd_du = {
     }
 
     const { bytes } = sizeOf(machine, dir);
-    const label = human ? humanSize(bytes) : String(bytes);
+    const label = human ? formatBytes(bytes) : String(bytes);
 
     if (summarize || !all) {
       return { output: `${label}\t${dir}`, isError: false };
@@ -81,7 +75,7 @@ export const cmd_du = {
     }
     const lines = [dir, ...Array.from(subdirs).sort()].map(d => {
       const { bytes: b } = sizeOf(machine, d);
-      return `${human ? humanSize(b) : b}\t${d}`;
+      return `${human ? formatBytes(b) : b}\t${d}`;
     });
     return { output: lines.join('\n'), isError: false };
   }

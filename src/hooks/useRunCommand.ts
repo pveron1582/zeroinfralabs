@@ -17,6 +17,7 @@ import type { PendingSu } from './usePendingSu';
 import type { PendingPython, PythonInputResult } from './usePendingPythonInput';
 import type { IdentityFrame } from './useIdentityStack';
 import { useScenarioStore } from '../store/scenarioStore';
+import { homeDirFor } from '../utils/users';
 import { getStreamingConfig, computeTotalDelay, shouldStream } from './streamingConfig';
 
 export interface RunCommandDeps {
@@ -181,11 +182,11 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
       if ('newMachineId' in result && result.newMachineId) {
         onChangeMachine(result.newMachineId);
         const sshUser = 'sshLoginUser' in result && result.sshLoginUser ? result.sshLoginUser : undefined;
-        const sshCwd = sshUser === 'root' ? '/root' : (sshUser ? `/home/${sshUser}` : '/');
+        const sshCwd = homeDirFor(sshUser);
         pushIdentity({ machineId: result.newMachineId, suUser: sshUser, cwd: sshCwd });
       }
       if ('sshLoginUser' in result && result.sshLoginUser) {
-        sessionDeps.setCurrentDir(result.sshLoginUser === 'root' ? '/root' : `/home/${result.sshLoginUser}`);
+        sessionDeps.setCurrentDir(homeDirFor(result.sshLoginUser));
       }
       return;
     }

@@ -9,6 +9,7 @@ import {
   getAllServices, startService, stopService,
 } from '../../frameworks/process/processManager';
 import { WIN_ERR, winUser } from './helpers';
+import { findFile } from '../../utils/fs';
 
 function usage(msg: string): CommandResponse {
   return { output: msg, isError: true };
@@ -99,7 +100,7 @@ export const cmd_reg = {
     let readableCount = 0;
 
     for (const p of REG_FILES) {
-      const f = ctx.machine.files.find(x => x.path === p);
+      const f = findFile(ctx.machine, p);
       if (!f) continue;
       sawFile = true;
       if (!canRead(ctx.machine, f, user)) continue;

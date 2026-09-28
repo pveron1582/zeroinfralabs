@@ -6,6 +6,7 @@
 import type { CommandContext, CommandResponse } from '../../types';
 import { virtualTime } from '../../frameworks/cron/cronRunner';
 import { getCurrentUser } from '../../utils/users';
+import { formatBytesBinary } from '../../utils/format';
 import { list as listProcesses } from '../../frameworks/process/processManager';
 
 // Boot virtual determinista: el 1er de este mes a las 08:00, más un
@@ -67,8 +68,10 @@ export const cmd_free = {
     const freeKi = totalKi - usedKi;
     const buffKi = Math.floor(totalKi * 0.12);
     const swapTotal = totalKi / 2;
-    const fmt = (ki: number) => args.includes('-m') ? `${Math.round(ki / 1024)}` :
-      ki >= 1024 * 1024 ? `${(ki / 1024 / 1024).toFixed(1)}Gi` : `${(ki / 1024).toFixed(1)}Mi`;
+    // -m muestra MiB enteros; si no, Ki/Mi/Gi con 1024 (helper compartido).
+    const fmt = (ki: number) => args.includes('-m')
+      ? `${Math.round(ki / 1024)}`
+      : formatBytesBinary(ki * 1024);
     const h = ['Mem:', 'Swap:'];
     return { output: [
       '               total        used        free      shared  buff/cache   available',

@@ -193,13 +193,39 @@ en el código, no estimado:
 - `hooks/useRunCommand.ts:23-52` `RunCommandDeps` 28 campos · `processCommandResult.ts:33-56` `ProcessDeps` 21 · `useFtpSession.ts:15-34` `SessionRunnerDeps` 17 — cableados a mano en `useCommandRunner.ts:141-147,182-191,213-224`.
 - `hooks/processCommandResult.ts:74-253`: 180 líneas, 13 `getState()` y 8 `if ('x' in result)` secuenciales. Debería ser `Record<keyof CmdResponseBase, handler>` + un test que falle si el contrato crece sin handler (convierte deuda invisible en deuda que rompe el build).
 
-### [ ] 3.5 Helpers duplicados
+### [x] 3.5 Helpers duplicados — **RESUELTO 2026-09-27**
 
 - `isRoot` inline en **7 sitios** (`permissions.ts:40,80,92`, `chmod.ts:79`, `chgrp.ts:14`, `chown.ts:14`).
 - `humanSize` reimplementado 4 veces con unidades distintas: `ls.ts:48` (K), `du.ts:36` (K), `df.ts:12` (G), `sysinfo.ts:70-71` (Mi/Gi).
 - **mtime inconsistente:** `stat.ts:23-38` (`stableTimestamp`, ya exportado) vs `ls.ts:109-121` (`stableDate`) con otra codificación → `ls -l` y `stat` muestran fechas distintas para el mismo archivo.
 - ~13 lookups de archivos a mano saltándose `findFile` (`cd.ts:39`, `ls.ts:201`, `sudo.ts:142`, `dpkg.ts:43`, `winpeas.ts:83`, `suid.ts:23`, `hydra.ts:68,102`, `cat.ts:17`, …), que `AGENTS.md` prohíbe explícitamente.
 - 142 literales de modo (`0o644/755/…`) fuera de tests; deberían ser constantes en `utils/fs.ts`.
+
+**Resolución (2026-09-27):**
+- **Bug real cerrado**: `homeDirFor(user)` en `utils/users.ts` reemplaza las
+  tres copias de la regla "home del usuario". Una de ellas
+  (`processCommandResult.ts:166`) interpolaba `/home/${sshLoginUser}` sin el
+  caso root, así que un `ssh root@victim` dejaba el cwd en **`/home/root`**.
+- **`isRoot` con fuente única**: los 6 inline `uid === 0 || username === 'root'`
+  de `permissions.ts`, `chmod`, `chgrp` y `chown` ahora usan el helper de
+  `utils/users.ts` (que ya era el canónico). No se tocaron los chequeos de
+  admin de los comandos de Windows (`system.ts`, `potato`, `winpeas`), que son
+  otra regla: ahí `uid === 0` significa "administrador".
+- **Nuevo `src/utils/format.ts`**: `formatBytes` (estilo `ls -h`/`du -h`),
+  `formatBytesBinary` (estilo `free`) y `formatMegabytes` (estilo `df`)
+  reemplazan las 4 copias de conversión, que además usaban unidades
+  distintas. `du -h` ahora escala igual que `ls -h` (antes nunca pasaba de K).
+- **Un solo mtime virtual**: `stableTimestamp` + `hashPath` se mudaron a
+  `utils/format.ts` y `ls -l` formatea desde ahí (`formatLsDate`). Antes
+  `ls.ts` y `stat.ts` hasheaban el path por separado y **mostraban fechas
+  distintas para el mismo archivo**; ahora coinciden por construcción.
+- **Lookups de archivo**: `cd` ahora usa `findDirEntry` y `sudo`/`reg query`
+  usan `findFile` en vez de `machine.files.find(...)`. Los ~10 lookups
+  restantes NO se migraron a propósito: tienen otra semántica (búsqueda por
+  sufijo entre máquinas en `hydra`, rutas múltiples de binario en `suid`,
+  fallback tolerante en `cat`).
+- Sanidad en el helper: `formatBytes(NaN)` imprimía `NaNG` (lo detectó el
+  test nuevo); ahora NaN/Infinity/negativo → `0`.
 
 ### [ ] 3.6 Cobertura de tests (brechas) — **academy/ RESUELTO 2026-09-27**
 
