@@ -201,7 +201,7 @@ en el código, no estimado:
 - ~13 lookups de archivos a mano saltándose `findFile` (`cd.ts:39`, `ls.ts:201`, `sudo.ts:142`, `dpkg.ts:43`, `winpeas.ts:83`, `suid.ts:23`, `hydra.ts:68,102`, `cat.ts:17`, …), que `AGENTS.md` prohíbe explícitamente.
 - 142 literales de modo (`0o644/755/…`) fuera de tests; deberían ser constantes en `utils/fs.ts`.
 
-### [ ] 3.6 Cobertura de tests (brechas)
+### [ ] 3.6 Cobertura de tests (brechas) — **academy/ RESUELTO 2026-09-27**
 
 | Área | LOC | Tests | Prioridad |
 |---|---|---|---|
@@ -217,6 +217,21 @@ en el código, no estimado:
 
 Además: `pnpm test:ui` **está roto** (`package.json:20` invoca `vitest --ui` pero `@vitest/ui` no está en `devDependencies`).
 
+**Resolución parcial (2026-09-27) — `academy/`:** nuevo
+`src/academy/__tests__/paths.test.ts` (+24 asserts) como contrato de datos de
+los 8 paths y 59 lecciones, que hasta ahora no tenían un solo test:
+unicidad global de ids, `lesson.pathId` coherente con el path que la lista,
+`order` único **por módulo** (es por subsección, no por path: `os` tiene 14
+lecciones y 5 orders distintos), `getLesson`/`getPath`/`getSubIdForLesson`
+resolviendo para toda lección, subsecciones que cuadran con el array flat,
+quizzes con `correctIndex` en rango y paridad ES/EN de options, captions de
+video y pares de matching, y `labRef`/`labId` apuntando a labs existentes.
+Escribirlo enforceable mis supuestos: `order` es por sección y las
+subsecciones guardan `Lesson[]`, no ids.
+
+**Pendiente de 3.6:** `appContent/` (1302 LOC sin tests), los hooks sin
+cubrir, `metasploit/{core,orchestrators}` y el E2E de humo de misión.
+
 ### [ ] 3.7 Rendimiento en el camino caliente
 
 1. `components/StreamingOutput.tsx:15-20`: `lines.slice(0,shown).join('\n')` por línea → **O(n²)** + re-layout completo del `<pre>` por línea (500 líneas de gobuster ⇒ ~125k caracteres reconstruidos con el input bloqueado).
@@ -226,12 +241,22 @@ Además: `pnpm test:ui` **está roto** (`package.json:20` invoca `vitest --ui` p
 5. `EnumerationPanel.tsx:38` `getDynamicCredentials()` sin memo, en el cuerpo del render.
 6. Convención `filesChanged` = snapshot completo: 31 sitios con `machine.files =` re-renderizan a todos los suscriptores por escritura.
 
-### [ ] 3.8 Accesibilidad
+### [x] 3.8 Accesibilidad — **RESUELTO 2026-09-27 (parcial)**
 
 - 20 de 118 `.tsx` de componentes usan `aria-label`.
 - `components/labGrid/ScenarioCard.tsx:26,42`: `role="button" tabIndex={0}` **sin `onKeyDown`** → las tarjetas del LabGrid no se abren con teclado.
 - Ningún modal tiene focus trap.
 - Lo bueno: `Terminal.tsx:67-68` (`role="application"` + `aria-label`), `:120-121` (`role="log"`), `TerminalInput.tsx:24` — y los E2E dependen de ese `aria-label`, lo que lo ata a un contrato estable.
+
+**Resolución (2026-09-27):** las tarjetas del LabGrid se abren con **Enter y
+Espacio** (`onKeyDown` + `aria-label` con el nombre del lab; el Espacio hace
+`preventDefault` para no scrollear la página). Era el único `role="button"` del
+proyecto sin handler de teclado: los de `DesktopTerminal` y `MobileWorkspace`
+ya lo tenían. Tests: 2 en `LabGrid.test.tsx`.
+
+**Pendiente de 3.8:** focus trap en los modales, `aria-label` en los ~98
+componentes que no lo tienen, y auditar el resto de la app (no se hizo un
+barrido completo).
 
 ### [ ] 3.9 Producto / superficie
 

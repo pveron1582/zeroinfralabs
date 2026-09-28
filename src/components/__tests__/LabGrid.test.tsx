@@ -83,6 +83,24 @@ describe('LabGrid', () => {
     }
   });
 
+  it('las tarjetas se abren con teclado (Enter), no solo con click (P1 3.8)', () => {
+    renderWithRouter(<LabGrid />);
+    const card = screen.getByRole('button', { name: new RegExp(`${VISIBLE_SCENARIOS[0].name}`) });
+    fireEvent.keyDown(card, { key: 'Enter' });
+    act(() => { vi.advanceTimersByTime(50); });
+    expect(screen.getByText('Start Lab')).toBeInTheDocument();
+  });
+
+  it('Espacio también abre la tarjeta y no hace scroll', () => {
+    renderWithRouter(<LabGrid />);
+    const card = screen.getByRole('button', { name: new RegExp(`${VISIBLE_SCENARIOS[0].name}`) });
+    // fireEvent devuelve false cuando el handler llamó preventDefault()
+    const notPrevented = fireEvent.keyDown(card, { key: ' ' });
+    expect(notPrevented).toBe(false);
+    act(() => { vi.advanceTimersByTime(50); });
+    expect(screen.getByText('Start Lab')).toBeInTheDocument();
+  });
+
   it('debe mostrar el botón START para cada escenario visible', () => {
     renderWithRouter(<LabGrid />);
     const startButtons = screen.getAllByText('START');

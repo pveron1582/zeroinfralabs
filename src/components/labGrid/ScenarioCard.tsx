@@ -24,6 +24,14 @@ export function ScenarioCard({
   return (
     <article
       onClick={onOpen}
+      // role="button" sin onKeyDown dejaba la tarjeta inalcanzable por
+      // teclado: Enter y Espacio abren el lab como el click (P1 3.8).
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="flex flex-col overflow-hidden select-none w-full cursor-pointer"
@@ -39,7 +47,11 @@ export function ScenarioCard({
         animationDelay: `${index * 90}ms`,
         animation: 'cardIn 0.4s ease-out both',
       }}
-      role="button" tabIndex={0}
+      role="button"
+      tabIndex={0}
+      aria-label={language === 'es'
+        ? `Laboratorio ${index + 1}: ${scenario.name}`
+        : `Lab ${index + 1}: ${scenario.name}`}
     >
       <div className="relative overflow-hidden" style={{ height: '170px', background: isDark ? '#0a0e14' : '#f1f5f9' }}>
         <img
