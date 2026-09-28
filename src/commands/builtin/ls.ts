@@ -10,7 +10,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { ensureTrailingSlash, resolvePath } from '../../utils/path';
 import { canExecute, canRead, formatModeFromFile } from '../../utils/permissions';
 import { getCurrentUser } from '../../utils/users';
-import { findDirEntry } from '../../utils/fs';
+import { findDirEntry, isUnderPath } from '../../utils/fs';
 
 // Genera tamaños de archivo determinísticos (no aleatorios)
 // Usa un hash simple del path para generar un tamaño consistente
@@ -63,7 +63,7 @@ function collectItems(machine: CommandContext['machine'], targetDir: string, sho
   const items = new Map<string, LsItem>();
   (machine.files || []).forEach(file => {
     const filePath = file.path;
-    if (filePath.startsWith(targetDir)) {
+    if (isUnderPath(filePath, targetDir)) {
       const relativePath = filePath.slice(targetDir.length);
       if (relativePath.includes('/')) {
         const dir = relativePath.split('/')[0];
@@ -215,7 +215,7 @@ export const cmd_ls = {
     // ── Modo recursivo (-R): listar targetDir y todos los subdirectorios ──
     const allDirs = new Set<string>([targetDir]);
     for (const f of machine.files || []) {
-      if (!f.path.startsWith(targetDir)) continue;
+      if (!isUnderPath(f.path, targetDir)) continue;
       const rel = f.path.slice(targetDir.length);
       const parts = rel.split('/').filter(Boolean);
       // Si es .dir, agregar su directorio y parents

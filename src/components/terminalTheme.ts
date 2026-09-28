@@ -25,5 +25,12 @@ export const PS_PROMPT_COLORS = {
 };
 
 export const PS_BG = '#012456';
-export const CMD_BG = '#0c0c0c';
 export const PS_TEXT = '#ffffff';
+
+/**
+ * Terminal del escritorio Windows/RDP (la que se abre en una ventana):
+ * azul oscuro de consola y texto blanco, siempre — también con una sesión de
+ * cmd.exe, porque la ventana se titula "Windows PowerShell". No depende del
+ * tema de Kali: el texto va en blanco (PS_PROMPT_COLORS / WIN_TERM_FG).
+ */
+export const WIN_TERM_FG = '#ffffff';

@@ -285,3 +285,83 @@ describe('errores y límites', () => {
     expect(run(`d = {}\nd['falta']`).error).toContain("KeyError: 'falta'");
   });
 });
+
+// ── P0.2: el intérprete nunca debe tumbar la app ────────────────────
+// El intérprete corre en la pestaña del alumno. Antes, un RangeError
+// (memoria o stack) escapaba de runPython y el ChunkErrorBoundary
+// reemplazaba TODA la app por "No se pudo cargar la página". Ahora los
+// límites se reportan como errores de Python y runPython nunca lanza.
+
+describe('límites de memoria y recursión (P0.2)', () => {
+  it('corta la repetición de strings gigantes con MemoryError', () => {
+    const r = run(`print("A" * 1000000000)`);
+    expect(r.error).toContain('MemoryError');
+    expect(r.error).toContain('string demasiado grande');
+    expect(r.output).toBe('');
+  });
+
+  it('sigue permitiendo strings razonables (ej. 1000)', () => {
+    const r = run(`print("A" * 1000)`);
+    expect(r.error).toBeUndefined();
+    expect(r.output.length).toBe(1000);
+  });
+
+  it('corta la repetición de listas gigantes con MemoryError', () => {
+    const r = run(`x = [1] * 100000000`);
+    expect(r.error).toContain('MemoryError');
+    expect(r.error).toContain('lista demasiado grande');
+  });
+
+  it('corta el crecimiento exponencial de strings en un loop', () => {
+    // El guard de pasos (200k) NO alcanza: cada iteración duplica.
+    const r = run(`s = "A"\nfor i in range(40):\n    s = s + s\nprint(len(s))`);
+    expect(r.error).toContain('MemoryError');
+  });
+
+  it('cota la concatenación de listas', () => {
+    const r = run(`a = [0] * 60000\nb = [0] * 60000\nc = a + b\nprint(len(c))`);
+    expect(r.error).toContain('MemoryError');
+  });
+
+  it('corta la recursión infinita con RecursionError', () => {
+    const r = run(`def f():\n    f()\nf()`);
+    expect(r.error).toContain('RecursionError');
+    expect(r.error).toContain('maximum recursion depth');
+  });
+
+  it('permite la recursión normal (factorial) que enseña la Academy', () => {
+    const r = run(`def fact(n):\n    if n <= 1:\n        return 1\n    return n * fact(n - 1)\nprint(fact(10))`);
+    expect(r.error).toBeUndefined();
+    expect(r.output).toBe('3628800');
+  });
+
+  it('nunca lanza: cualquier script devuelve resultado (output o error)', () => {
+    const hostiles = [
+      `"A" * 1e9`,
+      `[1] * 1e9`,
+      `"A" * float("inf")`,
+      `[1] * float("inf")`,
+      `x = "a"\nx = x * 1e9 + x`,
+      `def f():\n    return f()\nf()`,
+      `def f(n):\n    return f(n + 1)\nf(0)`,
+      `"A" * 1000000 + "A" * 1000000`,
+      `x = [0] * 100000\nx = x + x`,
+      `while True:\n    pass`,
+      `for i in range(10**9):\n    pass`,
+    ];
+    for (const src of hostiles) {
+      const r = run(src);
+      // Si esto falla con "runPython is not a function"/throw, el contrato
+      // de "nunca lanza" está roto: el ChunkErrorBoundary se comería la app.
+      expect(typeof r, src).toBe('object');
+      expect(r.error !== undefined || r.output !== undefined, src).toBe(true);
+    }
+  });
+
+  it('el traceback de un límite menciona el archivo y la clase de Python', () => {
+    const r = run(`x = [1] * 999999999`, { sourceName: 'scan.py' });
+    expect(r.error).toContain('Traceback (most recent call last):');
+    expect(r.error).toContain('"scan.py"');
+    expect(r.error).toContain('MemoryError');
+  });
+});

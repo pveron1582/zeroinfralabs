@@ -150,7 +150,7 @@ const getHelp: PsExec = (inv, _ctx) => {
 
 // ── Clear-Host (cls / clear) ──────────────────────────────────────
 
-const clearHost: PsExec = () => ({ output: 'CLEAR_TERMINAL' });
+const clearHost: PsExec = () => ({ output: '', clearScreen: true });
 
 // ── Stop-Computer ─────────────────────────────────────────────────
 

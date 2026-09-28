@@ -22,6 +22,13 @@ export interface MsfState {
   // (aislado por terminal) para que el prompt de meterpreter/cmd refleje
   // el directorio real sin depender del cwd de la terminal atacante.
   cwd?: string;
+  // Identidad de la sesión sobre la víctima: la fija el exploit que la
+  // abre (EternalBlue deja SYSTEM; el RCE del webmail deja la cuenta del
+  // servicio). Sin `sessionUser` la sesión es SYSTEM por compatibilidad.
+  sessionUser?: string;
+  // Máquina víctima de la sesión: whoami/hostname/sysinfo leen de ella en
+  // vez de hardcodear el host del lab.
+  sessionTargetId?: string;
   auxChecked: boolean;
   uidChecked: boolean;
   hashdumpExecuted?: boolean;

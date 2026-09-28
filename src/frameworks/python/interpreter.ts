@@ -9,7 +9,7 @@ import { pyTruthy, pyTypeName, isPyObject } from './values';
 import { Env } from './env';
 import { PyError, PySignal, typeError } from './errors';
 import type { RunCtx } from './context';
-import { DEFAULT_MAX_STEPS, MAX_ITER } from './context';
+import { DEFAULT_MAX_STEPS, MAX_ITER, MAX_CALL_DEPTH } from './context';
 import { evaluate, evalBinOp } from './evalExpr';
 import { getModule } from './stdlib';
 import { rangeCount } from './builtins';
@@ -148,6 +148,17 @@ export function callPythonFunction(
   }
   const local = new Env(fn.closure);
   fn.params.forEach((p, i) => local.set(p, args[i]));
+  // Guard de recursión (P0.2): sin esto, `def f(): f()` reventaba el stack
+  // de JS con `RangeError: Maximum call stack size exceeded`, que escapaba
+  // del runtime y tumbaba la app. En CPython esto es RecursionError.
+  if (ctx.state.callDepth >= MAX_CALL_DEPTH) {
+    throw new PyError(
+      'RecursionError',
+      `maximum recursion depth exceeded (límite del simulador: ${MAX_CALL_DEPTH})`,
+      line,
+    );
+  }
+  ctx.state.callDepth++;
   try {
     execBlock(fn.body, local, ctx);
   } catch (e) {
@@ -156,6 +167,8 @@ export function callPythonFunction(
       throw new PyError('SyntaxError', `'break' outside loop`, line);
     }
     throw e;
+  } finally {
+    ctx.state.callDepth--;
   }
   return null;
 }

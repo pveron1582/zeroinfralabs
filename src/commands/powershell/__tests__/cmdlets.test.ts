@@ -127,9 +127,10 @@ describe('Get-Help / Clear-Host / sistema', () => {
     expect(r.output).toContain('Get-Content');
   });
 
-  it('Clear-Host retorna CLEAR_TERMINAL', () => {
+  it('Clear-Host pide limpiar la pantalla vía metadata (P0.4)', () => {
     const r = executePsLine('Clear-Host', ctx());
-    expect(r.output).toBe('CLEAR_TERMINAL');
+    expect(r.output).toBe('');
+    expect('clearScreen' in r && r.clearScreen).toBe(true);
   });
 
   it('Get-NetIPConfiguration muestra IP', () => {

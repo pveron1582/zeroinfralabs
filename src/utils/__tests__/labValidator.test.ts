@@ -505,6 +505,37 @@ describe('labValidator', () => {
       expect(validateMission(none, createMission({ type: 'fileRead' }))).toBe(false);
     });
 
+    it('debe validar fileRead por ruta (misión precisa de un archivo)', () => {
+      const mk = (path: string): CommandResponse => ({ output: 'test', fileRead: {
+        path, isNote: false, isFlag: false, isPayload: false, content: '',
+      } });
+      // POSIX: prefijo de directorio cuenta como match
+      expect(validateMission(mk('/opt/svc-backup/svc-backup.ini'),
+        createMission({ type: 'fileRead', path: '/opt/svc-backup' }))).toBe(true);
+      // Otro directorio NO valida (por eso la nota de credenciales no
+      // completa la misión de "leé la config del servicio")
+      expect(validateMission(mk('/opt/adjuntos/nota.txt'),
+        createMission({ type: 'fileRead', path: '/opt/svc-backup' }))).toBe(false);
+      // Un hermano con prefijo común tampoco
+      expect(validateMission(mk('/opt/svc-backup2/x.ini'),
+        createMission({ type: 'fileRead', path: '/opt/svc-backup' }))).toBe(false);
+      // Windows: `C:\\x` y `/C:/x` son la misma ruta
+      expect(validateMission(mk('/C:/Users/Public/svc-backup/svc-backup.ini'),
+        createMission({ type: 'fileRead', path: 'C:\\Users\\Public\\svc-backup' }))).toBe(true);
+      expect(validateMission(mk('/c:/users/public/svc-backup/svc-backup.ini'),
+        createMission({ type: 'fileRead', path: 'C:\\Users\\Public\\svc-backup' }))).toBe(true);
+      // Archivo exacto
+      expect(validateMission(mk('/opt/svc-backup/svc-backup.ini'),
+        createMission({ type: 'fileRead', path: '/opt/svc-backup/svc-backup.ini' }))).toBe(true);
+      expect(validateMission(mk('/opt/svc-backup/otro.ini'),
+        createMission({ type: 'fileRead', path: '/opt/svc-backup/svc-backup.ini' }))).toBe(false);
+      // La ruta convive con fileType
+      expect(validateMission(mk('/opt/svc-backup/flag.txt'),
+        createMission({ type: 'fileRead', fileType: 'flag', path: '/opt/svc-backup' }))).toBe(false);
+      const none: CommandResponse = { output: 'test' };
+      expect(validateMission(none, createMission({ type: 'fileRead', path: '/opt/svc-backup' }))).toBe(false);
+    });
+
     it('debe validar fileDownloaded por nombre y contenido', () => {
       const mk = (path: string, content: string): CommandResponse => ({
         output: 'test', downloadedFile: { path, content, type: 'text' },

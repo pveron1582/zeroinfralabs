@@ -17,6 +17,18 @@ function sessionCwd(state: MsfState, ctx: CommandContext): string {
   return state.cwd ?? ctx.currentDir ?? '/';
 }
 
+/** Máquina víctima de la sesión (para whoami/hostname), o null. */
+function sessionMachine(state: MsfState, ctx: CommandContext) {
+  if (!state.sessionTargetId) return null;
+  return (ctx.allMachines ?? []).find(m => m.id === state.sessionTargetId) ?? null;
+}
+
+/** Nombre de equipo de la víctima. */
+function sessionHost(state: MsfState, ctx: CommandContext): string {
+  const m = sessionMachine(state, ctx);
+  return m?.win?.computerName || m?.machine_info.hostname || 'WIN7-TARGET';
+}
+
 /** ctx con currentDir fijado al cwd de la sesión (para delegar en cmd.exe). */
 function sessionCtx(ctx: CommandContext, cwd: string): CommandContext {
   return { ...ctx, currentDir: cwd };
@@ -36,15 +48,21 @@ export const executeShellCommand = (
   }
 
   if (cmd === 'cls') {
-    return { output: 'CLEAR_TERMINAL' };
+    return { output: '', clearScreen: true };
   }
 
   if (cmd === 'whoami') {
-    return withState(`nt authority\\system\n`, state);
+    // La cuenta la fija el exploit: SYSTEM para los SMB, la cuenta del
+    // servicio para un RCE web (p.ej. SquirrelMail). Sin dato → SYSTEM.
+    const user = state.sessionUser;
+    const name = !user || user.toLowerCase() === 'system'
+      ? 'nt authority\\system'
+      : `nt ${sessionHost(state, ctx).toLowerCase()}\\${user.toLowerCase()}`;
+    return withState(`${name}\n`, state);
   }
 
   if (cmd === 'hostname') {
-    return withState(`WIN7-TARGET\n`, state);
+    return withState(`${sessionHost(state, ctx)}\n`, state);
   }
 
   // ── cd / chdir ──────────────────────────────────────────────────

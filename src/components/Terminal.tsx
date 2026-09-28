@@ -10,7 +10,7 @@ import { StreamingOutput } from './StreamingOutput';
 import { EditorModal } from './EditorModal';
 import { TerminalInput } from './TerminalInput';
 import {
-  promptColors, PS_PROMPT_COLORS, PS_BG, CMD_BG, PS_TEXT,
+  promptColors, PS_PROMPT_COLORS, PS_BG, PS_TEXT, WIN_TERM_FG,
 } from './terminalTheme';
 
 export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacity?: number; isWindowed?: boolean; isMobileKey?: string | null; compactHeader?: boolean }) {
@@ -28,16 +28,17 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
 
   // PowerShell: fondo azul clásico + texto/blanco (prompt y salida).
   const isPsMode = isPsActiveFn() || isPsPromptText(prompt) || prompt.startsWith('PS ');
-  const activePromptColors = isPsMode ? PS_PROMPT_COLORS : promptColors;
-  const displayColor = isPsMode ? PS_TEXT : color;
-  // compactHeader = terminal cmd/PS del escritorio Windows (siempre oscuro).
-  const backgroundColor = isPsMode
+  // compactHeader = terminal cmd/PS del escritorio Windows (dentro de una
+  // ventana del escritorio o del RDP): azul oscuro de consola y texto blanco
+  // siempre, sin importar el tema de Kali ni el tipo de sesión.
+  const isWinTerm = compactHeader;
+  const activePromptColors = (isWinTerm || isPsMode) ? PS_PROMPT_COLORS : promptColors;
+  const displayColor = isWinTerm ? WIN_TERM_FG : isPsMode ? PS_TEXT : color;
+  const backgroundColor = (isWinTerm || isPsMode)
     ? PS_BG
-    : compactHeader
-      ? CMD_BG
-      : isWindowed
-        ? 'transparent'
-        : `rgba(3, 7, 18, ${opacity})`;
+    : isWindowed
+      ? 'transparent'
+      : `rgba(3, 7, 18, ${opacity})`;
 
   // Mobile KeyRow injection
   useEffect(() => {

@@ -233,8 +233,8 @@ describe('useRunCommand - runCommand', () => {
     expect(startSshSession).toHaveBeenCalled();
   });
 
-  it('CLEAR_TERMINAL limpia el historial', () => {
-    const executor = createMockExecutor(vi.fn(() => ({ output: 'CLEAR_TERMINAL' })));
+  it('clearScreen limpia el historial (P0.4)', () => {
+    const executor = createMockExecutor(vi.fn(() => ({ output: '', clearScreen: true })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps, setHistory: vi.fn() });
     const { result } = renderHook(() => useRunCommand(deps));
@@ -244,7 +244,7 @@ describe('useRunCommand - runCommand', () => {
 
   it('EXIT_TO_LANDING con todas las misiones completas dispara survey', () => {
     storeRef.current.missions = [{ id: 1, status: 'completed' }];
-    const executor = createMockExecutor(vi.fn(() => ({ output: 'EXIT_TO_LANDING' })));
+    const executor = createMockExecutor(vi.fn(() => ({ output: '', exitToLanding: true })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps });
     const { result } = renderHook(() => useRunCommand(deps));
@@ -255,7 +255,7 @@ describe('useRunCommand - runCommand', () => {
 
   it('EXIT_TO_LANDING con misiones incompletas resetea el workspace', () => {
     storeRef.current.missions = [{ id: 1, status: 'active' }];
-    const executor = createMockExecutor(vi.fn(() => ({ output: 'EXIT_TO_LANDING' })));
+    const executor = createMockExecutor(vi.fn(() => ({ output: '', exitToLanding: true })));
     const sessionDeps = { ...makeDeps().sessionDeps, executor };
     const deps = makeDeps({ sessionDeps });
     const { result } = renderHook(() => useRunCommand(deps));

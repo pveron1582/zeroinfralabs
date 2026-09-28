@@ -70,7 +70,7 @@ function runInvocation(
   // Aplicar nombre canónico para cmdlets que inspeccionan inv.rawName
   const resolved: PsInvocation = { ...inv, name: canonical };
   const result = exec(resolved, ctx);
-  // Los cmdlets pueden emitir CLEAR_TERMINAL u otros flags — pasar tal cual
+  // Los cmdlets pueden emitir clearScreen u otros flags — pasar tal cual
   return result;
 }
 

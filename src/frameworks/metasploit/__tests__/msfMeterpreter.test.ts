@@ -111,7 +111,7 @@ describe('executeMeterpreterCommand', () => {
   it('debe limpiar pantalla con clear', () => {
     const result = executeMeterpreterCommand('clear', [], meterpreterState, createMockContext());
     expect(result).not.toBeNull();
-    expect(result!.output).toContain('CLEAR_TERMINAL');
+    expect('clearScreen' in result! && result!.clearScreen).toBe(true);
   });
 
   it('debe mostrar error para comando desconocido', () => {

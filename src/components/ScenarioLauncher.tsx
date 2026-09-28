@@ -35,6 +35,15 @@ function ScenarioLauncher() {
   // Cebo: si este mount seleccionó un lab válido, NO hay que redirigir a
   // /labs desde el otro efecto del mismo commit (evita el bucle lab→labs).
   const startedLabRef = useRef(false);
+  // ¿Este mount llegó a mostrar el workspace? Distingue el primer render
+  // (el lab todavía arrancando: NO navegar, era el bug de "hay que entrar
+  // al lab 2-3 veces") de la salida del lab (view vuelve a 'landing' con el
+  // workspace ya visto: ahí SÍ hay que sacar la URL del escenario).
+  const wasWorkspaceRef = useRef(false);
+
+  useEffect(() => {
+    if (view === 'workspace') wasWorkspaceRef.current = true;
+  }, [view]);
 
   useEffect(() => {
     if (!validLang || !id) return;
@@ -62,14 +71,28 @@ function ScenarioLauncher() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validLang, id]);
 
-  // Solo redirigimos a /labs cuando este mount NO seleccionó un lab.
-  // Antes: el efecto navegaba en el primer render (view === 'landing'
-  // mientras el loader todavía no había arrancado) y el usuario tenía que
-  // re-ingresar al lab 2-3 veces.
+  // Navegamos a /labs cuando este mount NO seleccionó un lab, y también
+  // cuando el usuario salió del lab que este mount arrancó: en ese caso el
+  // componente renderiza el <LabGrid/> inline (línea de abajo) y, sin esta
+  // navegación, la barra de direcciones quedaba en /scenario/<id> con la
+  // grilla de labs en pantalla.
   useEffect(() => {
-    if (view === 'landing' && !startedLabRef.current) {
+    if (view !== 'landing') return;
+    // (a) Este mount ya mostró el workspace y ahora vuelve a 'landing': el
+    // usuario salió del lab. Hay que sacar la URL del escenario — el
+    // componente renderiza el <LabGrid/> inline y, sin navegar, la barra de
+    // direcciones quedaba en /scenario/<id> con la grilla en pantalla.
+    if (wasWorkspaceRef.current) {
+      navigate(`/${validLang}/labs`, { replace: true });
+      return;
+    }
+    // (b) Este mount no seleccionó ningún lab (id inválido, o el launcher
+    // montado por otra razón): va a /labs.
+    if (!startedLabRef.current) {
       navigate(`/${validLang}/labs`, { replace: true });
     }
+    // (c) Primer render con el loader del lab en curso: NO navegar, era el
+    // bug de "hay que re-ingresar al lab 2-3 veces".
   }, [view, validLang, navigate]);
 
   if (showMachineLoader && loadingMachine) {

@@ -11,6 +11,7 @@ import { InclusionSite } from './fakesites/lfi_lab/InclusionSIte';
 import { ConsultancySite } from './fakesites/ConsultancySite';
 import { SqlInjectionSite } from './fakesites/SqlInjectionSite';
 import { CasinoVeoSite } from './fakesites/casinoveo/CasinoVeoSite';
+import { SquirrelMailSite } from './fakesites/squirrelmail/SquirrelMailSite';
 import { ZeroInfraLabs } from './fakesites/ZeroInfraLabs';
 import { GoogleHome, GoogleSearch, HttpSecurityError, PageNotFound, DinoGame } from './fakebrowser/pages';
 import { useLfiRceEffect, useLfiUploadHandler } from './fakebrowser/lfiRce';
@@ -63,6 +64,13 @@ export function FakeBrowser({
     return allMachines.find(m => m.id.includes('sqli'));
   }, [allMachines]);
   const casinoMachine = useMemo(() => allMachines.find(m => isCasinoVeo(m)), [allMachines]);
+  // Webmail SquirrelMail (lab 08): el CMS lo declara el lab, igual que
+  // WordPress. El scanner de Metasploit mira el mismo campo, así que si
+  // el navegador no muestra el webmail, msfconsole tampoco lo encuentra.
+  const webmailMachine = useMemo(
+    () => allMachines.find(m => (m.web_enumeration?.cms || '').toLowerCase().includes('squirrelmail')),
+    [allMachines],
+  );
 
   const reload = () => {
     setReloading(true);
@@ -180,6 +188,17 @@ export function FakeBrowser({
     }
     if (currentUrl.includes('zeroinfralabs.vercel.app')) return <ZeroInfraLabs />;
     if (currentUrl === 'chrome://dino') return <DinoGame />;
+
+    if (webmailMachine && currentUrl.includes(webmailMachine.machine_info.ip)) {
+      return (
+        <SquirrelMailSite
+          machine={webmailMachine}
+          currentUrl={currentUrl}
+          browserIsLoggedIn={isLoggedIn}
+          onNavigate={navigate}
+        />
+      );
+    }
 
     if (wpMachine && currentUrl.includes(wpMachine.machine_info.ip)) {
       return (

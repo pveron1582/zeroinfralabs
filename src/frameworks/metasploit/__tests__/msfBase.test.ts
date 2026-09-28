@@ -238,7 +238,7 @@ describe('executeBaseCommand - clear', () => {
   it('debe limpiar la pantalla', () => {
     const result = executeBaseCommand('clear', [], { active: true, options: {}, sessionOpen: false, shellMode: false, auxChecked: false, uidChecked: false }, createMockContext());
     expect(result).not.toBeNull();
-    expect(result!.output).toContain('CLEAR_TERMINAL');
+    expect('clearScreen' in result! && result!.clearScreen).toBe(true);
   });
 });
 

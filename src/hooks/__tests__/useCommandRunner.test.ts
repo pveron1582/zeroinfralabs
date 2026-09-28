@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useCommandRunner, type CommandRunnerProps } from '../useCommandRunner';
 import { shellManager } from '../../frameworks/shells/ShellManager';
 import { resetScenarioManagers } from '../../frameworks/resetManagers';
+import { useScenarioStore } from '../../store/scenarioStore';
 
 const makeMachine = (overrides = {}) => ({
   id: 'attacker-01',
@@ -224,20 +225,46 @@ describe('useCommandRunner', () => {
     });
   });
 
-  describe('runCommand - CLEAR_TERMINAL', () => {
+  // ── P0.4: clear/exit llegan como metadata, no como texto de salida ──
+  describe('runCommand - clearScreen (P0.4)', () => {
     it('debe limpiar el historial', () => {
       const { result } = renderHook(() => useCommandRunner(defaultProps));
-      getExecutor().executeCommand = vi.fn(() => ({ output: 'CLEAR_TERMINAL' }));
+      getExecutor().executeCommand = vi.fn(() => ({ output: '', clearScreen: true }));
       act(() => { result.current.runCommand('clear'); });
       expect(result.current.history).toEqual([]);
     });
+
+    it('NO limpia si la salida dice CLEAR_TERMINAL pero no pide limpiar', () => {
+      // El bug viejo: `python3 -c "print('CLEAR_TERMINAL')"` (o `echo`) borraba
+      // la terminal del alumno.
+      const { result } = renderHook(() => useCommandRunner(defaultProps));
+      getExecutor().executeCommand = vi.fn(() => ({ output: 'CLEAR_TERMINAL' }));
+      act(() => { result.current.runCommand('echo CLEAR_TERMINAL'); });
+      expect(result.current.history.length).toBeGreaterThan(0);
+      expect(result.current.history.some(e => e.output === 'CLEAR_TERMINAL')).toBe(true);
+    });
+
+    it('procesa la metadata ANTES de limpiar (cat flag | clear valida)', () => {
+      const onMissionComplete = vi.fn();
+      const { result } = renderHook(() => useCommandRunner({ ...defaultProps, onMissionComplete }));
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: '',
+        clearScreen: true,
+        fileRead: { path: '/root/flag.txt', isFlag: true, isNote: false, isPayload: false, content: 'ZIL{x}' },
+        completedMissionId: 1,
+      }));
+      act(() => { result.current.runCommand('cat /root/flag.txt | clear'); });
+      // El historial se limpia, pero la misión se completó igual.
+      expect(result.current.history).toEqual([]);
+      expect(onMissionComplete).toHaveBeenCalledWith(1);
+    });
   });
 
-  describe('runCommand - EXIT_TO_LANDING', () => {
+  describe('runCommand - exitToLanding (P0.4)', () => {
     it('debe llamar triggerSurvey si todas las misiones están completas', () => {
       getStore().missions = [{ id: 1, status: 'completed' }];
       const { result } = renderHook(() => useCommandRunner(defaultProps));
-      getExecutor().executeCommand = vi.fn(() => ({ output: 'EXIT_TO_LANDING' }));
+      getExecutor().executeCommand = vi.fn(() => ({ output: '', exitToLanding: true }));
       act(() => { result.current.runCommand('exit'); });
       expect(getStore().triggerSurvey).toHaveBeenCalled();
     });
@@ -245,9 +272,18 @@ describe('useCommandRunner', () => {
     it('debe resetear el store si hay misiones incompletas', () => {
       getStore().missions = [{ id: 1, status: 'active' }];
       const { result } = renderHook(() => useCommandRunner(defaultProps));
-      getExecutor().executeCommand = vi.fn(() => ({ output: 'EXIT_TO_LANDING' }));
+      getExecutor().executeCommand = vi.fn(() => ({ output: '', exitToLanding: true }));
       act(() => { result.current.runCommand('exit'); });
       expect(getStore().triggerSurvey).not.toHaveBeenCalled();
+    });
+
+    it('NO sale del lab si la salida dice EXIT_TO_LANDING', () => {
+      getStore().missions = [{ id: 1, status: 'active' }];
+      const { result } = renderHook(() => useCommandRunner(defaultProps));
+      getExecutor().executeCommand = vi.fn(() => ({ output: 'EXIT_TO_LANDING' }));
+      act(() => { result.current.runCommand('echo EXIT_TO_LANDING'); });
+      expect(getStore().triggerSurvey).not.toHaveBeenCalled();
+      expect(result.current.history.some(e => e.output === 'EXIT_TO_LANDING')).toBe(true);
     });
   });
 
@@ -389,6 +425,57 @@ describe('useCommandRunner', () => {
       expect(streamingEntry.command).toBe('nmap -p 22 10.10.10.11');
       act(() => { vi.advanceTimersByTime(500); });
       expect(result.current.busy).toBe(false);
+    });
+  });
+
+  // ── P0.5: el timer del streaming no debe aplicar el resultado de un
+  // lab que ya no es el actual (el exploit de EternalBlue tarda ~15 s).
+  describe('runCommand - streaming con cambio de escenario (P0.5)', () => {
+    beforeEach(() => { vi.useFakeTimers(); });
+    afterEach(() => { vi.useRealTimers(); });
+
+    it('descarta el resultado si el escenario cambió mientras escribía', () => {
+      const setMachineFiles = vi.fn();
+      const onChangeMachine = vi.fn();
+      const store = useScenarioStore.getState();
+      const origScenario = store.currentScenario;
+
+      const { result, unmount } = renderHook(() => useCommandRunner(defaultProps));
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: 'linea 1\nlinea 2\n',
+        streamingLineDelays: [100, 200],
+        filesChanged: [{ path: '/tmp/x', content: 'z', type: 'text' }],
+      }));
+
+      act(() => { result.current.runCommand('exploit'); });
+      expect(result.current.busy).toBe(true);
+
+      // El alumno sale del lab y entra a otro mientras "se escribe" la salida.
+      const otro = { ...origScenario, id: 'scenario-02' };
+      useScenarioStore.setState({ currentScenario: otro });
+
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(setMachineFiles).not.toHaveBeenCalled();
+      expect(onChangeMachine).not.toHaveBeenCalled();
+      // El busy se libera igual: la terminal no queda bloqueada.
+      expect(result.current.busy).toBe(false);
+
+      useScenarioStore.setState({ currentScenario: origScenario });
+      unmount();
+    });
+
+    it('desmontar la terminal cancela el timer (no queda applying nada)', () => {
+      const { result, unmount } = renderHook(() => useCommandRunner(defaultProps));
+      getExecutor().executeCommand = vi.fn(() => ({
+        output: 'a\nb\n',
+        streamingLineDelays: [100, 200],
+      }));
+      act(() => { result.current.runCommand('exploit'); });
+      expect(result.current.busy).toBe(true);
+      unmount();
+      // Si el timer siguiera vivo, esto aplicaría el resultado huérfano.
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(true).toBe(true);
     });
   });
 

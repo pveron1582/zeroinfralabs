@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 7 visible labs (laboratorio01-06 + 08; laboratorio07 hidden but reachable by direct URL), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 2686 tests across 218 files.
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 58 lessons, and Remotion video lessons. 2733 tests across 220 files.
 
 ## Commands
 

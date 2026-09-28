@@ -34,8 +34,10 @@ describe('cmd sesión (cmd.exe)', () => {
     expect(r.output).toBe('MODO=admin');
   });
 
-  it('cls retorna CLEAR_TERMINAL', () => {
-    expect(exec('cls', winMachine()).output).toBe('CLEAR_TERMINAL');
+  it('cls pide limpiar la pantalla vía metadata (P0.4)', () => {
+    const r = exec('cls', winMachine());
+    expect(r.output).toBe('');
+    expect('clearScreen' in r && r.clearScreen).toBe(true);
   });
 
   it('ver muestra la versión de Windows', () => {

@@ -9,6 +9,7 @@ import { pyStr, pyTruthy, pyTypeName, pyEquals, isPyObject } from './values';
 import type { Env } from './env';
 import { PyError, typeError } from './errors';
 import type { RunCtx } from './context';
+import { MAX_ITEMS, MAX_STRING_LEN } from './context';
 import {
   getStrMethod, getListMethod, getDictMethod, getFileMethod, hashKey,
 } from './builtins';
@@ -190,23 +191,69 @@ function contains(item: PyValue, container: PyValue, line: number): boolean {
     `argument of type '${pyTypeName(container)}' is not iterable`, line);
 }
 
+// ── Topes de memoria (P0.2) ────────────────────────────────────────
+// El intérprete corre en la pestaña del alumno: una operación que reserva
+// cientos de MB (o lanza RangeError) escapaba del runtime y el
+// ChunkErrorBoundary reemplazaba toda la app. Cada límite se reporta como
+// MemoryError, igual que en CPython.
+
+function tooMuchMemory(line: number, what: string, limit: number): PyError {
+  return new PyError(
+    'MemoryError',
+    `${what} demasiado grande para el simulador (máximo ${limit})`,
+    line,
+  );
+}
+
+/** Repeticiones seguras de un string/lista: corta antes de reservar de más. */
+function safeCount(n: number, unitSize: number, line: number, what: string, limit: number): number {
+  if (!Number.isFinite(n)) throw tooMuchMemory(line, what, limit);
+  const times = Math.max(0, Math.floor(n));
+  // Unidad vacía: repetir no crece ("" * 1e9 es "" en Python).
+  if (unitSize === 0 || times === 0) return 0;
+  if (times > Math.floor(limit / unitSize)) throw tooMuchMemory(line, what, limit);
+  return times;
+}
+
+function repeatString(s: string, line: number): string {
+  if (s.length > MAX_STRING_LEN) throw tooMuchMemory(line, 'string', MAX_STRING_LEN);
+  return s;
+}
+
+function concatItems(a: PyValue[], b: PyValue[], line: number): PyValue[] {
+  if (a.length + b.length > MAX_ITEMS) throw tooMuchMemory(line, 'lista', MAX_ITEMS);
+  return [...a, ...b];
+}
+
 export function evalBinOp(op: string, l: PyValue, r: PyValue, line: number): PyValue {
   if (op === '+') {
     if (isNum(l) && isNum(r)) return asNum(l) + asNum(r);
-    if (typeof l === 'string' && typeof r === 'string') return l + r;
+    if (typeof l === 'string' && typeof r === 'string') return repeatString(l + r, line);
     if (isPyObject(l) && isPyObject(r) && l.kind === 'list' && r.kind === 'list') {
-      return { kind: 'list', items: [...l.items, ...r.items] };
+      return { kind: 'list', items: concatItems(l.items, r.items, line) };
     }
     if (isPyObject(l) && isPyObject(r) && l.kind === 'tuple' && r.kind === 'tuple') {
-      return { kind: 'tuple', items: [...l.items, ...r.items] };
+      return { kind: 'tuple', items: concatItems(l.items, r.items, line) };
     }
   } else if (op === '*') {
     if (isNum(l) && isNum(r)) return asNum(l) * asNum(r);
-    if (typeof l === 'string' && isNum(r)) return l.repeat(Math.max(0, asNum(r)));
-    if (isNum(l) && typeof r === 'string') return r.repeat(Math.max(0, asNum(l)));
+    if (typeof l === 'string' && isNum(r)) {
+      return repeatString(l.repeat(safeCount(asNum(r), l.length, line, 'string', MAX_STRING_LEN)), line);
+    }
+    if (isNum(l) && typeof r === 'string') {
+      return repeatString(r.repeat(safeCount(asNum(l), r.length, line, 'string', MAX_STRING_LEN)), line);
+    }
     if (isPyObject(l) && l.kind === 'list' && isNum(r)) {
+      const times = safeCount(asNum(r), l.items.length, line, 'lista', MAX_ITEMS);
       const out: PyValue[] = [];
-      for (let i = 0; i < asNum(r); i++) out.push(...l.items);
+      // push en bucle (no out.push(...items)): el spread revienta el stack
+      // de JS con listas grandes.
+      for (let i = 0; i < times; i++) {
+        for (const item of l.items) {
+          out.push(item);
+          if (out.length > MAX_ITEMS) throw tooMuchMemory(line, 'lista', MAX_ITEMS);
+        }
+      }
       return { kind: 'list', items: out };
     }
   } else if (op === '-' || op === '/' || op === '//' || op === '%') {

@@ -67,7 +67,10 @@ export function WindowHost({
           </button>
         </div>
       </div>
-      <div className="flex-1 min-h-0 relative bg-white overflow-hidden">{children}</div>
+      {/* Cuerpo: flex column para que los hijos con `flex-1` (la terminal)
+          ocupen TODO el alto. Con `relative` solo, la terminal quedaba del
+          tamaño del contenido y se veía el bg-white debajo. */}
+      <div className="flex-1 min-h-0 relative bg-white overflow-hidden flex flex-col">{children}</div>
       <div
         onPointerDown={e => onStartResize(w.id, e, 'nw')}
         className="absolute top-0 left-0 w-2 h-2 cursor-nw-resize z-50"

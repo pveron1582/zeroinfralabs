@@ -34,7 +34,16 @@ jobs:
         run: pnpm lint
 
       - name: Test
-        run: pnpm test:run
+        # Con --coverage para que los thresholds de vitest.config.ts BLOQUEEN:
+        # antes era `pnpm test:run` y el gate de cobertura nunca se ejecutaba.
+        run: pnpm test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
 
       - name: Build
         run: pnpm build

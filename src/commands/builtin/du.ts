@@ -3,7 +3,7 @@
 // los archivos del filesystem virtual (contenido + bloque base 4K).
 
 import type { CommandContext, CommandResponse } from '../../types';
-import { findDirEntry } from '../../utils/fs';
+import { findDirEntry, isUnderPath } from '../../utils/fs';
 import { getCurrentUser } from '../../utils/users';
 import { canExecute } from '../../utils/permissions';
 
@@ -18,7 +18,7 @@ function sizeOf(machine: CommandContext['machine'], dir: string): { bytes: numbe
   let bytes = DIR_BLOCK;
   let files = 0;
   for (const f of machine.files || []) {
-    if (f.path.startsWith(dir + '/')) {
+    if (isUnderPath(f.path, dir) && f.path !== dir) {
       if (f.path.endsWith('/.dir')) {
         bytes += DIR_BLOCK;
       } else {
@@ -74,7 +74,7 @@ export const cmd_du = {
     // Modo -a: listar cada subdirectorio
     const subdirs = new Set<string>();
     for (const f of machine.files || []) {
-      if (!f.path.startsWith(dir + '/') || f.path === dir + '/.dir') continue;
+      if (!isUnderPath(f.path, dir) || f.path === dir + '/.dir') continue;
       const rel = f.path.slice(dir.length + 1);
       const first = rel.split('/')[0];
       if (f.path.endsWith('/.dir')) subdirs.add(dir + '/' + first);

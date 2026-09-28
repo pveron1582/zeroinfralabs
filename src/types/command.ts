@@ -203,6 +203,13 @@ interface CmdResponseBase {
   // El store la usa para alimentar el historial del proxy y la pestaña Target.
   httpRequest?: HttpRequestData;
   httpResponse?: HttpResponseData;
+  // Peticiones de UI al runner (P0.4). Antes se signals por el texto de la
+  // salida (`output === 'CLEAR_TERMINAL'`), así que cualquier comando que
+  // imprimiera esa palabra exacta borraba la pantalla — y como el handler
+  // hacia `return` antes de processar la metadata, `cat flag | clear` no
+  // completaba la misión. Ahora es metadata explícita.
+  clearScreen?: boolean;
+  exitToLanding?: boolean;
 }
 
 export type CommandResponse = CmdResponseBase & (

@@ -40,6 +40,23 @@ export function isDirectoryEntry(file: FileEntry): boolean {
   return file.path.endsWith('/.dir');
 }
 
+/**
+ * ¿`filePath` es el directorio `dir` o está dentro de él?
+ *
+ * Es el predicado de "todo lo que cuelga de este directorio" para `rm -r`,
+ * `cp -r`, `mv`, `rmdir`, `chgrp -R` y `chown -R`. Usar `path.startsWith(dir)`
+ * a secas confunde un hermano que comparte prefijo: con `dir = /home/user/x`,
+ * `/home/user/xyz/secreto` también empieza con ese string y `rm -rf` se
+ * llevaba también `xyz` (pérdida de datos irreversible en los labs).
+ *
+ * `dir` puede venir con o sin barra final: la normaliza.
+ */
+export function isUnderPath(filePath: string, dir: string): boolean {
+  const base = dir.length > 1 ? dir.replace(/\/+$/, '') : dir;
+  if (base === '' || base === '/') return filePath.startsWith('/');
+  return filePath === base || filePath.startsWith(base + '/');
+}
+
 export interface NewFileOwnership {
   owner: string;
   group: string;

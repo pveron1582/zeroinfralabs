@@ -54,7 +54,7 @@ export const cmd_set = {
 
 export const cmd_cls = {
   name: 'cls',
-  execute: (): CommandResponse => ({ output: 'CLEAR_TERMINAL' }),
+  execute: (): CommandResponse => ({ output: '', clearScreen: true }),
 };
 
 // ── ver ────────────────────────────────────────────────────────────

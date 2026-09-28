@@ -8,7 +8,7 @@
 
 import type { CommandContext, CommandResponse, Machine, ScanResultsData } from '../../types';
 import { runPython } from '../../frameworks/python';
-import type { PyRunOptions } from '../../frameworks/python';
+import type { PythonRunResult, PyRunOptions } from '../../frameworks/python';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canRead } from '../../utils/permissions';
@@ -96,7 +96,21 @@ function runAndRespond(
     connect: makeConnect(context),
   };
 
-  const run = runPython(spec.source, opts);
+  // Defensa en depth (P0.2): runPython ya no deja escapar errores de JS,
+  // pero si algo fallara (un bridge readFile/connect, o una regresión futura)
+  // el comando devuelve un traceback en vez de tumbar la app: sin esto, el
+  // error sube hasta el ChunkErrorBoundary y el alumno pierde la sesión
+  // completa del lab (la terminal, el escritorio remoto, las misiones).
+  let run: PythonRunResult;
+  try {
+    run = runPython(spec.source, opts);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return {
+      output: `Traceback (most recent call last):\n  File "${spec.sourceName}", in <module>\nRuntimeError: ${msg}`,
+      isError: true,
+    };
+  }
 
   if (run.needsInput) {
     return {

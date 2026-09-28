@@ -10,7 +10,9 @@ export const MSF_MODULES: MsfModule[] = [
   { path: 'auxiliary/scanner/smb/smb_version',    type: 'auxiliary', desc: 'SMB Version Detection',               rank: 'normal'    },
   { path: 'auxiliary/scanner/portscan/tcp',        type: 'auxiliary', desc: 'TCP Port Scanner',                    rank: 'normal'    },
   { path: 'auxiliary/scanner/smb/smb_login',       type: 'auxiliary', desc: 'SMB Login Check Scanner',             rank: 'normal'    },
-  { path: 'auxiliary/scanner/http/http_version',   type: 'auxiliary', desc: 'HTTP Version Detection',              rank: 'normal'    },
+  { path: 'auxiliary/scanner/http/http_version',   type: 'auxiliary', desc: 'HTTP Version Detection',              rank: 'normal'   },
+  { path: 'auxiliary/scanner/http/squirrelmail_version', type: 'auxiliary', desc: 'SquirrelMail Webmail Version Detection', rank: 'normal'  },
+  { path: 'exploit/multi/http/squirrelmail_cgi_rce', type: 'exploit', desc: 'SquirrelMail sendmail.cf RCE (CVE-2017-7692)', rank: 'great' },
   { path: 'exploit/windows/smb/ms17_010_eternalblue', type: 'exploit', desc: 'MS17-010 EternalBlue SMB RCE',      rank: 'average'   },
   { path: 'exploit/windows/smb/ms17_010_psexec',      type: 'exploit', desc: 'MS17-010 EternalBlue PsExec',       rank: 'normal'    },
   { path: 'exploit/windows/smb/smb_doublepulsar_rce', type: 'exploit', desc: 'SMB DOUBLEPULSAR RCE',              rank: 'great'     },
@@ -33,5 +35,14 @@ export const MODULE_DEFAULTS: Record<string, Record<string, string>> = {
     RHOSTS: '', RPORT: '445', LHOST: '', LPORT: '4444',
     PAYLOAD: 'windows/x64/meterpreter/reverse_tcp',
     VerifyArch: 'true', VerifyTarget: 'true',
+  },
+  'auxiliary/scanner/http/squirrelmail_version': {
+    RHOSTS: '', RPORT: '443', URI: '/webmail/src/login.php', THREADS: '1',
+  },
+  // Exploit web de SquirrelMail: no usa handler ni LHOST (entrega la sesión
+  // in situ), por eso solo necesita RHOSTS/RPORT/URI.
+  'exploit/multi/http/squirrelmail_cgi_rce': {
+    RHOSTS: '', RPORT: '443', URI: '/webmail/src/login.php',
+    ATTACHMENT: 'sendmail-exploit.cf', EMAIL_ADDRESS: '-C/tmp/squirrelmail-exploit.cf',
   },
 };

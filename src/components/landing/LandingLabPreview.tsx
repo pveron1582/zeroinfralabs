@@ -1,7 +1,7 @@
 // Compact lab cards for landing preview
 
 import { Link } from 'react-router-dom';
-import { VISIBLE_SCENARIOS, SCENARIOS_META } from '../../laboratorios/laboratorios';
+import { VISIBLE_SCENARIOS, VISIBLE_SCENARIOS_META } from '../../laboratorios/laboratorios';
 import { useLanguage, useT } from '../../i18n/translations';
 import { useColors, FONT_MONO, FONT_SANS } from './constants';
 import { useScenarioStore } from '../../store/scenarioStore';
@@ -23,7 +23,9 @@ export function LandingLabPreview({ language, labsLink }: { language: string; la
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {VISIBLE_SCENARIOS.slice(0, PREVIEW_COUNT).map((scenario, i) => {
-            const meta = SCENARIOS_META[i];
+            // META filtrado por posición: indexar SCENARIOS_META sobre
+            // VISIBLE_SCENARIOS desalinea desde que hay labs hidden.
+            const meta = VISIBLE_SCENARIOS_META[i];
             const accent = meta?.accentColor ?? colors.emerald;
             const desc = lang === 'es' ? (meta?.descriptionEs || meta?.description) : meta?.description;
             const diff = scenario.difficulty === 'Easy' ? t('easy') : scenario.difficulty === 'Medium' ? t('medium') : t('hard');

@@ -3,6 +3,7 @@
 // (su pendiente / FTP / SSH / comando normal) y streaming línea por línea.
 // Extraído de useCommandRunner.ts para mantenerlo <300 líneas.
 
+import { useEffect, useRef } from 'react';
 import type { CommandResponse, FtpSessionData, SshSessionData, RdpSessionData, PsState } from '../types';
 import type { IsolatedExecutor, MsfState } from '../commands';
 import type { HistoryEntry, ProcessDeps } from './processCommandResult';
@@ -57,6 +58,19 @@ export interface RunCommandDeps {
 }
 
 export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
+  // Timer del streaming (P0.5): puede valer hasta ~15 s (exploit de
+  // EternalBlue con `streamingLineDelays`). Sin cleanup, si la terminal se
+  // desmontaba o el alumno cambiaba de lab en esa ventana, el callback
+  // aplicaba `setMachineFiles` / `onChangeMachine` / `setCurrentDir` contra
+  // el escenario NUEVO: la terminal quedaba apuntando a la víctima del lab
+  // anterior. Se cancela al desmontar y antes de cada comando nuevo.
+  const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (streamTimerRef.current !== null) clearTimeout(streamTimerRef.current);
+    streamTimerRef.current = null;
+  }, []);
+
   const {
     pendingSu, handleSuPassword,
     pendingPython, handlePythonInput,
@@ -233,14 +247,27 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
 
     handleDownloadedFile(result, () => currentPrompt);
 
-    if (result.output === 'CLEAR_TERMINAL') { setHistory([]); return; }
-    if (result.output === 'EXIT_TO_LANDING') {
-      const state = useScenarioStore.getState();
-      const allComplete = state.missions.length > 0 && state.missions.every(m => m.status === 'completed');
-      if (allComplete) {
-        state.triggerSurvey(state.currentScenario);
-      } else {
-        useScenarioStore.getState().resetWorkspace();
+    // Peticiones de UI al runner (P0.4). Antes se detectaban comparando el
+    // texto de la salida ('CLEAR_TERMINAL' / 'EXIT_TO_LANDING') y se hacía
+    // `return` ANTES de procesar la metadata: `cat flag | clear` no completaba
+    // la misión y `touch x | clear` no re-renderizaba. Además, cualquier
+    // comando que imprimiera esa palabra exacta disparaba el efecto
+    // (`python3 -c "print('CLEAR_TERMINAL')"`, `echo EXIT_TO_LANDING` sacaba
+    // al alumno del lab). Ahora es metadata explícita y la metadata se
+    // procesa SIEMPRE primero.
+    const wantsClear = 'clearScreen' in result && result.clearScreen;
+    const wantsLanding = 'exitToLanding' in result && result.exitToLanding;
+    if (wantsClear || wantsLanding) {
+      processCommandResult(processDeps, result, false);
+      if (wantsClear) setHistory([]);
+      if (wantsLanding) {
+        const state = useScenarioStore.getState();
+        const allComplete = state.missions.length > 0 && state.missions.every(m => m.status === 'completed');
+        if (allComplete) {
+          state.triggerSurvey(state.currentScenario);
+        } else {
+          state.resetWorkspace();
+        }
       }
       return;
     }
@@ -266,7 +293,15 @@ export function useRunCommand(deps: RunCommandDeps): (cmd: string) => void {
     const totalDelay = computeTotalDelay(lines, cfg, customDelays);
     setHistory(prev => [...prev, { command: trimmed, streaming: true, lines, prompt: currentPrompt, timestamp: entryTs, result, lineDelays: customDelays }]);
 
-    setTimeout(() => {
+    const scenarioId = useScenarioStore.getState().currentScenario.id;
+    streamTimerRef.current = setTimeout(() => {
+      streamTimerRef.current = null;
+      // Si el escenario cambió mientras se escribía la salida (el alumno
+      // salió y entró a otro lab), el resultado NO se aplica.
+      if (useScenarioStore.getState().currentScenario.id !== scenarioId) {
+        setBusy(false);
+        return;
+      }
       setBusy(false);
       processCommandResult(processDeps, result, true);
       setHistory(prev => prev.map(e =>

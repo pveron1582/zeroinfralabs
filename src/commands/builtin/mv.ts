@@ -2,7 +2,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canCreateInDir, canDeleteInDir } from '../../utils/permissions';
-import { findFile, findDirEntry, resolveParentDirPath } from '../../utils/fs';
+import { findFile, findDirEntry, resolveParentDirPath, isUnderPath } from '../../utils/fs';
 
 export const cmd_mv = {
   name: 'mv',
@@ -89,13 +89,14 @@ export const cmd_mv = {
 
       if (srcIsDir) {
         const srcPrefix = srcClean;
-        const srcEntries = newFiles.filter(f => f.path.startsWith(srcPrefix));
+        // isUnderPath: mover `/a/x` no se lleva a su hermano `/a/xyz`.
+        const srcEntries = newFiles.filter(f => isUnderPath(f.path, srcPrefix));
         for (const entry of srcEntries) {
           const relPath = entry.path.slice(srcPrefix.length);
           newFiles.push({ ...entry, path: targetPath + relPath });
         }
         for (let i = newFiles.length - 1; i >= 0; i--) {
-          if (newFiles[i].path.startsWith(srcPrefix)) newFiles.splice(i, 1);
+          if (isUnderPath(newFiles[i].path, srcPrefix)) newFiles.splice(i, 1);
         }
       } else {
         const idx = newFiles.findIndex(f => f.path === srcEntry.path);

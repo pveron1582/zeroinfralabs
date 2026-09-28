@@ -64,7 +64,7 @@ describe('executeShellCommand', () => {
   it('debe limpiar pantalla con cls', () => {
     const result = executeShellCommand('cls', [], shellState, makeCtx());
     expect(result).not.toBeNull();
-    expect(result!.output).toContain('CLEAR_TERMINAL');
+    expect('clearScreen' in result! && result!.clearScreen).toBe(true);
   });
 
   it('debe ejecutar whoami', () => {

@@ -814,4 +814,44 @@ describe('Terminal', () => {
     expect(row!.textContent).toContain('PS C:\\Users\\Administrator>');
     expect(row!.querySelector('input')).toBe(input);
   });
+
+  it('la terminal del escritorio Windows va con fondo azul oscuro y texto blanco', () => {
+    // `compactHeader` = terminal dentro de una ventana del escritorio/RDP.
+    // Antes heredaba el verde de Kali y dejaba el bg-white del host de la
+    // ventana por debajo (franja blanca bajo el contenido).
+    const windowsMachine = createMockMachine({
+      machine_info: {
+        hostname: 'WEBMAIL-SRV',
+        ip: '10.10.10.50',
+        mac: '52:54:00:12:34:56',
+        os: 'Windows Server 2019',
+        status: 'active',
+        type: 'victim',
+        family: 'windows',
+      },
+      win: { currentUser: 'helpdesk', isAdmin: false, computerName: 'WEBMAIL-SRV' },
+    });
+    const { container } = render(
+      <Terminal
+        scenarioId="scenario-01"
+        machine={windowsMachine}
+        allMachines={[windowsMachine]}
+        currentMissionId={1}
+        onMissionComplete={vi.fn()}
+        onChangeMachine={vi.fn()}
+        onCredentialsFound={vi.fn()}
+        isWindowed
+        compactHeader
+      />
+    );
+
+    const root = container.querySelector('.custom-term') as HTMLElement;
+    expect(root).not.toBeNull();
+    // Azul oscuro de consola (PS_BG #012456), no negro ni transparente.
+    expect(root.style.backgroundColor).toBe('rgb(1, 36, 86)');
+    // El prompt del host se pinta blanco.
+    const prompt = container.querySelector('[role="log"] span') as HTMLElement;
+    expect(prompt).not.toBeNull();
+    expect(prompt.style.color).toBe('rgb(255, 255, 255)');
+  });
 });

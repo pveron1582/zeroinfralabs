@@ -33,7 +33,8 @@ describe('cmd_end', () => {
     const machine = createMockMachine();
     const result = cmd_end.execute([], createMockContext(machine));
 
-    expect(result.output).toBe('EXIT_TO_LANDING');
+    expect(result.output).toBe('');
+    expect(result.exitToLanding).toBe(true);
   });
 
   it('debe retornar un objeto CommandResponse válido', () => {
@@ -55,7 +56,8 @@ describe('cmd_end', () => {
     const machine = createMockMachine();
     const result = cmd_end.execute(['--force', '-y'], createMockContext(machine));
 
-    expect(result.output).toBe('EXIT_TO_LANDING');
+    expect(result.output).toBe('');
+    expect(result.exitToLanding).toBe(true);
   });
 
   it('debe funcionar en cualquier máquina', () => {
@@ -69,6 +71,7 @@ describe('cmd_end', () => {
     };
     const result = cmd_end.execute([], createMockContext(machine));
 
-    expect(result.output).toBe('EXIT_TO_LANDING');
+    expect(result.output).toBe('');
+    expect(result.exitToLanding).toBe(true);
   });
 });

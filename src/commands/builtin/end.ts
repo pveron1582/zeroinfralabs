@@ -6,6 +6,7 @@ import type { CommandContext, CommandResponse } from '../../types';
 export const cmd_end = {
   name: 'end',
   execute: (_args: string[], _ctx: CommandContext): CommandResponse => {
-    return { output: 'EXIT_TO_LANDING' };
+    // `end` no imprime nada: la señal va en metadata (P0.4).
+    return { output: '', exitToLanding: true };
   }
 };

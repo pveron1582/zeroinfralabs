@@ -1,131 +1,146 @@
-// @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
+// ── laboratorios/__tests__/laboratorio08.test.ts ───────────────────
+// Lab 08: webmail SquirrelMail → exploit CVE-2017-7692 → shell del
+// servicio → nota con credenciales → xrdp → PowerShell → potato → flag.
+
 import { describe, it, expect } from 'vitest';
 import { scenario_08, scenario08Data } from '../laboratorio08';
+import { validateMission } from '../../utils/labValidator';
+import type { CommandResponse } from '../../types';
 
-describe('Laboratorio 08 - EternalBlue + cmd.exe', () => {
+const target = () => scenario_08.machines.find(m => m.id === scenario08Data.targetMachine.id)!;
+
+describe('laboratorio08 (webmail → xrdp → potato)', () => {
   it('debe exportar datos del escenario', () => {
-    expect(scenario08Data).toBeDefined();
     expect(scenario08Data.id).toBe('scenario-08');
-    expect(scenario08Data.name).toBe('EternalBlue + cmd.exe');
-    expect(scenario08Data.tagline).toContain('EternalBlue');
-    expect(scenario08Data.taglineEs).toContain('EternalBlue');
-    expect(scenario08Data.accentColor).toBe('#f87171');
-  });
-
-  it('debe tener tools de W4', () => {
-    expect(scenario08Data.tools).toContain('arp-scan');
-    expect(scenario08Data.tools).toContain('nmap');
-    expect(scenario08Data.tools).toContain('metasploit');
-    expect(scenario08Data.tools).toContain('winpeas');
-    expect(scenario08Data.tools).toContain('mstsc');
+    expect(scenario08Data.name).toBeTruthy();
+    expect(scenario08Data.tools).toContain('xrdp');
+    expect(scenario08Data.tools).toContain('potato');
   });
 
   it('debe tener rango de red no usado por otros labs', () => {
-    expect(scenario08Data.networkRange).toBe('192.168.60.0/24');
+    expect(scenario_08.network_range).toBe('192.168.60.0/24');
   });
 
-  it('debe tener flag admin y credenciales', () => {
-    expect(scenario08Data.flags.root).toBe('ZIL{ETERNALBLUE_POTATO_PWNED}');
-    expect(scenario08Data.credentials.admin.user).toBe('Administrator');
-    expect(scenario08Data.credentials.admin.pass).toBe('P@ssw0rd123!');
+  it('debe tener flag de administrador y credenciales de helpdesk', () => {
+    expect(scenario08Data.flags.root).toMatch(/^ZIL\{/);
+    expect(scenario08Data.credentials.helpdesk.user).toBe('helpdesk');
+    expect(scenario08Data.credentials.helpdesk.pass).toBeTruthy();
   });
 
-  it('debe tener target Windows 7 con familia windows', () => {
-    expect(scenario08Data.targetMachine.hostname).toBe('WIN7-LAB');
-    expect(scenario08Data.targetMachine.os).toContain('Windows 7');
-    expect(scenario08Data.targetMachine.type).toBe('workstation');
+  it('debe tener target Windows Server con RDP y webmail', () => {
+    expect(scenario08Data.targetMachine.os).toContain('Windows Server');
+    const t = target();
+    expect(t.machine_info.family).toBe('windows');
+    expect(t.machine_info.ip).toMatch(/^192\.168\.60\./);
+    expect(t.scan_results.ports.some(p => p.port === 3389 && p.state === 'open')).toBe(true);
+    expect(t.scan_results.ports.some(p => p.port === 443 && p.state === 'open')).toBe(true);
   });
 
-  it('debe tener 7 learning steps con validationCriteria', () => {
-    expect(scenario08Data.learningSteps).toHaveLength(7);
+  it('debe declarar el CMS squirrelmail (lo leen el browser y el scanner MSF)', () => {
+    expect(target().web_enumeration?.cms).toBe('squirrelmail');
+    expect(target().web_enumeration?.web_server).toBe('apache');
+  });
+
+  it('debe tener 10 learning steps con validationCriteria', () => {
+    expect(scenario08Data.learningSteps).toHaveLength(10);
     const types = scenario08Data.learningSteps.map(s => s.validationCriteria?.type);
     expect(types).toEqual([
       'discoveredHosts',
       'scanResults',
+      'browserAction',
       'vulnerabilityFound',
       'exploit',
+      'fileRead',
       'foundCredentials',
+      'fileRead',
       'privesc',
       'fileRead',
     ]);
   });
 
-  it('misión 2 debe exigir el puerto 445', () => {
-    expect(scenario08Data.learningSteps[1].validationCriteria?.port).toBe(445);
-  });
-
-  it('misión 3 debe exigir MS17-010', () => {
-    expect(scenario08Data.learningSteps[2].validationCriteria?.vulnId).toBe('MS17-010');
-  });
-
-  it('misión 5 debe exigir credenciales de Administrator', () => {
-    expect(scenario08Data.learningSteps[4].validationCriteria?.user).toBe('Administrator');
-  });
-
-  it('misión 7 debe exigir fileRead de flag', () => {
-    expect(scenario08Data.learningSteps[6].validationCriteria?.fileType).toBe('flag');
-  });
-
   it('hints en ambos idiomas en cada step', () => {
     for (const step of scenario08Data.learningSteps) {
-      expect(step.hints?.hint1?.en).toBeDefined();
-      expect(step.hints?.hint1?.es).toBeDefined();
-      expect(step.hints?.hint2?.en).toBeDefined();
-      expect(step.hints?.hint2?.es).toBeDefined();
+      expect(step.hints.hint1.en).toBeTruthy();
+      expect(step.hints.hint1.es).toBeTruthy();
+      expect(step.hints.hint2.en).toBeTruthy();
+      expect(step.hints.hint2.es).toBeTruthy();
     }
   });
 
   it('scenario_08 construido: attacker + target windows', () => {
     expect(scenario_08.id).toBe('scenario-08');
     expect(scenario_08.difficulty).toBe('Medium');
-    expect(scenario_08.category).toBe('Network');
-    expect(scenario_08.network_range).toBe('192.168.60.0/24');
-    expect(scenario_08.missions).toHaveLength(7);
-
-    const attacker = scenario_08.machines.find(m => m.id === 'attacker-01');
-    const target = scenario_08.machines.find(m => m.id === scenario08Data.targetMachine.id);
-    expect(attacker).toBeDefined();
-    expect(target).toBeDefined();
-    expect(target?.machine_info.family).toBe('windows');
-    expect(target?.machine_info.ip).toMatch(/^192\.168\.60\./);
-    expect(attacker?.machine_info.ip).toMatch(/^192\.168\.60\./);
+    expect(scenario_08.category).toBe('Web');
+    expect(scenario_08.missions).toHaveLength(10);
+    expect(scenario_08.machines.find(m => m.id === 'attacker-01')).toBeDefined();
   });
 
-  it('target: identidad win7user baja y SMB abierto', () => {
-    const target = scenario_08.machines.find(m => m.id === scenario08Data.targetMachine.id)!;
-    expect(target.win).toEqual({ currentUser: 'win7user', isAdmin: false, computerName: 'WIN7-LAB' });
-    expect(target.scan_results.ports.some(p => p.port === 445)).toBe(true);
-    expect(target.scan_results.ports.some(p => p.state === 'open')).toBe(true);
+  it('target: identidad helpdesk de baja privilegio y RDP con credenciales', () => {
+    const t = target();
+    expect(t.win).toEqual({ currentUser: 'helpdesk', isAdmin: false, computerName: 'WEBMAIL-SRV' });
+    const rdp = t.scan_results.ports.find(p => p.port === 3389);
+    expect(rdp?.credentials).toEqual(scenario08Data.credentials.helpdesk);
+    expect(t.known_passwords?.helpdesk).toBe(scenario08Data.credentials.helpdesk.pass);
   });
 
-  it('target: flag admin 0600 y Desktop win7user NO es flag', () => {
-    const target = scenario_08.machines.find(m => m.id === scenario08Data.targetMachine.id)!;
-    const adminFlag = target.files.find(f => f.path === '/C:/Users/Administrator/flag.txt');
-    expect(adminFlag).toBeDefined();
-    expect(adminFlag?.content).toBe('ZIL{ETERNALBLUE_POTATO_PWNED}');
-
-    expect(adminFlag?.owner).toBe('Administrator');
-    expect(adminFlag?.mode).toBe(0o600);
-
-    const userDesktop = target.files.find(f => f.path === '/C:/Users/win7user/Desktop/flag.txt');
-    expect(userDesktop).toBeDefined();
-    expect(userDesktop?.content).not.toMatch(/ZIL\{|THM\{|FLAG\{/);
-    expect(userDesktop?.owner).toBe('win7user');
+  it('target: la nota del webmail tiene la clave de helpdesk y es legible', () => {
+    const note = target().files.find(f => f.path === '/C:/inetpub/webmail/attachments/nota.txt');
+    expect(note).toBeDefined();
+    expect(note?.content).toContain('helpdesk');
+    expect(note?.content).toContain(scenario08Data.credentials.helpdesk.pass);
+    // Legible por el usuario del escritorio (0644), no 0600.
+    expect(note?.mode).toBe(0o644);
   });
 
-  it('target: notes.txt del usuario contiene credenciales admin (para winPEAS)', () => {
-    const target = scenario_08.machines.find(m => m.id === scenario08Data.targetMachine.id)!;
-    const notes = target.files.find(f => f.path === '/C:/Users/win7user/Documents/notes.txt');
-    expect(notes).toBeDefined();
-    expect(notes?.content).toContain('Administrator');
-    expect(notes?.content).toContain('P@ssw0rd123!');
-    expect(notes?.owner).toBe('win7user');
+  it('target: el servicio de backup corre como LocalSystem desde carpeta escribible', () => {
+    const t = target();
+    const dir = t.files.find(f => f.path === '/C:/Users/Public/svc-backup/.dir');
+    const ini = t.files.find(f => f.path === '/C:/Users/Public/svc-backup/svc-backup.ini');
+    expect(dir?.mode).toBe(0o777);
+    expect(dir?.owner).toBe('Users');
+    expect(ini?.content).toContain('ObjectName=LocalSystem');
+    expect(ini?.content).toContain('C:\\Users\\Public\\svc-backup');
+    // helpdesk no es admin: sin potato no llega a la flag.
+    expect(t.win?.isAdmin).toBe(false);
   });
 
-  it('target: dedupe de files prioriza el override del Desktop flag', () => {
-    const target = scenario_08.machines.find(m => m.id === scenario08Data.targetMachine.id)!;
-    const desktopFlags = target.files.filter(f => f.path === '/C:/Users/win7user/Desktop/flag.txt');
-    expect(desktopFlags).toHaveLength(1);
-    expect(desktopFlags[0].content).not.toContain('THM{USER_ACCESS_GRANTED}');
+  it('target: flag de administrador 0600 (helpdesk no la puede leer)', () => {
+    const flag = target().files.find(f => f.path === '/C:/Users/Administrator/flag.txt');
+    expect(flag?.content).toBe(scenario08Data.flags.root);
+    expect(flag?.owner).toBe('Administrator');
+    expect(flag?.mode).toBe(0o600);
+  });
+
+  it('misión de la config del backup exige leer DENTRO de esa carpeta', () => {
+    const step = scenario08Data.learningSteps.find(s => s.task === 'Find the Misconfigured Service')!;
+    expect(step.validationCriteria).toMatchObject({
+      type: 'fileRead',
+      path: 'C:\\Users\\Public\\svc-backup',
+    });
+
+    // La nota (otro path) NO completa esa misión: el criterio `path` es
+    // lo que hace precisa la misión de "leé la config del servicio".
+    const mission = { ...scenario_08.missions[7], validationCriteria: step.validationCriteria };
+    const read = (path: string): CommandResponse => ({
+      output: '',
+      fileRead: { path, machineId: 'm1', isNote: false, isFlag: false, isPayload: false, content: '' },
+    });
+
+    expect(validateMission(read('/C:/inetpub/webmail/attachments/nota.txt'), mission)).toBe(false);
+    expect(validateMission(read('/C:/Users/Public/svc-backup/svc-backup.ini'), mission)).toBe(true);
+  });
+
+  it('misión de la nota exige fileRead de tipo note', () => {
+    const step = scenario08Data.learningSteps.find(s => s.task === 'Read the Webmail Attachment Note')!;
+    expect(step.validationCriteria).toEqual({ type: 'fileRead', fileType: 'note' });
+  });
+
+  it('misión del RDP exige credenciales del servicio rdp para helpdesk', () => {
+    const step = scenario08Data.learningSteps.find(s => s.task === 'RDP Session with xrdp')!;
+    expect(step.validationCriteria).toEqual({
+      type: 'foundCredentials',
+      user: 'helpdesk',
+      service: 'rdp',
+    });
   });
 });

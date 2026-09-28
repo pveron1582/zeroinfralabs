@@ -7,12 +7,14 @@ import { scenario_06 as laboratorio_06, scenario06Data } from './laboratorio06';
 import { scenario_07 as laboratorio_07, scenario07Data } from './laboratorio07';
 import { scenario_08 as laboratorio_08, scenario08Data } from './laboratorio08';
 
-// Lab 07 (Burp Suite) queda fuera de la landing/grilla (`hidden` filtra
-// VISIBLE_SCENARIOS) pero SÍ es accesible por URL directa
-// (/scenario/scenario-07), igual que el resto de SCENARIOS.
+// Lab 07 (Burp Suite) y Lab 08 (FTP → xrdp → PowerShell → potato) quedan
+// fuera de la landing/grilla (`hidden` filtra VISIBLE_SCENARIOS) pero SÍ son
+// accesibles por URL directa (/scenario/scenario-07, /scenario/scenario-08),
+// igual que el resto de SCENARIOS. El menú muestra los 6 labs 01-06.
 const laboratorio_07_hidden: typeof laboratorio_07 = { ...laboratorio_07, hidden: true };
+const laboratorio_08_hidden: typeof laboratorio_08 = { ...laboratorio_08, hidden: true };
 
-export const SCENARIOS = [laboratorio_01, laboratorio_02, laboratorio_03, laboratorio_04, laboratorio_05, laboratorio_06, laboratorio_07_hidden, laboratorio_08];
+export const SCENARIOS = [laboratorio_01, laboratorio_02, laboratorio_03, laboratorio_04, laboratorio_05, laboratorio_06, laboratorio_07_hidden, laboratorio_08_hidden];
 
 /** Labs visibles en la landing/grilla (filtra los marcados `hidden`). */
 export const VISIBLE_SCENARIOS = SCENARIOS.filter(s => !s.hidden);

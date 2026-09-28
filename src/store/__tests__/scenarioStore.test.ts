@@ -80,6 +80,37 @@ describe('scenarioStore', () => {
     spy.mockRestore();
   });
 
+  // ── P0.5: el timer del loader (6.5 s) tiene que ser cancelable ──────
+  it('una carga nueva cancela el timer del loader anterior (doble click)', () => {
+    const first = SCENARIOS[1];
+    const second = SCENARIOS[2];
+
+    useScenarioStore.getState().selectScenario(first.id);
+    // Segundo click antes de que termine la animación del primero:
+    useScenarioStore.getState().selectScenario(second.id);
+
+    vi.advanceTimersByTime(6500);
+
+    const state = useScenarioStore.getState();
+    expect(state.currentScenario.id).toBe(second.id);
+    expect(state.view).toBe('workspace');
+  });
+
+  it('resetWorkspace (salir del lab) cancela la carga pendiente', () => {
+    useScenarioStore.getState().selectScenario(SCENARIOS[1].id);
+    expect(useScenarioStore.getState().showMachineLoader).toBe(true);
+
+    // El alumno se arrepiente y sale antes de que termine el loader.
+    useScenarioStore.getState().resetWorkspace();
+    expect(useScenarioStore.getState().showMachineLoader).toBe(false);
+
+    // 6.5 s después NO debe teletransportarlo de vuelta al lab.
+    vi.advanceTimersByTime(6500);
+    const state = useScenarioStore.getState();
+    expect(state.view).toBe('landing');
+    expect(state.currentScenario.id).not.toBe(SCENARIOS[1].id);
+  });
+
   // Verifica que al completar una misión se actualice el progreso y las máquinas
   it('completeMission debe actualizar el progreso y las máquinas', () => {
     useScenarioStore.setState({ view: 'workspace' });

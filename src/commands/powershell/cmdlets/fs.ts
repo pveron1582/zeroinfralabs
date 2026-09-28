@@ -9,7 +9,7 @@ import {
 } from '../../../utils/permissions';
 import { applyUmask } from '../../builtin/umask';
 import {
-  findFile, findDirEntry, findParentDir, defaultOwnership, buildNewFile,
+  findFile, findDirEntry, findParentDir, defaultOwnership, buildNewFile, isUnderPath,
 } from '../../../utils/fs';
 import { readVirtualFile, buildFileReadMetadata } from '../../../utils/fileRead';
 import { winDisplay } from '../../../utils/winPath';
@@ -48,7 +48,7 @@ const getChildItem: PsExec = (inv, ctx) => {
       }
       continue;
     }
-    if (!f.path.startsWith(prefix)) continue;
+    if (!isUnderPath(f.path, canonical)) continue;
     const rel = f.path.slice(prefix.length);
     if (!rel || rel.includes('/')) continue;
     if (!canRead(ctx.machine, f, user)) continue;

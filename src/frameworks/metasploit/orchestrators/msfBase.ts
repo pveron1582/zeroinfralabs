@@ -20,7 +20,7 @@ export const executeBaseCommand = (
   }
 
   if (cmd === 'clear') {
-    return { output: 'CLEAR_TERMINAL' };
+    return { output: '', clearScreen: true };
   }
 
   if (cmd === 'help' || cmd === '?') {

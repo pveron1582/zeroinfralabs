@@ -34,9 +34,10 @@ describe('Comandos básicos funcionan en todos los contextos', () => {
     expect(result.output).toContain('192.168.1.10');
   });
 
-  it('clear retorna CLEAR_TERMINAL', () => {
+  it('clear pide limpiar la pantalla vía metadata (P0.4)', () => {
     const result = exec('clear', attacker, [attacker], 1);
-    expect(result.output).toBe('CLEAR_TERMINAL');
+    expect(result.output).toBe('');
+    expect('clearScreen' in result && result.clearScreen).toBe(true);
   });
 
   it('echo con comillas simples elimina las comillas (bash)', () => {

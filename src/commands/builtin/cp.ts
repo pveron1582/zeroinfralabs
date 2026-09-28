@@ -2,7 +2,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canRead, canCreateInDir, canEditFile, canDeleteInDir } from '../../utils/permissions';
-import { findFile, findDirEntry, resolveParentDirPath, defaultOwnership, buildNewFile } from '../../utils/fs';
+import { findFile, findDirEntry, resolveParentDirPath, defaultOwnership, buildNewFile, isUnderPath } from '../../utils/fs';
 import { applyUmask } from '../builtin/umask';
 
 export const cmd_cp = {
@@ -106,7 +106,8 @@ export const cmd_cp = {
 
       if (srcIsDir) {
         const srcPrefix = srcClean;
-        const srcEntries = newFiles.filter(f => f.path.startsWith(srcPrefix));
+        // isUnderPath: copiar `/a/x` no arrastra a su hermano `/a/xyz`.
+        const srcEntries = newFiles.filter(f => isUnderPath(f.path, srcPrefix));
         for (const entry of srcEntries) {
           const relPath = entry.path.slice(srcPrefix.length);
           const newPath = targetPath + relPath;

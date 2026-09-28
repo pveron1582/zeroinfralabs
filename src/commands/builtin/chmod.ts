@@ -4,7 +4,7 @@
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
-import { findFile } from '../../utils/fs';
+import { findFile, isUnderPath } from '../../utils/fs';
 
 function parseSymbolicMode(expr: string, currentMode: number, isDir: boolean): number | null {
   // Formato POSIX simplificado: cláusulas [ugoa]*[+-=][rwxXst]* separadas
@@ -147,15 +147,14 @@ export const cmd_chmod = {
       if (fileIdx !== -1) newFiles[fileIdx] = { ...newFiles[fileIdx], mode: newMode };
 
       if (recursive && file.path.endsWith('.dir')) {
-        // El prefijo necesita el '/' final: sin él, `chmod -R /home`
-        // también modificaría paths hermanos como /homebackup/...
+        // isUnderPath: `chmod -R /home` no toca paths hermanos como
+        // /homebackup/... (misma razón que rm -r).
         const dirPrefix = file.path.slice(0, -4);
-        const childPrefix = dirPrefix.endsWith('/') ? dirPrefix : `${dirPrefix}/`;
         // +X se reevalúa por hijo (dir o ya ejecutable), no se hereda
         const perChildX = !octalMatch && modeArg.includes('X');
         for (let i = 0; i < newFiles.length; i++) {
           const f = newFiles[i];
-          if (f.path.startsWith(childPrefix) && f.path !== file.path) {
+          if (isUnderPath(f.path, dirPrefix) && f.path !== file.path) {
             if (!isRoot && f.owner !== currentUser.username) continue;
             let childMode = newMode;
             if (perChildX) {

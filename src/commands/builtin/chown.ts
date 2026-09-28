@@ -4,7 +4,7 @@
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser, getUsers, getGroups } from '../../utils/users';
-import { findFile } from '../../utils/fs';
+import { findFile, isUnderPath } from '../../utils/fs';
 
 export const cmd_chown = {
   name: 'chown',
@@ -92,13 +92,12 @@ export const cmd_chown = {
       }
 
       if (recursive && file.path.endsWith('.dir')) {
-        // El prefijo necesita el '/' final: sin él, `chown -R /home`
-        // también modificaría paths hermanos como /homebackup/...
+        // isUnderPath: `chown -R /home` no toca paths hermanos como
+        // /homebackup/... (misma razón que rm -r).
         const dirPrefix = file.path.slice(0, -4);
-        const childPrefix = dirPrefix.endsWith('/') ? dirPrefix : `${dirPrefix}/`;
         for (let i = 0; i < newFiles.length; i++) {
           const f = newFiles[i];
-          if (!f.path.startsWith(childPrefix) || f.path === file.path) continue;
+          if (!isUnderPath(f.path, dirPrefix) || f.path === file.path) continue;
           const updated = { ...f, owner: newOwner };
           if (newGroup) updated.group = newGroup;
           newFiles[i] = updated;

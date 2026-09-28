@@ -6,7 +6,7 @@ import { persist, createJSONStorage, type StateStorage } from 'zustand/middlewar
 import type { ScenarioState } from './types';
 import { createUISlice } from './slices/uiSlice';
 import { createTerminalSlice } from './slices/terminalSlice';
-import { createScenarioSlice } from './slices/scenarioSlice';
+import { createScenarioSlice, cancelPendingScenarioLoad } from './slices/scenarioSlice';
 import { createIdentitySlice } from './slices/identitySlice';
 import { createAcademySlice } from './slices/academySlice';
 import { shellManager } from '../frameworks/shells/ShellManager';
@@ -24,6 +24,10 @@ export const useScenarioStore = create<ScenarioState>()(
   persist(
     (set, get, store) => {
       const resetWorkspace = () => {
+        // Salir del lab cancela la carga pendiente del loader: si no, el
+        // timer de 6.5 s de un selectScenario anterior vuelve a meter al
+        // alumno en el lab del que acaba de salir (P0.5).
+        cancelPendingScenarioLoad();
         shellManager.reset();
         set({
           ...get().resetUiState(),

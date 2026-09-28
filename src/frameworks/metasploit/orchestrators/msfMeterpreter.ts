@@ -12,6 +12,18 @@ function sessionCwd(state: MsfState, ctx: CommandContext): string {
   return state.cwd ?? ctx.currentDir ?? '/';
 }
 
+/** Máquina víctima de la sesión, o null si el exploit no la vinculó. */
+function sessionMachine(state: MsfState, ctx: CommandContext) {
+  if (!state.sessionTargetId) return null;
+  return (ctx.allMachines ?? []).find(m => m.id === state.sessionTargetId) ?? null;
+}
+
+/** Nombre de equipo de la víctima (fallback: el host por defecto). */
+function sessionHost(state: MsfState, ctx: CommandContext): string {
+  const m = sessionMachine(state, ctx);
+  return m?.win?.computerName || m?.machine_info.hostname || 'WIN7-TARGET';
+}
+
 export const executeMeterpreterCommand = (
   cmd: string,
   args: string[],
@@ -123,19 +135,29 @@ Priv: Elevate Commands
   }
 
   if (cmd === 'getuid') {
+    // La cuenta la fija el exploit que abrió la sesión: los SMB dejan
+    // SYSTEM, un RCE web deja la cuenta del servicio (p.ej. SquirrelMail).
+    const user = state.sessionUser;
+    const isSystem = !user || user.toLowerCase() === 'system';
+    const account = isSystem
+      ? 'NT AUTHORITY\\SYSTEM'
+      : `NT ${sessionHost(state, ctx).toUpperCase()}\\${user.toUpperCase()}`;
     const newState: MsfState = { ...state, uidChecked: true };
-    const res = withState(`Server username: NT AUTHORITY\\SYSTEM\n`, newState);
+    const res = withState(`Server username: ${account}\n`, newState);
     return {
       ...res,
       type: 'meterpreter',
       uidChecked: true,
-      currentUser: 'NT AUTHORITY\\SYSTEM',
-      isSystem: true,
+      currentUser: account,
+      isSystem,
     };
   }
 
   if (cmd === 'sysinfo') {
-    return withState(`Computer        : WIN7-TARGET\nOS              : Windows 7 (6.1 Build 7601, Service Pack 1).\nArchitecture    : x64\nSystem Language : en_US\nDomain          : WORKGROUP\nLogged On Users : 1\nMeterpreter     : x64/windows\n`, state);
+    const m = sessionMachine(state, ctx);
+    const host = sessionHost(state, ctx);
+    const os = m?.machine_info.os || 'Windows 7';
+    return withState(`Computer        : ${host}\nOS              : ${os}\nArchitecture    : x64\nSystem Language : en_US\nDomain          : WORKGROUP\nLogged On Users : 1\nMeterpreter     : x64/windows\n`, state);
   }
 
   if (cmd === 'shell') {
@@ -158,7 +180,7 @@ Priv: Elevate Commands
   }
 
   if (cmd === 'clear') {
-    return { output: 'CLEAR_TERMINAL' };
+    return { output: '', clearScreen: true };
   }
 
   return withState(`[-] Unknown command: ${cmd}\n`, state);

@@ -2,7 +2,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canCreateInDir, canDeleteInDir } from '../../utils/permissions';
-import { findDirEntry, findParentDir, resolveParentDirPath } from '../../utils/fs';
+import { findDirEntry, findParentDir, resolveParentDirPath, isUnderPath } from '../../utils/fs';
 
 export const cmd_rmdir = {
   name: 'rmdir',
@@ -74,8 +74,9 @@ export const cmd_rmdir = {
           continue;
         }
 
+        // isUnderPath: `/a/bc/x` no hace que `/a/b` parezca "no vacío".
         const filesInDir = newFiles.filter(f =>
-          f.path.startsWith(fullPath) && f.path !== fullPath + '.dir'
+          isUnderPath(f.path, fullPath) && f.path !== fullPath + '.dir'
         );
 
         if (filesInDir.length > 0) {
@@ -91,7 +92,7 @@ export const cmd_rmdir = {
             if (dirIndex === -1) continue;
 
             const hasFiles = newFiles.some(f =>
-              f.path.startsWith(pathToRemove) && f.path !== pathToRemove + '.dir'
+              isUnderPath(f.path, pathToRemove) && f.path !== pathToRemove + '.dir'
             );
 
             if (!hasFiles) {

@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import type { Machine, FileEntry, User } from '../../types';
 import {
   findFile, findDirEntry, findParentDir, resolveParentDirPath,
-  isDirectoryEntry, defaultOwnership, buildNewFile,
+  isDirectoryEntry, defaultOwnership, buildNewFile, isUnderPath,
 } from '../fs';
 
 const PASSWD = `root:x:0:0:root:/root:/bin/bash
@@ -116,5 +116,31 @@ describe('defaultOwnership / buildNewFile', () => {
       group: 'user',
       mode: 0o644,
     });
+  });
+
+});
+
+// ── isUnderPath (P0.1: rm -rf no debe llevarse hermanos con prefijo) ──
+describe('isUnderPath', () => {
+  it('reconoce el directorio y sus descendientes', () => {
+    expect(isUnderPath('/home/user/x', '/home/user/x')).toBe(true);
+    expect(isUnderPath('/home/user/x/.dir', '/home/user/x')).toBe(true);
+    expect(isUnderPath('/home/user/x/secreto.txt', '/home/user/x')).toBe(true);
+    expect(isUnderPath('/home/user/x/sub/profundo.txt', '/home/user/x')).toBe(true);
+  });
+
+  it('NO confunde un hermano que comparte prefijo', () => {
+    // Este es el bug: startsWith('/home/user/x') también matchea xyz.
+    expect(isUnderPath('/home/user/xyz', '/home/user/x')).toBe(false);
+    expect(isUnderPath('/home/user/xyz/secreto.txt', '/home/user/x')).toBe(false);
+    expect(isUnderPath('/home/user/x2/.dir', '/home/user/x')).toBe(false);
+    expect(isUnderPath('/home/user', '/home/user/x')).toBe(false);
+  });
+
+  it('normaliza la barra final y la raíz', () => {
+    expect(isUnderPath('/home/user/x/a.txt', '/home/user/x/')).toBe(true);
+    expect(isUnderPath('/a/b/c', '/a/b/')).toBe(true);
+    expect(isUnderPath('/cualquier/cosa', '/')).toBe(true);
+    expect(isUnderPath('/home/user/xyz', '/')).toBe(true);
   });
 });

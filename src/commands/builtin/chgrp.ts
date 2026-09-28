@@ -4,7 +4,7 @@
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser, getGroups } from '../../utils/users';
-import { findFile } from '../../utils/fs';
+import { findFile, isUnderPath } from '../../utils/fs';
 
 export const cmd_chgrp = {
   name: 'chgrp',
@@ -84,7 +84,7 @@ export const cmd_chgrp = {
         const dirPrefix = file.path.slice(0, -4);
         for (let i = 0; i < newFiles.length; i++) {
           const f = newFiles[i];
-          if (!f.path.startsWith(dirPrefix) || f.path === file.path) continue;
+          if (!isUnderPath(f.path, dirPrefix) || f.path === file.path) continue;
           if (!isRoot && f.owner !== currentUser.username) continue;
           newFiles[i] = { ...f, group: groupArg };
         }

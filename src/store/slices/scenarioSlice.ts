@@ -4,6 +4,7 @@ import type { Machine, Scenario, Mission, FileEntry } from '../../types';
 import { SCENARIOS, TEST_SCENARIO } from '../../laboratorios/laboratorios';
 import { createEnumerationSnapshot, hasEnumerationChanged, type EnumerationSnapshot } from '../../utils/networkAlert';
 import { resetScenarioManagers } from '../../frameworks/resetManagers';
+import { scheduleNotificationClear } from './uiSlice';
 import {
   updateMachine, bumpDiscoveryLevel, addFoundCredential, verifyCredentials,
   setPossibleUsers, addFailedUser, setSudoPrivileges,
@@ -41,6 +42,24 @@ export interface ScenarioSlice {
   resetScenarioWorkspaceState: () => Pick<ScenarioSlice, '_prevMachinesSnapshot'>;
 }
 
+// ── Timer del loader de máquina (P0.5) ─────────────────────────────
+// Vive fuera del estado del store: no necesita persistirse ni disparar
+// renders, pero sí hay que poder CANCELARLO. Antes quedaba pendiente 6.5 s
+// y LandingPage: un doble click hacía que el primer timer pisara el
+// escenario del segundo, y salir a /labs durante la animación teletransportaba
+// al alumno de vuelta al lab que había dejado.
+let loaderTimer: ReturnType<typeof setTimeout> | null = null;
+let loadGeneration = 0;
+
+/** Cancela una carga de escenario pendiente (salir del lab, cambiar de lab). */
+export function cancelPendingScenarioLoad(): void {
+  if (loaderTimer !== null) {
+    clearTimeout(loaderTimer);
+    loaderTimer = null;
+  }
+  loadGeneration++;
+}
+
 export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSlice> = (set, get) => ({
   currentScenario: SCENARIOS[0],
   machines: SCENARIOS[0].machines.map(m => ({ ...m, discovery_level: 0 })),
@@ -53,6 +72,10 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
     const scenario = id === TEST_SCENARIO.id ? TEST_SCENARIO : SCENARIOS.find(s => s.id === id);
     if (!scenario) return;
 
+    // Una carga nueva cancela la pendiente (doble click en dos labs).
+    cancelPendingScenarioLoad();
+    const generation = loadGeneration;
+
     // Entrada de sesión: los managers arrancan de cero y el marker de
     // "reset global ya hecho" se limpia para que la primera terminal que
     // monte resetee también sesiones/identidad (useCommandRunner).
@@ -62,7 +85,10 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
       showMachineLoader: true,
     });
 
-    setTimeout(() => {
+    loaderTimer = setTimeout(() => {
+      loaderTimer = null;
+      // Si mientras tanto se canceló o arrancó otra carga, esta se descarta.
+      if (generation !== loadGeneration) return;
       const { language } = get();
       const newMachines = scenario.machines.map(m => {
         const filteredFiles = (m.files || []).filter(f => {
@@ -155,7 +181,8 @@ export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSl
     const title = missions.find(m => m.id === id)?.title;
     if (title) {
       set({ notification: { text: `✓ Misión completada: ${title}`, id: Date.now() } });
-      setTimeout(() => set({ notification: null }), 3500);
+      // Mismo timer que showNotification: dos misiones seguidas no se pisan.
+      scheduleNotificationClear(set);
     }
   },
 

@@ -149,6 +149,38 @@ con Burp Suite (Proxy + Repeater).
 
 ---
 
+## Laboratorio 08 — Webmail RCE → xrdp → Escalada
+**Dificultad:** Medium | **Categoría:** Web | **Red:** 192.168.60.0/24
+
+**Descripción:** Windows Server 2019 sirviendo un webmail **SquirrelMail
+1.4.22** con Apache/PHP. La entrada es el webmail (CVE-2017-7692), pero la
+sesión que se abre es de la **cuenta del servicio**, así que todavía falta
+escalar: se reutilizan las credenciales locales que dejaron en el servidor
+para entrar por **xrdp** al escritorio remoto, y desde el PowerShell de esa
+sesión se encuentra el servicio de backup (corre como `LocalSystem` desde
+una carpeta con permisos abiertos) y se escala con **potato**.
+
+> El lab 08 no aparece en la grilla (igual que el 07): se entra escribiendo
+> la ruta `/<lang>/scenario/scenario-08`.
+
+### Misiones (10)
+
+1. **Network Discovery** — Descubre hosts (arp-scan / nmap -sn)
+2. **Port Scan** — Identifica el 443/tcp del webmail
+3. **Browse the Webmail** — CyberBrowser en `http://<ip>/webmail`; la versión se lee debajo del login
+4. **Scan the Webmail Version** — `use auxiliary/scanner/http/squirrelmail_version` → `set RHOSTS` → `run`
+5. **Exploit the Webmail** — `use exploit/multi/http/squirrelmail_cgi_rce` → shell como `svc_webmail`
+6. **Read the Attachment Note** — `type C:\inetpub\webmail\attachments\nota.txt` → clave de `helpdesk`
+7. **RDP Session with xrdp** — `xrdp /v:<ip> /u:helpdesk /p:<clave>` → escritorio remoto
+8. **Find the Misconfigured Service** — `C:\Users\Public\svc-backup\svc-backup.ini` dice `ObjectName=LocalSystem`
+9. **Escalate With Potato** — `potato` desde el PowerShell del escritorio → admin
+10. **Capture the Admin Flag** — `type C:\Users\Administrator\flag.txt` (0600: sin escalar no se lee)
+
+**Herramientas:** arp-scan, nmap, metasploit, xrdp, potato
+**Flags:** ZIL{RDP_POTATO_ESCALATION}
+
+---
+
 ## Consejos Generales
 
 ### Discovery Levels

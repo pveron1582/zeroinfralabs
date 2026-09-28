@@ -7,6 +7,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { getCurrentUser } from '../../utils/users';
 import { canRead } from '../../utils/permissions';
 import { readVirtualFile, buildFileReadMetadata } from '../../utils/fileRead';
+import { isUnderPath } from '../../utils/fs';
 
 // ── helper: leer entrada (pipe > archivo) con permisos Unix ──
 type PipeInput =
@@ -102,7 +103,7 @@ export const cmd_grep = {
         const counts: string[] = [];
         for (const f of ctx.machine.files || []) {
           if (f.path.endsWith('/.dir')) continue;
-          if (!f.path.startsWith(dir === '/' ? '/' : dir + '/')) continue;
+          if (!isUnderPath(f.path, dir)) continue;
           if (!canRead(ctx.machine, f, rUser)) continue;
           const n = (f.content ?? '').split('\n').filter(line => invert ? !re.test(line) : re.test(line)).length;
           if (n > 0) counts.push(`${f.path}:${n}`);
@@ -112,7 +113,7 @@ export const cmd_grep = {
       const out: string[] = [];
       for (const f of ctx.machine.files || []) {
         if (f.path.endsWith('/.dir')) continue;
-        if (!f.path.startsWith(dir === '/' ? '/' : dir + '/')) continue;
+        if (!isUnderPath(f.path, dir)) continue;
         if (!canRead(ctx.machine, f, rUser)) continue;
         (f.content ?? '').split('\n').forEach((line, idx) => {
           const hit = invert ? !re.test(line) : re.test(line);

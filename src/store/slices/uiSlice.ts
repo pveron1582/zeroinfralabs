@@ -50,7 +50,22 @@ export interface UISlice {
   setBrowserUrl: (url: string) => void;
   setBrowserLoggedIn: (loggedIn: boolean) => void;
   setBrowserNavHistory: (history: string[], idx: number) => void;
-  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay' | 'rdpMachineId'> & Partial<Pick<UISlice, 'uiMode' | '_prevUiMode'>>;
+  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay' | 'rdpMachineId' | 'showMachineLoader' | 'loadingMachine'> & Partial<Pick<UISlice, 'uiMode' | '_prevUiMode'>>;
+}
+
+// Timer de auto-borrado de la notificación. Uno solo para toda la app:
+// antes cada `setTimeout` era independiente y con dos misiones seguidas la
+// primera apagaba la segunda antes de tiempo (P0.5, misma clase que el
+// loader: timers viejos que pisan estado nuevo).
+let notificationTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Programa (o reprograma) el auto-borrado de la notificación. */
+export function scheduleNotificationClear(set: (patch: Partial<ScenarioState>) => void): void {
+  if (notificationTimer !== null) clearTimeout(notificationTimer);
+  notificationTimer = setTimeout(() => {
+    notificationTimer = null;
+    set({ notification: null });
+  }, 3500);
 }
 
 export const createUISlice: StateCreator<ScenarioState, [], [], UISlice> = (set, get) => ({
@@ -125,7 +140,7 @@ export const createUISlice: StateCreator<ScenarioState, [], [], UISlice> = (set,
   setTermColor: (color) => set({ termColor: color }),
   showNotification: (text) => {
     set({ notification: { text, id: Date.now() } });
-    setTimeout(() => set({ notification: null }), 3500);
+    scheduleNotificationClear(set);
   },
   clearNotification: () => set({ notification: null }),
   setBrowserUrl: (url) => set({ browserCurrentUrl: url }),
@@ -150,6 +165,11 @@ export const createUISlice: StateCreator<ScenarioState, [], [], UISlice> = (set,
       pendingSurveyScenario: null,
       showCompletionOverlay: false,
       rdpMachineId: null,
+      // El loader de máquina se cancela junto con la carga pendiente: si se
+      // queda en true sin su timer, la terminal queda showing the loader
+      // para siempre (P0.5).
+      showMachineLoader: false,
+      loadingMachine: null,
       ...(uiMode === 'windows-desktop'
         ? { uiMode: _prevUiMode ?? ('desktop' as const), _prevUiMode: null }
         : {}),

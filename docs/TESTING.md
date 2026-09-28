@@ -3,16 +3,16 @@
 ## Resumen
 
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
-**Total Tests:** 2686 en 218 archivos  
-**Cobertura (v8):** 83.3% stmts / 72.18% branches / 79.29% funcs / 85.7% lines  
+**Total Tests:** 2733 en 220 archivos  
+**Cobertura (v8):** 81.08% stmts / 68.80% branches / 77.52% funcs / 84.06% lines (medido 2026-09-27)  
 **E2E:** Playwright (7 specs en `e2e/`, no corren en CI aún)
 
 ## Comandos
 
 ```bash
 pnpm test                # Watch mode (re-ejecuta al guardar)
-pnpm test:run            # Ejecución única (CI gate)
-pnpm test:coverage       # Reporte de cobertura con thresholds
+pnpm test:run            # Ejecución única (sin cobertura)
+pnpm test:coverage       # Cobertura + thresholds — es lo que corre la CI
 pnpm test:ui             # UI interactiva de Vitest
 pnpm test -- -t "nombre" # Filtrar por nombre de test
 pnpm test -- src/path    # Ejecutar un archivo específico
@@ -20,12 +20,17 @@ pnpm test -- src/path    # Ejecutar un archivo específico
 
 ### Cobertura thresholds (`vitest.config.ts`)
 
-| Métrica | Umbral | Real (2026-09) |
-|---------|--------|----------------|
-| statements | 80% | 83.3% |
-| branches | 72% | 72.18% |
-| functions | 75% | 79.29% |
-| lines | 80% | 85.7% |
+| Métrica | Umbral | Real (2026-09-27) |
+|---------|--------|-------------------|
+| statements | 80% | 81.08% |
+| branches | 68% | 68.80% |
+| functions | 77% | 77.52% |
+| lines | 83% | 84.06% |
+
+El piso se mide con `pnpm test:coverage` y va ~1 punto abajo del valor real
+(la corrida es determinista: ±0.03). **Subilo cuando suba la cobertura.**
+Antes el umbral de branches era 72% —3 puntos por encima de la realidad— y
+nada lo hacía cumplir: la CI corría `pnpm test:run` sin `--coverage`.
 
 ## Estructura de Tests
 
@@ -123,11 +128,13 @@ vi.mock('../../store/scenarioStore', () => ({
 ### Prerequisites para merge
 1. `pnpm exec tsc --noEmit` → 0 errores
 2. `pnpm lint` → 0 problemas
-3. `pnpm test:run` → todos pasan (3 corridas verdes recomendadas para cambios en tests/infra)
+3. `pnpm test:coverage` → tests verdes **y** thresholds de cobertura OK
 4. `pnpm build` → exit 0
 
 ### Cobertura
-- Thresholds en `vitest.config.ts` bloquean si bajan
+- La CI corre `pnpm test:coverage`: los thresholds de `vitest.config.ts`
+  bloquean el merge si la cobertura baja del piso
+- El reporte HTML se sube como artifact `coverage` (retención 7 días)
 - Reporte local: `pnpm test:coverage`
 - Para PRs de infra/tests: correr 3 corridas antes de mergear
 

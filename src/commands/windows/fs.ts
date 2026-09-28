@@ -4,7 +4,7 @@
 
 import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { canExecute, canRead, canEditFile } from '../../utils/permissions';
-import { findDirEntry, findFile } from '../../utils/fs';
+import { findDirEntry, findFile, isUnderPath } from '../../utils/fs';
 import { readVirtualFile, buildFileReadMetadata } from '../../utils/fileRead';
 import { winDisplay, resolveWinPath } from '../../utils/winPath';
 import {
@@ -48,7 +48,7 @@ export const cmd_dir = {
         }
         continue;
       }
-      if (!f.path.startsWith(prefix)) continue;
+      if (!isUnderPath(f.path, canonical)) continue;
       const rel = f.path.slice(prefix.length);
       if (!rel || rel.includes('/')) continue;
       items.set(rel, { isDir: false, entry: f });

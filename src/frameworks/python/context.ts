@@ -42,6 +42,8 @@ export interface RunState {
   out: string;
   connections: ConnectAttempt[];
   steps: number;
+  /** Calls anidadas en curso: guard de recursión (MAX_CALL_DEPTH). */
+  callDepth: number;
   inputQueue: Array<{ value: string; echo: boolean }>;
 }
 
@@ -54,3 +56,17 @@ export interface RunCtx {
 
 export const DEFAULT_MAX_STEPS = 200_000;
 export const MAX_ITER = 100_000;
+
+/**
+ * Topes de memoria del intérprete. El intérprete corre en el navegador del
+ * alumno: sin estos topes, una línea como `"A" * 1_000_000_000` lanzaba
+ * `RangeError: Invalid string length` (o reservaba cientos de MB), el error
+ * escapaba del runtime y el `ChunkErrorBoundary` reemplazaba TODA la app por
+ * "No se pudo cargar la página" — el alumno perdía la sesión del lab.
+ * P0.2 de docs/mejoras_bunny.md.
+ */
+export const MAX_STRING_LEN = 1_000_000;
+export const MAX_ITEMS = 100_000;
+
+/** Profundidad de llamadas anidadas (evita el stack overflow de JS). */
+export const MAX_CALL_DEPTH = 100;

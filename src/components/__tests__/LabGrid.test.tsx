@@ -75,7 +75,9 @@ describe('LabGrid', () => {
 
   it('debe mostrar las categorías de los escenarios', () => {
     renderWithRouter(<LabGrid />);
-    const categories = new Set(SCENARIOS.map(s => s.category));
+    // El grid renderiza VISIBLE_SCENARIOS: las categorías se derivan de los
+    // labs visibles (los hidden —07/08— no traen chip de categoría).
+    const categories = new Set(VISIBLE_SCENARIOS.map(s => s.category));
     for (const cat of categories) {
       expect(screen.getAllByText(cat).length).toBeGreaterThanOrEqual(1);
     }

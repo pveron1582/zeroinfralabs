@@ -2,7 +2,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../types';
 import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canCreateInDir, canDeleteInDir } from '../../utils/permissions';
-import { findFile, findDirEntry, resolveParentDirPath } from '../../utils/fs';
+import { findFile, findDirEntry, resolveParentDirPath, isUnderPath } from '../../utils/fs';
 
 export const cmd_rm = {
   name: 'rm',
@@ -84,13 +84,15 @@ export const cmd_rm = {
 
       if (isDir) {
         const dirPrefix = cleanPath.endsWith('/.dir') ? cleanPath.slice(0, -5) : cleanPath;
-        const children = newFiles.filter(f => f.path.startsWith(dirPrefix) && f.path !== entry.path);
+        // isUnderPath (no startsWith): un hermano con prefijo común
+        // (`/home/user/xyz`) NO se lleva por delante al borrar `/home/user/x`.
+        const children = newFiles.filter(f => isUnderPath(f.path, dirPrefix) && f.path !== entry.path);
         if (children.length > 0 && !recursive) {
           results.push(`rm: cannot remove '${target}': Directory not empty`);
           continue;
         }
         for (let i = newFiles.length - 1; i >= 0; i--) {
-          if (newFiles[i].path.startsWith(dirPrefix)) newFiles.splice(i, 1);
+          if (isUnderPath(newFiles[i].path, dirPrefix)) newFiles.splice(i, 1);
         }
       } else {
         const idx = newFiles.findIndex(f => f.path === entry.path);

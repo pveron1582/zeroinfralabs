@@ -66,7 +66,8 @@ describe('LandingPage (marketing)', () => {
     await waitFor(() => {
       expect(screen.getByText('Pick your first lab')).toBeInTheDocument();
       expect(screen.getAllByText('WordPress Vulnerable Lab').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText(/View all labs \(7\)/)).toBeInTheDocument();
+      // El preview lista solo labs visibles (01-06); 07 y 08 se accede por URL.
+      expect(screen.getByText(/View all labs \(6\)/)).toBeInTheDocument();
     });
   });
 

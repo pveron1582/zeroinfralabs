@@ -51,6 +51,12 @@ export interface ValidationCriteria {
   port?: number;                  // Port must be present
   minHosts?: number;              // Minimum hosts discovered
   fileType?: 'flag' | 'payload' | 'note' | 'any';
+  // Ruta (o prefijo de directorio) del archivo leído, para missions que no
+  // son "leé cualquier cosa": p.ej. descubrir la config de un servicio en
+  // C:\Users\Public\svc-backup sin que valgue la nota de credenciales.
+  // Compara sin distinguir mayúsculas, con `/` o `\`, y acepta tanto
+  // `C:/x` como `/C:/x`. Prefijo = el archivo está dentro del directorio.
+  path?: string;
   user?: string;                  // User must match
   verified?: boolean;             // Credentials verified
   isSystem?: boolean;             // UID is SYSTEM/root

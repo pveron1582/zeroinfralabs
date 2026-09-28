@@ -112,7 +112,7 @@ export interface ScenarioState extends IdentitySlice, AcademySlice, TerminalSlic
   // → all inherited from TerminalSlice
   reportVulnerability: (machineId: string, vulnId: string, status: 'detected' | 'confirmed') => void;
 
-  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay' | 'rdpMachineId'> & Partial<Pick<UISlice, 'uiMode' | '_prevUiMode'>>;
+  resetUiState: () => Pick<UISlice, 'view' | 'showNetworkMap' | 'hasNewNetworkInfo' | 'notification' | 'browserCurrentUrl' | 'browserIsLoggedIn' | 'browserNavHistory' | 'browserNavIdx' | 'showSurvey' | 'pendingSurveyScenario' | 'showCompletionOverlay' | 'rdpMachineId' | 'showMachineLoader' | 'loadingMachine'> & Partial<Pick<UISlice, 'uiMode' | '_prevUiMode'>>;
   resetTerminalState: () => Pick<TerminalSlice, 'listeningPort' | 'blockingCommand' | 'msfState' | 'psState' | 'ftpSession' | 'sshSession' | 'rdpSession' | 'activeTerminals' | 'hasHadTerminals' | 'globalResetDoneForScenario'>;
   resetScenarioWorkspaceState: () => Pick<ScenarioSlice, '_prevMachinesSnapshot'>;
 }

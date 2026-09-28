@@ -23,6 +23,7 @@ export function runPython(source: string, opts: PyRunOptions): PythonRunResult {
     out: '',
     connections: [] as ConnectAttempt[],
     steps: 0,
+    callDepth: 0,
     inputQueue: buildInputQueue(opts),
   };
 
@@ -54,8 +55,34 @@ export function runPython(source: string, opts: PyRunOptions): PythonRunResult {
         connections: state.connections,
       };
     }
-    throw e;
+    // Red de seguridad (P0.2): NUNCA dejar que un error de JS escape.
+    // Antes `throw e` llegaba al comando python3 sin try/catch y el
+    // ChunkErrorBoundary (que envuelve toda la app) la reemplazaba por
+    // "No se pudo cargar la página". Cualquier RangeError/OOM/TypeError
+    // propio del intérprete se reporta como traceback de Python.
+    return {
+      output: stripTrailingNewline(state.out),
+      error: [
+        'Traceback (most recent call last):',
+        `  File "${opts.sourceName}", in <module>`,
+        `RuntimeError: ${describeJsError(e)}`,
+      ].join('\n'),
+      connections: state.connections,
+    };
   }
+}
+
+/** Traduce un error de JS del intérprete a algo legible para el alumno. */
+function describeJsError(e: unknown): string {
+  if (e instanceof RangeError) {
+    if (/call stack/i.test(e.message)) {
+      return 'profundidad de recursión excedida (límite del simulador)';
+    }
+    return 'memoria agotada: la operación pidió demasiado (límite del simulador)';
+  }
+  if (e instanceof TypeError) return `error interno del intérprete: ${e.message}`;
+  if (e instanceof Error) return e.message;
+  return String(e);
 }
 
 // stdout real no termina en '\n' si la última línea no la tenía.
