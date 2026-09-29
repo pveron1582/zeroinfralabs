@@ -3,7 +3,7 @@
 ## Resumen
 
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
-**Total Tests:** 2768 en 222 archivos  
+**Total Tests:** 2778 en 223 archivos  
 **Cobertura (v8):** 81.08% stmts / 68.80% branches / 77.52% funcs / 84.06% lines (medido 2026-09-27)  
 **E2E:** Playwright (7 specs en `e2e/`, corren en el job `e2e` de la CI)
 

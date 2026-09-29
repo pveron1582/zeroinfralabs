@@ -258,7 +258,7 @@ subsecciones guardan `Lesson[]`, no ids.
 **Pendiente de 3.6:** `appContent/` (1302 LOC sin tests), los hooks sin
 cubrir, `metasploit/{core,orchestrators}` y el E2E de humo de misión.
 
-### [ ] 3.7 Rendimiento en el camino caliente
+### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 
 1. `components/StreamingOutput.tsx:15-20`: `lines.slice(0,shown).join('\n')` por línea → **O(n²)** + re-layout completo del `<pre>` por línea (500 líneas de gobuster ⇒ ~125k caracteres reconstruidos con el input bloqueado).
 2. Sin tope de volumen de salida: medido **1.7 MB / 100k líneas** en un solo `<pre>` y retenidas en el estado de React.

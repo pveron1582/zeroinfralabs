@@ -6,7 +6,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   formatBytes, formatBytesBinary, formatMegabytes, formatLsDate,
-  stableTimestamp, hashPath,
+  stableTimestamp, hashPath, capOutput, capHistory,
+  MAX_OUTPUT_CHARS, MAX_OUTPUT_LINES, MAX_HISTORY_ENTRIES,
 } from '../format';
 import { homeDirFor, isRoot } from '../users';
 import type { User } from '../../types';
@@ -93,5 +94,66 @@ describe('isRoot (fuente única)', () => {
     expect(isRoot(u({ username: 'root', uid: 1000 }))).toBe(true);
     expect(isRoot(u({ username: 'john', uid: 1000 }))).toBe(false);
     expect(isRoot(null)).toBe(false);
+  });
+});
+
+// ── Límites de salida e historial (P1 3.7) ────────────────────────
+describe('capOutput', () => {
+  it('no toca una salida normal', () => {
+    const txt = 'total 12\nREADME.md  1.2K\n';
+    expect(capOutput(txt)).toBe(txt);
+  });
+
+  it('recorta por caracteres una salida enorme y avisa del tamaño real', () => {
+    const r = capOutput('A'.repeat(MAX_OUTPUT_CHARS + 50_000));
+    expect(r.length).toBeLessThan(MAX_OUTPUT_CHARS + 400);
+    expect(r).toContain('salida recortada');
+    expect(r).toContain('kB');
+  });
+
+  it('recorta por LÍNEAS aunque quepan en el tope de bytes', () => {
+    // 100k líneas de 2 caracteres: 300 kB, pasa el tope de bytes pero no
+    // puede quedar en el estado del terminal (era el caso medido: 1.7 MB /
+    // 100k líneas en un solo <pre>).
+    const txt = Array.from({ length: 100_000 }, () => 'ab').join('\n');
+    expect(txt.length).toBeLessThan(MAX_OUTPUT_CHARS);
+    const r = capOutput(txt);
+    expect(r.split('\n').length).toBeLessThanOrEqual(MAX_OUTPUT_LINES + 2);
+    expect(r).toContain('100.000 líneas');
+  });
+
+  it('deja un aviso que dice cómo ver todo', () => {
+    const r = capOutput('x'.repeat(MAX_OUTPUT_CHARS + 1));
+    expect(r).toContain('grep/head/tail');
+  });
+});
+
+describe('capHistory', () => {
+  const entrada = (i: number) => ({
+    command: `cmd-${i}`,
+    output: `salida ${i}`,
+    prompt: 'kali@lab:~$',
+    timestamp: i,
+  });
+
+  it('no toca un historial corto', () => {
+    const h = [entrada(0), entrada(1)];
+    expect(capHistory(h)).toBe(h);
+  });
+
+  it('conserva las últimas entradas y deja un aviso arriba', () => {
+    const h = Array.from({ length: MAX_HISTORY_ENTRIES + 50 }, (_, i) => entrada(i));
+    const r = capHistory(h);
+    expect(r.length).toBe(MAX_HISTORY_ENTRIES + 1); // + el aviso
+    expect(r[0].output).toContain('se recortaron 50 entradas');
+    // Lo último es lo que se conserva (el historial del alumno).
+    expect(r[r.length - 1].command).toBe(`cmd-${h.length - 1}`);
+  });
+
+  it('respeta un límite custom', () => {
+    const h = Array.from({ length: 10 }, (_, i) => entrada(i));
+    const r = capHistory(h, 3);
+    expect(r.length).toBe(4);
+    expect(r[3].command).toBe('cmd-9');
   });
 });

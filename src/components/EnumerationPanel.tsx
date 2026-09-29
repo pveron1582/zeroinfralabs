@@ -1,4 +1,5 @@
 import type { Machine, MsfState } from '../types';
+import { useMemo } from 'react';
 
 interface EnumerationPanelProps {
   machine: Machine;
@@ -35,7 +36,10 @@ export const EnumerationPanel: React.FC<EnumerationPanelProps> = ({ machine, onC
     return (user && pass) ? { user, pass } : null;
   };
 
-  const dynamicCreds = getDynamicCredentials(machine);
+  // Memoizado: antes corría un files.find + split() de cada línea del
+  // wp-config en CADA render del panel, que se re-renderiza con cada
+  // comando que escribe algo (P1 3.7).
+  const dynamicCreds = useMemo(() => getDynamicCredentials(machine), [machine]);
   
   // Clonamos y actualizamos las credenciales encontradas
   const displayCredentials = [...(machine.found_credentials || [])].map(cred => {

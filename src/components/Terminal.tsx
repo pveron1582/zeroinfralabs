@@ -1,7 +1,7 @@
 // ── components/Terminal.tsx ───────────────────────────────────────
 // Terminal UI component — solo render, lógica delegada a useCommandRunner
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useCommandRunner, type CommandRunnerProps } from '../hooks/useCommandRunner';
 import { getAutocompleteSuggestions } from '../utils/autocomplete';
 import { renderKaliPrompt, renderKaliPromptSymbol, isPsPromptText, isOneLinePrompt } from './TerminalPrompt';
@@ -61,6 +61,51 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
     setInput(prev => prev + isMobileKey);
     inputRef.current?.focus();
   }, [isMobileKey]);
+
+  // Vista del historial memoizada (P1 3.7): antes `history.map(...)` se
+  // re-evaluaba en CADA render, y como `input` cambia por tecla, teclear
+  // re-mapeaba y reconciliaba toda la salida del terminal.
+  const historyView = useMemo(() => (
+    <>
+      {history.map((entry, i) => (
+
+            <div key={entry.timestamp + i} className="space-y-0.5" style={{ animation: 'fadeInEntry 0.12s ease-out' }}>
+              {entry.command !== null && (
+                <div className="flex flex-col gap-0.5">
+                  {isOneLinePrompt(entry.prompt) ? (
+                    // PowerShell / cmd.exe: prompt y comando en el MISMO renglón
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs flex-shrink-0" style={{ color: displayColor }}>{entry.prompt}</span>
+                      <span className="text-sm" style={{ color: displayColor }}>{entry.command}</span>
+                    </div>
+                  ) : entry.prompt?.includes('ftp') || entry.prompt?.includes('Name') || entry.prompt?.includes('Password') || entry.prompt?.includes("'s password") ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs flex-shrink-0" style={{ color: displayColor }}>
+                        {entry.prompt?.trim() === 'ftp>' ? 'ftp> ' : entry.prompt}
+                      </span>
+                      <span className="text-sm" style={{ color: displayColor }}>{entry.command}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt, activePromptColors)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt, isRoot, activePromptColors)}</span>
+                        <span className="text-sm" style={{ color: displayColor }}>{entry.command}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+              {entry.streaming && entry.lines
+                ? <StreamingOutput lines={entry.lines} color={displayColor} delays={entry.lineDelays} />
+                : <pre className="whitespace-pre-wrap text-xs leading-relaxed" style={{ color: entry.command === null ? displayColor + '99' : displayColor }}>
+                    {entry.output}
+                  </pre>
+              }
+            </div>
+      ))}
+    </>
+  ), [history, displayColor, activePromptColors, isRoot, prompt]);
 
   return (
     <div 
@@ -124,43 +169,7 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
           style={{ scrollbarWidth: 'thin', scrollbarColor: '#9ca3af rgba(0,0,0,0.35)' }}
           onClick={() => inputRef.current?.focus()}
         >
-          {history.map((entry, i) => (
-            <div key={entry.timestamp + i} className="space-y-0.5" style={{ animation: 'fadeInEntry 0.12s ease-out' }}>
-              {entry.command !== null && (
-                <div className="flex flex-col gap-0.5">
-                  {isOneLinePrompt(entry.prompt) ? (
-                    // PowerShell / cmd.exe: prompt y comando en el MISMO renglón
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs flex-shrink-0" style={{ color: displayColor }}>{entry.prompt}</span>
-                      <span className="text-sm" style={{ color: displayColor }}>{entry.command}</span>
-                    </div>
-                  ) : entry.prompt?.includes('ftp') || entry.prompt?.includes('Name') || entry.prompt?.includes('Password') || entry.prompt?.includes("'s password") ? (
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs flex-shrink-0" style={{ color: displayColor }}>
-                        {entry.prompt?.trim() === 'ftp>' ? 'ftp> ' : entry.prompt}
-                      </span>
-                      <span className="text-sm" style={{ color: displayColor }}>{entry.command}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <span className="font-bold text-xs flex-shrink-0">{renderKaliPrompt(entry.prompt || prompt, activePromptColors)}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs flex-shrink-0">{renderKaliPromptSymbol(entry.prompt, isRoot, activePromptColors)}</span>
-                        <span className="text-sm" style={{ color: displayColor }}>{entry.command}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-              {entry.streaming && entry.lines
-                ? <StreamingOutput lines={entry.lines} color={displayColor} delays={entry.lineDelays} />
-                : <pre className="whitespace-pre-wrap text-xs leading-relaxed" style={{ color: entry.command === null ? displayColor + '99' : displayColor }}>
-                    {entry.output}
-                  </pre>
-              }
-            </div>
-          ))}
-
+          {historyView}
           {!busy && !blockingCommand && (
             <div className="relative">
               {pendingSu ? (

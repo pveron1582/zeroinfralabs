@@ -2,13 +2,14 @@
 // Orquestador delgado: compone los hooks especializados y expone la API
 // que el componente Terminal espera.
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { Machine, BlockingCommand } from '../types';
 import { useScenarioStore } from '../store/scenarioStore';
 import { createIsolatedExecutor, type MsfState, type PsState } from '../commands';
 import { shellManager } from '../frameworks/shells/ShellManager';
 import { useMissionCompletion } from './useMissionCompletion';
 import { DEFAULT_ENV } from '../utils/environment';
+import { capHistory } from '../utils/format';
 import { initialCwd } from '../utils/users';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { useTerminalIdentity, buildBasePrompt } from './useTerminalIdentity';
@@ -104,7 +105,16 @@ export function useCommandRunner({
   });
 
   // ── Historial ────────────────────────────────────────────────────
-  const [history, setHistory]       = useState<HistoryEntry[]>([makeWelcome(allMachines)]);
+  // El setter pasa por capHistory: con un `while True: print(...)` el
+  // historial crecía sin límite (una entrada por comando) y cada render
+  // re-mapeaba la lista entera. Ningún call site cambia (P1 3.7).
+  const [history, setHistoryRaw]   = useState<HistoryEntry[]>([makeWelcome(allMachines)]);
+  const setHistory: React.Dispatch<React.SetStateAction<HistoryEntry[]>> = useCallback((updater) => {
+    setHistoryRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      return capHistory(next);
+    });
+  }, []);
   const [input, setInput]           = useState('');
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [histIdx, setHistIdx]       = useState(-1);

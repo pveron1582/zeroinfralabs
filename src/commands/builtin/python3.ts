@@ -182,13 +182,19 @@ function buildScanMetadata(
   const byHost = connections[0].host;
   const target = resolveMachineByHost(byHost, machine, allMachines ?? []);
   if (!target) return null;
-  const ports = connections.map(c => ({
-    port: c.port,
-    protocol: 'tcp',
-    state: c.ok ? 'open' : 'closed',
-    service: c.service ?? 'unknown',
-    ...(c.version ? { version: c.version } : {}),
-  }));
+  // Dedup por puerto: con `input()` el script se re-ejecuta y cada corrida
+  // agregaba sus sockets.connect otra vez, así que la metadata llegaba con
+  // el mismo puerto k veces y el EnumerationPanel pintaba filas repetidas.
+  const seen = new Set<number>();
+  const ports = connections
+    .filter(c => (seen.has(c.port) ? false : (seen.add(c.port), true)))
+    .map(c => ({
+      port: c.port,
+      protocol: 'tcp',
+      state: c.ok ? 'open' : 'closed',
+      service: c.service ?? 'unknown',
+      ...(c.version ? { version: c.version } : {}),
+    }));
   return {
     targetId: target.id,
     targetIp: target.machine_info.ip,

@@ -6,6 +6,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../types';
 import { shellManager } from '../frameworks/shells';
 import { getCurrentUser, getExecutionSuUser, setExecutionSuUser } from '../utils/users';
 import { writeOutputToFile } from '../utils/redirection';
+import { capOutput } from '../utils/format';
 import { splitTopLevel, extractRedirection, expandCommandLine, splitArgs } from '../utils/shellParse';
 import { getSuidEffectiveUser } from './suid';
 import { cmd_msfconsole, executeMsfCommand } from './tools';
@@ -178,10 +179,16 @@ export function executeCommandInternal(
         );
       },
     };
-    return executeCommandBody(
+    // Un solo punto de recorte para TODA salida de comando (P1 3.7): sin
+    // esto, una sola llamada puede dejar 1.7 MB / 100k líneas en el estado
+    // del terminal y la pestaña deja de responder.
+    const result = executeCommandBody(
       line, childCtx, commands, getMsfState, onMsfStateChange,
       getPsState, setPsState, onPsStateChange,
     );
+    if (typeof result.output !== 'string') return result;
+    const capped = capOutput(result.output);
+    return capped === result.output ? result : { ...result, output: capped };
   } finally {
     setExecutionSuUser(prevSu);
   }
