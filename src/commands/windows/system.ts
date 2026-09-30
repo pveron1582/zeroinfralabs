@@ -6,8 +6,8 @@ import type { CommandContext, CommandResponse, Machine } from '../../types';
 import { getCurrentUser } from '../../utils/users';
 import { getListeningPorts } from '../../frameworks/network/networkState';
 import { killPid, list as listProcesses } from '../../frameworks/process/processManager';
-import { gatewayOf } from './helpers';
-import { WIN_ERR } from './helpers';
+import { gatewayOf } from '../../utils/winCmd';
+import { WIN_ERR } from '../../utils/winCmd';
 
 // ── hostname ───────────────────────────────────────────────────────
 

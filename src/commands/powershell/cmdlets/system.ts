@@ -4,7 +4,7 @@
 
 import type { CommandContext, CommandResponse, Machine } from '../../../types';
 import { getCurrentUser, isRoot } from '../../../utils/users';
-import { winUser } from '../../windows/helpers';
+import { winUser } from '../../../utils/winCmd';
 import { cmd_mstsc } from '../../windows/mstsc';
 import { getParam, pathArg, type PsInvocation } from '../parser';
 import { PS_ALIASES } from '../aliases';

@@ -1,15 +1,19 @@
 // ── frameworks/metasploit/orchestrators/msfShell.ts ──────────────
 // Windows CMD shell commands: cls, whoami, hostname, dir, ipconfig, etc.
-// Los comandos de filesystem (cd/dir/type) delegan en los de cmd.exe
-// (commands/windows/fs.ts) contra el FS virtual real: la shell de
-// meterpreter corre SOBRE la víctima, no en un mock aparte. El cwd vive
+// `cd` usa la MISMA resolución que cmd.exe (`utils/winCmd`, capa baja) y
+// `dir`/`type` delegan en los comandos de cmd.exe contra el FS virtual real:
+// la shell de meterpreter corre SOBRE la víctima, no en un mock aparte, y
+// reutilizar el comando es a propósito (si `dir` cambia de formato, cambia en
+// los dos lados). Esa parte queda como deuda consciente: lo que falta es
+// bajar el formateo de `dir` a una capa común (ver P1 3.3). El cwd vive
 // en MsfState.cwd (aislado por terminal) y se replica en ctx.setCurrentDir
 // para que la terminal quede alineada al salir de la sesión.
 
 import type { CommandContext, CommandResponse } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { withState } from '../core/msfHelpers';
-import { cmd_dir, cmd_type, resolveCdTarget } from '../../../commands/windows/fs';
+import { cmd_dir, cmd_type } from '../../../commands/windows/fs';
+import { resolveWinCdTarget } from '../../../utils/winCmd';
 import { winDisplay } from '../../../utils/winPath';
 
 /** Cwd de la sesión: estado MSF si existe, si no el de la terminal. */
@@ -71,7 +75,7 @@ export const executeShellCommand = (
     if (args.length === 0) {
       return withState(`${winDisplay(cwd)}\n`, state);
     }
-    const res = resolveCdTarget(ctx, args[0], cwd);
+    const res = resolveWinCdTarget(ctx, args[0], cwd);
     if (!res.ok) return withState(`${res.message}\n`, state);
     ctx.setCurrentDir?.(res.canonical);
     return withState('', { ...state, cwd: res.canonical });

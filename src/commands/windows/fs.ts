@@ -9,7 +9,7 @@ import { readVirtualFile, buildFileReadMetadata } from '../../utils/fileRead';
 import { winDisplay, resolveWinPath } from '../../utils/winPath';
 import {
   WIN_ERR, winUser, winResolve, isDirPath, dirCanonical, winDate, entrySize,
-} from './helpers';
+} from '../../utils/winCmd';
 
 // ── dir ────────────────────────────────────────────────────────────
 

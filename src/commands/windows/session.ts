@@ -3,7 +3,7 @@
 // (powershell vive en commands/powershell/ — PLAN_WINDOWS W2)
 
 import type { CommandContext, CommandResponse } from '../../types';
-import { WIN_VERSION } from './helpers';
+import { WIN_VERSION } from '../../utils/winCmd';
 
 // ── echo ───────────────────────────────────────────────────────────
 

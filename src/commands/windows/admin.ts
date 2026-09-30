@@ -8,7 +8,7 @@ import { canRead } from '../../utils/permissions';
 import {
   getAllServices, startService, stopService,
 } from '../../frameworks/process/processManager';
-import { WIN_ERR, winUser } from './helpers';
+import { WIN_ERR, winUser } from '../../utils/winCmd';
 import { findFile } from '../../utils/fs';
 
 function usage(msg: string): CommandResponse {

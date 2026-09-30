@@ -7,7 +7,7 @@ import {
   getAllServices, startService, stopService,
 } from '../../../frameworks/process/processManager';
 import { isRoot } from '../../../utils/users';
-import { winUser } from '../../windows/helpers';
+import { winUser } from '../../../utils/winCmd';
 import { getParam, pathArg, type PsInvocation } from '../parser';
 
 type PsExec = (inv: PsInvocation, ctx: CommandContext) => CommandResponse;

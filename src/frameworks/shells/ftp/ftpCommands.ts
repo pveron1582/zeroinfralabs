@@ -6,7 +6,7 @@ import type { ShellContext, ShellResult } from '../ShellSession';
 import { canRead } from '../../../utils/permissions';
 import { getCurrentUser } from '../../../utils/users';
 import { defaultOwnership } from '../../../utils/fs';
-import { applyUmask } from '../../../commands/builtin/umask';
+import { applyUmask } from '../../../utils/fs';
 import type { FtpState } from './FtpSession';
 
 export interface FtpCommandResult {

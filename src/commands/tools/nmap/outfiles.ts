@@ -6,7 +6,7 @@ import { normalizePath, resolvePath } from '../../../utils/path';
 import { getCurrentUser } from '../../../utils/users';
 import { canCreateInDir, canEditFile } from '../../../utils/permissions';
 import { findFile, findParentDir, defaultOwnership } from '../../../utils/fs';
-import { applyUmask } from '../../builtin/umask';
+import { applyUmask } from '../../../utils/fs';
 
 export interface NmapFileWriter {
   tryAddCreatedFile: (rawPath: string, content: string) => void;

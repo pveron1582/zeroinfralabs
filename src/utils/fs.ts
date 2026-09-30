@@ -103,3 +103,16 @@ export function resolveSymlink(machine: { files: FileEntry[] }, entry: FileEntry
   }
   return current;
 }
+
+/**
+ * Modo efectivo al crear un archivo: `mode & ~umask` (función pura).
+ * Vive acá y no en `commands/builtin/umask.ts` porque la regla la usan 23
+ * call sites de varias capas —incluidos `utils/redirection.ts` y el shell
+ * FTP—, y un framework no puede depender de un comando (capa invertida).
+ * El comando `umask` la importa desde acá.
+ */
+export const DEFAULT_UMASK = 0o022;
+
+export function applyUmask(baseMode: number, umask: number = DEFAULT_UMASK): number {
+  return baseMode & ~umask;
+}

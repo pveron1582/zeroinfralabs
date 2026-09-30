@@ -198,12 +198,56 @@ en el código, no estimado:
   `useCommandRunner` necesita `createIsolatedExecutor`. Es corrección de
   dirección de dependencia, no de performance.
 
-### [ ] 3.3 Capas invertidas
+### [~] 3.3 Capas invertidas — **RESUELTO 2026-09-27 (parcial, medido)**
 
 - `store/slices/scenarioSlice.ts:3` → `laboratorios/laboratorios.ts`; `scenarioStore.ts:11` → `frameworks/shells/ShellManager.ts`; `scenarioSlice.ts:5` → `frameworks/resetManagers.ts`.
 - `frameworks/metasploit/orchestrators/msfMeterpreter.ts:6`, `msfShell.ts:11` → `commands/windows/fs.ts`; `shells/ftp/ftpCommands.ts:9` → `commands/builtin/umask.ts` (una regla de permisos viviendo en un comando).
 - `utils/autocomplete.ts:6,7` → `frameworks/metasploit/core/msfModules.ts` y `commands/names.ts`.
 - Consecuencia práctica: **un slice no se puede testear sin cargar los 8 labs**.
+
+**Resolución (2026-09-27) — medida, no declarativa:**
+
+1. **store → labs: eliminado (era el que dolía).** `laboratorios/registry.ts`
+   (hoja: solo tipos) es la tabla que el store consulta; `laboratorios.ts` se
+   registra al importarse. `scenarioSlice` resuelve con `findScenario(id)` y
+   arranca con `defaultScenario() ?? emptyScenario()` (nuevo
+   `laboratorios/emptyScenario.ts`). Antes arrastraba **30 archivos, 13 de
+   labs**; hoy el store alcanza 29 archivos en total y solo **2** de labs
+   (registro + factory vacía, ambas hojas).
+   - Los tests del store dejaron de heredar el lab 01 por un import oculto:
+     siembran su propio escenario con los builders nuevos de
+     `src/test/fixtures.ts` (`makeTestMachine/Mission/Scenario`).
+2. **store → frameworks: NO se invirtió, y está justificado por medición.**
+   Se implementó un puerto de efectos (`registerScenarioEffect`) y
+   `resetWorkspace` pasó a resetear los 6 managers. **Se revirtió**: 3 tests
+   de contrato detectaron que sin el import de `resetManagers` la garantía
+   "entrar/salir de un lab cierra las sesiones (FTP, SSH, NC)" se pierde en
+   silencio. La inversión era cosmética y costaba comportamiento; el test de
+   capas la deja anotada como deuda consciente con el motivo al lado.
+3. **utils → frameworks: eliminado.** `MsfModule` (4 líneas) pasó a
+   `types/msf.ts`; `autocomplete.ts` ya no depende del framework de
+   Metasploit. `utils/autocomplete → commands/names.ts` se queda: esa hoja
+   existe justamente para eso y no arrastra nada.
+4. **frameworks → commands: reducido a 2 aristas justificadas.** Los helpers
+   de cmd.exe no eran comandos: `commands/windows/helpers.ts` pasó a
+   `utils/winCmd.ts` (con `resolveWinCdTarget`, que es el `cd` que usan las
+   sesiones meterpreter). Queda `dir`/`type` en los orchestradores de MSF, a
+   propósito: imprimen EXACTAMENTE lo que imprime cmd.exe porque llaman al
+   comando. Lo pendiente es bajar el formateo de `dir` a una capa común.
+5. **commands → commands: `applyUmask` bajada a `utils/fs.ts`.** La usaban 23
+   call sites y **2 estaban invertidos** (`utils/redirection.ts` y el shell
+   FTP, que importaban un comando builtin). Ahora todos apuntan a la capa baja
+   y el comando `umask` re-exporta.
+6. **Las capas pasaron a ser un test**: `src/store/__tests__/layering.test.ts`
+   (7 tests) recorre el grafo de imports y falla si el store alcanza labs,
+   comandos o un framework no permitido, si `utils` alcanza un framework, o si
+   un framework alcanza la capa de comandos. Allowlist explícita con el motivo.
+   (Hizo falta `src/test/node-shims.d.ts`: el proyecto no instala
+   `@types/node` y tsconfig solo declara vitest + jest-dom.)
+
+**Pendiente de 3.3:** bajar el formateo de `dir` a una capa común (las 2
+aristas MSF→commands) y, si algún día se quiere el store sin frameworks,
+mover el estado de los managers a una capa que el store posea.
 
 ### [~] 3.4 Bolsas de campos y god function — **RESUELTO 2026-09-27 (parcial: dispatcher)**
 

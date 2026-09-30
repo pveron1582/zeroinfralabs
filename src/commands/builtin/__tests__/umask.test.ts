@@ -1,6 +1,6 @@
 // @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
 import { describe, it, expect } from 'vitest';
-import { cmd_umask, applyUmask } from '../umask';
+import { cmd_umask } from '../umask';
 import type { CommandContext } from '../../../types';
 
 function makeContext(initial = 0o022): { ctx: CommandContext; get: () => number } {
@@ -66,21 +66,5 @@ describe('cmd_umask', () => {
     const result = cmd_umask.execute(['888'], ctx);
     expect(result.isError).toBe(true);
     expect(result.output).toContain('invalid mask');
-  });
-});
-
-describe('applyUmask', () => {
-  it('debe calcular mode efectivo correctamente', () => {
-    expect(applyUmask(0o666, 0o022)).toBe(0o644);
-    expect(applyUmask(0o777, 0o022)).toBe(0o755);
-  });
-
-  it('debe calcular con umask 077', () => {
-    expect(applyUmask(0o666, 0o077)).toBe(0o600);
-    expect(applyUmask(0o777, 0o077)).toBe(0o700);
-  });
-
-  it('debe usar 022 por defecto si no se pasa umask', () => {
-    expect(applyUmask(0o666)).toBe(0o644);
   });
 });

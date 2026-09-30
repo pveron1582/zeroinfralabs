@@ -36,3 +36,11 @@ export interface MsfState {
   sessions?: MsfSession[];
   currentSessionId?: number;
 }
+
+/** Módulo del framework de Metasploit (autocomplete y listado de módulos). */
+export interface MsfModule {
+  path: string;
+  type: 'auxiliary' | 'exploit' | 'post' | 'payload';
+  desc: string;
+  rank: 'normal' | 'average' | 'great' | 'manual';
+}

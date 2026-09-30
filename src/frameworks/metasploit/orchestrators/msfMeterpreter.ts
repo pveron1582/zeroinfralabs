@@ -4,7 +4,8 @@
 import type { CommandResponse, CommandContext } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { withState } from '../core/msfHelpers';
-import { cmd_dir, cmd_type, resolveCdTarget } from '../../../commands/windows/fs';
+import { cmd_dir, cmd_type } from '../../../commands/windows/fs';
+import { resolveWinCdTarget } from '../../../utils/winCmd';
 import { winDisplay } from '../../../utils/winPath';
 
 /** Cwd de la sesión: estado MSF si existe, si no el de la terminal. */
@@ -41,7 +42,7 @@ export const executeMeterpreterCommand = (
   if (cmd === 'cd') {
     const cwd = sessionCwd(state, ctx);
     if (args.length === 0) return withState(`${winDisplay(cwd)}\n`, state);
-    const res = resolveCdTarget(ctx, args[0], cwd);
+    const res = resolveWinCdTarget(ctx, args[0], cwd);
     if (!res.ok) return withState(`[-] cd: ${res.message}\n`, state);
     ctx.setCurrentDir?.(res.canonical);
     return withState('', { ...state, cwd: res.canonical });

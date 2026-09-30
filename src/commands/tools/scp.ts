@@ -9,7 +9,7 @@ import { normalizePath, resolvePath } from '../../utils/path';
 import { canCreateInDir, canEditFile, canRead } from '../../utils/permissions';
 import { getCurrentUser, getUser, ROOT_USER } from '../../utils/users';
 import { effectivePortState } from '../../frameworks/network/networkState';
-import { applyUmask } from '../builtin/umask';
+import { applyUmask } from '../../utils/fs';
 
 const SCP_HELP = `Usage: scp [-v] SOURCE TARGET
 Copy files over SSH.

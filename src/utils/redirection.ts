@@ -8,7 +8,7 @@ import { canCreateInDir, canEditFile } from './permissions';
 import { findFile, findParentDir, defaultOwnership, buildNewFile } from './fs';
 import { normalizePath, resolvePath } from './path';
 import { isWinPath, resolveWinPath } from './winPath';
-import { applyUmask } from '../commands/builtin/umask';
+import { applyUmask } from './fs';
 
 export interface RedirectionResult {
   text: string;

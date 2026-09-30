@@ -4,7 +4,7 @@ import { getCurrentUser } from '../../utils/users';
 import { canCreateInDir, canEditFile } from '../../utils/permissions';
 import { findFile, findParentDir, defaultOwnership, buildNewFile } from '../../utils/fs';
 import { parseRedirection } from '../../utils/redirection';
-import { applyUmask } from '../builtin/umask';
+import { applyUmask } from '../../utils/fs';
 
 export const cmd_echo = {
   name: 'echo',

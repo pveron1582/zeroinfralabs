@@ -11,7 +11,7 @@ import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canCreateInDir, canEditFile } from '../../utils/permissions';
 import { findFile, findParentDir, defaultOwnership, buildNewFile } from '../../utils/fs';
-import { applyUmask } from '../builtin/umask';
+import { applyUmask } from '../../utils/fs';
 
 export const CURL_HELP = `Usage: curl [options] <url>
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useScenarioStore } from '../scenarioStore';
 import { shellManager } from '../../frameworks/shells/ShellManager';
+import { makeTestScenario } from '../../test/fixtures';
 
 vi.mock('zustand/middleware', () => ({
   persist: (config: any) => (set: any, get: any, api: any) => config(set, get, api),
@@ -9,6 +10,15 @@ vi.mock('zustand/middleware', () => ({
 describe('resetWorkspace — contrato por slices', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    // Desde P1 3.3 el store arranca con un workspace vacío (no importa los
+    // labs): el test siembra su escenario para poder afirmar sobre el reset.
+    const scenario = makeTestScenario();
+    useScenarioStore.setState({
+      currentScenario: scenario,
+      machines: scenario.machines,
+      missions: scenario.missions,
+      activeMachineId: scenario.initialMachineId,
+    });
     useScenarioStore.setState({
       view: 'workspace',
       showNetworkMap: true,

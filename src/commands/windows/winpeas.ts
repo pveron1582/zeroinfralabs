@@ -10,7 +10,7 @@ import { canRead } from '../../utils/permissions';
 import { getAllServices } from '../../frameworks/process/processManager';
 import { buildFileReadMetadata } from '../../utils/fileRead';
 import { winDisplay } from '../../utils/winPath';
-import { winUser } from './helpers';
+import { winUser } from '../../utils/winCmd';
 
 const CRED_USER_RE = /username\s*[:=]\s*([^\s]+)/i;
 const CRED_PASS_RE = /password\s*[:=]\s*([^\s]+)/i;

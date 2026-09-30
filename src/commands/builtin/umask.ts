@@ -5,8 +5,11 @@
 // de terminal (no persistente)".
 
 import type { CommandContext, CommandResponse } from '../../types';
+import { DEFAULT_UMASK } from '../../utils/fs';
 
-const DEFAULT_UMASK = 0o022;
+// Re-export: la regla vive en utils/fs (la usan 23 call sites de varias
+// capas) y los imports históricos siguen funcionando.
+export { applyUmask, DEFAULT_UMASK } from '../../utils/fs';
 
 export const cmd_umask = {
   name: 'umask',
@@ -54,8 +57,3 @@ export const cmd_umask = {
     return { output: '' };
   }
 };
-
-/** Calcular el mode efectivo aplicando la umask (función pura) */
-export function applyUmask(baseMode: number, umask: number = DEFAULT_UMASK): number {
-  return baseMode & ~umask;
-}

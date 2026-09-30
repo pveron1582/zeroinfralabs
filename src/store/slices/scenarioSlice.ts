@@ -1,7 +1,11 @@
 import type { StateCreator } from 'zustand';
 import type { ScenarioState } from '../types';
 import type { Machine, Scenario, Mission, FileEntry } from '../../types';
-import { SCENARIOS, TEST_SCENARIO } from '../../laboratorios/laboratorios';
+// El store NO importa los labs: resuelve contra el registro (hoja sin datos
+// de escenarios) y arranca con un workspace vacío. Así el slice se puede
+// testear sin cargar los 8 labs (P1 3.3).
+import { findScenario, defaultScenario } from '../../laboratorios/registry';
+import { emptyScenario } from '../../laboratorios/emptyScenario';
 import { createEnumerationSnapshot, hasEnumerationChanged, type EnumerationSnapshot } from '../../utils/networkAlert';
 import { resetScenarioManagers } from '../../frameworks/resetManagers';
 import { scheduleNotificationClear } from './uiSlice';
@@ -61,15 +65,15 @@ export function cancelPendingScenarioLoad(): void {
 }
 
 export const createScenarioSlice: StateCreator<ScenarioState, [], [], ScenarioSlice> = (set, get) => ({
-  currentScenario: SCENARIOS[0],
-  machines: SCENARIOS[0].machines.map(m => ({ ...m, discovery_level: 0 })),
-  missions: SCENARIOS[0].missions,
+  currentScenario: defaultScenario() ?? emptyScenario(),
+  machines: (defaultScenario()?.machines ?? []).map(m => ({ ...m, discovery_level: 0 })),
+  missions: defaultScenario()?.missions ?? [],
   currentMissionId: 1,
-  activeMachineId: SCENARIOS[0].initialMachineId,
+  activeMachineId: defaultScenario()?.initialMachineId ?? '',
   _prevMachinesSnapshot: [],
 
   selectScenario: (id: string) => {
-    const scenario = id === TEST_SCENARIO.id ? TEST_SCENARIO : SCENARIOS.find(s => s.id === id);
+    const scenario = findScenario(id);
     if (!scenario) return;
 
     // Una carga nueva cancela la pendiente (doble click en dos labs).

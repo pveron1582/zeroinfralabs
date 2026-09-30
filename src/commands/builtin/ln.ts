@@ -8,7 +8,7 @@ import { getCurrentUser } from '../../utils/users';
 import { canCreateInDir } from '../../utils/permissions';
 import { findFile, findParentDir, findDirEntry, defaultOwnership, buildNewFile } from '../../utils/fs';
 import { normalizePath, resolvePath } from '../../utils/path';
-import { applyUmask } from '../builtin/umask';
+import { applyUmask } from '../../utils/fs';
 
 export const cmd_ln = {
   name: 'ln',

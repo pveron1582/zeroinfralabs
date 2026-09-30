@@ -4,7 +4,7 @@
 
 import type { CommandContext, CommandResponse, Machine } from '../../../types';
 import { getListeningPorts, effectivePortState } from '../../../frameworks/network/networkState';
-import { gatewayOf } from '../../windows/helpers';
+import { gatewayOf } from '../../../utils/winCmd';
 import { getParam, pathArg, type PsInvocation } from '../parser';
 
 type PsExec = (inv: PsInvocation, ctx: CommandContext) => CommandResponse;

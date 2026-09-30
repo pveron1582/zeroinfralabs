@@ -1,3 +1,4 @@
+import { registerScenarios } from './registry';
 import { scenario_01 as laboratorio_01, scenario01Data } from './laboratorio01';
 import { scenario_02 as laboratorio_02, scenario02Data } from './laboratorio02';
 import { scenario_03 as laboratorio_03, SCENARIO_TEMPLATES_ETERNAL } from './laboratorio03';
@@ -22,6 +23,11 @@ export const VISIBLE_SCENARIOS = SCENARIOS.filter(s => !s.hidden);
 // Alias for backward compatibility (same object as SCENARIOS[5])
 export const TEST_SCENARIO = laboratorio_06;
 export const TEST_SCENARIO_DATA = scenario06Data;
+
+// Alta en el registro: el store resuelve los labs por acá y así no importa
+// esta capa (P1 3.3). Importar este archivo alcanza para dejar el registro
+// poblado — la landing, la grilla y el launcher ya lo importan.
+registerScenarios(SCENARIOS, { testId: TEST_SCENARIO.id });
 
 // Export metadata for dynamic LandingPage cards
 export const SCENARIOS_META = [

@@ -8,7 +8,7 @@ import type { CommandContext, CommandResponse } from '../../types';
 import { findFile, findParentDir, defaultOwnership, buildNewFile } from '../../utils/fs';
 import { canCreateInDir, canEditFile } from '../../utils/permissions';
 import { getCurrentUser } from '../../utils/users';
-import { applyUmask } from './umask';
+import { applyUmask } from '../../utils/fs';
 
 function extractHash(content: string): string {
   const trimmed = content.trim();

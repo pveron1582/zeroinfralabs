@@ -1,9 +1,7 @@
-export interface MsfModule {
-  path: string;
-  type: 'auxiliary' | 'exploit' | 'post' | 'payload';
-  desc: string;
-  rank: 'normal' | 'average' | 'great' | 'manual';
-}
+// El tipo vive en `types/` (dominio) para que `utils/autocomplete.ts` no
+// dependa del framework de Metasploit: son 4 líneas y una capa invertida.
+import type { MsfModule } from '../../../types';
+export type { MsfModule };
 
 export const MSF_MODULES: MsfModule[] = [
   { path: 'auxiliary/scanner/smb/smb_ms17_010',   type: 'auxiliary', desc: 'MS17-010 SMB RCE Detection',          rank: 'normal'    },

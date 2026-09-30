@@ -1,10 +1,16 @@
-// ── commands/windows/helpers.ts ───────────────────────────────────
-// Helpers compartidos de los comandos cmd.exe (PLAN_WINDOWS W1).
+// ── utils/winCmd.ts ───────────────────────────────────────────────
+// Helpers compartidos de los comandos cmd.exe / PowerShell / Meterpreter
+// (PLAN_WINDOWS W1). Viven en `utils/` y no en `commands/windows/` porque no
+// son comandos: son la capa de reglas de Windows sobre el FS virtual.
+// Los orchestradores de Metasploit los necesitan (el `cd` de una sesión
+// meterpreter es el mismo `cd` de cmd.exe) y un framework no puede importar
+// un comando (P1 3.3).
 
-import type { CommandContext, FileEntry, User } from '../../types';
-import { getCurrentUser } from '../../utils/users';
-import { resolveWinPath } from '../../utils/winPath';
-import { findFile, findDirEntry, resolveParentDirPath } from '../../utils/fs';
+import type { CommandContext, FileEntry, User } from '../types';
+import { getCurrentUser } from './users';
+import { resolveWinPath } from './winPath';
+import { findFile, findDirEntry, resolveParentDirPath } from './fs';
+import { canExecute } from './permissions';
 
 export const WIN_VERSION = 'Microsoft Windows [Version 10.0.17763.1007]';
 
@@ -75,4 +81,26 @@ export function gatewayOf(ip: string): string {
 export function entrySize(entry: FileEntry): number {
   if (entry.path.endsWith('/.dir')) return 0;
   return (entry.content || '').length;
+}
+
+/**
+ * Resuelve el destino de un `cd` de Windows contra el FS virtual, con los
+ * mismos checks que el comando `cd` de cmd.exe. Compartido con las sesiones
+ * meterpreter/MSF shell, que corren sobre la víctima real.
+ */
+export function resolveWinCdTarget(
+  ctx: CommandContext,
+  target: string,
+  cwd?: string,
+): { ok: true; canonical: string } | { ok: false; message: string } {
+  const user = winUser(ctx);
+  const canonical = resolveWinPath(target, cwd ?? ctx.currentDir ?? '/', user.home);
+  const dirEntry = findDirEntry(ctx.machine, canonical);
+  if (!dirEntry) {
+    return { ok: false, message: `El sistema no puede encontrar la ruta especificada: ${target}` };
+  }
+  if (!canExecute(ctx.machine, dirEntry, user)) {
+    return { ok: false, message: WIN_ERR.accessDenied };
+  }
+  return { ok: true, canonical };
 }

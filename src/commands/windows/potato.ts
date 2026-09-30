@@ -4,7 +4,7 @@
 // NO es ya admin. El LabValidator decide si eso completa la misión.
 
 import type { CommandContext, CommandResponse } from '../../types';
-import { winUser } from './helpers';
+import { winUser } from '../../utils/winCmd';
 
 export const cmd_potato = {
   name: 'potato',

@@ -3,7 +3,7 @@ import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canRead, canCreateInDir, canEditFile, canDeleteInDir } from '../../utils/permissions';
 import { findFile, findDirEntry, resolveParentDirPath, defaultOwnership, buildNewFile, isUnderPath } from '../../utils/fs';
-import { applyUmask } from '../builtin/umask';
+import { applyUmask } from '../../utils/fs';
 
 export const cmd_cp = {
   name: 'cp',

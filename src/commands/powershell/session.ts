@@ -6,7 +6,7 @@
 
 import type { CommandContext, CommandResponse, PsState } from '../../types';
 import { splitTopLevel } from '../../utils/shellParse';
-import { winUser } from '../windows/helpers';
+import { winUser } from '../../utils/winCmd';
 import { parsePsLine, type PsInvocation } from './parser';
 import { resolvePsCommand, PS_ALIASES } from './aliases';
 import { getPsCmdlet, listPsCmdletNames } from './cmdlets';

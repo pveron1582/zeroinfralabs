@@ -7,7 +7,7 @@ import type { CommandContext, CommandResponse, FileEntry } from '../../../types'
 import {
   canRead, canEditFile, canCreateInDir, canDeleteInDir,
 } from '../../../utils/permissions';
-import { applyUmask } from '../../builtin/umask';
+import { applyUmask } from '../../../utils/fs';
 import {
   findFile, findDirEntry, findParentDir, defaultOwnership, buildNewFile, isUnderPath,
 } from '../../../utils/fs';
@@ -15,7 +15,7 @@ import { readVirtualFile, buildFileReadMetadata } from '../../../utils/fileRead'
 import { winDisplay } from '../../../utils/winPath';
 import {
   WIN_ERR, winUser, winResolve, isDirPath, dirCanonical, winDate, entrySize,
-} from '../../windows/helpers';
+} from '../../../utils/winCmd';
 import { resolveCdTarget } from '../../windows/fs';
 import { getParam, pathArg, type PsInvocation } from '../parser';
 

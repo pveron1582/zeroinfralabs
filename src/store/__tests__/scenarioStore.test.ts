@@ -6,12 +6,28 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useScenarioStore } from '../scenarioStore';
 import { SCENARIOS } from '../../laboratorios/laboratorios';
 import { shellManager } from '../../frameworks/shells/ShellManager';
+import { makeTestScenario, TEST_MACHINE_ID } from '../../test/fixtures';
 
 // Mock de persistencia para que no interfiera con el estado limpio de los tests
 // Esto evita que Zustand persista el estado entre tests
 vi.mock('zustand/middleware', () => ({
   persist: (config: any) => (set: any, get: any, api: any) => config(set, get, api),
 }));
+
+/**
+ * Siembra un escenario mínimo. Antes el test heredaba el lab 01 del import
+ * oculto que tenía el slice; hoy el store no conoce los labs y cada test
+ * dice qué escenario usa.
+ */
+function seedLabState(): void {
+  const scenario = makeTestScenario();
+  useScenarioStore.setState({
+    currentScenario: scenario,
+    machines: scenario.machines,
+    missions: scenario.missions,
+    activeMachineId: scenario.initialMachineId,
+  });
+}
 
 describe('scenarioStore', () => {
   // CAPTURAMOS EL ESTADO INICIAL REAL (Que incluye las funciones definidas en scenarioStore.ts)
@@ -30,6 +46,10 @@ describe('scenarioStore', () => {
       notification: null,
       currentMissionId: 1
     });
+    // FIXTURE: desde P1 3.3 el store arranca con un workspace VACÍO (no
+    // importa los labs), así que el test siembra su propio escenario en vez
+    // de heredar el lab 01 por el import oculto que tenía antes.
+    seedLabState();
   });
 
   afterEach(() => {
@@ -209,14 +229,14 @@ describe('scenarioStore', () => {
 
   // Verifica que changeMachine cambie la máquina activa
   it('changeMachine debe cambiar la máquina activa', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().changeMachine(machineId);
     expect(useScenarioStore.getState().activeMachineId).toBe(machineId);
   });
 
   // Verifica que findCredentials agregue credenciales a la máquina
   it('findCredentials debe agregar credenciales a la máquina', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().findCredentials(machineId, 'admin', 'password123', '/etc/passwd', 'ssh');
     
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -231,7 +251,7 @@ describe('scenarioStore', () => {
 
   // Verifica que verifyCredentials marque las credenciales como verificadas
   it('verifyCredentials debe marcar credenciales como verificadas', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().findCredentials(machineId, 'admin', 'pass', '/etc/passwd', 'ssh');
     useScenarioStore.getState().verifyCredentials(machineId, 'ssh');
     
@@ -313,7 +333,7 @@ describe('scenarioStore', () => {
 
   // Verifica que reportVulnerability reporte vulnerabilidades (líneas 424-444)
   it('reportVulnerability debe agregar nueva vulnerabilidad', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().reportVulnerability(machineId, 'CVE-2021-44228', 'detected');
     
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -325,7 +345,7 @@ describe('scenarioStore', () => {
   });
 
   it('reportVulnerability debe actualizar vulnerabilidad existente', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     // Primero agregar una vulnerabilidad
     useScenarioStore.getState().reportVulnerability(machineId, 'CVE-2021-44228', 'detected');
     // Luego actualizarla
@@ -339,7 +359,7 @@ describe('scenarioStore', () => {
   // ── Additional store coverage ─────────────────────────────────────────
 
   it('setPossibleUsers debe agregar usuarios SSH a la máquina', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().setPossibleUsers(machineId, ['admin', 'root']);
 
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -347,7 +367,7 @@ describe('scenarioStore', () => {
   });
 
   it('addFailedUser debe agregar usuarios fallidos', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().addFailedUser(machineId, 'hacker');
 
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -355,7 +375,7 @@ describe('scenarioStore', () => {
   });
 
   it('setSudoPrivileges debe establecer privilegios sudo', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().setSudoPrivileges(machineId, 'developer', ['vim', 'bash'], true);
 
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -367,7 +387,7 @@ describe('scenarioStore', () => {
   });
 
   it('addFileToMachine debe agregar archivo a la máquina', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().addFileToMachine(machineId, {
       path: '/tmp/test.txt',
       content: 'test content',
@@ -379,7 +399,7 @@ describe('scenarioStore', () => {
   });
 
   it('addFileToMachine debe reemplazar archivo existente', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().addFileToMachine(machineId, {
       path: '/tmp/test.txt',
       content: 'old content',
@@ -397,7 +417,7 @@ describe('scenarioStore', () => {
   });
 
   it('addFileToMachine al editar un archivo existente reemplaza sus propiedades si se pasan nuevas', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().addFileToMachine(machineId, {
       path: '/tmp/owned.txt',
       content: 'primera versión',
@@ -425,7 +445,7 @@ describe('scenarioStore', () => {
   });
 
   it('setPrivescCompleted debe marcar privesc como completado', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().setPrivescCompleted(machineId);
 
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -452,7 +472,7 @@ describe('scenarioStore', () => {
   });
 
   it('confirmRCE debe agregar credenciales reverse-shell', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().confirmRCE(machineId, 'www-data', '/var/www/html/uploads/shell.php');
 
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -460,7 +480,7 @@ describe('scenarioStore', () => {
   });
 
   it('confirmRCE no debe duplicar credenciales reverse-shell', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().confirmRCE(machineId, 'www-data', '/var/www/html/uploads/shell.php');
     useScenarioStore.getState().confirmRCE(machineId, 'www-data', '/var/www/html/uploads/shell.php');
 
@@ -470,7 +490,7 @@ describe('scenarioStore', () => {
   });
 
   it('addExploredDirectory debe agregar directorio web', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().addExploredDirectory(machineId, '/wp-content');
 
     const machine = useScenarioStore.getState().machines.find(m => m.id === machineId);
@@ -478,7 +498,7 @@ describe('scenarioStore', () => {
   });
 
   it('addExploredDirectory no debe duplicar directorios', () => {
-    const machineId = 'lab-scenario-01-wp';
+    const machineId = TEST_MACHINE_ID;
     useScenarioStore.getState().addExploredDirectory(machineId, '/wp-content');
     useScenarioStore.getState().addExploredDirectory(machineId, '/wp-content');
 

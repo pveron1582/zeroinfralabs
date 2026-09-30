@@ -6,7 +6,7 @@ import type { CommandContext, CommandResponse, FileEntry, Machine } from '../../
 import { getCurrentUser, isRoot } from '../../utils/users';
 import { canCreateInDir } from '../../utils/permissions';
 import { findParentDir, defaultOwnership, buildNewFile } from '../../utils/fs';
-import { applyUmask } from '../builtin/umask';
+import { applyUmask } from '../../utils/fs';
 import {
   getPackage, installPackage, listInstalled,
 } from '../../frameworks/packages/packageManager';

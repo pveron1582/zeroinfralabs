@@ -3,7 +3,7 @@ import { normalizePath, resolvePath } from '../../utils/path';
 import { getCurrentUser } from '../../utils/users';
 import { canCreateInDir } from '../../utils/permissions';
 import { findDirEntry, findParentDir, defaultOwnership, buildNewFile } from '../../utils/fs';
-import { applyUmask } from './umask';
+import { applyUmask } from '../../utils/fs';
 
 export const cmd_mkdir = {
   name: 'mkdir',

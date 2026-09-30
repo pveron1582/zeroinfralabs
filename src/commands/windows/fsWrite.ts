@@ -5,12 +5,12 @@ import type { CommandContext, CommandResponse } from '../../types';
 import {
   canRead, canEditFile, canCreateInDir, canDeleteInDir,
 } from '../../utils/permissions';
-import { applyUmask } from '../builtin/umask';
+import { applyUmask } from '../../utils/fs';
 import {
   findFile, findDirEntry, findParentDir, defaultOwnership, buildNewFile,
 } from '../../utils/fs';
 import { winDisplay } from '../../utils/winPath';
-import { WIN_ERR, winUser, winResolve, isDirPath, winParent } from './helpers';
+import { WIN_ERR, winUser, winResolve, isDirPath, winParent } from '../../utils/winCmd';
 
 type FileKind = 'text' | 'hash' | 'binary';
 

@@ -4,7 +4,7 @@
 // Similar al comportamiento de bash/zsh en Linux
 
 import type { Machine, MsfState } from '../types';
-import type { MsfModule } from '../frameworks/metasploit/core/msfModules';
+import type { MsfModule } from '../types';
 import { COMMAND_NAMES } from '../commands/names';
 
 // Comandos de Metasploit para autocompletar
