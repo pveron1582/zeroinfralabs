@@ -1,5 +1,7 @@
 // ── components/TerminalPrompt.tsx ───────────────────────────────────────
-import { isMsfActive, isPsActive } from '../commands';
+// Sin el barrel: TerminalPrompt va en el chunk del terminal y arrastrar los
+// ~113 módulos de comando por dos booleanos rompe el code splitting.
+import { isMsfActive, isPsActive } from '../commands/sessionFlags';
 
 interface PromptColors {
   user: string;

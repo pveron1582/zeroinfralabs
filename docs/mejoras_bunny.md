@@ -175,9 +175,28 @@ en el código, no estimado:
 - **No se tocó `docs/mejoras-deep.md`**: es una revisión fechada (2026-09-15,
   commit `2252bbc`) y sus números son correctos para esa fecha.
 
-### [ ] 3.2 Segundo registro de comandos
+### [x] 3.2 Segundo registro de comandos — **RESUELTO 2026-09-27**
 
 `commands/builtin/which.ts:9-140` mantiene `COMMAND_PATHS` con **127 entradas** a mano y `:142-167` `CMD_TO_PACKAGE` con 25, **sin ningún test de sincronía** (grep de `COMMAND_PATHS` fuera del archivo → vacío). Ya miente sobre ~25 comandos. Conviviendo con `commands/names.ts`, que sí está protegido por `commandNames.test.ts`. Además `NetworkMap.tsx:5` y `TerminalPrompt.tsx:1` importan del barrel `commands/index.ts` (el problema de chunking que el propio `names.ts` documenta y no se aplicó).
+
+**Resolución (2026-09-27):**
+- `which.ts` **deriva** las rutas del registro (`commands/names.ts`) con una
+  regla de familia (`/bin`, `/sbin`, `/usr/sbin`, default `/usr/bin`) en vez
+  de 127 literales. Agregar un comando al registro lo hace resoluble sin
+  tocar el archivo.
+- El mapa mentía **en las dos direcciones** y ahora está medido: 11 comandos
+  del registro sin ruta (`which chmod`, `scp`, `xrdp`, `type`… no encontraban nada) y 19 rutas de comandos que el simulador no tiene (`which john`,
+  `which bash`, `which msfvenom` respondían con una ruta). Los dos casos
+  quedaron cubiertos por tests.
+- `CMD_TO_PACKAGE` perdió sus claves muertas (`john`, `git`, `netcat`).
+- Nuevo test de sincronía en `which.test.ts`: todo comando del registro
+  resuelve, y nada fuera del registro resuelve.
+- `isMsfActive`/`isPsActive` se mudaron a `commands/sessionFlags.ts` (el
+  barrel re-exporta) y `TerminalPrompt` importa de ahí. **Ojo con la
+  expectativa**: NO es una ganancia de tamaño de chunk — medido, el chunk del
+  terminal (444 kB) sigue incluyendo el barrel de comandos porque
+  `useCommandRunner` necesita `createIsolatedExecutor`. Es corrección de
+  dirección de dependencia, no de performance.
 
 ### [ ] 3.3 Capas invertidas
 

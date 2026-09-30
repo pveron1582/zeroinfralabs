@@ -110,7 +110,11 @@ export function executeCommand(req: CommandRequest): ReturnType<typeof executeCo
 // ── MSF state management (backed by store; `restoreMsfState` removed) ─
 
 export const resetMsfState = () => useScenarioStore.getState().setMsfState(null);
-export const isMsfActive = () => !!useScenarioStore.getState().msfState?.active;
+// isMsfActive vive en commands/sessionFlags.ts (liviano) y se re-exporta
+// acá para no romper los imports actuales.
+import { isMsfActive, isPsActive } from './sessionFlags';
+
+export { isMsfActive };
 export const getMsfPrompt = () => {
   const s = useScenarioStore.getState().msfState;
   return s?.active ? getContextPrompt(s) : null;
@@ -123,7 +127,7 @@ export const getMsfState = () => {
 // ── PS state management (store-backed) ────────────────────────────
 
 export const resetPsState = () => useScenarioStore.getState().setPsState(null);
-export const isPsActive = () => !!useScenarioStore.getState().psState?.active;
+export { isPsActive };
 export const getPsState = () => {
   const s = useScenarioStore.getState().psState;
   return s ? { ...s } : null;
