@@ -16,6 +16,13 @@
     "noUnusedParameters": true,
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    // Los specs E2E también se type-chequean: antes quedaban fuera y un
+    // error de tipos en un spec solo aparecía (o no) al correr Playwright.
+    // playwright.config.ts queda fuera a propósito: usa `process.env` y el
+    // proyecto no tiene @types/node.
+    "e2e"
+  ],
   "exclude": ["node_modules"]
 }

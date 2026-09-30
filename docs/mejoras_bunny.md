@@ -340,7 +340,7 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 | `src/frameworks/python/` | 14 | 1 archivo | P1 |
 | `src/hooks/` sin test | 25 hooks, 14 con test | 11 sin cubrir | P1 |
 | `src/video/` | 70 | 0 (riesgo bajo: no entra al bundle) | P2 |
-| E2E | 7 specs / 17 tests | sin smoke de misión completada, sin `lab08.spec.ts` | **P0** |
+| E2E | 8 specs / 21 tests | smoke de misión completada **RESUELTO 2026-09-30**; sigue faltando `lab08.spec.ts` | P0 → P1 |
 | `src/laboratorios/__tests__/` | falta `laboratorio04.test.ts` | | P2 |
 
 Además: `pnpm test:ui` **está roto** (`package.json:20` invoca `vitest --ui` pero `@vitest/ui` no está en `devDependencies`).
@@ -377,9 +377,19 @@ nuevos, 47 tests:
   `if/else`; `windows-desktop` sin `rdpMachine` cae al DesktopTerminal y no a
   una pantalla en blanco).
 
+**Tercera tanda (2026-09-30) — E2E de humo de misión completada (P0):**
+nuevo `e2e/mission-completion.spec.ts` (2 tests). Los 7 specs existentes solo
+miraban texto en el output de la terminal; si `completeMission` se rompía,
+la suite E2E entera seguía verde. El smoke recorre comando → metadatos →
+`LabValidator` → `MissionPanel` (`0/8` → `1/8 completed`) → auto-avance del
+carrusel → tarjeta de la misión completada en verde, con controles negativos
+(`ls` no avanza; `nmap -p 9999` no completa la misión 2). **Verificado con
+mutación**: `validateMission → true` y `→ false` rompen ambos tests.
+Además `e2e/` entró al `include` de `tsconfig.json`, así los specs se
+type-chequean en `tsc --noEmit` (que la CI corre).
+
 **Pendiente de 3.6:** los hooks sin cubrir (`useMobileWindows`,
-`useDesktopWindows`), `metasploit/{core,orchestrators}` y el E2E de humo de
-misión completada.
+`useDesktopWindows`), `metasploit/{core,orchestrators}` y `e2e/lab08.spec.ts`.
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 
