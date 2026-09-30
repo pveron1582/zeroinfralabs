@@ -338,7 +338,7 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 | `src/frameworks/metasploit/{core,orchestrators}` | 8 archivos | **RESUELTO 2026-09-30** — 141 tests; 100 % stmts en 7/8 (93,9 % en el 8.º) | ~~P1~~ |
 | `src/frameworks/{cron,fs,network,packages,process}` | 5 archivos | **RESUELTO 2026-09-30** — tests directos; 100 % stmts en 3, 96,6 y 98,7 en los otros | ~~P1~~ |
 | `src/frameworks/python/` | 14 | **RESUELTO 2026-09-30** — 8 archivos nuevos / 159 tests; 99,3 stmts / 99,0 ramas / 100 funcs | ~~P1~~ |
-| `src/hooks/` sin test | 25 hooks, 14 con test | 11 sin cubrir | P1 |
+| `src/hooks/` sin test | 25 hooks, 14 con test | **PARCIAL 2026-09-30** — `useMobileWindows` 0 → **100 %** y `useDesktopWindows` → **100 %** stmts; siguen por debajo de 75 % `useKeyboardShortcuts` (70,4), `useNanoSave` (70,8), `useIsMobile` (73,7) y `terminalPrompt` (73,3) | P2 |
 | `src/video/` | 70 | 0 (riesgo bajo: no entra al bundle) | P2 |
 | E2E | 9 specs / 24 tests | **RESUELTO 2026-09-30** — smoke de misión completada + `lab08.spec.ts` + specs type-chequeados | ~~P0~~ |
 | `src/laboratorios/__tests__/` | falta `laboratorio04.test.ts` | | P2 |
@@ -515,8 +515,42 @@ documentados como **defensivos inalcanzables** en los headers de
 **Tests:** 2988 → **3147** (+159), 240 → **248** archivos. Cobertura global
 82,36 / 70,48 / 79,24 / 85,10 → **83,86 / 72,61 / 79,85 / 86,23**.
 
-**Pendiente de 3.6:** los hooks sin cubrir (`useMobileWindows`,
-`useDesktopWindows`) y `src/video/`.
+**Séptima tanda (2026-09-30) — los dos hooks del pendiente
+(`useMobileWindows` / `useDesktopWindows`):** la fila decía "11 hooks sin
+cubrir"; en realidad **solo `useMobileWindows` estaba en 0 %** (0/93
+statements) y `useDesktopWindows` ya tenía 559 líneas de tests al 97,8 %.
+
+- `useMobileWindows.test.ts` (16 tests, 271 líneas) → **100 / 86,4 / 100**:
+  estado inicial y registro en la store, numeración que **reutiliza el
+  máximo tras cerrar** (no duplica títulos), límite de 5 terminales y de 2
+  navegadores **en los dos idiomas**, los singleton de topología y
+  enumeración (segunda llamada solo activa), `closeWindow` con
+  `ensureActive` (destruye la shell solo en terminales), `selectWindow` que
+  no notifica para navegadores y `handleTerminalChangeMachine`.
+- `useDesktopWindows-duplicados.test.ts` (11 tests, 202 líneas) →
+  **100 / 97,1 / 100**: reapertura de ventanas singleton (selector de fondos,
+  Burp y guía minimizados), `bringToFront` con early return, `changeFontSize`
+  con varias ventanas, `currentScenario = null` ⇒ id por defecto, `closeRdp`
+  por máquina y sin argumento, reabrir RDP existente y límites en inglés.
+  Va en un archivo aparte porque el test principal ya pasa del límite de 300
+  líneas.
+
+Dos detalles de cobertura que costaron entender: `zIndex: Math.max(0,
+...windows.map(w => w.zIndex))` **nunca ejecutaba el callback** porque siempre
+se abría la primera ventana con el desktop vacío (hay que crear una terminal
+antes), y al llegar al límite no hay `setState`, así que el idioma se lee recién
+en el siguiente render.
+
+Las 8 ramas que quedan son defensivas: `windows[0]?.id ?? ''` (siempre hay una
+ventana inicial), `if (firstId)`, `parseInt(...) || 0` y `maxNum + 1 || n`
+(títulos que genera el propio hook, siempre numéricos).
+
+**Tests:** 3147 → **3174** (+27), 248 → **250** archivos. Cobertura global
+83,86 / 72,61 / 79,85 / 86,23 → **84,45 / 72,97 / 80,78 / 86,78**.
+
+**Pendiente de 3.6:** `src/video/` (P2), `laboratorio04.test.ts` (P2) y los
+4 hooks por debajo de 75 % (`useKeyboardShortcuts`, `useNanoSave`,
+`useIsMobile`, `terminalPrompt`).
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 
