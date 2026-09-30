@@ -128,7 +128,7 @@ export function WindowFrame({
             {isEs ? 'Tamaño de fuente' : 'Font size'}
           </label>
           <div className="flex items-center gap-2 mt-1.5 mb-3">
-            <input type="range" min="10" max="20"
+            <input type="range" min="10" max="20" aria-label="Tamaño de la ventana"
               value={w.fontSize}
               onChange={(e) => onChangeFontSize(w.id, parseInt(e.target.value, 10))}
               className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -140,7 +140,7 @@ export function WindowFrame({
             {isEs ? 'Opacidad' : 'Opacity'}
           </label>
           <div className="flex items-center gap-2 mt-1.5 mb-3">
-            <input type="range" min="0" max="100"
+            <input type="range" min="0" max="100" aria-label="Opacidad de la ventana"
               value={Math.round(w.opacity * 100)}
               onChange={(e) => onChangeOpacity(w.id, parseInt(e.target.value, 10))}
               className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"

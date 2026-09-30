@@ -79,8 +79,8 @@ export function InclusionSite({ ip, currentUrl, onNavigate, onFileUpload, attack
           <div>
             <h3 className="font-bold mb-4">Send us a report</h3>
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label><input type="text" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="Your name" /></div>
-              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Email</label><input type="email" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="you@email.com" /></div>
+              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label><input type="text" aria-label="Name" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="Your name" /></div>
+              <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Email</label><input type="email" aria-label="Email" className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:border-blue-500 outline-none" placeholder="you@email.com" /></div>
               <div><label className="block text-xs font-bold uppercase text-gray-500 mb-1">Message</label><textarea className="w-full px-3 py-2 border border-gray-200 rounded text-sm h-24 focus:border-blue-500 outline-none" placeholder="Your report..." /></div>
               <button type="submit" className="px-5 py-2 bg-slate-800 text-white rounded text-sm font-semibold hover:bg-slate-700 transition-colors">Send Report</button>
             </form>

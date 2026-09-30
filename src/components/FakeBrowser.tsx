@@ -313,7 +313,7 @@ export function FakeBrowser({
         </div>
         <div className="flex-1 flex items-center gap-2 bg-gray-900 rounded-full px-3 py-1.5 border border-gray-700">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)}
+          <input type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)} aria-label="Barra de direcciones"
             onKeyDown={e => { if (e.key === 'Enter') navigate(urlInput); }}
             className="flex-1 bg-transparent text-gray-300 text-xs outline-none font-mono"
             spellCheck={false}

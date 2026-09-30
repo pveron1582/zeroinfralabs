@@ -122,6 +122,9 @@ export function LabGrid() {
       {/* Modal */}
       {modalIndex !== null && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={modalIndex !== null ? VISIBLE_SCENARIOS[modalIndex].name : 'Lab'}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
           style={{
             background: 'rgba(0,0,0,0.7)',

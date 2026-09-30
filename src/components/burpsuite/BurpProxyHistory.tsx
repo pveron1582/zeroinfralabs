@@ -40,11 +40,11 @@ export function BurpProxyHistory({ history, onSelect, webMachines, onCapture }: 
           className="bg-gray-700 text-gray-200 text-xs px-1.5 py-0.5 rounded border border-gray-600">
           {['GET', 'POST'].map(m => <option key={m} value={m}>{m}</option>)}
         </select>
-        <input type="text" value={url} onChange={e => setUrl(e.target.value)}
+        <input type="text" value={url} onChange={e => setUrl(e.target.value)} aria-label="URL a capturar"
           onKeyDown={e => { if (e.key === 'Enter') capture(); }}
           placeholder="http://192.168.1.10/login"
           className="flex-1 bg-gray-800 text-gray-200 px-2 py-0.5 rounded border border-gray-700 text-xs font-mono focus:outline-none focus:border-orange-600" />
-        <input type="text" value={body} onChange={e => setBody(e.target.value)}
+        <input type="text" value={body} onChange={e => setBody(e.target.value)} aria-label="Cuerpo de la petición"
           placeholder="body (opcional)"
           className="w-40 bg-gray-800 text-gray-300 px-2 py-0.5 rounded border border-gray-700 text-xs font-mono focus:outline-none focus:border-orange-600" />
         <button onClick={capture}

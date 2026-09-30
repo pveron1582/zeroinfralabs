@@ -357,8 +357,29 @@ video y pares de matching, y `labRef`/`labId` apuntando a labs existentes.
 Escribirlo enforceable mis supuestos: `order` es por sección y las
 subsecciones guardan `Lesson[]`, no ids.
 
-**Pendiente de 3.6:** `appContent/` (1302 LOC sin tests), los hooks sin
-cubrir, `metasploit/{core,orchestrators}` y el E2E de humo de misión.
+**Segunda tanda (2026-09-27) — `appContent/`:** 1021 LOC del shell del
+workspace sin un solo test (era **P0** en la tabla de arriba). Cuatro archivos
+nuevos, 47 tests:
+- `WorkspaceTopBar.test.tsx` (11): qué tabs se ven según `uiMode` y
+  `category`, y que el botón ZI Labs vaya a `onExit` si existe y a `onGoHome`
+  si no (dos salidas distintas que se confundían).
+- `mobile.test.tsx` (14): teclas rápidas (los tokens `__CTRL_C__`,
+  `__ARROW_UP__` son contrato con el handler del terminal), límites de ventanas
+  (5 terminales / 2 navegadores → botón deshabilitado y etiqueta "(límite 5)"),
+  y el flag por escenario del popup de experiencia móvil.
+- `useAppContentEffects.test.ts` (17): el `popstate` que devuelve al alumno al
+  workspace **sin resetear**, el reset + `/es/labs` al salir, el `lang`
+  inválido normalizado a `en`, y los eventos de analítica
+  (`lab_started`/`mission_complete`/`lab_completed`/`lab_abandoned`/
+  `lab_changed`) con su flag de tour por escenario.
+- `workspace-shell.test.tsx` (9): la selección de rama de `WorkspaceBody`
+  (classic monta las TRES apps y oculta con CSS la inactiva, no hay
+  `if/else`; `windows-desktop` sin `rdpMachine` cae al DesktopTerminal y no a
+  una pantalla en blanco).
+
+**Pendiente de 3.6:** los hooks sin cubrir (`useMobileWindows`,
+`useDesktopWindows`), `metasploit/{core,orchestrators}` y el E2E de humo de
+misión completada.
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 
@@ -382,9 +403,34 @@ Espacio** (`onKeyDown` + `aria-label` con el nombre del lab; el Espacio hace
 proyecto sin handler de teclado: los de `DesktopTerminal` y `MobileWorkspace`
 ya lo tenían. Tests: 2 en `LabGrid.test.tsx`.
 
-**Pendiente de 3.8:** focus trap en los modales, `aria-label` en los ~98
-componentes que no lo tienen, y auditar el resto de la app (no se hizo un
-barrido completo).
+**Segunda tanda (2026-09-27) — foco atrapado y contrato verificable:**
+- **Nuevo `hooks/useFocusTrap.ts` + `components/ModalShell.tsx`**: foco al
+  abrir, Tab/Shift+Tab ciclando dentro, Escape y devolución del foco al
+  elemento previo. Antes NINGÚN modal lo tenía: con teclado el foco se iba al
+  contenido de atrás y Escape no cerraba.
+- **Aplicado a** `ExitConfirm` (el foco arranca en **Cancelar**, no en la
+  acción destructiva, y Escape cancela), `SurveyModal`, `DonationModal`,
+  `FeedbackModal`. A los overlays que ya tenían animación/clic propio
+  (`LabCompletionOverlay`, `LabGrid`, `admin/LabBuilderPreview`) se les
+  agregó `role="dialog"` + `aria-modal` + `aria-label` sin tocar su lógica.
+- **`components/__tests__/a11y-contract.test.ts`** (4 tests): recorre los
+  `.tsx` y falla si (a) un `role="button"` no tiene `onKeyDown`, (b) un
+  overlay fijo no declara `role="dialog"`, (c) un `<img>` no tiene `alt`,
+  (d) un `<input>` no tiene nombre accesible. Allowlist con motivo (FoxyTour
+  es un spotlight `pointer-events-none`; los formularios de `/admin/` son
+  herramienta interna).
+- **Lo que encontró ese test y se arregló**: 14 inputs sin nombre accesible
+  (terminal, barra de URL, Burp proxy, línea de nano, SquirrelMail, formulario
+  de feedback, sliders de ventanas, sitios simulados) y 6 overlays sin
+  `role="dialog"`.
+- Un falso positivo del propio scanner quedó documentado: `<span role="button"
+  onClick={e => ...}>` se cortaba en el `>` de la flecha; el scanner ahora
+  cuenta llaves y comillas.
+
+**Pendiente de 3.8:** el barrido de `aria-label` en los ~90 componentes que
+no lo tienen (los interactivos ya están cubiertos por el contrato), el focus
+trap de `EditorModal` (nano) y de `LabGrid`, y la auditoría del resto de la
+app.
 
 ### [ ] 3.9 Producto / superficie
 

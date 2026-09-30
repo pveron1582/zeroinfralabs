@@ -3,6 +3,7 @@
 // apagado del escritorio + botón rojo de salida del panel de ayuda)
 
 import { useLanguage } from '../i18n/translations';
+import { ModalShell } from './ModalShell';
 
 interface ExitConfirmProps {
   open: boolean;
@@ -14,13 +15,11 @@ export function ExitConfirm({ open, onCancel, onConfirm }: ExitConfirmProps) {
   const language = useLanguage();
   const isEs = language === 'es';
 
-  if (!open) return null;
-
+  // ModalShell: role="dialog" + foco atrapado + Escape = cancelar (P1 3.8).
+  // Es una confirmación destructiva: el foco tiene que arrancar en Cancelar.
   return (
-    <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onCancel}>
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-fadeIn"
-        onClick={(e) => e.stopPropagation()}>
+    <ModalShell open={open} label={isEs ? 'Confirmar salida' : 'Confirm exit'} onClose={onCancel}>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-fadeIn">
         <div className="flex flex-col items-center text-center mb-4">
           <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-3">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.5">
@@ -37,6 +36,7 @@ export function ExitConfirm({ open, onCancel, onConfirm }: ExitConfirmProps) {
 
         <div className="flex gap-3">
           <button
+            autoFocus
             onClick={onCancel}
             className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all"
           >
@@ -50,6 +50,6 @@ export function ExitConfirm({ open, onCancel, onConfirm }: ExitConfirmProps) {
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

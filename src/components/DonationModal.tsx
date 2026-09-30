@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../i18n/translations';
+import { ModalShell } from './ModalShell';
 
 interface Props {
   isOpen: boolean;
@@ -41,8 +42,8 @@ export function DonationModal({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative w-full max-w-sm mx-4 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <ModalShell open onClose={onClose} label={isSpanish ? 'Apoyar al proyecto' : 'Support the project'}>
+      <div className="relative w-full max-w-sm mx-4 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
           <h2 className="text-lg font-semibold text-emerald-400 flex items-center gap-2">
@@ -104,6 +105,6 @@ export function DonationModal({ isOpen, onClose }: Props) {
           </p>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

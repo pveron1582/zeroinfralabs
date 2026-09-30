@@ -33,7 +33,7 @@ export function GoogleHome({ onNavigate }: { onNavigate: (url: string) => void }
       <div className="w-full max-w-xl">
         <div className="flex items-center gap-3 px-4 py-3 rounded-full border border-gray-300 hover:shadow-md transition-shadow bg-white">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" value={query} onChange={e => setQuery(e.target.value)}
+          <input type="text" value={query} onChange={e => setQuery(e.target.value)} aria-label="Buscar"
             placeholder="Search Google or type a URL"
             className="flex-1 outline-none text-sm text-gray-800 bg-transparent"
             onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }} />

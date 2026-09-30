@@ -8,6 +8,7 @@ import { generateCaptchaQuestion, type CaptchaQuestion } from './feedbackModal/c
 import { FEEDBACK_TEXTS } from './feedbackModal/texts';
 import { SubmittedView, CooldownView } from './feedbackModal/StatusViews';
 import { FeedbackForm } from './feedbackModal/FeedbackForm';
+import { ModalShell } from './ModalShell';
 
 interface Props {
   isOpen: boolean;
@@ -145,7 +146,7 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    <ModalShell open label="Feedback" closeOnBackdrop={false}>
       <div className="relative w-full max-w-lg mx-4 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
@@ -189,6 +190,6 @@ export function FeedbackModal({ isOpen, onClose }: Props) {
           )}
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

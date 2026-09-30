@@ -106,6 +106,7 @@ export const SquirrelMailSite: FC<SquirrelMailSiteProps> = ({
             <label className="block">
               <span className="text-xs text-[#444]">Nombre de usuario</span>
               <input
+                aria-label="Nombre de usuario"
                 className="w-full border border-[#8a8a8a] px-2 py-1 mt-1"
                 value={user}
                 onChange={e => setUser(e.target.value)}
@@ -116,6 +117,7 @@ export const SquirrelMailSite: FC<SquirrelMailSiteProps> = ({
               <span className="text-xs text-[#444]">Contraseña</span>
               <input
                 type="password"
+                aria-label="Contraseña"
                 className="w-full border border-[#8a8a8a] px-2 py-1 mt-1"
                 value={pass}
                 onChange={e => setPass(e.target.value)}
@@ -180,6 +182,7 @@ export const SquirrelMailSite: FC<SquirrelMailSiteProps> = ({
               <div className="text-xs text-[#444]">
                 Redactar mensaje — <b>Tu dirección de email:</b>{' '}
                 <input
+                  aria-label="Remitente"
                   className="border border-[#8a8a8a] px-1 py-0.5"
                   value={emailAddr}
                   onChange={e => setEmailAddr(e.target.value)}
@@ -188,6 +191,7 @@ export const SquirrelMailSite: FC<SquirrelMailSiteProps> = ({
               <div className="text-xs text-[#444]">
                 <b>Para:</b>{' '}
                 <input
+                  aria-label="Destinatario"
                   className="border border-[#8a8a8a] px-1 py-0.5"
                   value={to}
                   onChange={e => setTo(e.target.value)}

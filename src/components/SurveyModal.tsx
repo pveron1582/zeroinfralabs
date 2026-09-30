@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { Scenario } from '../types';
 import { useT } from '../i18n/translations';
 import { trackEvent } from '../utils/analytics';
+import { ModalShell } from './ModalShell';
 
 interface SurveyModalProps {
   scenario: Scenario;
@@ -37,20 +38,21 @@ export const SurveyModal = ({ scenario, onSubmit }: SurveyModalProps) => {
     onSubmit();
   };
 
+  // ModalShell aporta role="dialog" + foco atrapado (P1 3.8).
   if (submitted) {
     return (
-      <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+      <ModalShell open label={t('surveyThanks')} closeOnBackdrop={false}>
         <div className="bg-gray-900 border border-gray-700 rounded-3xl max-w-md w-full p-8 text-center shadow-2xl">
           <div className="text-4xl mb-4">🎯</div>
           <h2 className="text-xl font-bold text-white mb-2">{t('surveyThanks')}</h2>
           <p className="text-gray-400 text-sm">{scenario.name}</p>
         </div>
-      </div>
+      </ModalShell>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <ModalShell open label={t('surveyTitle')} closeOnBackdrop={false}>
       <div className="bg-gray-900 border border-gray-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
         {/* Header */}
         <div className="text-center mb-6">
@@ -155,6 +157,6 @@ export const SurveyModal = ({ scenario, onSubmit }: SurveyModalProps) => {
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 };

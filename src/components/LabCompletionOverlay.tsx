@@ -58,6 +58,9 @@ export function LabCompletionOverlay({ scenario, totalMissions, completedCount, 
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={language === 'en' ? 'Lab completed' : 'Laboratorio completado'}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/90 backdrop-blur-md"
       style={{
         opacity: visible ? 1 : 0,

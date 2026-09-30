@@ -37,7 +37,8 @@ export function LabBuilderPreview({ state, onClose, isEs }: {
   const json = JSON.stringify(buildPreviewJson(state), null, 2);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+    <div role="dialog" aria-modal="true" aria-label="Vista previa del lab"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
       <div className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl overflow-hidden"
         style={{ background: '#0d1117', border: '1px solid #06b6d440' }}>
         <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #1c2a2a' }}>

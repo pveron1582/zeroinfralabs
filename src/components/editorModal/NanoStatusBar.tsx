@@ -27,6 +27,7 @@ function BarInput(props: {
   return (
     <input
       ref={props.inputRef}
+      aria-label="Entrada de nano"
       value={props.value}
       onChange={(e) => props.onChange(e.target.value)}
       onKeyDown={props.onKeyDown}

@@ -292,7 +292,7 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
                 <span className="font-bold text-xs flex-shrink-0" style={{ color: displayColor }}>⏳ </span>
                 <span className="text-xs font-mono" style={{ color: displayColor }}>{blockingCommand.message}</span>
               </div>
-              <input ref={inputRef} type="text" value={''} onChange={() => {}}
+              <input ref={inputRef} type="text" value={''} onChange={() => {}} aria-label="Terminal input"
                 onKeyDown={handleKeyDown}
                 className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
                 autoFocus spellCheck={false} autoComplete="off" />
@@ -307,7 +307,7 @@ export function Terminal(props: CommandRunnerProps & { fontSize?: number; opacit
                   <span className="text-sm animate-pulse">_</span>
                 </div>
               </div>
-              <input ref={inputRef} type="text" value={''} onChange={() => {}}
+              <input ref={inputRef} type="text" value={''} onChange={() => {}} aria-label="Terminal input"
                 onKeyDown={handleKeyDown}
                 className="opacity-0 w-[1px] h-[1px] p-0 border-none outline-none"
                 autoFocus spellCheck={false} autoComplete="off" />

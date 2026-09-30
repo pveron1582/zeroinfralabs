@@ -59,6 +59,7 @@ export function FeedbackForm({
         <label className="block text-sm text-gray-400 mb-1">{texts.name} *</label>
         <input
           type="text"
+          aria-label={texts.name}
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={texts.namePlaceholder}
@@ -72,6 +73,7 @@ export function FeedbackForm({
         <label className="block text-sm text-gray-400 mb-1">{texts.emailOptional}</label>
         <input
           type="email"
+          aria-label={texts.emailOptional}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="email@example.com"
