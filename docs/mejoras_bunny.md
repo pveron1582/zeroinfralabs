@@ -205,12 +205,51 @@ en el código, no estimado:
 - `utils/autocomplete.ts:6,7` → `frameworks/metasploit/core/msfModules.ts` y `commands/names.ts`.
 - Consecuencia práctica: **un slice no se puede testear sin cargar los 8 labs**.
 
-### [ ] 3.4 Bolsas de campos y god function
+### [~] 3.4 Bolsas de campos y god function — **RESUELTO 2026-09-27 (parcial: dispatcher)**
 
 - `types/command.ts`: `CmdResponseBase` 25 campos + unión de 16 variantes + `CommandContext` 24 campos. Agregar un canal = tocar 3 sitios.
 - `store/types.ts:23-117`: `ScenarioState` con **73 campos**, de los cuales ~35 acciones de dominio viven en la raíz en vez de un slice propio.
 - `hooks/useRunCommand.ts:23-52` `RunCommandDeps` 28 campos · `processCommandResult.ts:33-56` `ProcessDeps` 21 · `useFtpSession.ts:15-34` `SessionRunnerDeps` 17 — cableados a mano en `useCommandRunner.ts:141-147,182-191,213-224`.
 - `hooks/processCommandResult.ts:74-253`: 180 líneas, 13 `getState()` y 8 `if ('x' in result)` secuenciales. Debería ser `Record<keyof CmdResponseBase, handler>` + un test que falle si el contrato crece sin handler (convierte deuda invisible en deuda que rompe el build).
+
+**Resolución (2026-09-27) — el punto que más dolía:**
+- `processCommandResult` es ahora una **tabla de handlers** (nuevo módulo
+  `src/hooks/responseHandlers.ts`, 267 líneas) escrita en orden de ejecución, no
+  una cadena de 20 `if ('x' in result)`. 50 campos, cada uno con su handler;
+  `processCommandResult.ts` quedó en 89 líneas (API + recorrido), como manda el
+  límite de 300 líneas de `AGENTS.md`.
+- **El contrato ya no puede crecer en silencio**: el tipo de la tabla es un
+  mapeo exhaustivo (`{ [K in keyof CmdResponseBase]-?: … }` + las 23 claves de
+  las variantes, con su tipo real extraído de la unión). Verificado
+  experimentalmente: agregar `campoExperimental` a `CmdResponseBase` → **tsc
+  falla** con `TS2322` en la tabla; revertido, compila.
+- **Los handlers vacíos son decisiones, no olvidos**: los ~25 campos que
+  consumen otros (LabValidator, NetworkMap, BurpSuite, useDownloadedFile,
+  executor…) tienen handler `() => {}` con un comentario que dice QUIÉN los
+  consume. Antes "no había código" y "se handled en otro lado" eran lo mismo.
+- **`getState()` 13 → 1** por comando: el estado se lee una vez al principio y
+  se pasan las acciones por `ctx` (en zustand las refs de las acciones son
+  estables, así que el snapshot no puede quedar viejo en la práctica).
+- La validación de misiones es el único paso que no cuelga de un campo, así
+  que es un pseudo-paso que se inyecta después de `filesChanged` (el validador
+  lee el FS).
+- `CmdResponseBase` pasó a estar exportada en `types/command.ts` (antes era
+  `interface` privada, con lo cual el tipo de la tabla era imposible de
+  escribir fuera del archivo que la definía).
+- Nuevo `processCommandResult.contract.test.ts`: congela la lista de claves
+  **en orden de ejecución** (el orden es semántico) y fija las 3
+  invariantes de orden que no se pueden tocar. 3 tests.
+- Una condición **cruzada** (`newMachineId && foundCredentials` → verificar
+  credenciales) que la tabla de un-handler-por-campo no representaba: se
+  documentó dentro del handler de `foundCredentials` y el test que lo cubría
+  lo detectó al ejecutar la suite.
+
+**Pendiente de 3.4:** las "bolsas de campos" en sí. `CmdResponseBase` (27
+campos) + unión de 16 variantes + `CommandContext` (24) siguen siendo un
+contrato ancho, y `ProcessDeps` (21), `RunCommandDeps` (28) y
+`SessionRunnerDeps` (17) se cablean a mano en `useCommandRunner`. Partir el
+contrato en canales (p.ej. `ScanChannel`, `CredsChannel`) reduce el acoplamiento
+pero es un cambio de contrato público: fuera del alcance de este ítem.
 
 ### [x] 3.5 Helpers duplicados — **RESUELTO 2026-09-27**
 

@@ -141,7 +141,7 @@ export interface HttpResponseData {
 
 // ── Discriminated union ──────────────────────────────────────────
 // Fields available on ALL variants
-interface CmdResponseBase {
+export interface CmdResponseBase {
   output: string;
   isError?: boolean;
   completedMissionId?: number;
