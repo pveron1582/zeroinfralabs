@@ -12,7 +12,8 @@ export interface Token {
   line: number;
 }
 
-const MULTI_OPS = ['==', '!=', '<=', '>=', '//', '+=', '-=', '*=', '/='];
+// Incluye '%=' y '//=' porque AUG_OPS del parser acepta esos aug-assign.
+const MULTI_OPS = ['==', '!=', '<=', '>=', '//=', '+=', '-=', '*=', '/=', '//', '%='];
 const SINGLE_OPS = '+-*/%=<>()[]{}:.,;';
 const KEYWORDS = new Set([
   'if', 'elif', 'else', 'while', 'for', 'in', 'not', 'and', 'or', 'def',
@@ -111,6 +112,10 @@ export function tokenize(source: string): Token[] {
         i = parsed.next;
         continue;
       }
+      // Los operadores de 3 caracteres ('//=') se prueban antes que los de 2
+      // para que '//' no se los trague y queden '%=' / '//=' como token único.
+      const three = raw.slice(i, i + 3);
+      if (MULTI_OPS.includes(three)) { push('OP', three); i += 3; continue; }
       const two = raw.slice(i, i + 2);
       if (MULTI_OPS.includes(two)) { push('OP', two); i += 2; continue; }
       if (SINGLE_OPS.includes(c)) {
@@ -135,10 +140,6 @@ export function tokenize(source: string): Token[] {
   }
   tokens.push({ type: 'EOF', value: '', line: lines.length });
   return tokens;
-}
-
-export function isKeyword(t: Token, kw: string): boolean {
-  return t.type === 'NAME' && t.value === kw;
 }
 
 export function isNameToken(t: Token): boolean {

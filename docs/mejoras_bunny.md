@@ -337,7 +337,7 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 | `src/components/appContent/` (shell del workspace) | 1302 | **0** | **P0** |
 | `src/frameworks/metasploit/{core,orchestrators}` | 8 archivos | **RESUELTO 2026-09-30** — 141 tests; 100 % stmts en 7/8 (93,9 % en el 8.º) | ~~P1~~ |
 | `src/frameworks/{cron,fs,network,packages,process}` | 5 archivos | **RESUELTO 2026-09-30** — tests directos; 100 % stmts en 3, 96,6 y 98,7 en los otros | ~~P1~~ |
-| `src/frameworks/python/` | 14 | 1 archivo | P1 |
+| `src/frameworks/python/` | 14 | **RESUELTO 2026-09-30** — 8 archivos nuevos / 159 tests; 99,3 stmts / 99,0 ramas / 100 funcs | ~~P1~~ |
 | `src/hooks/` sin test | 25 hooks, 14 con test | 11 sin cubrir | P1 |
 | `src/video/` | 70 | 0 (riesgo bajo: no entra al bundle) | P2 |
 | E2E | 9 specs / 24 tests | **RESUELTO 2026-09-30** — smoke de misión completada + `lab08.spec.ts` + specs type-chequeados | ~~P0~~ |
@@ -455,8 +455,68 @@ se crea junto al de montajes) y `processManager.ts:106` (`stopService` agrega el
 servicio a `stopped` y todos sus pids a `killed` a la vez, así que siempre corta
 el filtro anterior).
 
+**Sexta tanda (2026-09-30) — `frameworks/python/`:** otra fila stale: decía
+"14 archivos / 1 archivo" como si hubiera poco, y en realidad
+`interpreter.test.ts` (55 tests) **rebotaba** sobre el intérprete entero
+dejando `values.ts` en 30,6 % de statements sin cubrir, `builtins` 37,
+`evalExpr` 30 y `env`/`runtime` apenas visitados. Ocho archivos de test
+nuevos (159 tests, todo con `@vitest-environment node` porque es lógica
+pura):
+
+- `values.test.ts` → **100 / 100 / 100** — `pyTypeName` de cada tipo de
+  objeto, `pyTruthy`/`pyEquals` con listas, tuplas y `True == 1`,
+  `pyStr` de dict/rango/socket/función/módulo y el escaping de `pyRepr`.
+- `env.test.ts` → 100/100/100 — shadowing en la cadena de scopes y
+  `NameError` con su línea.
+- `runtime.test.ts` → 100/100/100 — la **red de seguridad P0.2**
+  (`describeJsError`, que estaba en 0 %): un `RangeError` de stack, otro
+  de memoria, `TypeError`, `Error` y un valor no-error que escapan del
+  intérprete; `parseExpr`, el traceback de un `PyError` **sin** línea y
+  `pipedInput` con/sin salto final (el `queue.pop()` de la línea 109).
+- `builtins.test.ts` → 100/100/100 y `methods.test.ts` → rutas de error
+  que ningún script feliz alcanzaba: `len` de tipos sin longitud, `range`
+  mal llamado, `int` de literales inválidos, `open` en modo escritura/sin
+  `readFile`/con archivo inexistente, `startswith`/`replace`/`join` mal
+  usados, `pop()` de lista vacía, `dict.get` con default y `hashKey`
+  sobre un valor no hasheable.
+- `stdlib.test.ts` → 100 stmts — `import time` (que estaba en **0 %**,
+  igual que `makeTime`), la conexión **exitosa** de `socket.connect`
+  (banner + estado), las dos trampas de argumentos de `connect`, los
+  `errno` default (110 ⇒ timeout, 111 ⇒ refused) y `connect_ex` con y sin
+  banner.
+- `language.test.ts` (289 líneas) → semántica: cortos de `and`/`or`,
+  comparaciones lexicográficas, subíndices inválidos, `in` sobre dict y
+  sobre no-iterables, `MemoryError` por multiplicador infinito, `while`
+  con break/continue, `from … import`, `try/except/finally` (incluida la
+  rama que **no** captura y igual corre el `finally`), `break` fuera de
+  bucle y rango con paso negativo.
+- `syntax.test.ts` (222) → lexer y parser: escapes de string, string sin
+  cerrar, indentación inconsistente, comentarios a media línea, líneas en
+  blanco, `;`, `else`/`elif`, `for` sin `in`, `try` sin `except`, f-strings
+  con llaves escapadas, comillas y llaves anidadas.
+
+**El test encontró 2 bugs reales** (los cubrió un caso que antes fallaba):
+el lexer no emitía `%=` ni `//=` como token único (`//` se los tragaba),
+aunque `AUG_OPS` del parser los acepta — `x %= 3` y `x //= 3` devolvían
+`SyntaxError: sintaxis inválida`. Arreglado en `lexer.ts` (se prueban
+operadores de 3 caracteres antes que los de 2).
+
+**Código muerto eliminado** (sin callers, misma regla que `keyOf` de
+`builtins.ts`): `values.ts keyOf()` (duplicado exacto de `hashKey`),
+`env.ts Env.has()` (el lookup siempre pasa por `Env.get`) y
+`lexer.ts isKeyword()` (el parser usa `isNameToken` + su `atKw`).
+
+**`frameworks/python/` pasa a 99,3 stmts / 99,0 ramas / 100 funcs**
+(1207/1215 statements). Los 8 statements y 7 ramas que quedan están
+documentados como **defensivos inalcanzables** en los headers de
+`language.test.ts` y `syntax.test.ts`: `evalExpr 254/271`, `evalExpr
+167/173/259`, `interpreter 94/106/84` y `parser 17/235/238/253`.
+
+**Tests:** 2988 → **3147** (+159), 240 → **248** archivos. Cobertura global
+82,36 / 70,48 / 79,24 / 85,10 → **83,86 / 72,61 / 79,85 / 86,23**.
+
 **Pendiente de 3.6:** los hooks sin cubrir (`useMobileWindows`,
-`useDesktopWindows`), `frameworks/python/` y `src/video/`.
+`useDesktopWindows`) y `src/video/`.
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 

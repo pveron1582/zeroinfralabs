@@ -20,15 +20,6 @@ export class Env {
     throw nameError(name, line);
   }
 
-  has(name: string): boolean {
-    let scope: Env | null = this as Env | null;
-    while (scope) {
-      if (scope.vars.has(name)) return true;
-      scope = scope.parent;
-    }
-    return false;
-  }
-
   set(name: string, value: PyValue): void {
     this.vars.set(name, value);
   }

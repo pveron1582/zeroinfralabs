@@ -3,8 +3,8 @@
 ## Resumen
 
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
-**Total Tests:** 2988 en 240 archivos  
-**Cobertura (v8):** 81.08% stmts / 68.80% branches / 77.52% funcs / 84.06% lines (medido 2026-09-27)  
+**Total Tests:** 3147 en 248 archivos  
+**Cobertura (v8):** 83.86% stmts / 72.61% branches / 79.85% funcs / 86.23% lines (medido 2026-09-30)  
 **E2E:** Playwright (9 specs / 24 tests en `e2e/`, corren en el job `e2e` de la CI)
 
 ## Comandos
@@ -20,12 +20,12 @@ pnpm test -- src/path    # Ejecutar un archivo específico
 
 ### Cobertura thresholds (`vitest.config.ts`)
 
-| Métrica | Umbral | Real (2026-09-27) |
+| Métrica | Umbral | Real (2026-09-30) |
 |---------|--------|-------------------|
-| statements | 80% | 81.08% |
-| branches | 68% | 68.80% |
-| functions | 77% | 77.52% |
-| lines | 83% | 84.06% |
+| statements | 80% | 83.86% |
+| branches | 68% | 72.61% |
+| functions | 77% | 79.85% |
+| lines | 83% | 86.23% |
 
 El piso se mide con `pnpm test:coverage` y va ~1 punto abajo del valor real
 (la corrida es determinista: ±0.03). **Subilo cuando suba la cobertura.**

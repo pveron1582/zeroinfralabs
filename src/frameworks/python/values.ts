@@ -37,15 +37,6 @@ export function isPyObject(v: PyValue): v is PyObjectValue {
   return typeof v === 'object' && v !== null;
 }
 
-// Clave canónica para usar valores como key de dict (solo hashables).
-export function keyOf(v: PyValue): string {
-  if (v === null) return 'N';
-  if (typeof v === 'boolean') return `b:${v}`;
-  if (typeof v === 'number') return `n:${v}`;
-  if (typeof v === 'string') return `s:${v}`;
-  throw new Error('unhashable');
-}
-
 export function pyTypeName(v: PyValue): string {
   if (v === null) return 'NoneType';
   if (typeof v === 'boolean') return 'bool';
