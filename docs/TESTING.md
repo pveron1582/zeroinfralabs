@@ -5,7 +5,7 @@
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
 **Total Tests:** 2862 en 233 archivos  
 **Cobertura (v8):** 81.08% stmts / 68.80% branches / 77.52% funcs / 84.06% lines (medido 2026-09-27)  
-**E2E:** Playwright (8 specs / 21 tests en `e2e/`, corren en el job `e2e` de la CI)
+**E2E:** Playwright (9 specs / 24 tests en `e2e/`, corren en el job `e2e` de la CI)
 
 ## Comandos
 
@@ -159,7 +159,7 @@ rm -rf node_modules/.vitest
 
 ## Tests E2E (Playwright)
 
-Specs en `e2e/` (**8 specs / 21 tests**). **Sí corren en CI**: el job `e2e`
+Specs en `e2e/` (**9 specs / 24 tests**). **Sí corren en CI**: el job `e2e`
 de `.github/workflows/ci.yml` instala chromium y ejecuta `pnpm test:e2e`.
 
 ```bash
@@ -169,8 +169,8 @@ pnpm test:e2e
 Configuración en `playwright.config.ts` (levanta el dev server con
 `webServer`, chromium headless, un solo worker).
 
-- 7 specs happy path por lab (`lab01`…`lab07`): verifican **texto en el
-  output** de la terminal.
+- 8 specs happy path por lab (`lab01`…`lab08`, incluye el lab oculto 08):
+  verifican **texto en el output** de la terminal.
 - `mission-completion.spec.ts` (2026-09-30): el **humo de misión
   completada** — comando → metadatos → `LabValidator` → `MissionPanel`
   (`0/8 completed` → `1/8`) → auto-avance del carrusel, con controles

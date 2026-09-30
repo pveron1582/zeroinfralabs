@@ -340,7 +340,7 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 | `src/frameworks/python/` | 14 | 1 archivo | P1 |
 | `src/hooks/` sin test | 25 hooks, 14 con test | 11 sin cubrir | P1 |
 | `src/video/` | 70 | 0 (riesgo bajo: no entra al bundle) | P2 |
-| E2E | 8 specs / 21 tests | smoke de misión completada **RESUELTO 2026-09-30**; sigue faltando `lab08.spec.ts` | P0 → P1 |
+| E2E | 9 specs / 24 tests | **RESUELTO 2026-09-30** — smoke de misión completada + `lab08.spec.ts` + specs type-chequeados | ~~P0~~ |
 | `src/laboratorios/__tests__/` | falta `laboratorio04.test.ts` | | P2 |
 
 Además: `pnpm test:ui` **está roto** (`package.json:20` invoca `vitest --ui` pero `@vitest/ui` no está en `devDependencies`).
@@ -386,10 +386,13 @@ carrusel → tarjeta de la misión completada en verde, con controles negativos
 (`ls` no avanza; `nmap -p 9999` no completa la misión 2). **Verificado con
 mutación**: `validateMission → true` y `→ false` rompen ambos tests.
 Además `e2e/` entró al `include` de `tsconfig.json`, así los specs se
-type-chequean en `tsc --noEmit` (que la CI corre).
+type-chequean en `tsc --noEmit` (que la CI corre), y se agregó
+`e2e/lab08.spec.ts` (3 tests: arp-scan, `nmap -sV` → 443, y el auxiliar
+de MSF `squirrelmail_version` → `SquirrelMail 1.4.22`), que cerraba el
+otro hueco de la fila E2E. **La fila E2E queda RESUELTA.**
 
 **Pendiente de 3.6:** los hooks sin cubrir (`useMobileWindows`,
-`useDesktopWindows`), `metasploit/{core,orchestrators}` y `e2e/lab08.spec.ts`.
+`useDesktopWindows`) y `metasploit/{core,orchestrators}`.
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 
