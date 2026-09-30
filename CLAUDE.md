@@ -54,7 +54,7 @@ src/
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid, academy/, tour/, ...
 ├── frameworks/
-│   ├── metasploit/     # core/ (module DB, ContextRegistry, types) + orchestrators/ (MSF + meterpreter commands)
+│   ├── metasploit/     # core/ (module DB, types) + orchestrators/ (MSF + meterpreter commands)
 │   ├── shells/         # ShellManager + SSH/FTP/NC sessions
 │   ├── process/        # ProcessManager
 │   ├── network/        # NetworkState (iptables, ufw, interfaces)

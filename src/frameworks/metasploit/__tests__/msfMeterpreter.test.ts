@@ -189,4 +189,36 @@ describe('executeMeterpreterCommand - Stdapi filesystem', () => {
     const result = executeMeterpreterCommand('cat', ['notes.txt'], state, winCtx('/root'));
     expect(result!.output).toContain('P@ssw0rd123!');
   });
+
+  it('cd sin argumentos imprime el cwd en formato Windows', () => {
+    const state: MsfState = { ...sessionState, cwd: `${HOME}/Documents` };
+    const r = executeMeterpreterCommand('cd', [], state, winCtx());
+    expect(r!.output).toContain('C:\\Users\\win7user\\Documents');
+    // No cambia de directorio.
+    expect(r!.msfStateUpdate!.cwd).toBe(`${HOME}/Documents`);
+  });
+
+  it('cd a una ruta inexistente reporta error y no mueve el cwd', () => {
+    const r = executeMeterpreterCommand('cd', ['CarpetaQueNoExiste'], sessionState, winCtx());
+    expect(r!.output).toContain('[-] cd:');
+    expect(r!.msfStateUpdate!.cwd).toBe(HOME);
+  });
+
+  it('sysinfo resuelve la víctima vinculada a la sesión (sessionTargetId)', () => {
+    const ctx = winCtx();
+    ctx.allMachines = [ctx.machine];
+    const state: MsfState = { ...sessionState, sessionTargetId: 'target-01' };
+    const r = executeMeterpreterCommand('sysinfo', [], state, ctx);
+    expect(r!.output).toContain('Computer        : WIN7-LAB');
+    expect(r!.output).toContain('OS              : Windows 7');
+  });
+
+  it('si el sessionTargetId no apunta a ninguna máquina, sysinfo usa el host por defecto', () => {
+    const ctx = winCtx();
+    ctx.allMachines = [ctx.machine];
+    const state: MsfState = { ...sessionState, sessionTargetId: 'id-fantasma' };
+    const r = executeMeterpreterCommand('sysinfo', [], state, ctx);
+    expect(r!.output).toContain('Computer        : WIN7-TARGET');
+    expect(r!.output).toContain('OS              : Windows 7');
+  });
 });

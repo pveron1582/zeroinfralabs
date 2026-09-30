@@ -1,11 +1,11 @@
 // ── frameworks/metasploit/core/msfTypes.ts ────────────────────────
-// El contrato de tipos (MsfState, MsfSession) vive en src/types/msf.ts
-// (única fuente para store, commands, hooks y este framework).
-// Aquí solo queda el estado inicial de runtime.
+// El contrato de tipos (MsfState, MsfSession, MsfContextType) vive en
+// src/types/msf.ts (única fuente para store, commands, hooks y este
+// framework). Aquí solo queda el estado inicial de runtime.
 
-import type { MsfState, MsfSession } from '../../../types/msf';
+import type { MsfState, MsfSession, MsfContextType } from '../../../types/msf';
 
-export type { MsfState, MsfSession };
+export type { MsfState, MsfSession, MsfContextType };
 
 export const INITIAL_STATE: MsfState = {
   active: true,

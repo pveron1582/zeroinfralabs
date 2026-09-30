@@ -9,7 +9,8 @@
 //   msfModules.ts — MSF_MODULES, MODULE_DEFAULTS, MsfModule
 //
 // Los sub-comandos (use, set, show, search, etc.) están en
-// src/frameworks/metasploit/commands/.
+// src/frameworks/metasploit/orchestrators/ (msfBase, msfExploits,
+// msfMeterpreter, msfShell, msfContextHelp).
 
 import type { CommandContext, CommandResponse, MsfState } from '../../types';
 import { INITIAL_STATE } from '../../frameworks/metasploit/core/msfTypes';
@@ -21,8 +22,10 @@ import { executeExploitCommand } from '../../frameworks/metasploit/orchestrators
 import { executeContextHelp } from '../../frameworks/metasploit/orchestrators/msfContextHelp';
 
 // ── MSF sub-command handler (called when inside MSF session) ──────
-// Orchestrates all command handlers in order of priority
-// Fase 3: Now uses ContextRegistry for context-aware help
+// Orchestrates all command handlers in order of priority.
+// El help por contexto sale de executeContextHelp (strings por contexto en
+// msfContextHelp.ts): NO hay un registro de comandos por contexto —
+// ContextRegistry.ts era código muerto y se eliminó (ver 2026-09-30).
 export const executeMsfCommand = (
   line: string,
   state: MsfState,
@@ -32,8 +35,8 @@ export const executeMsfCommand = (
   const cmd   = parts[0].toLowerCase();
   const args  = parts.slice(1);
 
-  // ── CONTEXT-AWARE HELP (Fase 3) ─────────────────────────────────
-  // Help now shows only commands available in current context
+  // ── CONTEXT-AWARE HELP ──────────────────────────────────────────
+  // Muestra solo los comandos disponibles en el contexto actual
   const helpResult = executeContextHelp(cmd, args, state);
   if (helpResult) return helpResult;
 

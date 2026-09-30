@@ -171,4 +171,18 @@ describe('executeShellCommand', () => {
     expect(result!.output).toContain('not recognized');
     expect(result!.output).toContain('internal or external command');
   });
+
+  it('hostname y whoami usan la víctima vinculada a la sesión', () => {
+    const ctx: CommandContext = { ...makeCtx(), allMachines: [winTarget()] };
+    const st: MsfState = { ...shellState, sessionTargetId: 'target-01', sessionUser: 'svc_webmail' };
+    expect(executeShellCommand('hostname', [], st, ctx)!.output).toContain('WIN7-LAB');
+    expect(executeShellCommand('whoami', [], st, ctx)!.output).toContain('nt win7-lab\\svc_webmail');
+  });
+
+  it('si el sessionTargetId no coincide con ninguna máquina, usa el host por defecto', () => {
+    const ctx: CommandContext = { ...makeCtx(), allMachines: [winTarget()] };
+    const st: MsfState = { ...shellState, sessionTargetId: 'id-fantasma', sessionUser: 'svc_webmail' };
+    expect(executeShellCommand('hostname', [], st, ctx)!.output).toContain('WIN7-TARGET');
+    expect(executeShellCommand('whoami', [], st, ctx)!.output).toContain('nt win7-target\\svc_webmail');
+  });
 });

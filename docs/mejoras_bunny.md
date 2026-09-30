@@ -335,7 +335,7 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 |---|---|---|---|
 | `src/academy/` (65 lecciones) | — | **0** | **P0** — un typo en un `id` rompe navegación en runtime |
 | `src/components/appContent/` (shell del workspace) | 1302 | **0** | **P0** |
-| `src/frameworks/metasploit/{core,orchestrators}` | 9 archivos | 0 unitarios | P1 |
+| `src/frameworks/metasploit/{core,orchestrators}` | 8 archivos | **RESUELTO 2026-09-30** — 141 tests; 100 % stmts en 7/8 (93,9 % en el 8.º) | ~~P1~~ |
 | `src/frameworks/{cron,fs,network,packages,process}` | 5 archivos | 0 directos (solo rebote) | P1 |
 | `src/frameworks/python/` | 14 | 1 archivo | P1 |
 | `src/hooks/` sin test | 25 hooks, 14 con test | 11 sin cubrir | P1 |
@@ -391,8 +391,50 @@ type-chequean en `tsc --noEmit` (que la CI corre), y se agregó
 de MSF `squirrelmail_version` → `SquirrelMail 1.4.22`), que cerraba el
 otro hueco de la fila E2E. **La fila E2E queda RESUELTA.**
 
+**Cuarta tanda (2026-09-30) — `metasploit/{core,orchestrators}`:** la fila
+decía "9 archivos / 0 unitarios" y era **stale** (ya había 6 archivos de test
+con 96 tests). Lo real se midió sobre `coverage-final.json`, porque el reporter
+de texto trunca los labels y la fila `core/` ni aparece:
+
+- **`core/ContextRegistry.ts` (200 LOC) estaba en 0 % y fuera del reporte**:
+  era código muerto. El único importador (`msfContextHelp.ts`) lo traía como
+  `type`, así que el módulo **nunca se cargaba**, y `contextRegistry`,
+  `formatContextHelp`, `getAvailableCommands` y `formatHelp` no tenían un solo
+  uso en `src/`. Mentía hasta el comentario de `msfconsole.ts` ("Now uses
+  ContextRegistry"). Eliminado: `MsfContextType` pasa a `src/types/msf.ts`
+  (mismo precedente que `MsfModule` en 3.3) y se actualizan `ARCHITECTURE.md`,
+  `mejoras-deep.md`, `AGENTS.md` y `CLAUDE.md`. De paso cayó el guard muerto
+  de `hasWebmail` (con `Machine | undefined` e `if (!target)` que ningún call
+  site podía alcanzar): el parámetro ahora es `Machine`.
+- **`msfBase.ts` 68,3 → 100 % stmts** (nuevo `msfBaseCommands.test.ts`, 21
+  tests): `info` (±módulo), `show exploits/auxiliary/payloads`, `options`,
+  `unset` (±arg) y toda la resolución de `use` — por número conservando
+  LHOST/RHOSTS, nombre corto único, prefijos `exploit`/`auxiliary`/`scanner`,
+  sin prefijo (primer exploit o el primero de la lista) y el fallback por
+  palabras. Los dos primeros intentos fallaron por supuestos erróneos míos:
+  `info` imprime `nombre | valor | required` (con valor vacío para RHOSTS) y
+  el fallback parte el query **por espacios**, no por `/`.
+- **`msfContextHelp.ts` 72,7 → 93,9 %**: `getContextAwareHelp` en los 5
+  contextos (msfconsole, módulo con y sin opciones, meterpreter, cmd.exe) y
+  `executeContextHelp` (`help`, `?`, otros → `null`).
+- **`msfExploits.ts` 91,7 → 100 %** (nuevo `msfExploitsTargets.test.ts`): los
+  4 guards `!target` con una IP fuera de la topología, el `else` del scanner
+  smb (máquina alcanzable pero sin 445 → "does NOT appear vulnerable") y el
+  `run` genérico de un módulo fuera de los 4 simululados.
+- **`msfMeterpreter.ts` y `msfShell.ts` → 100 %**: `cd` sin argumentos y a
+  ruta inexistente, y `sessionMachine` con `sessionTargetId` seteado (víctima
+  real vinculada + fallback a `WIN7-TARGET` cuando el id no coincide).
+
+Solo quedan 2 statements sin cubrir: las ramas `default:` de
+`msfContextHelp.ts` (líneas 117 y 163), inalcanzables porque
+`detectMsfContext` nunca devuelve `linux_shell`.
+
+**Tests:** 2862 → **2907** (+45), 233 → **235** archivos. Cobertura global
+81,71 / 69,64 / 78,65 / 84,62 → **82,13 / 70,13 / 79,13 / 84,98**.
+
 **Pendiente de 3.6:** los hooks sin cubrir (`useMobileWindows`,
-`useDesktopWindows`) y `metasploit/{core,orchestrators}`.
+`useDesktopWindows`), `frameworks/{cron,fs,network,packages,process}`,
+`frameworks/python/` y `src/video/`.
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 

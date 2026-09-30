@@ -69,11 +69,10 @@ src/
 │
 ├── frameworks/                        # Frameworks de simulación
 │   ├── metasploit/                    #   Metasploit Framework completo
-│   │   ├── core/                      #     Tipos, helpers, módulos, ContextRegistry
+│   │   ├── core/                      #     Tipos, helpers, base de módulos
 │   │   │   ├── msfTypes.ts            #       MsfState, INITIAL_STATE
 │   │   │   ├── msfHelpers.ts          #       withState(), basePrompt(), modulePrompt()
 │   │   │   ├── msfModules.ts          #       MSF_MODULES[], MODULE_DEFAULTS
-│   │   │   ├── ContextRegistry.ts     #       Registro de comandos por contexto
 │   │   │   ├── ModuleLoader.ts        #       Carga de módulos
 │   │   │   └── SessionManager.ts      #       Gestión de sesiones meterpreter
 │   │   ├── commands/                  #     Sub-comandos individuales

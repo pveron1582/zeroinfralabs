@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 2862 tests across 233 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 2907 tests across 235 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
 
 ## Commands
 
@@ -136,7 +136,7 @@ src/
 ├── video/              # Remotion video lessons (remotion/compositions/ — 132 compositions registradas en Root.tsx)
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid, academy/, tour/, ...
 ├── frameworks/
-│   ├── metasploit/     # core/ (module DB, ContextRegistry, types) + orchestrators/ (MSF + meterpreter commands)
+│   ├── metasploit/     # core/ (module DB, types) + orchestrators/ (MSF + meterpreter commands)
 │   ├── shells/         # ShellManager + SSH/FTP/NC sessions (stack-based, nested)
 │   ├── process/        # ProcessManager (buildProcessList, kill/stop/start)
 │   ├── network/        # NetworkState (iptables/ufw/interfaces, effectivePortState)

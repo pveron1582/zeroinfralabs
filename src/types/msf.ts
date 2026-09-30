@@ -44,3 +44,15 @@ export interface MsfModule {
   desc: string;
   rank: 'normal' | 'average' | 'great' | 'manual';
 }
+
+/**
+ * Contexto actual de la consola MSF: decide qué comandos existen y qué
+ * prompt se muestra. Vive acá (y no en el framework) porque es un contrato
+ * de dominio, igual que `MsfModule`.
+ */
+export type MsfContextType =
+  | 'msfconsole'   // consola base, sin módulo cargado
+  | 'module'       // módulo cargado, viendo opciones
+  | 'meterpreter'  // sesión de meterpreter activa
+  | 'windows_shell' // cmd.exe abierto desde meterpreter
+  | 'linux_shell';  // shell de Linux desde meterpreter

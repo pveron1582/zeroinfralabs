@@ -99,7 +99,7 @@ No es un juguete: es un simulador con superficie realista en varias capas.
   `canCreateInDir`/`canDeleteInDir`, helpers únicos (`findFile`, `findParentDir`, `defaultOwnership`, `buildNewFile`)
   y contrato transversal documentado en `docs/PERMISSIONS.md` con anti-patrones.
 - **Shells interactivas** (SSH/FTP/NC) con stack anidado por `terminalId` (`ShellManager`), aisladas por ventana.
-- **Metasploit simulado**: DB de módulos, `ContextRegistry`, sesiones, meterpreter, y **estado MSF aislado por
+- **Metasploit simulado**: DB de módulos, help por contexto (`msfContextHelp`), sesiones, meterpreter, y **estado MSF aislado por
   terminal** (`createIsolatedExecutor()` en `commands/index.ts:106` con closure privado; el global vive en
   `useScenarioStore.getState().msfState`).
 - **Otros frameworks**: `ProcessManager` (ps/top/kill), `NetworkState` (iptables/ufw/interfaces con

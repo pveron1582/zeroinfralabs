@@ -1,13 +1,15 @@
 // ── frameworks/metasploit/orchestrators/msfContextHelp.ts ─────────
-// Context-aware help for MSF using ContextRegistry (Fase 3)
+// Ayuda contextual de MSF: un texto por contexto (msfconsole, módulo,
+// meterpreter, cmd.exe) + el prompt que le corresponde.
 
 import type { CommandResponse } from '../../../types';
 import type { MsfState } from '../core/msfTypes';
 import { withState } from '../core/msfHelpers';
 import { winDisplay } from '../../../utils/winPath';
-import {
-  type MsfContextType,
-} from '../core/ContextRegistry';
+// El tipo es de dominio (src/types/msf.ts). Antes venía de ContextRegistry,
+// que era código muerto: este archivo era su ÚNICO importador y solo usaba
+// el tipo, así que el módulo entero nunca se cargaba (0% de cobertura).
+import type { MsfContextType } from '../core/msfTypes';
 
 export const getContextAwareHelp = (state: MsfState): string => {
   const context = detectMsfContext(state);
