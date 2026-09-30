@@ -336,7 +336,7 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 | `src/academy/` (65 lecciones) | — | **0** | **P0** — un typo en un `id` rompe navegación en runtime |
 | `src/components/appContent/` (shell del workspace) | 1302 | **0** | **P0** |
 | `src/frameworks/metasploit/{core,orchestrators}` | 8 archivos | **RESUELTO 2026-09-30** — 141 tests; 100 % stmts en 7/8 (93,9 % en el 8.º) | ~~P1~~ |
-| `src/frameworks/{cron,fs,network,packages,process}` | 5 archivos | 0 directos (solo rebote) | P1 |
+| `src/frameworks/{cron,fs,network,packages,process}` | 5 archivos | **RESUELTO 2026-09-30** — tests directos; 100 % stmts en 3, 96,6 y 98,7 en los otros | ~~P1~~ |
 | `src/frameworks/python/` | 14 | 1 archivo | P1 |
 | `src/hooks/` sin test | 25 hooks, 14 con test | 11 sin cubrir | P1 |
 | `src/video/` | 70 | 0 (riesgo bajo: no entra al bundle) | P2 |
@@ -432,9 +432,31 @@ Solo quedan 2 statements sin cubrir: las ramas `default:` de
 **Tests:** 2862 → **2907** (+45), 233 → **235** archivos. Cobertura global
 81,71 / 69,64 / 78,65 / 84,62 → **82,13 / 70,13 / 79,13 / 84,98**.
 
+**Quinta tanda (2026-09-30) — `frameworks/{cron,fs,network,packages,process}`:**
+otra fila stale ("5 archivos / 0 directos"): en realidad estaban en 85-93 %
+pero **todo por rebote** desde los tests de comandos (`fase5`…`fase9`), lo que
+dejaba ramas enteras sin ejecutar. Cinco archivos de test nuevos (81 tests):
+`networkState.test.ts` (25) → **100 / 100 / 100** — `insertRule` en los
+extremos, `flushRules()` total, `resetUfw` (que **no existía en ningún test**),
+reglas `FORWARD` que no filtran entrada, regla con protocolo que no matchea,
+servicio detenido ⇒ puerto `closed`, puertos sin servicio y máquinas sin
+`scan_results`. `cronRunner.test.ts` (20) → **100 stmts** — campos en rango
+(`1-5`) y exactos (`15`), cortes por hora y mes, la lectura desde el overlay
+cuando dos jobs tocan el mismo archivo en un tick, un efecto sobre un directorio
+inexistente y la creación de `/var/log/syslog` cuando no existía.
+`mounts.test.ts` (12) → 96,6 — fstab mal formado, equipo sin `/etc/fstab` y
+montaje repetido. `processManager.test.ts` (13) → 98,7 — daemons derivados de
+puertos ftp/smb/rdp, `list()` sobre pids matados y guardas de servicio
+inexistente. `packageManager.test.ts` (11) → **100 / 100 / 100**.
+
+Quedan 2 statements en todo el grupo y ambos son **defensivos inalcanzables**,
+documentados en el header de su test: `mounts.ts:78` (el mapa de dispositivos
+se crea junto al de montajes) y `processManager.ts:106` (`stopService` agrega el
+servicio a `stopped` y todos sus pids a `killed` a la vez, así que siempre corta
+el filtro anterior).
+
 **Pendiente de 3.6:** los hooks sin cubrir (`useMobileWindows`,
-`useDesktopWindows`), `frameworks/{cron,fs,network,packages,process}`,
-`frameworks/python/` y `src/video/`.
+`useDesktopWindows`), `frameworks/python/` y `src/video/`.
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 
