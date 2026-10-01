@@ -27,7 +27,7 @@ Cada lección se compone de pasos de distinto tipo:
 
 ## 🎥 Video-lecciones y hosting (jsDelivr CDN)
 
-Las video-lecciones se renderizan con **Remotion** (132 composiciones) y se exportan a `.mp4`. Los videos **no se sirven desde el dominio de la app** (para no inflar el deploy de Vercel ni gastar su ancho de banda) sino desde un **CDN global y gratuito**.
+Las video-lecciones se renderizan con **Remotion** (118 composiciones) y se exportan a `.mp4`. Los videos **no se sirven desde el dominio de la app** (para no inflar el deploy de Vercel ni gastar su ancho de banda) sino desde un **CDN global y gratuito**.
 
 **Servicio actual:** [jsDelivr](https://www.jsdelivr.com/) sirviendo un repo público de GitHub con los videos:
 - Repo: `https://github.com/pveron1582/zilabs-videos` (público, sin LFS — jsDelivr necesita el archivo crudo)
@@ -83,7 +83,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 ## 🎯 Características Principales
 
 - **Academy** — 8 paths de estudio con 59 lecciones (SO, Redes I/II, Protocolos, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
-- **Video-lecciones Remotion** — 132 composiciones animadas que acompañan las lecciones de la Academy
+- **Video-lecciones Remotion** — 118 composiciones animadas que acompañan las lecciones de la Academy
 - **Terminal Linux realista** — 71 comandos funcionales con auto-registro (ls, cd, cat, nano, sudo, nmap, hydra, ssh, msfconsole, iptables, cron...)
 - **Modelo de permisos Linux avanzado** — Simulación de SUID, SGID, Sticky bit, umask y ownership por usuario
 - **7 Laboratorios progresivos** — De reconocimiento a Burp Suite (Proxy + Repeater)
@@ -102,7 +102,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **3278 Tests** — Vitest + React Testing Library + Playwright E2E (262 archivos unitarios + 9 specs / 24 tests E2E)
+- **3295 Tests** — Vitest + React Testing Library + Playwright E2E (265 archivos unitarios + 9 specs / 24 tests E2E)
 
 ## 🏗️ Tech Stack
 
@@ -122,7 +122,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 ```
 src/
 ├── academy/          # 8 paths / 59 lecciones: path-*.ts + *-lessons.ts
-├── video/            # Composiciones Remotion de video-lecciones (132)
+├── video/            # Composiciones Remotion de video-lecciones (118)
 ├── commands/
 │   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, python3, etc. (69 archivos)
 │   └── tools/       # nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg (17 archivos / 19 comandos)
@@ -175,7 +175,7 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales (01-06 + 08; 07 hidden)
-- ✅ 3278 tests pasando (262 test files unitarios + 9 specs / 24 tests E2E con Playwright)
+- ✅ 3295 tests pasando (265 test files unitarios + 9 specs / 24 tests E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
 - ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)
@@ -187,7 +187,7 @@ docs/
 - ✅ Desktop mode con ventanas flotantes y wallpapers
 - ✅ Network map con panel de enumeración
 - ✅ Academy: 8 paths / 59 lecciones con quizzes y progreso persistente
-- ✅ Video-lecciones Remotion (132 composiciones)
+- ✅ Video-lecciones Remotion (118 composiciones)
 - ✅ Blog con artículos ES/EN
 - ✅ Landing page + selección de labs
 - ✅ Dark/Light theme

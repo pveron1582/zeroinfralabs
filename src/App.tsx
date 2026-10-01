@@ -3,10 +3,11 @@
 // Las vistas pesadas se cargan con React.lazy (code-splitting por ruta)
 
 import { Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { LandingPage }  from './components/LandingPage';
 import { LabGrid }      from './components/LabGrid';
 import { NotFound }     from './components/NotFound';
+import { RequireLang }  from './components/RequireLang';
 import { ChunkErrorBoundary } from './components/ChunkErrorBoundary';
 import { lazyWithRetry } from './utils/lazyRetry';
 
@@ -41,18 +42,23 @@ export default function App() {
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<RootRedirect />} />
-            <Route path="/:lang" element={<LandingPage />} />
-            <Route path="/:lang/labs" element={<LabGrid />} />
-            <Route path="/:lang/scenario/:id" element={<ScenarioLauncherWrapper />} />
-            <Route path="/:lang/blog" element={<BlogListPage />} />
-            <Route path="/:lang/blog/:slug" element={<BlogArticlePage />} />
-            <Route path="/:lang/academy" element={<AcademyHome />} />
-            <Route path="/:lang/academy/:pathId" element={<AcademyPathPage />} />
-            <Route path="/:lang/academy/:pathId/module/:subId" element={<AcademyPathPage />} />
-            <Route path="/:lang/academy/:pathId/:lessonId" element={<LessonViewer />} />
-            {/* Panel de admin (builders + debug): sólo en desarrollo (3.9). */}
-            {import.meta.env.DEV && AdminPanel &&
-              <Route path="/:lang/zildeb" element={<AdminPanel />} />}
+            {/* Todas las rutas `/:lang/...` cuelgan de RequireLang: un idioma
+                que no sea es/en responde 404 en vez de servir la landing
+                (mejoras-deep §2.3.2). */}
+            <Route path="/:lang" element={<RequireLang><Outlet /></RequireLang>}>
+              <Route index element={<LandingPage />} />
+              <Route path="labs" element={<LabGrid />} />
+              <Route path="scenario/:id" element={<ScenarioLauncherWrapper />} />
+              <Route path="blog" element={<BlogListPage />} />
+              <Route path="blog/:slug" element={<BlogArticlePage />} />
+              <Route path="academy" element={<AcademyHome />} />
+              <Route path="academy/:pathId" element={<AcademyPathPage />} />
+              <Route path="academy/:pathId/module/:subId" element={<AcademyPathPage />} />
+              <Route path="academy/:pathId/:lessonId" element={<LessonViewer />} />
+              {/* Panel de admin (builders + debug): sólo en desarrollo (3.9). */}
+              {import.meta.env.DEV && AdminPanel &&
+                <Route path="zildeb" element={<AdminPanel />} />}
+            </Route>
             {/* Lab de pruebas: solo en desarrollo (borra el storage propio del lab). */}
             {import.meta.env.DEV && <Route path="/test" element={<TestLab />} />}
             {/* Catch-all: sin esto, una URL desconocida dejaba el documento vacío. */}

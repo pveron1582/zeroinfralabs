@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3278 tests across 262 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3295 tests across 265 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
 
 ## Commands
 
@@ -72,7 +72,7 @@ The `COMMANDS` Map in `src/commands/index.ts` auto-registers by iterating barrel
 
 ## Lab Pattern
 
-Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. `SCENARIOS` (`src/laboratorios/laboratorios.ts`) has 8 labs (laboratorio01-08; 07 is `hidden`, so 7 visible); `TEST_SCENARIO` is a legacy alias of laboratorio_06, not a hidden lab. `SCENARIOS_META` drives dynamic LandingPage cards.
+Labs are declarative: define `learningSteps` with `validationCriteria` and let `buildScenario()` (`src/laboratorios/templates.ts`) wire up the Scenario object. `SCENARIOS` (`src/laboratorios/laboratorios.ts`) has 8 labs (laboratorio01-08; 07/08 are `hidden`, so 6 visible); `TEST_SCENARIO` is a legacy alias of laboratorio_06, not a hidden lab. `SCENARIOS_META` drives dynamic LandingPage cards.
 
 To add a lab:
 1. Create `src/laboratorios/laboratorioXX.ts` with a `scenarioXXData` object
@@ -146,7 +146,7 @@ src/
 │   ├── tools/          # 19 comandos en 17 archivos (nmap, hydra, gobuster, curl, wget, dns (dig/nslookup), scp, whois, tcpdump, nc, ssh, ftp, arp-scan, netdiscover, msfconsole, xrdp, apt, dpkg)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
 ├── academy/            # 8 paths / 59 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
-├── video/              # Remotion video lessons (remotion/compositions/ — 132 compositions registradas en Root.tsx)
+├── video/              # Remotion video lessons (remotion/compositions/ — 118 compositions registradas en Root.tsx)
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid, academy/, tour/, ...
 ├── frameworks/
 │   ├── metasploit/     # core/ (module DB, types) + orchestrators/ (MSF + meterpreter commands)

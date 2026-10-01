@@ -47,7 +47,7 @@ Commands (in `src/commands/`) know nothing about labs. Labs (in `src/laboratorio
 ```
 src/
 ├── academy/            # 8 paths / 59 lessons + video-lesson metadata
-├── video/              # Remotion video compositions (132 registradas en Root.tsx)
+├── video/              # Remotion video compositions (118 registradas en Root.tsx)
 ├── commands/
 │   ├── builtin/        # 69 comandos: python3, ls, cd, cat, sudo, whoami, ifconfig, hashcat, ping, traceroute, ps, top, htop, which, vi, awk, sed, man, ...
 │   ├── tools/          # nmap, hydra, gobuster, arp-scan, netdiscover, curl, wget, tcpdump, whois, scp, xrdp, apt, dpkg, msfconsole; ssh/nc/ftp re-exported from frameworks/shells (19 comandos en 17 archivos)

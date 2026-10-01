@@ -42,3 +42,33 @@ export function timingCounts(source: string, name: string): Record<string, numbe
     ]),
   );
 }
+
+/**
+ * Etiquetas `<Composition … />` completas. No sirve `<Composition[\s\S]*?/>`:
+ * el `component={() => <X lang="es" />}` cierra antes que el atributo
+ * `durationInFrames`. Se escanea contando llaves y paréntesis hasta un `/>`
+ * que esté al mismo nivel (mismo criterio que a11y-contract.test.ts).
+ * Lo comparten el contrato de compositions y el doc test de `src/test/`.
+ */
+export function compositionBlocks(source: string): string[] {
+  const out: string[] = [];
+  const open = /<Composition\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = open.exec(source))) {
+    let braces = 0;
+    let parens = 0;
+    for (let i = open.lastIndex; i < source.length; i++) {
+      const ch = source[i];
+      if (ch === '{') braces++;
+      else if (ch === '}') braces--;
+      else if (ch === '(') parens++;
+      else if (ch === ')') parens--;
+      else if (ch === '/' && source[i + 1] === '>' && braces === 0 && parens === 0) {
+        out.push(source.slice(m.index, i + 2));
+        open.lastIndex = i + 2;
+        break;
+      }
+    }
+  }
+  return out;
+}

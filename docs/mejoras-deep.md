@@ -186,15 +186,15 @@ y el equipo aprende a re-ejecutar hasta que pase → el gate pierde valor.
 
 **Acción propuesta:**
 
-- [ ] **2.1.1** En `vitest.config.ts`: `testTimeout: 15000`, `hookTimeout: 15000` (hoy ambos en default 5000).
+- [x] **2.1.1** En `vitest.config.ts`: `testTimeout: 15000`, `hookTimeout: 15000` (hoy ambos en default 5000). → **RESUELTO 2026-10-01:** ya estaba: `testTimeout: 30000` y `hookTimeout: 30000` en `vitest.config.ts` (por encima de lo pedido).
 - [ ] **2.1.2** Migrar los `waitFor` con `timeout: N` de componentes con temporizadores a `vi.useFakeTimers()` +
       `vi.advanceTimersByTime()` (ya hay 14 archivos con el patrón, seguirlo). Especialmente
-      `MachineLoader.test.tsx` y `FoxyTour-app.test.tsx`.
+      `MachineLoader.test.tsx` y `FoxyTour-app.test.tsx`. (estado 2026-10-01: `MachineLoader.test.tsx` ya usa `vi.useFakeTimers()`; `FoxyTour-app.test.tsx` sigue con `waitFor … { timeout: 3000/5000 }` ⇒ sigue abierto.)
 - [ ] **2.1.3** **Acelerar la suite** (esto además baja el flakeo): marcar con `// @vitest-environment node` los tests
       que no tocan DOM (comandos, utils, fs-models, frameworks). Hoy los 153 archivos levantan jsdom.
-      Objetivo: bajar `environment` de ~336 s a la mitad o menos.
-- [ ] **2.1.4** Envolver los updates async en `act()` para eliminar los warnings (ruido que esconde fallos reales).
-- [ ] **2.1.5** Criterio de cierre: **3 corridas consecutivas verdes** de `pnpm test:run` sin tocar código.
+      Objetivo: bajar `environment` de ~336 s a la mitad o menos. (estado 2026-10-01: 139 de 265 archivos ya llevan `@vitest-environment node` y `environment` bajó de ~336 s a **176 s**, todavía por encima de la mitad ⇒ sigue abierto.)
+- [x] **2.1.4** Envolver los updates async en `act()` para eliminar los warnings (ruido que esconde fallos reales). → **RESUELTO 2026-10-01:** **0 warnings `act()`** en las 3 corridas consecutivas (grep sobre los logs de `pnpm test:run` y `test:coverage`), y `src/test/setup.ts` no silencia `console.error` — no queda ruido que eliminar.
+- [x] **2.1.5** Criterio de cierre: **3 corridas consecutivas verdes** de `pnpm test:run` sin tocar código. → **RESUELTO 2026-10-01:** 3 corridas consecutivas verdes el 2026-10-01 sin tocar código entre ellas: 91,4 s / 91,5 s / 111,7 s — **3295/3295** cada una.
 
 ### 2.2 La ruta `/test` borra TODO el `localStorage` del usuario
 
@@ -217,7 +217,7 @@ progreso de Academy (`completedLessons`, `quizResults`), `theme`, `language`, `u
 - [x] **2.2.1** Guardar la ruta: `{import.meta.env.DEV && <Route path="/test" …/>}`. → **RESUELTO 2026-10-01:** `App.tsx:57` gatea `/test` con `import.meta.env.DEV`.
 - [x] **2.2.2** Reemplazar `localStorage.clear()` por borrado selectivo de las claves propias
       (`cyberops-store`, `cyberops-desktop-wallpaper`, `cyberops-session-id`) — helper tipo `clearZilabsStorage()`. → **RESUELTO 2026-10-01:** helper `clearZilabsStorage()` en `src/utils/storage.ts` (lo usa TestLab) + `utils/__tests__/storage.test.ts`.
-- [ ] **2.2.3** Test que garantice que el reset **no** toca `completedLessons` de Academy.
+- [x] **2.2.3** Test que garantice que el reset **no** toca `completedLessons` de Academy. → **RESUELTO 2026-10-01:** `clearZilabsStorage()` ya NO borra `cyberops-store` (con `partialize` sólo guarda preferencias + progreso de Academy, no estado de lab) y hay 4 tests en `src/utils/__tests__/storage.test.ts`, incluido uno que exige que `completedLessons`/`quizResults` sobrevivan al reset.
       *Estado 2026-10-01: `storage.test.ts` sólo fija claves ajenas al origen;
       `clearZilabsStorage()` borra `cyberops-store` entero (y ahí vive
       `completedLessons`), así que el reset del lab dev todavía lo pierde.*
@@ -235,7 +235,7 @@ hace match con el rewrite → sirve `index.html` → React Router **no matchea n
 
 - [x] **2.3.1** Agregar `<Route path="*" element={<NotFound />} />` (componente liviano, bilingüe, con link a
       `/:lang/labs` y `/:lang/academy`). → **RESUELTO 2026-10-01:** `<Route path="*">` + `components/NotFound.tsx` (App.tsx:59).
-- [ ] **2.3.2** Validar `:lang` (hoy `/:lang` acepta cualquier string; `RootRedirect` defaultea a `en` solo en `/`).
+- [x] **2.3.2** Validar `:lang` (hoy `/:lang` acepta cualquier string; `RootRedirect` defaultea a `en` solo en `/`). → **RESUELTO 2026-10-01:** layout `/:lang` envuelto en `RequireLang` (`src/components/RequireLang.tsx`): sólo `es`/`en` y cualquier otro idioma responde 404; tests en `requireLang.test.tsx` (incl. que los links del 404 nunca apunten a un `:lang` inválido).
 - [x] **2.3.3** Test de render de NotFound en ES/EN. → **RESUELTO 2026-10-01:** `components/__tests__/NotFound.test.tsx` (404 en ES y en EN).
 
 ### 2.4 Hay una feature completa sin commitear (`python3`)
@@ -266,10 +266,10 @@ cambios de documentación con una feature.
 
 **Acción propuesta:**
 
-- [ ] **2.4.1** Commit de la feature en una rama (`feat/python3-interpreter`), separando docs si se quiere.
+- [x] **2.4.1** Commit de la feature en una rama (`feat/python3-interpreter`), separando docs si se quiere. → **RESUELTO 2026-10-01:** la feature ya está commiteada en `main`, con los docs alineados y el árbol limpio (no quedó trabajo sin commitear).
 - [x] **2.4.2** Verificar la sección de Python en `AGENTS.md`/`CLAUDE.md`: agregar `python3` al listado de builtin
       (hoy dice "60 system commands") y `frameworks/python/` al layout — **en el mismo commit**. → **RESUELTO 2026-10-01:** `python3` en los listados builtin y `frameworks/python/` en el layout de AGENTS.md, CLAUDE.md y README.md.
-- [ ] **2.4.3** Sumar un test de integración de `python3` contra el FS virtual (hoy hay tests del intérprete y del
+- [x] **2.4.3** Sumar un test de integración de `python3` contra el FS virtual (hoy hay tests del intérprete y del → **RESUELTO 2026-10-01:** `src/commands/__tests__/python3-fs.test.ts` (7 tests): `open()` absoluto/relativo/symlink, denegación por `canRead` (600 vs 644), `[Errno 13]` al cargar el script y la metadata `fileRead`.
       comando por separado).
 
 ### 2.5 La puerta de cobertura está al filo (branches 70.28 vs 70)
@@ -286,11 +286,11 @@ El área débil es `hooks` (**76.57 stmts / 59.78 branch**), justo donde vive la
 
 **Acción propuesta:**
 
-- [ ] **2.5.1** Cubrir ramas de `hooks`: `useRunCommand` (dispatch de pending su/python/ftp/ssh), `useFtpSession`,
+- [x] **2.5.1** Cubrir ramas de `hooks`: `useRunCommand` (dispatch de pending su/python/ftp/ssh), `useFtpSession`, → **RESUELTO 2026-10-01:** ramas de los hooks nombrados: `useRunCommand` 87,2 · `useFtpSession` 95,0 · `useSshSession` 87,5 · `useReverseShell` 81,8 · `useKeyboardShortcuts` 100.
       `useSshSession`, `useReverseShell`, `useKeyboardShortcuts` (cancelación de bloqueantes).
-- [ ] **2.5.2** Si no se llega rápido, subir el umbral de `branches` a **72** con el nuevo piso real (dejar de vivir
+- [x] **2.5.2** Si no se llega rápido, subir el umbral de `branches` a **72** con el nuevo piso real (dejar de vivir → **RESUELTO 2026-10-01:** umbral de `branches` en **73** (piso real 73,59), junto con `statements` 84 / `functions` 80 / `lines` 86 — no sólo 72.
       con margen de 0.3 pp) y seguir subiendo por sprint.
-- [ ] **2.5.3** Publicar el reporte de cobertura como artefacto del CI (hoy `coverage/` es gitignored y solo se ve
+- [x] **2.5.3** Publicar el reporte de cobertura como artefacto del CI (hoy `coverage/` es gitignored y solo se ve → **RESUELTO 2026-10-01:** step "Upload coverage report" en `ci.yml` (sube `coverage/` como artefacto).
       local).
 
 ---
@@ -311,7 +311,7 @@ El área débil es `hooks` (**76.57 stmts / 59.78 branch**), justo donde vive la
 Ya pasó antes (el informe de `glm_mejoras.md` incluye una corrección de conteos). El problema no es el número, es que
 **cada doc se actualiza a mano** y vuelven a divergir.
 
-- [ ] **3.1.1** Unificar la fuente de verdad: generar los conteos con un script (`scripts/`) o un test que falle si
+- [x] **3.1.1** Unificar la fuente de verdad: generar los conteos con un script (`scripts/`) o un test que falle si → **RESUELTO 2026-10-01:** `src/test/docs-sync.test.ts` mide labs, comandos, hooks, compositions, archivos de test y specs E2E contra README/AGENTS/CLAUDE; en su primer run cazó la deriva real de compositions (132 documentado → 118 real).
       `AGENTS.md`/`README.md` no coinciden con la realidad (patrón "doc test").
 - [x] **3.1.2** Reescribir `docs/TESTING.md` (está en estado 2025: "800+ tests", 5 escenarios, cobertura objetivo por
       módulo sin números actuales). → **RESUELTO 2026-10-01:** `docs/TESTING.md` reescrito: 3278 tests / 262 archivos, tabla de thresholds y flujos de CI.
@@ -325,14 +325,14 @@ Ya pasó antes (el informe de `glm_mejoras.md` incluye una corrección de conteo
 Los videos **no se sirven desde la app**: `utils/videoUrl.ts` apunta al CDN de jsDelivr y `.vercelignore` los excluye
 del deploy. O sea: en el build local/CI se copian 903 MB que nunca se usan, y `dist/` (gitignored) ocupa ~1 GB.
 
-- [ ] **3.2.1** Mover los originales de `public/videos/` a `media/videos/` (fuera de `publicDir`) y ajustar
-      `.vercelignore`/`.gitattributes` (el LFS config sigue funcionando por path).
-- [ ] **3.2.2** Alternativa mínima: `build: { copyPublicDir: false }` + `publicDir` apuntando a un dir sin videos, o
-      un script `build:light`.
-- [ ] **3.2.3** Verificar que dev sigue funcionando (hoy `pnpm dev` con `public/videos` presente permite trabajar
-      offline con el fallback local si se usa).
-- [ ] **3.2.4** Nota CI: `actions/checkout@v4` **no** trae LFS por default, así que en CI los videos son punteros
-      (~130 bytes) y el build es liviano. El problema es local + cualquier job que active `lfs: true`.
+- [x] **3.2.1** Mover los originales de `public/videos/` a `media/videos/` (fuera de `publicDir`) y ajustar
+      `.vercelignore`/`.gitattributes` (el LFS config sigue funcionando por path). → **RESUELTO 2026-10-01:** commit `73b3b72` (`perf(build): mover videos de public/ a media/ → dist 923MB → 20MB`): `public/videos/` ya no existe, `.gitattributes` apunta a `media/videos/**` y `.vercelignore` documenta que están fuera del `publicDir`.
+- [x] **3.2.2** Alternativa mínima: `build: { copyPublicDir: false }` + `publicDir` apuntando a un dir sin videos, o
+      un script `build:light`. → **RESUELTO 2026-10-01:** no aplica: se tomó el camino de 3.2.1 (los videos salieron del `publicDir`). `du -sh dist` = **20 MB** medido el 2026-10-01.
+- [x] **3.2.3** Verificar que dev sigue funcionando (hoy `pnpm dev` con `public/videos` presente permite trabajar
+      offline con el fallback local si se usa). → **RESUELTO 2026-10-01:** verificado 2026-10-01: `pnpm dev` levanta y `GET /es/labs` responde 200 sin `public/videos/`.
+- [x] **3.2.4** Nota CI: `actions/checkout@v4` **no** trae LFS por default, así que en CI los videos son punteros
+      (~130 bytes) y el build es liviano. El problema es local + cualquier job que active `lfs: true`. → **RESUELTO 2026-10-01:** ya no aplica: los videos no están en el `publicDir`, así que ni local ni en CI se copian al `dist/` (el LFS de `media/videos/**` sólo afecta al repo).
 
 ### 3.3 `resetWorkspace()` enumera 20 campos a mano
 
@@ -365,8 +365,8 @@ depende de **dos** lugares distintos.
 `e2e/` tiene 7 specs (210 LOC) + `helpers.ts` (39 LOC) y `playwright.config.ts`, pero `.github/workflows/ci.yml` solo
 hace **tsc + lint + test + build**.
 
-- [ ] **3.4.1** Job de Playwright en CI (o nightly): `playwright install --with-deps chromium` + `pnpm test:e2e`.
-- [ ] **3.4.2** Publicar el reporte (`playwright-report/`) como artefacto en fallo (ya está gitignored).
+- [x] **3.4.1** Job de Playwright en CI (o nightly): `playwright install --with-deps chromium` + `pnpm test:e2e`. → **RESUELTO 2026-10-01:** job `e2e` en `ci.yml` (`needs: verify`: Playwright install + `pnpm test:e2e`).
+- [x] **3.4.2** Publicar el reporte (`playwright-report/`) como artefacto en fallo (ya está gitignored). → **RESUELTO 2026-10-01:** step "Upload Playwright report" con `if: failure()` (7 días de retención).
 
 ### 3.5 Duplicación ES/EN en Remotion (116 archivos)
 
@@ -420,8 +420,8 @@ tests table-driven que lo blinden.
 Pero `src/utils/labValidator.ts:79-80` **sí** despacha a `validateBrowserAction(result, mission, conditions)`
 (único validador que recibe `mission` además de `result`, porque cruza `machineId` con `targetMachineId`).
 
-- [ ] **4.2.1** Corregir el comentario (es el archivo que la gente lee para entender el contrato).
-- [ ] **4.2.2** Aclarar en `docs/ARCHITECTURE.md` quién emite cada metadata (FakeBrowser emite, labValidator valida).
+- [x] **4.2.1** Corregir el comentario (es el archivo que la gente lee para entender el contrato). → **RESUELTO 2026-10-01:** el comentario de `types/mission.ts:44` ya dice «FakeBrowser emite, labValidator valida con targetMachineId».
+- [x] **4.2.2** Aclarar en `docs/ARCHITECTURE.md` quién emite cada metadata (FakeBrowser emite, labValidator valida). → **RESUELTO 2026-10-01:** `ARCHITECTURE.md` documenta cada criterio con su emisor y validador (p. ej. `browserAction — FakeBrowser emite, labValidator valida con targetMachineId`).
 
 ### 4.3 Censos de `any`, supresiones y `console`
 
@@ -462,7 +462,7 @@ la Sheet.
 
 Un único archivo para todo el historial (188.221 bytes, con `## [Unreleased] - fecha` repetido 15+ veces).
 
-- [ ] **4.6.1** Partir por release (`docs/changelog/2026-09.md`, …) e indexar en `CHANGELOG.md`.
+- [x] **4.6.1** Partir por release (`docs/changelog/2026-09.md`, …) e indexar en `CHANGELOG.md`. → **RESUELTO 2026-10-01:** `docs/changelog/` con mensuales de 2026-04 a 2026-10 e index en `docs/CHANGELOG.md`.
 - [ ] **4.6.2** Unificar el formato: hoy se repite `## [Unreleased]` varias veces, no sigue Keep a Changelog estricto
       (no hay secciones `Added`/`Fixed`/`Changed` consistentes ni versiones).
 
@@ -499,8 +499,8 @@ idioma).
 - [ ] **4.9.1** `git lfs prune` periódico y evaluar versionar solo los másters de audio (no cada `*-sceneN.wav`).
 - [ ] **4.9.2** Documentar en README que clonar sin `git lfs` deja punteros (los videos vienen del CDN → no rompe
       `pnpm dev`, pero confunde).
-- [ ] **4.9.3** `.gitattributes` declara `public/videos/** filter=lfs`; si en §3.2 se mueven a `media/videos/`,
-      actualizar el path del filtro.
+- [x] **4.9.3** `.gitattributes` declara `public/videos/** filter=lfs`; si en §3.2 se mueven a `media/videos/`,
+      actualizar el path del filtro. → **RESUELTO 2026-10-01:** `.gitattributes` ya declara `media/videos/** filter=lfs` — el path se actualizó junto con el move de §3.2.
 
 ### 4.10 Observaciones menores (heredadas de `solar_mejoras.md`, siguen válidas)
 
@@ -521,24 +521,24 @@ idioma).
 - [ ] **A. Suite estable** → `testTimeout`/`hookTimeout` a 15000 + fake timers en `MachineLoader` y `FoxyTour-app`
       (§2.1.1-2.1.2). Cierre: **3 corridas verdes consecutivas** de `pnpm test:run`.
 - [ ] **B. Suite rápida** → `@vitest-environment node` en tests sin DOM (§2.1.3). Objetivo: `environment` ≤ 150 s.
-- [ ] **C. Commit de `python3`** en rama, con docs alineados (§2.4).
-- [ ] **D. `/test` seguro** → guard `import.meta.env.DEV` + borrado selectivo de claves (§2.2).
-- [ ] **E. `Route path="*"`** con `NotFound` bilingüe (§2.3).
+- [x] **C. Commit de `python3`** en rama, con docs alineados (§2.4). → **RESUELTO 2026-10-01:** la feature de `python3` ya está en `main` con los docs alineados.
+- [x] **D. `/test` seguro** → guard `import.meta.env.DEV` + borrado selectivo de claves (§2.2). → **RESUELTO 2026-10-01:** guard `import.meta.env.DEV` + borrado selectivo de claves, con el progreso de Academy preservado.
+- [x] **E. `Route path="*"`** con `NotFound` bilingüe (§2.3). → **RESUELTO 2026-10-01:** `Route path="*"` con `NotFound` bilingüe, y el gate de idioma de §2.3.2 encima.
 - [x] **F. Docs sincronizados** → números reales (2022 tests / 153 archivos / 51 builtin) en README, AGENTS, CLAUDE y
       TESTING (§3.1). → **RESUELTO 2026-10-01:** README / AGENTS / CLAUDE / TESTING con los números reales de hoy (3278/262, 69+19 comandos, 132 compositions).
 
 ### P1 — siguientes 1-2 semanas
 
-- [ ] **G.** Cobertura: ramas de `hooks` + umbral `branches` a 72 (§2.5).
-- [ ] **H.** Sacar `public/videos` del `publicDir` del build (§3.2) → `dist` de 923 MB a ~20 MB.
+- [x] **G.** Cobertura: ramas de `hooks` + umbral `branches` a 72 (§2.5). → **RESUELTO 2026-10-01:** ramas de `hooks` ≥ 81% en los hooks nombrados y umbral de `branches` en 73.
+- [x] **H.** Sacar `public/videos` del `publicDir` del build (§3.2) → `dist` de 923 MB a ~20 MB. → **RESUELTO 2026-10-01:** commit `73b3b72`; `public/videos/` no existe y `du -sh dist` = **20 MB** medido el 2026-10-01.
 - [ ] **I.** `resetWorkspace()` por slices + test de contrato (§3.3).
-- [ ] **J.** Playwright en CI (§3.4).
+- [x] **J.** Playwright en CI (§3.4). → **RESUELTO 2026-10-01:** job `e2e` en `ci.yml` + reporte en fallo.
 - [ ] **K.** Remotion: composición única con `lang` + `Root.tsx` generado (§3.5).
 
 ### P2 — cuando haya aire
 
 - [ ] **L.** `getCurrentUser` table-driven (§4.1).
-- [ ] **M.** Comentario de `types/mission.ts` + ARCHITECTURE (§4.2).
+- [x] **M.** Comentario de `types/mission.ts` + ARCHITECTURE (§4.2). → **RESUELTO 2026-10-01:** comentario corregido y ARCHITECTURE con emisores/validadores.
 - [ ] **N.** Higiene: `any`/supresiones, `tsconfig` (`src/_deprecated`), script `typecheck`, comentario de thresholds
       (§4.3, §4.7).
 - [ ] **O.** `index.html` lang/hreflang dinámicos (§4.4) + throttle de analytics (§4.5).

@@ -1,7 +1,7 @@
 // ── video/remotion/__tests__/compositions-contract.test.ts ────────
 // @vitest-environment node
 // Root.tsx registra las <Composition> A MANO (59 archivos de composición
-// → 132 bloques ES+EN). Nada de esto lo ve `tsc` ni la suite web: los
+// → 118 bloques ES+EN). Nada de esto lo ve `tsc` ni la suite web: los
 // errores aparecen recién al abrir el studio o renderizar. Remotion tira
 // `Multiple composition with id X are registered.` con un id repetido, y
 // un `totalDurationFrames('clave-mal-tipiada')` cae en el `|| []` y
@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { REMOTION_DIR, remotionSource, mapKeys, timingCounts } from './remotionFixtures';
+import { REMOTION_DIR, remotionSource, mapKeys, timingCounts, compositionBlocks } from './remotionFixtures';
 
 const root = remotionSource('Root.tsx');
 const audio = remotionSource('audioTimings.ts');
@@ -32,35 +32,6 @@ const field = (text: string, re: RegExp, label: string): string => {
   if (!m) throw new Error(`Composition sin ${label}: ${text.replace(/\s+/g, ' ').slice(0, 90)}`);
   return m[1];
 };
-
-/**
- * Etiquetas `<Composition … />` completas. No sirve `<Composition[\s\S]*?/>`:
- * el `component={() => <X lang="es" />}` cierra antes que el atributo
- * `durationInFrames`. Se escanea contando llaves y paréntesis hasta un `/>`
- * que esté al mismo nivel (mismo criterio que a11y-contract.test.ts).
- */
-function compositionBlocks(source: string): string[] {
-  const out: string[] = [];
-  const open = /<Composition\b/g;
-  let m: RegExpExecArray | null;
-  while ((m = open.exec(source))) {
-    let braces = 0;
-    let parens = 0;
-    for (let i = open.lastIndex; i < source.length; i++) {
-      const ch = source[i];
-      if (ch === '{') braces++;
-      else if (ch === '}') braces--;
-      else if (ch === '(') parens++;
-      else if (ch === ')') parens--;
-      else if (ch === '/' && source[i + 1] === '>' && braces === 0 && parens === 0) {
-        out.push(source.slice(m.index, i + 2));
-        open.lastIndex = i + 2;
-        break;
-      }
-    }
-  }
-  return out;
-}
 
 const blocks: Comp[] = compositionBlocks(root).map(t => {
   const dur = t.match(/totalDurationFrames\('([^']+)',\s*FPS(?:,\s*'(en)')?\)/);

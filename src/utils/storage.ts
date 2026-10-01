@@ -22,14 +22,22 @@ export const SESSION_STORAGE_KEYS = {
 } as const;
 
 /**
- * Borra SOLO las claves de ZeroInfra Labs.
+ * Borra SOLO las claves de ZeroInfra Labs que son prescindibles.
  * No toca ninguna otra clave del mismo origen (y nunca usa `clear()`).
+ *
+ * `cyberops-store` queda FUERA a propósito (§2.2.3): `partialize` sólo
+ * persiste preferencias de UI + progreso de Academy (7 claves, ver
+ * `store/persistMigrate.ts`), o sea que borrarlo no resetea ningún estado
+ * de lab — sólo le haría perder el progreso al usuario. El estado de lab
+ * vive en memoria y lo resetea `selectScenario()`.
  */
 export function clearZilabsStorage(): void {
   if (typeof window === 'undefined') return;
 
   try {
-    Object.values(LOCAL_STORAGE_KEYS).forEach(key => window.localStorage.removeItem(key));
+    Object.values(LOCAL_STORAGE_KEYS)
+      .filter(key => key !== LOCAL_STORAGE_KEYS.store)
+      .forEach(key => window.localStorage.removeItem(key));
   } catch {
     // Storage inaccesible (modo privado / cookies bloqueadas): no hay nada que borrar.
   }
