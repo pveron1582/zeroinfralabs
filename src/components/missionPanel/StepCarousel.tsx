@@ -140,6 +140,7 @@ export function StepCarousel({ missions, resolve, language }: { missions: Missio
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800/50">
         <button
           onClick={goPrev}
+          aria-label={language === 'es' ? 'Paso anterior' : 'Previous step'}
           disabled={!canGoPrev || isAnimating}
           className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
             canGoPrev && !isAnimating
@@ -160,6 +161,7 @@ export function StepCarousel({ missions, resolve, language }: { missions: Missio
 
         <button
           onClick={goNext}
+          aria-label={language === 'es' ? 'Siguiente paso' : 'Next step'}
           disabled={!canGoNext || isAnimating}
           className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
             canGoNext && !isAnimating
@@ -201,6 +203,7 @@ export function StepCarousel({ missions, resolve, language }: { missions: Missio
             <button
               key={m.id}
               onClick={() => goTo(idx, idx > currentIndex ? 'right' : 'left')}
+              aria-label={language === 'es' ? `Paso ${idx + 1}` : `Step ${idx + 1}`}
               disabled={isAnimating}
               className={`w-2.5 h-2.5 rounded-full transition-all ${
                 idx === currentIndex

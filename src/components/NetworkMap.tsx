@@ -56,7 +56,7 @@ export function NetworkMap({ scenario, activeMachineId, msfState, ftpSession, on
           </h2>
           <p className={`${compact ? 'text-[11px]' : 'text-xs'} text-gray-600 font-mono mt-0.5`}>{scenario.network_range}</p>
         </div>
-        <button onClick={onClose} data-tour="network-map-close" className="p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-200 transition-colors">
+        <button onClick={onClose} aria-label={language === 'es' ? 'Cerrar' : 'Close'} data-tour="network-map-close" className="p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-200 transition-colors">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>

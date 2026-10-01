@@ -3,6 +3,7 @@ import type { Cursor } from './editorModal/cursor';
 import { NanoStatusBar, type BarMode } from './editorModal/NanoStatusBar';
 import { NanoFooter } from './editorModal/NanoFooter';
 import { useNanoEditor } from './editorModal/useNanoEditor';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export interface SaveResult {
   success: boolean;
@@ -34,6 +35,11 @@ export function EditorModal({ isOpen, filePath, initialContent, readOnly, onSave
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const barInputRef = useRef<HTMLInputElement>(null);
   const newFile = !filePath;
+  // Foco atrapado mientras nano está abierto: Tab cicla dentro del editor en
+  // vez de escaparse al resto de la página. Sin onEscape a propósito: nano
+  // maneja Escape en su propia barra (cancela saveAs/search/confirmExit) y
+  // cerrar el editor con Escape perdería cambios sin guardar.
+  const editorRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -75,6 +81,8 @@ export function EditorModal({ isOpen, filePath, initialContent, readOnly, onSave
 
   return (
     <div
+      ref={editorRef}
+      tabIndex={-1}
       className="w-full h-full flex-1 flex flex-col font-mono text-[14px] leading-[1.35] select-none bg-black overflow-hidden"
     >
       {/* Header — línea superior GNU nano */}

@@ -43,6 +43,28 @@ describe('useFocusTrap', () => {
     expect(onEscape).toHaveBeenCalledTimes(1);
   });
 
+  it('sin onEscape, Escape llega a los onKeyDown internos de React', () => {
+    // Regresión: el stopPropagation del trap se comía el evento ANTES de que
+    // React lo despache (React escucha en su root container, que es ancestro
+    // del contenedor atrapado), con lo que la barra de nano —que cancela con
+    // Escape— nunca se cerraba.
+    const onInternal = vi.fn();
+    function Bar() {
+      const ref = useFocusTrap<HTMLDivElement>(true);
+      return (
+        <div ref={ref} tabIndex={-1} data-testid="dialog">
+          <input
+            aria-label="barra"
+            onKeyDown={e => { if (e.key === 'Escape') onInternal(); }}
+          />
+        </div>
+      );
+    }
+    render(<Bar />);
+    fireEvent.keyDown(screen.getByLabelText('barra'), { key: 'Escape' });
+    expect(onInternal).toHaveBeenCalledTimes(1);
+  });
+
   it('Tab en el último elemento vuelve al primero (no sale del diálogo)', () => {
     render(<Dialog />);
     const dialog = screen.getByTestId('dialog');

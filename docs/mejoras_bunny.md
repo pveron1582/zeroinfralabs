@@ -651,7 +651,7 @@ porque el `if` de arriba ya cortó las sesiones inactivas).
 5. `EnumerationPanel.tsx:38` `getDynamicCredentials()` sin memo, en el cuerpo del render.
 6. Convención `filesChanged` = snapshot completo: 31 sitios con `machine.files =` re-renderizan a todos los suscriptores por escritura.
 
-### [x] 3.8 Accesibilidad — **RESUELTO 2026-09-27 (parcial)**
+### [x] 3.8 Accesibilidad — **RESUELTO 2026-10-01**
 
 - 20 de 118 `.tsx` de componentes usan `aria-label`.
 - `components/labGrid/ScenarioCard.tsx:26,42`: `role="button" tabIndex={0}` **sin `onKeyDown`** → las tarjetas del LabGrid no se abren con teclado.
@@ -688,10 +688,46 @@ ya lo tenían. Tests: 2 en `LabGrid.test.tsx`.
   onClick={e => ...}>` se cortaba en el `>` de la flecha; el scanner ahora
   cuenta llaves y comillas.
 
-**Pendiente de 3.8:** el barrido de `aria-label` en los ~90 componentes que
-no lo tienen (los interactivos ya están cubiertos por el contrato), el focus
-trap de `EditorModal` (nano) y de `LabGrid`, y la auditoría del resto de la
-app.
+**Tercera tanda (2026-10-01) — botones sin nombre, las dos trampas que
+faltaban y el contrato mirando todo `src/`:**
+
+- **11 botones icon-only sin nombre accesible**: cerrar de `DonationModal`,
+  `FeedbackModal`, `EnumerationPanel` y `NetworkMap`; atrás / adelante /
+  recargar de `FakeBrowser`; el toggle de intercept de `BurpIntercept`; y las
+  dos flechas + los puntos del carrusel de misión (`StepCarousel`). Todos con
+  `aria-label` siguiendo la convención de cada archivo: bilingüe donde ya
+  había `language`/`isSpanish`, español en FakeBrowser (ya etiquetaba
+  `title="Cerrar"` y `aria-label="Barra de direcciones"`), inglés en
+  `EnumerationPanel` y `BurpIntercept` (archivos English-only). El toggle ya
+  tenía `aria-pressed`, le faltaba el nombre.
+- **Regla 4 en `a11y-contract.test.ts`:** todo `<button>` con nombre
+  accesible (`aria-label`/`aria-labelledby`/`title`, o cualquier texto —
+  literal o dentro de una expresión como `{bw.title}`). Con auto-verificación
+  `scanned > 150`: si el scanner se rompe y no devuelve botones, el test
+  falla en vez de pasar en vacío.
+- **El contrato ahora recorre todo `src/`,** no sólo `components/`. Auditoría
+  del resto: los 70 `.tsx` que viven fuera de `components` (academy,
+  video/Remotion, laboratorios) tienen **0** `<button>`, 0 `<img>`, 0
+  `<input>`, 0 overlays fijos y 0 `role="button"` — no había nada roto ahí,
+  pero lo que aparezca entra al contrato.
+- **Focus trap de `LabGrid`** (el detalle del lab: Tab cicla dentro del
+  diálogo y Escape lo cierra desde el trap) y **de `EditorModal`** (nano: con
+  el foco dentro del editor, Tab no se escapa a la página). Tests en
+  `modal-a11y.test.tsx`, que pasó a cubrir cinco diálogos.
+
+**Bug encontrado en `useFocusTrap` (lo tiró el test de nano):** el
+`stopPropagation` de Escape se comía el evento **antes de que React lo
+despache** — React escucha en su root container, que es ANCESTRO del
+contenedor atrapado, así que ningún `onKeyDown` interno corría: la barra de
+nano, que cancela con Escape, quedaba pegada. Fix: si el diálogo no declara
+`onEscape` el evento sigue de largo; si lo declara, se lo queda como antes.
+Test unitario nuevo en `useFocusTrap.test.tsx`.
+
+**Pendiente de 3.8:** sólo queda el barrido cosmético de `aria-label` en
+componentes **no interactivos**. Está declarado de bajo valor en el header
+del contrato: es repetir el mismo atributo ~90 veces sin que cambie nada
+para el teclado ni para el lector de pantalla, y los interactivos ya están
+cubiertos por las cuatro reglas.
 
 ### [ ] 3.9 Producto / superficie
 

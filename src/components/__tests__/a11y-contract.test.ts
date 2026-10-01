@@ -9,6 +9,8 @@
 //  2. Todo modal (fixed inset-0) tiene role="dialog" + aria-modal, es decir
 //     pasa por ModalShell.
 //  3. Ningún <img>/<input> sin nombre accesible.
+//  4. Ningún <button> sin nombre accesible (P1 3.8, 3ª tanda): los 11
+//     botones icon-only de la app anunciaban "botón" y nada más.
 //
 // Allowlist con el motivo, como en layering.test.ts.
 
@@ -30,7 +32,10 @@ function tsxFiles(dir: string): string[] {
   return out;
 }
 
-const files = tsxFiles(join(SRC, 'components')).filter(f => !f.includes('/__tests__/'));
+// Se recorre TODO `src/` (no sólo components): el resto del árbol — academy,
+// video/Remotion, laboratorios — hoy no tiene ni un <button>, <img> ni
+// overlay fijo, y si algún día aparece uno tiene que entrar acá.
+const files = tsxFiles(SRC).filter(f => !f.includes('/__tests__/'));
 const rel = (f: string) => f.replace(`${process.cwd()}/`, '');
 
 /**
@@ -140,6 +145,68 @@ describe('a11y — controles con nombre accesible', () => {
         if (!named) offenders.push(`${rel(file)}: ${tag.slice(0, 80)}`);
       }
     }
+    expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * Apertura y contenido de cada `<button>…</button>`. Se balancean las etiquetas
+ * anidadas para no cortar un botón con otro adentro, y un `<button />`
+ * self-closing (renderiza vacío) queda con `inner: ''`.
+ */
+function buttonBlocks(source: string): { tag: string; inner: string }[] {
+  const out: { tag: string; inner: string }[] = [];
+  const open = /<button\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = open.exec(source))) {
+    // 1) fin de la etiqueta de apertura: mismo escaneo que tagsWith
+    let i = open.lastIndex;
+    let depth = 0;
+    let quote: string | null = null;
+    for (; i < source.length; i++) {
+      const ch = source[i];
+      if (quote) {
+        if (ch === quote && source[i - 1] !== '\\') quote = null;
+      } else if (ch === '"' || ch === "'" || ch === '`') quote = ch;
+      else if (ch === '{') depth++;
+      else if (ch === '}') depth--;
+      else if (ch === '>' && depth === 0) break;
+    }
+    const tag = source.slice(m.index, i + 1);
+    // 2) hasta el </button> que cierra ESTE botón
+    let level = 1;
+    let end = -1;
+    for (let j = i + 1; j < source.length; j++) {
+      if (source.startsWith('<button', j)) level++;
+      else if (source.startsWith('</button>', j) && --level === 0) { end = j; break; }
+    }
+    out.push({ tag, inner: end < 0 ? '' : source.slice(i + 1, end) });
+    open.lastIndex = end < 0 ? i + 1 : end + '</button>'.length;
+  }
+  return out;
+}
+
+describe('a11y — todo <button> tiene nombre accesible', () => {
+  // 11 botones icon-only (cerrar, atrás/adelante/recargar, toggle de
+  // intercept, flechas y puntos del carrusel) anunciaban "botón" y nada más.
+  // Vale aria-label, aria-labelledby o title; también cualquier texto entre
+  // las etiquetas, literal o dentro de una expresión (`{t('cerrar')}`,
+  // `{bw.title}`) — si hay algo que renderiza, el nombre sale de ahí.
+  it('ningún <button> sin nombre accesible', () => {
+    const offenders: string[] = [];
+    let scanned = 0;
+    for (const file of files) {
+      const source = readFileSync(file, 'utf8');
+      for (const { tag, inner } of buttonBlocks(source)) {
+        scanned++;
+        if (/aria-label=|aria-labelledby=|\btitle=/.test(tag)) continue;
+        if (inner.replace(/<[^>]*>/g, '').trim()) continue;
+        offenders.push(`${rel(file)}: ${tag.replace(/\s+/g, ' ').slice(0, 90)}`);
+      }
+    }
+    // Si el scanner se rompiera y no devolviera botones, este test pasaría
+    // en vacío: hay ~200 <button> en src/components.
+    expect(scanned).toBeGreaterThan(150);
     expect(offenders).toEqual([]);
   });
 });

@@ -42,6 +42,7 @@ export function BurpIntercept({ interceptOn, interceptedRequest, pendingCount, o
       {/* Toggle de interceptación (Burp real: "Intercept is on/off") */}
       <div className="flex items-center gap-2 px-2 py-1.5 border-b border-gray-700 bg-gray-800/40 flex-shrink-0">
         <button onClick={onToggleIntercept}
+          aria-label={interceptOn ? 'Stop intercepting' : 'Start intercepting'}
           className={`relative w-8 h-[18px] rounded-full transition-colors ${interceptOn ? 'bg-orange-600' : 'bg-gray-600'}`}
           aria-pressed={interceptOn}>
           <span className={`absolute top-[2px] w-3.5 h-3.5 rounded-full bg-white transition-all ${interceptOn ? 'left-[18px]' : 'left-[2px]'}`} />

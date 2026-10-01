@@ -13,6 +13,7 @@ import { MarketingFooter } from './landing/MarketingFooter';
 import { diffColor } from './labGrid/helpers';
 import { ScenarioCard } from './labGrid/ScenarioCard';
 import { ModalContent } from './labGrid/ModalContent';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export function LabGrid() {
   const { lang } = useParams<{ lang: string }>();
@@ -60,6 +61,12 @@ export function LabGrid() {
       document.body.style.overflow = '';
     }, 210);
   }, [modalIndex, closing]);
+
+  // Foco atrapado en el detalle del lab: Tab cicla dentro del diálogo en vez
+  // de escaparse a la página de atrás. Escape lo cierra desde el trap (que
+  // hace stopPropagation, así el handler de ventana no lo cierra dos veces);
+  // si el foco afuera, sigue funcionando el handler de window de abajo.
+  const dialogRef = useFocusTrap<HTMLDivElement>(modalIndex !== null, closeModal);
 
   const goPrev = useCallback(() => {
     setModalIndex(i => i !== null && i > 0 ? i - 1 : i);
@@ -122,6 +129,8 @@ export function LabGrid() {
       {/* Modal */}
       {modalIndex !== null && (
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label={modalIndex !== null ? VISIBLE_SCENARIOS[modalIndex].name : 'Lab'}

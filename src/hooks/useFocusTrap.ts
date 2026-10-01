@@ -49,8 +49,16 @@ export function useFocusTrap<T extends HTMLElement>(
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        const onEscape = escapeRef.current;
+        // Sin onEscape el diálogo no se cierra con Escape, así que el evento
+        // tiene que seguir de largo. Cuidado con el stopPropagation de
+        // acá abajo: React escucha en su root container, que es ANCESTRO de
+        // este contenedor, así que cortar acá impide que React despache el
+        // evento sintético y los onKeyDown internos (la barra de nano, que
+        // cancela con Escape) nunca corren.
+        if (!onEscape) return;
         e.stopPropagation();
-        escapeRef.current?.();
+        onEscape();
         return;
       }
       if (e.key !== 'Tab') return;

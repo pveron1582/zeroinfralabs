@@ -3,8 +3,8 @@
 ## Resumen
 
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
-**Total Tests:** 3241 en 257 archivos  
-**Cobertura (v8):** 84.82% stmts / 73.34% branches / 81.00% funcs / 87.13% lines (medido 2026-09-30)  
+**Total Tests:** 3247 en 257 archivos  
+**Cobertura (v8):** 84.84% stmts / 73.39% branches / 81.00% funcs / 87.15% lines (medido 2026-10-01)  
 **E2E:** Playwright (9 specs / 24 tests en `e2e/`, corren en el job `e2e` de la CI)
 
 ## Comandos
@@ -22,10 +22,10 @@ pnpm test -- src/path    # Ejecutar un archivo específico
 
 | Métrica | Umbral | Real (2026-09-30) |
 |---------|--------|-------------------|
-| statements | 80% | 84.82% |
-| branches | 68% | 73.34% |
+| statements | 80% | 84.84% |
+| branches | 68% | 73.39% |
 | functions | 77% | 81.00% |
-| lines | 83% | 87.13% |
+| lines | 83% | 87.15% |
 
 El piso se mide con `pnpm test:coverage` y va ~1 punto abajo del valor real
 (la corrida es determinista: ±0.03). **Subilo cuando suba la cobertura.**
@@ -169,6 +169,12 @@ pnpm test:e2e
 
 Configuración en `playwright.config.ts` (levanta el dev server con
 `webServer`, chromium headless, un solo worker).
+
+- **Si los 24 specs fallan en 2 ms con `browserType.launch: Executable
+  doesn't exist`:** falta el navegador, no hay nada roto en el código — pasa
+  cuando se limpia `~/.cache/ms-playwright` (p. ej. con el limpiador de
+  cache del sistema al cambiar de fecha). Lo repone
+  `pnpm exec playwright install chromium`.
 
 - 8 specs happy path por lab (`lab01`…`lab08`, incluye el lab oculto 08):
   verifican **texto en el output** de la terminal.
