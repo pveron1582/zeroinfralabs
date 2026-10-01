@@ -1,9 +1,9 @@
 // ── academy/__tests__/paths.test.ts ────────────────────────────────
 // @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
-// Contrato de datos del Academy: 8 paths y ~59 lecciones escritas a mano.
+// Contrato de datos del Academy: 10 paths y ~59 lecciones escritas a mano.
 // Antes había CERO tests acá, así que un `id` duplicado o desalineado con
-// su path rompía la navegación en runtime (la ruta /:lang/academy/:pathId/
-// module/:subId/lesson/:lessonId se arman con estos ids).
+// su path rompía la navegación en runtime (las rutas /:lang/academy/:pathId
+// y /:lang/academy/:pathId/:lessonId se arman con estos ids).
 //
 // Esto NO es un test de contenido (el texto se revisa a ojo), sino de
 // integridad: unicidad, referencias cruzadas y paridad ES/EN donde el tipo
@@ -20,7 +20,8 @@ const lessonById = new Map(ALL.map(l => [l.id, l]));
 
 /** Paths declarados en el union type AcademyPathId. */
 const PATHS_DECLARADOS = [
-  'os', 'redes', 'protocolos', 'protocolos-ii',
+  'linux', 'windows', 'others',
+  'redes', 'protocolos', 'protocolos-ii',
   'ciberseguridad', 'hacking', 'hacking-web', 'scripting',
 ];
 
@@ -33,8 +34,8 @@ const SCENARIO_IDS = [
 ];
 
 describe('Academy — paths', () => {
-  it('tiene 8 paths con ids únicos', () => {
-    expect(ACADEMY_PATHS).toHaveLength(8);
+  it('tiene 10 paths con ids únicos', () => {
+    expect(ACADEMY_PATHS).toHaveLength(10);
     const ids = ACADEMY_PATHS.map(p => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -111,8 +112,8 @@ describe('Academy — lecciones', () => {
       const found = getLesson(l.pathId, l.id);
       expect(found?.id, `getLesson no resolvió ${l.pathId}/${l.id}`).toBe(l.id);
     }
-    expect(getLesson('os', 'linux-01')?.id).toBe('linux-01');
-    expect(getLesson('os', 'no-existe')).toBeUndefined();
+    expect(getLesson('linux', 'linux-01')?.id).toBe('linux-01');
+    expect(getLesson('linux', 'no-existe')).toBeUndefined();
     expect(getLesson('no-existe', 'linux-01')).toBeUndefined();
   });
 
@@ -280,4 +281,6 @@ describe('Academy — sin lecciones huérfanas', () => {
     const total = ACADEMY_PATHS.reduce((n: number, p: AcademyPath) => n + p.lessons.length, 0);
     expect(total).toBe(ALL.length);
   });
+
+
 });

@@ -12,7 +12,7 @@ Dividido en fases con tareas concretas, ordenadas por dependencias.
 - **`docs/PERMISSIONS.md`** — patrón transversal para comandos que tocan el filesystem
   (helpers `canRead`/`canCreateInDir`/`canDeleteInDir`/`canEditFile`, lookup de archivos,
   anti-patrones, tabla operación → helper).
-- **`docs/PROYECTO_ACADEMY.md`** — arquitectura pedagógica de la Academy (8 paths, 59 lecciones, quizzes).
+- **`docs/PROYECTO_ACADEMY.md`** — arquitectura pedagógica de la Academy (10 paths, 59 lecciones, quizzes).
 - **`docs/ARCHITECTURE.md`** — arquitectura general del simulador, validadores y ciclo de comandos.
 - **`docs/archive/MEJORAS.md`** — hygiene del codebase y plan unificado completado.
 - **`docs/ROADMAP_TOPOLOGY_SOC.md`** — roadmap de topología dinámica, SIEM/Wazuh virtual y objetivos Windows.

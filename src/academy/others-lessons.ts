@@ -11,7 +11,7 @@ import { OTHERS_HW_LESSONS } from './others-hw-lessons';
 export const OTHERS_LESSONS: Lesson[] = [
   {
     id: 'others-01',
-    pathId: 'os',
+    pathId: 'others',
     order: 1,
     title: 'Alternative PC and server systems: macOS, BSD and ChromeOS',
     titleEs: 'Sistemas alternativos de PC y servidores: macOS, BSD y ChromeOS',
@@ -78,7 +78,7 @@ export const OTHERS_LESSONS: Lesson[] = [
   },
   {
     id: 'others-02',
-    pathId: 'os',
+    pathId: 'others',
     order: 2,
     title: 'Portable and electronics devices: Android, iOS and Raspberry Pi',
     titleEs: 'Equipos portátiles y de electrónica: Android, iOS y Raspberry Pi',

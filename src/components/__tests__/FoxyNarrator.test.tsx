@@ -70,7 +70,7 @@ describe('FoxyNarrator (Fase D)', () => {
   });
 
   it('las lecciones del Academy empiezan con Foxy narrator', () => {
-    renderLesson('/es/academy/os/linux-01');
+    renderLesson('/es/academy/linux/linux-01');
     expect(screen.getByText('FOXY')).toBeInTheDocument();
     expect(screen.getByText(/Antes de hackear un Linux/)).toBeInTheDocument();
 

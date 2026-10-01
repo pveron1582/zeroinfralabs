@@ -7,7 +7,7 @@ import type { Lesson } from '../types';
 export const LINUX_LESSONS: Lesson[] = [
   {
     id: 'linux-01',
-    pathId: 'os',
+    pathId: 'linux',
     order: 1,
     title: 'Why Linux: history, free software and where it lives',
     titleEs: 'Por qué Linux: historia, software libre y dónde vive',
@@ -81,7 +81,7 @@ export const LINUX_LESSONS: Lesson[] = [
   },
   {
     id: 'linux-02',
-    pathId: 'os',
+    pathId: 'linux',
     order: 2,
     title: 'The terminal: shells, PATH, prompt and flags',
     titleEs: 'La terminal: shells, PATH, prompt y flags',
@@ -163,7 +163,7 @@ export const LINUX_LESSONS: Lesson[] = [
   },
   {
     id: 'linux-03',
-    pathId: 'os',
+    pathId: 'linux',
     order: 3,
     title: 'Core commands: pwd, echo, id, ls',
     titleEs: 'Comandos base: pwd, echo, id, ls',
@@ -238,7 +238,7 @@ export const LINUX_LESSONS: Lesson[] = [
   },
   {
     id: 'linux-04',
-    pathId: 'os',
+    pathId: 'linux',
     order: 4,
     title: 'Creating and editing: touch, mkdir, nano',
     titleEs: 'Crear y editar: touch, mkdir, nano',
@@ -313,7 +313,7 @@ export const LINUX_LESSONS: Lesson[] = [
   },
   {
     id: 'linux-05',
-    pathId: 'os',
+    pathId: 'linux',
     order: 5,
     title: 'Permissions: rwx, octal, owner/group/others and special bits',
     titleEs: 'Permisos: rwx, octal, dueño/grupo/otros y bits especiales',

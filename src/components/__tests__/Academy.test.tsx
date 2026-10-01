@@ -85,18 +85,34 @@ describe('Academy', () => {
       renderAcademy('/es/academy');
       expect(screen.getByText(/0\/59/)).toBeInTheDocument();
     });
+
+    it('linkea los 3 módulos de SO a sus rutas nuevas (/academy/linux…)', () => {
+      renderAcademy('/es/academy');
+      const hrefs = screen.getAllByRole('link').map(a => a.getAttribute('href'));
+      expect(hrefs).toContain('/es/academy/linux');
+      expect(hrefs).toContain('/es/academy/windows');
+      expect(hrefs).toContain('/es/academy/others');
+      // El path legacy 'os' ya no existe en ningún link de la portada
+      expect(hrefs.some(h => !!h && h.startsWith('/es/academy/os'))).toBe(false);
+    });
   });
 
   describe('AcademyPathPage', () => {
-    it('redirige /academy/os al primer módulo (/module/linux) sin sidebar', () => {
+    it('redirige la URL legacy /academy/os a /academy/linux', () => {
       renderAcademy('/es/academy/os');
-      // Las subsecciones se muestran como lecciones de Linux; ya no hay botones de sidebar
+      expect(screen.getByRole('heading', { name: 'Linux' })).toBeInTheDocument();
       expect(screen.getByText('Por qué Linux: historia, software libre y dónde vive')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /^Windows/ })).not.toBeInTheDocument();
     });
 
-    it('muestra las 5 lecciones de Linux por defecto', () => {
-      renderAcademy('/es/academy/os/module/linux');
+    it('redirige la URL legacy /academy/os/module/<sub> a /academy/<sub>', () => {
+      renderAcademy('/es/academy/os/module/windows');
+      expect(screen.getByRole('heading', { name: 'Windows' })).toBeInTheDocument();
+      expect(screen.getByText('Historia de Windows: orígenes, versiones y el modelo privativo')).toBeInTheDocument();
+    });
+
+    it('muestra las 5 lecciones de Linux en /academy/linux', () => {
+      renderAcademy('/es/academy/linux');
       expect(screen.getByRole('heading', { name: 'Linux' })).toBeInTheDocument();
       expect(screen.getByText('Por qué Linux: historia, software libre y dónde vive')).toBeInTheDocument();
       expect(screen.getByText('La terminal: shells, PATH, prompt y flags')).toBeInTheDocument();
@@ -106,7 +122,7 @@ describe('Academy', () => {
     });
 
     it('muestra la ilustración del módulo a la izquierda de las lecciones', () => {
-      renderAcademy('/es/academy/os/module/linux');
+      renderAcademy('/es/academy/linux');
       // La ilustración agrega un badge con el nombre del módulo
       expect(screen.getByText('Módulo · Linux')).toBeInTheDocument();
     });
@@ -116,8 +132,8 @@ describe('Academy', () => {
       expect(screen.getByText('Módulo · Hacking Web')).toBeInTheDocument();
     });
 
-    it('muestra el módulo Windows con sus 5 lecciones en /module/windows', () => {
-      renderAcademy('/es/academy/os/module/windows');
+    it('muestra el módulo Windows con sus 5 lecciones en /academy/windows', () => {
+      renderAcademy('/es/academy/windows');
       expect(screen.getByRole('heading', { name: 'Windows' })).toBeInTheDocument();
       expect(screen.getByText('Historia de Windows: orígenes, versiones y el modelo privativo')).toBeInTheDocument();
       expect(screen.getByText('Versiones actuales: Windows 10, 11 y Server')).toBeInTheDocument();
@@ -127,8 +143,8 @@ describe('Academy', () => {
       expect(screen.queryByText('Por qué Linux: historia, software libre y dónde vive')).not.toBeInTheDocument();
     });
 
-    it('muestra el módulo Otros con sus lecciones en /module/others', () => {
-      renderAcademy('/es/academy/os/module/others');
+    it('muestra el módulo Otros con sus lecciones en /academy/others', () => {
+      renderAcademy('/es/academy/others');
       expect(screen.getByRole('heading', { name: 'Otros sistemas operativos y hardware' })).toBeInTheDocument();
       expect(screen.getByText('Sistemas alternativos de PC y servidores: macOS, BSD y ChromeOS')).toBeInTheDocument();
       expect(screen.getByText('Equipos portátiles y de electrónica: Android, iOS y Raspberry Pi')).toBeInTheDocument();
@@ -139,12 +155,12 @@ describe('Academy', () => {
 
     it('muestra el progreso del módulo con conteo y porcentaje', () => {
       useScenarioStore.setState({ completedLessons: ['linux-01'] });
-      renderAcademy('/es/academy/os/module/linux');
-      // 1 de 14 (5 linux + 5 windows + 4 others) = 7%
+      renderAcademy('/es/academy/linux');
+      // El progreso ahora es por módulo: 1 de las 5 lecciones de Linux = 20%
       const prog = screen.getByText('lecciones completadas', { exact: false });
       expect(prog.textContent).toContain('1');
-      expect(prog.textContent).toContain('14');
-      expect(screen.getByText('7%')).toBeInTheDocument();
+      expect(prog.textContent).toContain('5');
+      expect(screen.getByText('20%')).toBeInTheDocument();
     });
 
     it('redirige al index si el path no existe', () => {
@@ -258,15 +274,15 @@ describe('Academy', () => {
 
   describe('LessonViewer', () => {
     it('muestra el primer paso (Foxy narrator) de linux-01', () => {
-      renderAcademy('/es/academy/os/linux-01');
+      renderAcademy('/es/academy/linux/linux-01');
       expect(screen.getByText(/Antes de hackear un Linux/)).toBeInTheDocument();
       expect(screen.getByText(/Paso 1 de 8/)).toBeInTheDocument();
     });
 
-    it('el back link de una lección OS vuelve a su módulo (/academy/os/module/linux)', () => {
-      renderAcademy('/es/academy/os/linux-01');
+    it('el back link de una lección de Linux vuelve a /academy/linux', () => {
+      renderAcademy('/es/academy/linux/linux-01');
       const link = screen.getByRole('link', { name: /Regresar/ });
-      expect(link).toHaveAttribute('href', '/es/academy/os/module/linux');
+      expect(link).toHaveAttribute('href', '/es/academy/linux');
     });
 
     it('el back link de una lección flat (protocolos-ii) vuelve al path', () => {
@@ -282,13 +298,13 @@ describe('Academy', () => {
     });
 
     it('avanza con Siguiente desde el narrator al content', () => {
-      renderAcademy('/es/academy/os/linux-01');
+      renderAcademy('/es/academy/linux/linux-01');
       fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
       expect(screen.getByText(/1991: un estudiante finlandés/)).toBeInTheDocument();
     });
 
     it('renderiza terminal-demo con comando y output en linux-02', () => {
-      renderAcademy('/es/academy/os/linux-02');
+      renderAcademy('/es/academy/linux/linux-02');
       // paso 1=narrator, 2=content, 3=video, 4=content, 5=terminal-demo echo $PATH
       for (let i = 0; i < 4; i++) {
         fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -297,8 +313,8 @@ describe('Academy', () => {
     });
 
     it('el quiz bloquea el avance hasta responder bien', () => {
-      renderAcademy('/es/academy/os/linux-01');
-      const steps = ACADEMY_PATHS.find(p => p.id === 'os')!.subSections![0].lessons[0].steps;
+      renderAcademy('/es/academy/linux/linux-01');
+      const steps = ACADEMY_PATHS.find(p => p.id === 'linux')!.lessons[0].steps;
       // avanzar hasta el último paso (quiz)
       for (let i = 0; i < steps.length - 1; i++) {
         fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -316,7 +332,7 @@ describe('Academy', () => {
     });
 
     it('completar windows-01 (lección con quiz) marca la lección y vuelve al path', () => {
-      renderAcademy('/es/academy/os/windows-01');
+      renderAcademy('/es/academy/windows/windows-01');
       const total = getAllLessons().find(l => l.id === 'windows-01')!.steps.length;
       // Avanzar hasta el quiz y responder
       for (let i = 0; i < total - 1; i++) {
@@ -359,8 +375,14 @@ describe('Academy', () => {
     }, 15000);
 
     it('redirige si la lección no existe', () => {
-      renderAcademy('/es/academy/os/no-existe');
+      renderAcademy('/es/academy/linux/no-existe');
       expect(screen.getByText('Sistemas Operativos')).toBeInTheDocument(); // volvió al home
+    });
+
+    it('redirige la URL legacy /academy/os/linux-01 a /academy/linux/linux-01', () => {
+      renderAcademy('/es/academy/os/linux-01');
+      expect(screen.getByText(/Antes de hackear un Linux/)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Regresar/ })).toHaveAttribute('href', '/es/academy/linux');
     });
   });
 });

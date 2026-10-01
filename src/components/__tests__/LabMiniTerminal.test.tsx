@@ -28,7 +28,7 @@ function renderLesson(path: string) {
 }
 
 const goToExerciseInLinux02 = () => {
-  renderLesson('/es/academy/os/linux-02');
+  renderLesson('/es/academy/linux/linux-02');
   // narrator, content, video, content, terminal, terminal, content, **exercise**, quiz
   for (let i = 0; i < 7; i++) {
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));

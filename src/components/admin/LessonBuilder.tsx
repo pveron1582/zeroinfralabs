@@ -61,7 +61,7 @@ function defaultStep(type: LessonStep['type']): LessonStep {
 export function LessonBuilder({ onBack, isEs }: { onBack: () => void; isEs: boolean }) {
   const [draft, setDraft] = useState<LessonDraft>({
     id: 'mi-leccion',
-    pathId: 'os',
+    pathId: 'linux',
     order: 1,
     title: '',
     titleEs: '',
@@ -145,7 +145,9 @@ export function LessonBuilder({ onBack, isEs }: { onBack: () => void; isEs: bool
                 <select value={draft.pathId} onChange={e => update('pathId', e.target.value as AcademyPathId)}
                   className="w-full px-2 py-1.5 rounded bg-gray-900 text-gray-200 text-xs border outline-none"
                   style={{ borderColor: '#1c2a2a' }}>
-                  <option value="os">Sistemas Operativos</option>
+                  <option value="linux">Linux</option>
+                  <option value="windows">Windows</option>
+                  <option value="others">Otros SO y hardware</option>
                   <option value="redes">Fundamentos de redes</option>
                   <option value="protocolos">Redes I</option>
                   <option value="protocolos-ii">Redes II</option>

@@ -6,7 +6,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { ACADEMY_PATHS } from '../../academy';
+import { ACADEMY_PATHS, OS_PATHS } from '../../academy';
 import type { Lesson } from '../../types';
 import { SiteHeader } from '../landing/SiteHeader';
 import { PageHero } from '../landing/PageHero';
@@ -92,7 +92,6 @@ export function AcademyHome() {
     completedLessons: s.completedLessons,
   })));
 
-  const osPath = ACADEMY_PATHS.find(p => p.id === 'os')!;
   const ciberPath = ACADEMY_PATHS.find(p => p.id === 'ciberseguridad')!;
   const pentestPath = ACADEMY_PATHS.find(p => p.id === 'hacking')!;
   const hackingWebPath = ACADEMY_PATHS.find(p => p.id === 'hacking-web')!;
@@ -146,22 +145,22 @@ export function AcademyHome() {
           </div>
         </section>
 
-        {/* SISTEMAS OPERATIVOS */}
+        {/* SISTEMAS OPERATIVOS — cada módulo es un path de primer nivel */}
         <section className="mb-12">
-          <GroupTitle icon="🐧" title={isEs ? 'Sistemas Operativos' : 'Operating Systems'} count={osPath.subSections!.length} isEs={isEs} />
+          <GroupTitle icon="🐧" title={isEs ? 'Sistemas Operativos' : 'Operating Systems'} count={OS_PATHS.length} isEs={isEs} />
           <div className="space-y-3">
-            {osPath.subSections!.map((sub, i) => (
+            {OS_PATHS.map((p, i) => (
               <ModuleCard
-                key={sub.id}
-                title={isEs ? sub.titleEs : sub.title}
-                description={isEs ? osPath.descriptionEs : osPath.description}
-                icon={sub.icon}
-                moduleId={sub.id}
+                key={p.id}
+                title={isEs ? p.titleEs : p.title}
+                description={isEs ? p.descriptionEs : p.description}
+                icon={p.icon}
+                moduleId={p.id}
                 index={i}
-                done={doneOf(sub.lessons)}
-                total={sub.lessons.length}
+                done={doneOf(p.lessons)}
+                total={p.lessons.length}
                 isEs={isEs}
-                to={`/${lang}/academy/os/module/${sub.id}`}
+                to={`/${lang}/academy/${p.id}`}
               />
             ))}
           </div>

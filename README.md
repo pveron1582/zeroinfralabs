@@ -4,7 +4,7 @@
 
 ## 🎓 ZILabs Academy
 
-La **Academy** es el área de formación teórica de la plataforma: **8 paths de estudio con 59 lecciones** (quiz final incluido por lección), progreso persistente por usuario (guardado en `localStorage`, sin datos personales) y navegación ES/EN.
+La **Academy** es el área de formación teórica de la plataforma: **10 paths de estudio con 59 lecciones** (quiz final incluido por lección), progreso persistente por usuario (guardado en `localStorage`, sin datos personales) y navegación ES/EN.
 
 | Path | Tema |
 |------|------|
@@ -82,7 +82,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ## 🎯 Características Principales
 
-- **Academy** — 8 paths de estudio con 59 lecciones (SO, Redes I/II, Protocolos, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
+- **Academy** — 10 paths de estudio con 59 lecciones (Linux, Windows, Otros SO, Fundamentos de redes, Redes I, Redes II, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
 - **Video-lecciones Remotion** — 118 composiciones animadas que acompañan las lecciones de la Academy
 - **Terminal Linux realista** — 71 comandos funcionales con auto-registro (ls, cd, cat, nano, sudo, nmap, hydra, ssh, msfconsole, iptables, cron...)
 - **Modelo de permisos Linux avanzado** — Simulación de SUID, SGID, Sticky bit, umask y ownership por usuario
@@ -102,7 +102,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **3295 Tests** — Vitest + React Testing Library + Playwright E2E (265 archivos unitarios + 9 specs / 24 tests E2E)
+- **3302 Tests** — Vitest + React Testing Library + Playwright E2E (266 archivos unitarios + 9 specs / 24 tests E2E)
 
 ## 🏗️ Tech Stack
 
@@ -121,7 +121,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ```
 src/
-├── academy/          # 8 paths / 59 lecciones: path-*.ts + *-lessons.ts
+├── academy/          # 10 paths / 59 lecciones: path-*.ts + *-lessons.ts
 ├── video/            # Composiciones Remotion de video-lecciones (118)
 ├── commands/
 │   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, python3, etc. (69 archivos)
@@ -175,7 +175,7 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales (01-06 + 08; 07 hidden)
-- ✅ 3295 tests pasando (265 test files unitarios + 9 specs / 24 tests E2E con Playwright)
+- ✅ 3302 tests pasando (266 test files unitarios + 9 specs / 24 tests E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
 - ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)
@@ -186,7 +186,7 @@ docs/
 - ✅ Shells interactivas (SSH, FTP, Netcat)
 - ✅ Desktop mode con ventanas flotantes y wallpapers
 - ✅ Network map con panel de enumeración
-- ✅ Academy: 8 paths / 59 lecciones con quizzes y progreso persistente
+- ✅ Academy: 10 paths / 59 lecciones con quizzes y progreso persistente
 - ✅ Video-lecciones Remotion (118 composiciones)
 - ✅ Blog con artículos ES/EN
 - ✅ Landing page + selección de labs

@@ -73,7 +73,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección linux-01 incluye el video de historia de Linux como paso 3', () => {
-    renderLesson('/es/academy/os/linux-01');
+    renderLesson('/es/academy/linux/linux-01');
     expect(screen.getByText(/Antes de hackear un Linux/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=content, paso 3=video
@@ -86,7 +86,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección windows-01 incluye el video de historia (wi-01) como paso 2', () => {
-    renderLesson('/es/academy/os/windows-01');
+    renderLesson('/es/academy/windows/windows-01');
     expect(screen.getByText(/Antes de tocar un Windows/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video

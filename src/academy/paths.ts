@@ -2,7 +2,7 @@
 // Las bases del Academy. Ver docs/PROYECTO_ACADEMY.md.
 
 import type { AcademyPath, AcademyPathId, Lesson } from '../types';
-import { OS_LESSONS, OS_SUBSECTIONS } from './path-os';
+import { OS_PATHS } from './path-os';
 import { REDES_LESSONS } from './path-redes';
 import { PROTOCOLOS_LESSONS } from './path-protocolos';
 import { PROTOCOLOS2_LESSONS } from './path-protocolos-ii';
@@ -12,17 +12,10 @@ import { HACKING_WEB_LESSONS } from './path-hacking-web';
 import { SCRIPTING_LESSONS, SCRIPTING_SUBSECTIONS } from './path-scripting';
 
 export const ACADEMY_PATHS: AcademyPath[] = [
-  {
-    id: 'os',
-    title: 'Operating Systems',
-    titleEs: 'Sistemas Operativos',
-    description: 'Linux and Windows for hacking: filesystems, users, permissions and where attackers look first.',
-    descriptionEs: 'Linux y Windows para hacking: filesystems, usuarios, permisos y dónde miran los atacantes primero.',
-    icon: '🐧',
-    accentColor: '#f59e0b',
-    lessons: OS_LESSONS,
-    subSections: OS_SUBSECTIONS,
-  },
+  // Los 3 paths de Sistemas Operativos: antes eran una sola entrada 'os'
+  // con subsecciones (rutas /academy/os/module/<sub>), ahora cada módulo
+  // es un path de primer nivel (rutas /academy/linux, /academy/linux/linux-01).
+  ...OS_PATHS,
   {
     id: 'redes',
     title: 'Network Fundamentals',
@@ -122,4 +115,24 @@ export function getAllLessons(): Lesson[] {
 
 export function isValidPathId(id: string): id is AcademyPathId {
   return ACADEMY_PATHS.some(p => p.id === id);
+}
+
+// ── URLs legacy de la Academy ──────────────────────────────────────
+// En 2026-10 los módulos de SO dejaron de vivir bajo `/academy/os/...`:
+// cada módulo pasó a ser path de primer nivel. Estas funciones resuelven
+// las URLs viejas (bookmarks y SEO) hacia las rutas nuevas.
+
+/**
+ * `/academy/os` → `linux` (primer módulo) y `/academy/os/module/<sub>` →
+ * `<sub>`. Devuelve undefined si el path no es el legacy de SO.
+ */
+export function legacyOsPathId(pathId: string, subId?: string): AcademyPathId | undefined {
+  if (pathId !== 'os') return undefined;
+  if (subId && isValidPathId(subId)) return subId;
+  return 'linux';
+}
+
+/** Path que contiene una lección, sin importar su `pathId` actual. */
+export function findPathIdForLesson(lessonId: string): AcademyPathId | undefined {
+  return ACADEMY_PATHS.find(p => p.lessons.some(l => l.id === lessonId))?.id;
 }

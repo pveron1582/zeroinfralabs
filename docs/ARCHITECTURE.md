@@ -127,7 +127,7 @@ src/
 │   └── types.ts                      #   Tipos del store
 │
 ├── academy/                          # Sistema de aprendizaje
-│   ├── paths.ts                      #   8 paths con metadata y lecciones
+│   ├── paths.ts                      #   10 paths con metadata y lecciones
 │   ├── path-*.ts                     #   Definiciones por path (redes, protocolos, hacking...)
 │   └── *-lessons.ts                  #   Lecciones compartidas (linux, windows, bash, python...)
 │

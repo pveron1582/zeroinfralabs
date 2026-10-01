@@ -7,7 +7,7 @@ import type { Lesson } from '../types';
 export const WINDOWS_LESSONS: Lesson[] = [
   {
     id: 'windows-01',
-    pathId: 'os',
+    pathId: 'windows',
     order: 1,
     title: 'Windows history: origins, versions and the proprietary model',
     titleEs: 'Historia de Windows: orígenes, versiones y el modelo privativo',
@@ -74,7 +74,7 @@ export const WINDOWS_LESSONS: Lesson[] = [
   },
   {
     id: 'windows-02',
-    pathId: 'os',
+    pathId: 'windows',
     order: 2,
     title: 'Current versions: Windows 10, 11 and Server',
     titleEs: 'Versiones actuales: Windows 10, 11 y Server',
@@ -141,7 +141,7 @@ export const WINDOWS_LESSONS: Lesson[] = [
   },
   {
     id: 'windows-03',
-    pathId: 'os',
+    pathId: 'windows',
     order: 3,
     title: 'Security features: firewall, Defender, UAC, Group Policy and more',
     titleEs: 'Seguridad: firewall, Defender, UAC, políticas de grupo y más',
@@ -222,7 +222,7 @@ export const WINDOWS_LESSONS: Lesson[] = [
   },
   {
     id: 'windows-04',
-    pathId: 'os',
+    pathId: 'windows',
     order: 4,
     title: 'Filesystem, users and NTFS permissions',
     titleEs: 'Sistema de archivos, usuarios y permisos NTFS',
@@ -296,7 +296,7 @@ export const WINDOWS_LESSONS: Lesson[] = [
   },
   {
     id: 'windows-05',
-    pathId: 'os',
+    pathId: 'windows',
     order: 5,
     title: 'Network services: SMB, RDP and WinRM',
     titleEs: 'Servicios de red: SMB, RDP y WinRM',

@@ -2,7 +2,7 @@
 
 > Plan de diseño. Estado: **IMPLEMENTADO** (actualizado 2026-08-22).
 > Decidido el 2026-08-08 como prioridad tras el Admin Panel UI; desarrollado
-> durante agosto 2026. Estado real: **7 paths / 58 lecciones** bilingües ES/EN,
+> durante agosto 2026. Estado real: **10 paths / 59 lecciones** bilingües ES/EN,
 > con quizzes + progreso persistido (`completedLessons`/`quizResults` en
 > `partialize`), videos Remotion (`public/videos/`), FoxyNarrator, simuladores
 > de red interactivos y LessonBuilder en el AdminPanel. Diseño visual unificado
@@ -128,8 +128,15 @@ el AcademyPath muestra badges "Completada" basado en `completedLessons`.
 ```
 /:lang/academy                 → AcademyHome
 /:lang/academy/:pathId         → AcademyPath
+/:lang/academy/:pathId/module/:subId → AcademyPath (paths con subsecciones: scripting)
 /:lang/academy/:pathId/:lessonId → LessonViewer
 ```
+
+> **Rutas de SO (2026-10):** los 3 módulos de Sistemas Operativos dejaron de
+> ser subsecciones de un único path `os` y hoy son paths de primer nivel:
+> `/es/academy/linux`, `/es/academy/linux/linux-01`, `/es/academy/windows/windows-01`,
+> `/es/academy/others/others-01`. Las URLs viejas (`/academy/os/...`) redirigen
+> a las nuevas (`legacyOsPathId` / `findPathIdForLesson` en `src/academy/paths.ts`).
 
 ## Estética y tono
 

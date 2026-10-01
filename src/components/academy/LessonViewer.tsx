@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { getPath, getLesson, getSubIdForLesson } from '../../academy';
+import { getPath, getLesson, getSubIdForLesson, findPathIdForLesson } from '../../academy';
 import { SiteHeader } from '../landing/SiteHeader';
 import { LessonContent } from './LessonContent';
 import { useColors, FONT_MONO, FONT_SANS } from '../landing/constants';
@@ -28,7 +28,14 @@ export function LessonViewer() {
   const [quizAnswered, setQuizAnswered] = useState(false);
   const [matchSolved, setMatchSolved] = useState(false);
 
-  if (!path || !lesson) return <Navigate to={`/${lang}/academy`} replace />;
+  if (!path || !lesson) {
+    // URL legacy (2026-10): la lección puede haber cambiado de path, p. ej.
+    // /academy/os/linux-01 → /academy/linux/linux-01. La buscamos por id en
+    // todos los paths y redirigimos a su ruta nueva; si no existe, al home.
+    const destino = lessonId ? findPathIdForLesson(lessonId) : undefined;
+    if (destino && lessonId) return <Navigate to={`/${lang}/academy/${destino}/${lessonId}`} replace />;
+    return <Navigate to={`/${lang}/academy`} replace />;
+  }
 
   // Destino de "salir de la lección": la subsección del path si existe (module/x), si no el path.
   // Antes se usaba lesson.labRef (id de scenario, no de módulo) → devolvía a /academy/os.

@@ -8,7 +8,7 @@ import type { Lesson } from '../types';
 export const OTHERS_HW_LESSONS: Lesson[] = [
   {
     id: 'others-03',
-    pathId: 'os',
+    pathId: 'others',
     order: 3,
     title: 'Hacking hardware: WiFi Pineapple, Flipper Zero, Rubber Ducky and friends',
     titleEs: 'Hardware de hacking: WiFi Pineapple, Flipper Zero, Rubber Ducky y compañía',
@@ -82,7 +82,7 @@ export const OTHERS_HW_LESSONS: Lesson[] = [
   },
   {
     id: 'others-04',
-    pathId: 'os',
+    pathId: 'others',
     order: 4,
     title: 'Offensive gadgets and social engineering (educational only)',
     titleEs: 'Gadgets ofensivos e ingeniería social (solo educativo)',
