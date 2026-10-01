@@ -24,11 +24,18 @@ if (typeof window !== 'undefined') {
     })),
   });
 
-  // Mock window.history
+  // Mock window.history. Los métodos se envuelven en vi.fn() (para poder
+  // asertar llamadas) PERO delegan al history real de jsdom: pushState y
+  // replaceState tienen que cambiar la URL de verdad, porque react-router la
+  // lee al montar BrowserRouter — con un no-op, toda ruta testeada cae en
+  // "/" (lo vio adminRoute.test.tsx; el `state` sigue siendo un campo plano
+  // que los tests asignan a mano, ver useAppContentEffects.test.ts).
+  const nativeHistory = window.history;
   Object.defineProperty(window, 'history', {
     writable: true,
     value: {
-      pushState: vi.fn(),
+      pushState: vi.fn((data: unknown, title: string, url?: string | null) => nativeHistory.pushState(data, title, url)),
+      replaceState: vi.fn((data: unknown, title: string, url?: string | null) => nativeHistory.replaceState(data, title, url)),
       back: vi.fn(),
       state: null,
     },

@@ -782,7 +782,19 @@ cubiertos por las cuatro reglas.
 
 ### [ ] 3.9 Producto / superficie
 
-- `App.tsx:49` expone `/:lang/zildeb` (LabBuilder, LessonBuilder y **DebugPanel**, que vuelca el store completo) con login comparado **en el bundle del cliente** (`LoginScreen.tsx`), sin auth de servidor. Todo es local, pero en producción es superficie de debug pública.
+- ~~`App.tsx:49` expone `/:lang/zildeb`~~ → **RESUELTO 2026-10-01**: la ruta y
+  el import perezoso de `AdminPanel` quedaron gateados con
+  `import.meta.env.DEV` (mismo patrón que `/test`). En producción la URL cae
+  en el 404 **y el chunk no se emite** — verificado con `pnpm build`: 0
+  apariciones de `zildeb`, `LabBuilder` y `LessonBuilder` en `dist/`
+  (los "Admin Panel" que aparecen son el HTML simulado de los labs). El
+  login `admin`/`admin` siguió quedando, pero como cortesía en dev: ya no
+  es ni pretende ser seguridad. Test `components/__tests__/adminRoute.test.tsx`
+  (stubEnv `DEV` + `resetModules`, patrón de `logger.test.ts`). *Nota de
+  infra:* el mock de `window.history` de `src/test/setup.ts` no tenía
+  `replaceState` y el `pushState` era no-op, así que react-router montaba
+  siempre en `/` — ahora delega a jsdom y los tests siguen pudiendo asertar
+  sobre el `vi.fn()`.
 - `store/scenarioStore.ts:44` tiene `version: 2` + `merge` **sin `migrate`**: cualquier bump futuro hay que hacerlo a mano.
 - `tsconfig.json:21` incluye `src` → el `tsc --noEmit` del CI type-chequea las 132 compositions de Remotion: un error de tipos en un video tumba el CI de la app.
 - No hay script `remotion` en `package.json` pese a que `README.md:30` describe el pipeline de render.

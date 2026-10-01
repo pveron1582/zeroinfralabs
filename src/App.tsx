@@ -12,7 +12,11 @@ import { lazyWithRetry } from './utils/lazyRetry';
 
 const BlogListPage = lazyWithRetry(() => import('./components/BlogListPage').then(m => ({ default: m.BlogListPage })));
 const BlogArticlePage = lazyWithRetry(() => import('./components/BlogArticlePage').then(m => ({ default: m.BlogArticlePage })));
-const AdminPanel = lazyWithRetry(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
+const AdminPanel = import.meta.env.DEV
+  // Panel de admin (LabBuilder/LessonBuilder/DebugPanel): SÓLO en desarrollo
+  // (3.9). En prod la ruta no existe y este import se elimina del bundle.
+  ? lazyWithRetry(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })))
+  : null;
 const AcademyHome = lazyWithRetry(() => import('./components/academy/AcademyHome').then(m => ({ default: m.AcademyHome })));
 const AcademyPathPage = lazyWithRetry(() => import('./components/academy/AcademyPath').then(m => ({ default: m.AcademyPathPage })));
 const LessonViewer = lazyWithRetry(() => import('./components/academy/LessonViewer').then(m => ({ default: m.LessonViewer })));
@@ -46,7 +50,9 @@ export default function App() {
             <Route path="/:lang/academy/:pathId" element={<AcademyPathPage />} />
             <Route path="/:lang/academy/:pathId/module/:subId" element={<AcademyPathPage />} />
             <Route path="/:lang/academy/:pathId/:lessonId" element={<LessonViewer />} />
-            <Route path="/:lang/zildeb" element={<AdminPanel />} />
+            {/* Panel de admin (builders + debug): sólo en desarrollo (3.9). */}
+            {import.meta.env.DEV && AdminPanel &&
+              <Route path="/:lang/zildeb" element={<AdminPanel />} />}
             {/* Lab de pruebas: solo en desarrollo (borra el storage propio del lab). */}
             {import.meta.env.DEV && <Route path="/test" element={<TestLab />} />}
             {/* Catch-all: sin esto, una URL desconocida dejaba el documento vacío. */}
