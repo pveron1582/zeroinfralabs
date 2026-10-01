@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3174 tests across 250 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3209 tests across 254 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
 
 ## Commands
 

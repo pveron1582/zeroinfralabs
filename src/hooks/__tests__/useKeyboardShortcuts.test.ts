@@ -1,43 +1,13 @@
 // ── hooks/__tests__/useKeyboardShortcuts.test.ts ───────────────────
+// Teclas del prompt: navegación básica, Tab de autocompletado y su popup de
+// sugerencias. Los ESTADOS ESPECIALES (python pendiente, herramientas
+// bloqueadas, Ctrl+C con busy/msf) están en `useKeyboardShortcuts-bloqueo`;
+// el fixture común (incluido el mock de `setHistory` que ejecuta el updater)
+// vive en `keyboardDefaults.ts`.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useKeyboardShortcuts } from '../useKeyboardShortcuts';
-
-const createDefaults = () => {
-  const machine = {
-    id: 'attacker-01',
-    machine_info: { hostname: 'kali', ip: '192.168.1.10', mac: '00:00:00:00:00:00', os: 'Kali Linux', status: 'up', type: 'workstation' },
-    discovery_level: 4,
-    scan_results: { ports: [] },
-    web_enumeration: { web_server: 'none', cms: 'none', directories: [] },
-    learning_steps: [],
-    files: [],
-  };
-
-  return {
-    input: '',
-    setInput: vi.fn(),
-    machine,
-    currentDir: '/',
-    msfState: null,
-    cmdHistory: [] as string[],
-    setCmdHistory: vi.fn(),
-    histIdx: -1,
-    setHistIdx: vi.fn(),
-    busy: false,
-    setBusy: vi.fn(),
-    blockingCommand: null as any,
-    setBlockingCommand: vi.fn(),
-    setListeningPort: vi.fn(),
-    setHistory: vi.fn(),
-    prompt: 'root@kali:/#',
-    runCommand: vi.fn(),
-    makeWelcome: vi.fn(() => ({ command: null, streaming: false, output: '', timestamp: Date.now() })),
-    allMachines: [machine],
-    goHome: vi.fn(),
-    setMsfState: vi.fn(),
-  };
-};
+import { createDefaults, key, resetHist } from './keyboardDefaults';
 
 vi.mock('../../commands', () => ({
   isMsfActive: () => false,
@@ -48,6 +18,7 @@ vi.mock('../../commands', () => ({
 describe('useKeyboardShortcuts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetHist();
   });
 
   it('debe inicializar sin sugerencias', () => {
@@ -195,5 +166,128 @@ describe('useKeyboardShortcuts', () => {
     result.current.handleKeyDown({ key: 'c', ctrlKey: true, preventDefault: vi.fn() } as unknown as React.KeyboardEvent);
     expect(defaults.setBlockingCommand).toHaveBeenCalledWith(null);
     expect(defaults.setBusy).toHaveBeenCalledWith(false);
+  });
+
+  // ── autocompletado con varias coincidencias ──
+  const withReportFiles = () => {
+    const d = createDefaults();
+    d.input = 'cat rep';
+    d.machine.files = [
+      { path: '/report1.txt', content: '', type: 'text' },
+      { path: '/report2.txt', content: '', type: 'text' },
+    ];
+    return d;
+  };
+
+  it('Tab completa hasta el prefijo común cuando hay varias coincidencias', () => {
+    const d = withReportFiles();
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('Tab'));
+    rerender();
+
+    expect(d.setInput).toHaveBeenCalledWith('cat report');
+    expect(result.current.suggestions).toEqual(['report1.txt', 'report2.txt']);
+    expect(result.current.suggestionIdx).toBe(0);
+    expect(result.current.showSuggestions).toBe(true);
+  });
+
+  it('Tab con las sugerencias abiertas cicla y aplica la elegida', () => {
+    const d = withReportFiles();
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('Tab'));
+    rerender();
+    result.current.handleKeyDown(key('Tab'));
+    rerender();
+
+    expect(result.current.suggestionIdx).toBe(1);
+    expect(d.setInput).toHaveBeenLastCalledWith('cat report2.txt');
+  });
+
+  it('ArrowUp con sugerencias abiertas va a la última', () => {
+    const d = withReportFiles();
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('Tab'));
+    rerender();
+    result.current.handleKeyDown(key('ArrowUp'));
+    rerender();
+
+    expect(result.current.suggestionIdx).toBe(1);
+  });
+
+  it('ArrowDown con sugerencias abiertas avanza en el ciclo', () => {
+    const d = withReportFiles();
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('Tab'));
+    rerender();
+    result.current.handleKeyDown(key('ArrowDown'));
+    rerender();
+
+    expect(result.current.suggestionIdx).toBe(1);
+  });
+
+  it('ArrowUp retrocede cuando la sugerencia seleccionada no es la primera', () => {
+    const d = withReportFiles();
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('Tab'));
+    rerender();
+    result.current.handleKeyDown(key('Tab'));     // idx 0 → 1
+    rerender();
+    result.current.handleKeyDown(key('ArrowUp')); // 1 − 1
+    rerender();
+
+    expect(result.current.suggestionIdx).toBe(0);
+  });
+
+  it('Tab sin ninguna coincidencia no escribe nada', () => {
+    const d = createDefaults();
+    d.input = 'zzzz';
+    const { result } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('Tab'));
+
+    expect(d.setInput).not.toHaveBeenCalled();
+    expect(result.current.showSuggestions).toBe(false);
+  });
+
+  it('ciclar con Tab no escribe si la nueva entrada ya no tiene sugerencias', () => {
+    const d = withReportFiles();
+    const { result, rerender } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('Tab'));
+    rerender();
+    d.input = 'zzzz';  // se siguió escribiendo con el popup abierto
+    rerender();
+    result.current.handleKeyDown(key('Tab'));
+
+    expect(d.setInput).toHaveBeenCalledTimes(1); // solo el primer Tab (prefijo común)
+  });
+
+  it('ArrowUp al final del historial no hace nada', () => {
+    const d = createDefaults();
+    d.cmdHistory = ['ls', 'cat'];
+    d.histIdx = 1;
+    const { result } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('ArrowUp'));
+
+    expect(d.setHistIdx).not.toHaveBeenCalled();
+    expect(d.setInput).not.toHaveBeenCalled();
+  });
+
+  it('ArrowDown a media altura del historial vuelve a la entrada anterior', () => {
+    const d = createDefaults();
+    d.cmdHistory = ['ls', 'cat', 'pwd'];
+    d.histIdx = 2;
+    const { result } = renderHook(() => useKeyboardShortcuts(d));
+
+    result.current.handleKeyDown(key('ArrowDown'));
+
+    expect(d.setHistIdx).toHaveBeenCalledWith(1);
+    expect(d.setInput).toHaveBeenCalledWith('cat');
   });
 });

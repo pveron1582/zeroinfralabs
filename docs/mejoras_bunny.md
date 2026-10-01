@@ -338,7 +338,7 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 | `src/frameworks/metasploit/{core,orchestrators}` | 8 archivos | **RESUELTO 2026-09-30** — 141 tests; 100 % stmts en 7/8 (93,9 % en el 8.º) | ~~P1~~ |
 | `src/frameworks/{cron,fs,network,packages,process}` | 5 archivos | **RESUELTO 2026-09-30** — tests directos; 100 % stmts en 3, 96,6 y 98,7 en los otros | ~~P1~~ |
 | `src/frameworks/python/` | 14 | **RESUELTO 2026-09-30** — 8 archivos nuevos / 159 tests; 99,3 stmts / 99,0 ramas / 100 funcs | ~~P1~~ |
-| `src/hooks/` sin test | 25 hooks, 14 con test | **PARCIAL 2026-09-30** — `useMobileWindows` 0 → **100 %** y `useDesktopWindows` → **100 %** stmts; siguen por debajo de 75 % `useKeyboardShortcuts` (70,4), `useNanoSave` (70,8), `useIsMobile` (73,7) y `terminalPrompt` (73,3) | P2 |
+| `src/hooks/` sin test | 25 hooks, 14 con test | **RESUELTO 2026-09-30** — `useMobileWindows` y `useDesktopWindows` → 100 % stmts; los 4 que quedaban por debajo de 75 % cerrados: `useKeyboardShortcuts` 70,4 → **100**, `useNanoSave` 70,8 → **100**, `terminalPrompt` 73,3 → **100**, `useIsMobile` 73,7 → **89,5** (2 ramas defensivas) | ~~P2~~ |
 | `src/video/` | 70 | 0 (riesgo bajo: no entra al bundle) | P2 |
 | E2E | 9 specs / 24 tests | **RESUELTO 2026-09-30** — smoke de misión completada + `lab08.spec.ts` + specs type-chequeados | ~~P0~~ |
 | `src/laboratorios/__tests__/` | falta `laboratorio04.test.ts` | | P2 |
@@ -548,9 +548,50 @@ ventana inicial), `if (firstId)`, `parseInt(...) || 0` y `maxNum + 1 || n`
 **Tests:** 3147 → **3174** (+27), 248 → **250** archivos. Cobertura global
 83,86 / 72,61 / 79,85 / 86,23 → **84,45 / 72,97 / 80,78 / 86,78**.
 
-**Pendiente de 3.6:** `src/video/` (P2), `laboratorio04.test.ts` (P2) y los
-4 hooks por debajo de 75 % (`useKeyboardShortcuts`, `useNanoSave`,
-`useIsMobile`, `terminalPrompt`).
+**Octava tanda (2026-09-30) — los 4 hooks que quedaban por debajo de
+75 %:** los cuatro se ejercitaban solo por rebote desde otros tests, así que
+el hueco real eran caminos que ningún otro test llegaba a tocar.
+
+- `terminalPrompt.test.ts` (8 tests) → **100 stmts / 95,5 ramas**: test
+  directo de `buildPrompt` (función pura) con la prioridad completa
+  (su > python pendiente > PowerShell > Metasploit > FTP/SSH/RDP > base),
+  los tres pasos de cada sesión y los defaults `msf6 >` / `ftp> ` /
+  `Password: `. Se cubrieron `pendingPython` y las sesiones FTP/SSH/RDP
+  que solo se veían por rebote.
+- `useNanoSave.test.ts` (9 tests) → **100 / 100**: los caminos de archivo
+  **nuevo** (directorio inexistente ⇒ `No such file or directory`, directorio
+  0555 sin permiso de creación ⇒ `Permission denied`, guardado con ownership
+  por defecto `root/644`), los early-returns de `No file open` y
+  `No filename specified`, `filenameToSave` mandando sobre el path abierto,
+  `currentDir` vacío cayendo a `/` y el snapshot que preserva
+  owner/group/mode. Antes solo se llegaba por `useCommandRunner` (70,8 %).
+- `useIsMobile.test.ts` (3 tests) → **89,5 / 77,8**: el handler `change` de
+  `matchMedia`, el fallback `addListener`/`removeListener` de Safari viejo
+  (mock sin `addEventListener`) y la media query `breakpoint - 1`.
+- `useKeyboardShortcuts`: +9 tests en el archivo principal y un archivo
+  nuevo `useKeyboardShortcuts-bloqueo.test.ts` (6) → **100 / 100 / 100**.
+  Caminos cubiertos: python3 pendiente cancelado antes que nada, `cancelKey`
+  y `F10` de las herramientas bloqueadas, Ctrl+C con `blockingCommand`,
+  con `busy` y dentro de `msfconsole`, Tab con prefijo común (`cat rep` →
+  `cat report`), ciclo de Tab con sugerencias, flechas con el popup abierto,
+  Tab sin coincidencias, ArrowUp al final del historial y ArrowDown a media
+  altura.
+
+El fixture se extrajo a **`__tests__/keyboardDefaults.ts`** porque el archivo
+principal ya estaba en 215 líneas y no entraban los tests nuevos. El detalle
+que costó entender: el mock de `setHistory` **tiene que ejecutar el updater**
+— con un `vi.fn()` plano el cuerpo de `setHistory(prev => [...])` nunca corre
+y las líneas 91/203/213 quedaban en 0 sin que ningún test fallara.
+
+**Tests:** 3174 → **3209** (+35), 250 → **254** archivos. Cobertura global
+84,45 / 72,97 / 80,78 / 86,78 → **84,77 / 73,30 / 80,89 / 87,08**.
+
+**Pendiente de 3.6 (P2):** `src/video/` y `laboratorio04.test.ts`. Los huecos
+que quedan en los hooks son **defensivos** y están documentados en los
+headers de sus tests: `useIsMobile` (los dos `typeof window === 'undefined'`
+de las líneas 9 y 14) y `terminalPrompt` (el `|| 'ftp> '` de la línea 35,
+que `getFtpPromptFor` nunca devuelve vacío porque el `if` de arriba ya
+cortó las sesiones inactivas).
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 
