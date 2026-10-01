@@ -2,10 +2,11 @@
 // Núcleo de ejecución: parseo (env, pipes, redirección), dispatch de
 // comandos, manejo de shells activos, estado MSF y bits SUID/SGID.
 
-import type { CommandContext, CommandResponse, FileEntry } from '../types';
+import type { CommandContext, CommandResponse } from '../types';
 import { shellManager } from '../frameworks/shells';
 import { getCurrentUser, getExecutionSuUser, setExecutionSuUser } from '../utils/users';
 import { writeOutputToFile } from '../utils/redirection';
+import { materializeDeclared } from '../utils/filesChanged';
 import { capOutput } from '../utils/format';
 import { splitTopLevel, extractRedirection, expandCommandLine, splitArgs } from '../utils/shellParse';
 import { getSuidEffectiveUser } from './suid';
@@ -112,7 +113,8 @@ function runPipeline(
 ): CommandResponse {
   let pipedInput: string | undefined;
   let result: CommandResponse = { output: '' };
-  const allChanged: FileEntry[] = [];
+  // Cada segmento materializa su snapshot; el árbol consolidado se lee al final.
+  let filesDeclared = false;
 
   for (let i = 0; i < segments.length; i++) {
     const segCtx: CommandContext = i === 0 ? ctx : { ...ctx, pipedInput };
@@ -120,7 +122,7 @@ function runPipeline(
       segments[i], segCtx, commands, getMsfState, onMsfStateChange,
       getPsState, setPsState, onPsStateChange,
     );
-    if (segResult.filesChanged) allChanged.push(...segResult.filesChanged);
+    if (segResult.filesChanged && segResult.filesChanged.length > 0) filesDeclared = true;
     if (i === 0) {
       result = segResult;
     } else {
@@ -135,9 +137,7 @@ function runPipeline(
     pipedInput = segResult.output;
   }
 
-  if (allChanged.length > 0) {
-    result = { ...result, filesChanged: allChanged };
-  }
+  if (filesDeclared) result = { ...result, filesChanged: [...ctx.machine.files] };
   return result;
 }
 
@@ -307,6 +307,9 @@ function executeCommandBody(
   } else {
     result = cmd.execute(finalArgs, ctx);
   }
+
+  // Materializa la declaración: dpkg/hashcat/cron sólo declaran.
+  materializeDeclared(ctx.machine, result.filesChanged);
 
   // ── Redirección de salida > y >> ──
   if (redir?.operator && redir.outputFile) {

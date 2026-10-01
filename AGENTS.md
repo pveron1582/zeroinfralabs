@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3247 tests across 257 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3269 tests across 260 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
 
 ## Commands
 
@@ -106,6 +106,18 @@ Resumen rápido:
 - NO mutar `file.mode`/`file.owner` directamente — siempre vía `addFileToMachine`.
 - NO reimplementar `checkStickyBit`, `findFile`/`findDirEntry` localmente.
 - NO guardar archivos nuevos sin `owner`/`group`/`mode`.
+
+### Convención `filesChanged`
+
+> Todo comando que cambie el FS devuelve `filesChanged` = **snapshot completo**
+> de `machine.files` — el store lo **REEMPLAZA** entero:
+> `filesChanged: [...machine.files, entry]`, **nunca** sólo lo nuevo (un delta
+> borraba el resto del árbol: bug de wget, 2026-10-01). Los merges van por
+> `src/utils/filesChanged.ts` (`materializeDeclared`, `upsertFiles`,
+> `uniqueFiles`); la verja está en
+> `src/commands/__tests__/files-changed-contract.test.ts` (mutar ⇒ declarar,
+> declarar ⇒ tocar `machine.files` en el cuerpo). Explicación completa en
+> `docs/ARCHITECTURE.md` → *Convención `filesChanged`*.
 
 ## Testing
 

@@ -642,7 +642,7 @@ documentados en los headers de sus tests: `useIsMobile` (los dos
 (el `|| 'ftp> '` de la línea 35, que `getFtpPromptFor` nunca devuelve vacío
 porque el `if` de arriba ya cortó las sesiones inactivas).
 
-### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
+### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-10-01**
 
 1. `components/StreamingOutput.tsx:15-20`: `lines.slice(0,shown).join('\n')` por línea → **O(n²)** + re-layout completo del `<pre>` por línea (500 líneas de gobuster ⇒ ~125k caracteres reconstruidos con el input bloqueado).
 2. Sin tope de volumen de salida: medido **1.7 MB / 100k líneas** en un solo `<pre>` y retenidas en el estado de React.
@@ -650,6 +650,57 @@ porque el `if` de arriba ya cortó las sesiones inactivas).
 4. `hooks/usePendingPythonInput.ts:37` re-ejecuta el script entero por cada `input()`; además `python3.ts:171-177` no deduplica puertos → filas repetidas en `EnumerationPanel.tsx:83`.
 5. `EnumerationPanel.tsx:38` `getDynamicCredentials()` sin memo, en el cuerpo del render.
 6. Convención `filesChanged` = snapshot completo: 31 sitios con `machine.files =` re-renderizan a todos los suscriptores por escritura.
+
+**Cierre del ítem 6 (2026-10-01) — la convención, medida antes de tocar:**
+
+- **El re-render por escritura es necesario y está amortizado.** Unos 30
+  sitios de `src` (sin tests) mutan `.files =` y cinco componentes que
+  *leen* el árbol (`Explorer`, `EnumerationPanel`, `FakeBrowser`/
+  `WordPressSite`/`lfiRce`, `DebugPanel`) se tienen que repintar. Además
+  cada escritura llega en el mismo tick que la salida del comando, así que
+  React batchea las dos actualizaciones en **un** render. Convertir el
+  snapshot a deltas no ahorraría ningún render — sólo impediría expresar los
+  borrados de `rm`.
+- **Lo que sí estaba roto eran tres snapshots mal formados.** El store
+  *reemplaza* `machine.files` entero con lo que llega en `filesChanged`:
+  - **`wget` devolvía un delta** (sólo `writer.createdFiles`): 6 archivos →
+    **1** tras `wget http://10.10.10.11/`. Pérdida de datos en cualquier lab
+    que usara wget (lo tapaba el test, que sólo miraba `downloadedFile`).
+  - **`runPipeline` concatenaba los snapshots** de los segmentos:
+    `echo hola > a.txt | tee b.txt` aplicaba 6 paths únicos como **11
+    entradas** (archivo repetido por cada segmento que escribe).
+  - **La redirección pisaba el `filesChanged` del comando:** `crontab -e >
+    log` se tragaba lo que crontab sólo declaraba (no muta `machine.files`).
+- **Modelo:** dos familias de comandos — los que mutan `machine.files` y
+  declaran el snapshot para notificar, y los que sólo declaran (dpkg,
+  `hashcat -o`, cron vía `sleep`). El executor **materializa** cada
+  declaración sobre el árbol in-place tras cada comando
+  (`materializeDeclared`), antes de la redirección y de que un pipeline
+  junte los segmentos: por eso los tres bugs quedan cubiertos por un solo
+  mecanismo. Borrar exige mutación in-place (ningún declarante-sin-mutar
+  borra paths).
+- **Fixes:** `wget` mergea lo descargado por path y devuelve el árbol
+  completo; `runPipeline` devuelve `[...ctx.machine.files]` en vez de
+  concatenar; `setMachineFiles()` deduplica por path e ignora `[]`.
+- **Nuevo `src/utils/filesChanged.ts`:** la convención documentada + tres
+  helpers (`materializeDeclared`, `upsertFiles`, `uniqueFiles`) con tests.
+- **Verja `commands/__tests__/files-changed-contract.test.ts`** (5): reglas
+  estáticas sobre `src/commands` + `src/utils` — (1) quien muta `.files =`
+  declara `filesChanged`; (2) quien declara referencia `machine.files` en el
+  cuerpo, la prueba estática de que es un snapshot y no un delta. Allowlist
+  con motivo + test "sin muertos" con la condición completa, scanner
+  auto-verificado (>40 archivos, >25 con `filesChanged`). La regla 2 sólo
+  atrapa deltas armados en archivos que jamás nombran el árbol (así cayó
+  wget), así que complementa con **`files-changed-behavior.test.ts`** (7):
+  las regresiones de los tres bugs + un **barrido genérico de 11 comandos
+  FS** que en cada paso exige conservar todo el árbol anterior. Las dos
+  regresiones nuevas se verificaron **fallando sin el fix**.
+
+**Tests:** 3247 → **3269** (+22), 257 → **260** archivos. Cobertura global
+84,84 / 73,39 / 81,00 / 87,15 → **84,97 / 73,53 / 81,21 / 87,27**. E2E en
+verde (**24/24**), corrido en este bloque porque sí se tocó `src/`.
+
+**3.7 cerrado.**
 
 ### [x] 3.8 Accesibilidad — **RESUELTO 2026-10-01**
 

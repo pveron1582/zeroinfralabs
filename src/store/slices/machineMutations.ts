@@ -4,6 +4,7 @@
 // Extraídas de scenarioSlice.ts para mantener el slice <300 líneas.
 
 import type { Machine, FileEntry } from '../../types';
+import { uniqueFiles } from '../../utils/filesChanged';
 
 export function updateMachine(
   machines: Machine[],
@@ -96,7 +97,14 @@ export function setMachineFiles(
   machineId: string,
   files: FileEntry[]
 ): Machine[] {
-  return updateMachine(machines, machineId, m => ({ ...m, files }));
+  // Un snapshot vacío nunca es legítimo (hasta el FS base tiene sus .dir):
+  // reemplazar el árbol por [] sería pérdida de datos con un solo error de
+  // tipeo en un comando. Igual que arriba, un snapshot es un árbol: un path
+  // no se repite (addFileToMachine y utils/filesChanged garantizan eso) y,
+  // si se repite, gana la entrada más nueva.
+  if (files.length === 0) return machines;
+  const tree = uniqueFiles(files);
+  return updateMachine(machines, machineId, m => ({ ...m, files: tree }));
 }
 
 export function setPrivescCompleted(

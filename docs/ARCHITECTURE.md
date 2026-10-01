@@ -215,6 +215,31 @@ interface FileEntry {
 
 **Creación:** `createFile()` en `src/laboratorios/templates.ts` es la factory central. Cada laboratorio, más los templates base (`fs-linux.ts`, `fs-windows.ts`, `kali.ts`), la usan para construir el filesystem.
 
+### Convención `filesChanged` (snapshot completo)
+
+**Regla:** cuando un comando cambia el árbol, el `CommandResponse` lleva `filesChanged: FileEntry[]` con el **snapshot completo** del FS de la máquina — no una lista de cambios. `responseHandlers.ts` lo pasa a `store.setMachineFiles()`, que **reemplaza** `machine.files` entero:
+
+```typescript
+// bien: el árbol completo
+return { output, filesChanged: [...machine.files, entry] };
+// mal: sólo lo nuevo ⇒ el store queda con 1 archivo tras wget
+return { output, filesChanged: [entry] };
+```
+
+Tres incumplimientos reales (2026-10-01): `wget` mandaba un delta → 6 archivos quedaban en **1**; `runPipeline` concatenaba los snapshots de los segmentos → 6 paths únicos se aplicaban como **11** entradas; y la redirección pisaba el `filesChanged` del comando → `crontab -e > log` perdía los spool dirs que crontab sólo declaraba.
+
+**Los tres helpers** viven en `src/utils/filesChanged.ts`:
+
+| función | quién la usa | semántica |
+|---|---|---|
+| `materializeDeclared(machine, declared)` | `executor`, tras cada comando | materializa la declaración sobre el árbol in-place: es lo que hace que la redirección, la validación de misiones y los segmentos de un pipeline vean los cambios de los comandos que **sólo declaran** |
+| `upsertFiles(base, changes)` | `wget`, y dentro de `materializeDeclared` | lo declarado pisa lo viejo por path (hashcat reescribiendo su output) |
+| `uniqueFiles(files)` | `setMachineFiles` | paths únicos (gana la entrada más nueva); devuelve el mismo array si no había repetidos |
+
+**Dos familias de comandos** conviven a propósito: los que **mutan** `machine.files` (cp, mv, rm, echo, tee…) y declaran el snapshot para notificar, y los que **sólo declaran** (dpkg agregando binarios, `hashcat -o`, el consolidado de cron vía `sleep`). La mutación in-place es la verdad del estado y el `filesChanged` es lo que dispara el re-render de los componentes que pintan el FS (`Explorer`, `EnumerationPanel`, `FakeBrowser`, `DebugPanel`); un delta no sirve porque no puede expresar los borrados de `rm`, y borrar exige mutación in-place (ningún declarante-sin-mutar borra paths).
+
+**Verja:** `src/commands/__tests__/files-changed-contract.test.ts` — (1) quien muta `.files =` declara `filesChanged` (sino la UI queda congelada) y (2) quien declara `filesChanged` referencia `machine.files` en el cuerpo (prueba estática de que es snapshot y no delta), con allowlist por archivo y test "sin muertos". La regla 2 sólo alcanza a ver deltas armados en archivos que jamás nombran el árbol, así que `files-changed-behavior.test.ts` agrega las regresiones de los tres bugs + un barrido genérico de 11 comandos FS que exige conservar el árbol anterior en cada paso.
+
 ### Sistema de Permisos Universal
 
 **Transversal:** Aplica a todas las máquinas (Kali y víctimas) sin excepción. Los comandos no necesitan saber a qué máquina pertenecen — las utilidades de permisos operan sobre `FileEntry` y `Machine` genéricos mediante `src/utils/permissions.ts` y `src/utils/fs.ts`.
