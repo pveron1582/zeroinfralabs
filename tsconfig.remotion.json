@@ -1,0 +1,10 @@
+{
+  // Typecheck de las video-lecciones Remotion, separado del de la app
+  // (ver tsconfig.json → exclude). Lo corre `pnpm typecheck:video` y el
+  // paso "Typecheck Remotion" de la CI con continue-on-error: los videos
+  // se verifican, pero un error de tipos en una composition no tumba el
+  // build ni el deploy de la app.
+  "extends": "./tsconfig.json",
+  "include": ["src/video", "remotion.config.ts"],
+  "exclude": ["node_modules"]
+}

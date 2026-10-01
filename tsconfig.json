@@ -24,5 +24,9 @@
     // proyecto no tiene @types/node.
     "e2e"
   ],
-  "exclude": ["node_modules"]
+  // src/video (las 132 compositions de Remotion) se type-chequea aparte:
+  // tsconfig.remotion.json / `pnpm typecheck:video`, corriendo en la CI sin
+  // bloquear. Así un error de tipos en un video no tumba el build de la app
+  // (nada de src/ importa de src/video, la exclusión es limpia).
+  "exclude": ["node_modules", "src/video"]
 }

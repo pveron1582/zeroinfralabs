@@ -3,8 +3,8 @@
 ## Resumen
 
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
-**Total Tests:** 3271 en 261 archivos  
-**Cobertura (v8):** 84.88% stmts / 73.52% branches / 80.85% funcs / 87.24% lines (medido 2026-10-01)  
+**Total Tests:** 3278 en 262 archivos  
+**Cobertura (v8):** 84.88% stmts / 73.52% branches / 80.85% funcs / 87.23% lines (medido 2026-10-01)  
 **E2E:** Playwright (9 specs / 24 tests en `e2e/`, corren en el job `e2e` de la CI)
 
 ## Comandos
@@ -25,7 +25,7 @@ pnpm test -- src/path    # Ejecutar un archivo específico
 | statements | 80% | 84.88% |
 | branches | 68% | 73.52% |
 | functions | 77% | 80.85% |
-| lines | 83% | 87.24% |
+| lines | 83% | 87.23% |
 
 El piso se mide con `pnpm test:coverage` y va ~1 punto abajo del valor real
 (la corrida es determinista: ±0.03). **Subilo cuando suba la cobertura.**
@@ -127,10 +127,13 @@ vi.mock('../../store/scenarioStore', () => ({
 ## Flujos de CI
 
 ### Prerequisites para merge
-1. `pnpm exec tsc --noEmit` → 0 errores
-2. `pnpm lint` → 0 problemas
-3. `pnpm test:coverage` → tests verdes **y** thresholds de cobertura OK
-4. `pnpm build` → exit 0
+1. `pnpm exec tsc --noEmit` → 0 errores (app: `tsconfig.json` excluye `src/video`)
+2. `pnpm typecheck:video` → 0 errores en las compositions Remotion. En la CI
+   corre con `continue-on-error`: **no bloquea** (un error de tipos en un
+   video no tumba el build de la app) pero el error se ve en el paso
+3. `pnpm lint` → 0 problemas
+4. `pnpm test:coverage` → tests verdes **y** thresholds de cobertura OK
+5. `pnpm build` → exit 0
 
 ### Cobertura
 - La CI corre `pnpm test:coverage`: los thresholds de `vitest.config.ts`

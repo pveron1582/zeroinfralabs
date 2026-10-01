@@ -14,6 +14,8 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
+    "typecheck:video": "tsc --noEmit --project tsconfig.remotion.json",
+    "remotion": "remotion",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage",

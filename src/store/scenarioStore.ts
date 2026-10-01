@@ -9,6 +9,7 @@ import { createTerminalSlice } from './slices/terminalSlice';
 import { createScenarioSlice, cancelPendingScenarioLoad } from './slices/scenarioSlice';
 import { createIdentitySlice } from './slices/identitySlice';
 import { createAcademySlice } from './slices/academySlice';
+import { PERSIST_VERSION, migratePersistedState } from './persistMigrate';
 import { shellManager } from '../frameworks/shells/ShellManager';
 
 // Storage no-op para entornos sin DOM (tests con `@vitest-environment node`).
@@ -19,6 +20,21 @@ const noopStorage: StateStorage = {
   setItem: () => {},
   removeItem: () => {},
 };
+
+// Snapshot que sobrevive a la recarga: sólo preferencias de UI + progreso
+// de Academy. Las claves también están en PERSIST_KEYS (persistMigrate.ts);
+// el test de persistMigrate falla si las dos listas se desincronican.
+export const persistPartialize = (state: ScenarioState) => ({
+  // M3: NO se persiste `view` — la vista se deriva de la ruta al recargar.
+  // Persistir 'workspace' sin escenario genera una vista huérfana.
+  language: state.language,
+  theme: state.theme,
+  uiMode: state.uiMode,
+  activeApp: state.activeApp,
+  termColor: state.termColor,
+  completedLessons: state.completedLessons,
+  quizResults: state.quizResults,
+});
 
 export const useScenarioStore = create<ScenarioState>()(
   persist(
@@ -49,21 +65,14 @@ export const useScenarioStore = create<ScenarioState>()(
     },
     {
       name: 'cyberops-store',
-      version: 2,
+      version: PERSIST_VERSION,
+      // Rehidratación: sin `migrate`, zustand descarta el snapshot guardado
+      // cuando la versión no coincide (ver store/persistMigrate.ts).
+      migrate: migratePersistedState,
       // En el navegador persiste en localStorage; fuera del DOM (tests en node,
       // SSR) usa un storage no-op para no romper ni ensuciar la consola.
       storage: createJSONStorage(() => (typeof window === 'undefined' ? noopStorage : window.localStorage)),
-      partialize: (state) => ({
-        // M3: NO se persiste `view` — la vista se deriva de la ruta al recargar.
-        // Persistir 'workspace' sin escenario genera una vista huérfana.
-        language: state.language,
-        theme: state.theme,
-        uiMode: state.uiMode,
-        activeApp: state.activeApp,
-        termColor: state.termColor,
-        completedLessons: state.completedLessons,
-        quizResults: state.quizResults,
-      }),
+      partialize: persistPartialize,
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<ScenarioState>;
         return {

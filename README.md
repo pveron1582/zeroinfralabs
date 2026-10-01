@@ -35,7 +35,7 @@ Las video-lecciones se renderizan con **Remotion** (132 composiciones) y se expo
 - Ejemplo: `https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main/videos/li01-linux-history.mp4`
 
 **Flujo para agregar o actualizar un video:**
-1. Renderizá la composición con Remotion → obtiene el `.mp4` en `public/videos/`
+1. Renderizá la composición con Remotion → obtiene el `.mp4` en `public/videos/` — `pnpm remotion` abre el estudio (entry y config en `remotion.config.ts`), o desde CLI `pnpm remotion render <id> public/videos/<nombre>.mp4`
 2. Subí el mp4 al repo `zilabs-videos` (estructura `videos/<nombre>.mp4`, máx. 20MB por archivo)
 3. jsDelivr lo cachea automáticamente (TTL ~7 días) y lo sirve desde el nodo más cercano
 
@@ -101,7 +101,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **3271 Tests** — Vitest + React Testing Library + Playwright E2E (261 archivos unitarios + 9 specs / 24 tests E2E)
+- **3278 Tests** — Vitest + React Testing Library + Playwright E2E (262 archivos unitarios + 9 specs / 24 tests E2E)
 
 ## 🏗️ Tech Stack
 
@@ -173,7 +173,7 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales (01-06 + 08; 07 hidden)
-- ✅ 3271 tests pasando (261 test files unitarios + 9 specs / 24 tests E2E con Playwright)
+- ✅ 3278 tests pasando (262 test files unitarios + 9 specs / 24 tests E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
 - ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 17 variantes)

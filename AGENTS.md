@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3271 tests across 261 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 8 paths / 59 lessons, and Remotion video lessons. 3278 tests across 262 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
 
 ## Commands
 
@@ -16,6 +16,7 @@ pnpm test -- -t "name"   # Run tests by name filter
 pnpm test -- src/path/to/foo.test.ts  # Run one test file
 pnpm lint                # ESLint (flat config, advisory warns)
 pnpm exec tsc --noEmit   # Type check (strict: true, noUnusedLocals, noUnusedParameters)
+pnpm typecheck:video     # Type check de las compositions Remotion (tsconfig.remotion.json; no bloquea en la CI)
 ```
 
 ESLint exists (`eslint.config.mjs`: react-hooks errors, unused-vars/no-explicit-any/no-console as warns). No Prettier — formatting is manual. Hard correctness is enforced by `tsc` + Vitest; ESLint is advisory. Keep files < 300 lines.

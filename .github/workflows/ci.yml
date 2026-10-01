@@ -30,6 +30,13 @@ jobs:
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
+      - name: Typecheck Remotion (no bloquea)
+        # tsconfig.json excluye src/video: un error de tipos en una
+        # composition no debería tumbar el build de la app. Se corre igual
+        # para que el error se vea en el paso, pero no bloquea el job.
+        continue-on-error: true
+        run: pnpm typecheck:video
+
       - name: Lint
         run: pnpm lint
 

@@ -780,7 +780,10 @@ del contrato: es repetir el mismo atributo ~90 veces sin que cambie nada
 para el teclado ni para el lector de pantalla, y los interactivos ya están
 cubiertos por las cuatro reglas.
 
-### [ ] 3.9 Producto / superficie
+### [x] 3.9 Producto / superficie — **RESUELTO 2026-10-01**
+
+Los cuatro bullets se cerraron en dos bloques: el panel (commit `6cae1e2`)
+y el resto (migrate + typecheck de Remotion + scripts).
 
 - ~~`App.tsx:49` expone `/:lang/zildeb`~~ → **RESUELTO 2026-10-01**: la ruta y
   el import perezoso de `AdminPanel` quedaron gateados con
@@ -795,9 +798,35 @@ cubiertos por las cuatro reglas.
   `replaceState` y el `pushState` era no-op, así que react-router montaba
   siempre en `/` — ahora delega a jsdom y los tests siguen pudiendo asertar
   sobre el `vi.fn()`.
-- `store/scenarioStore.ts:44` tiene `version: 2` + `merge` **sin `migrate`**: cualquier bump futuro hay que hacerlo a mano.
-- `tsconfig.json:21` incluye `src` → el `tsc --noEmit` del CI type-chequea las 132 compositions de Remotion: un error de tipos en un video tumba el CI de la app.
-- No hay script `remotion` en `package.json` pese a que `README.md:30` describe el pipeline de render.
+- ~~`store/scenarioStore.ts` `version: 2` + `merge` sin `migrate`~~ →
+  **RESUELTO:** `src/store/persistMigrate.ts` con `PERSIST_VERSION` (única
+  fuente de verdad, la consume el store), `PERSIST_KEYS`, el registro
+  `MIGRATIONS` y `migratePersistedState()`. Lo que arregla: sin `migrate`,
+  zustand **descarta** el snapshot guardado cuando las versiones no
+  coinciden («couldn't be migrated since no migrate function was
+  provided» + `merge(undefined, actual)`) ⇒ cualquier bump hecho a mano =
+  pérdida silenciosa de idioma, tema y progreso de Academy. La migración
+  sólo garantiza la forma del snapshot (recorta claves obsoletas, aplica
+  los saltos en orden; lo que falte lo rellena `merge`). `partialize` salió
+  como `persistPartialize` exportado para poder testearlo.
+- ~~`tsconfig.json` incluye `src`~~ → **RESUELTO:** `src/video` salió del
+  typecheck de la app y vive en `tsconfig.remotion.json`
+  (`pnpm typecheck:video`), que la CI corre con `continue-on-error`: el
+  error se ve en el paso, pero no tumba el build ni el deploy de la app.
+  Verificado con un error inyectado en una composition → `tsc` de la app
+  exit **0**, `typecheck:video` exit **2**.
+- ~~No hay script `remotion`~~ → **RESUELTO:** `"remotion": "remotion"`
+  (`pnpm remotion render <id> …` pasa los args al CLI) +
+  `Config.setEntryPoint('src/video/remotion/index.ts')` en
+  `remotion.config.ts` — antes había que pasar `--entry-point` a mano
+  porque la app entra por `src/main.tsx` y no existe `src/index.ts`.
+  Verificado: `pnpm remotion compositions` lista las 132. El paso 1 del
+  README ahora nombra los comandos.
+
+**Tests agregados:** 7 en `store/__tests__/persistMigrate.test.ts` (recorte
+de claves, orden de los saltos, inmutabilidad, y el guard de que
+`partialize` y `PERSIST_KEYS` digan lo mismo) + 2 en
+`adminRoute.test.tsx`.
 
 ---
 
