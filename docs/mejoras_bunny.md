@@ -329,19 +329,19 @@ pero es un cambio de contrato público: fuera del alcance de este ítem.
 - Sanidad en el helper: `formatBytes(NaN)` imprimía `NaNG` (lo detectó el
   test nuevo); ahora NaN/Infinity/negativo → `0`.
 
-### [ ] 3.6 Cobertura de tests (brechas) — **academy/ RESUELTO 2026-09-27**
+### [x] 3.6 Cobertura de tests (brechas) — **CERRADO 2026-09-30**
 
 | Área | LOC | Tests | Prioridad |
 |---|---|---|---|
-| `src/academy/` (65 lecciones) | — | **0** | **P0** — un typo en un `id` rompe navegación en runtime |
-| `src/components/appContent/` (shell del workspace) | 1302 | **0** | **P0** |
+| `src/academy/` (65 lecciones) | — | **RESUELTO 2026-09-27** — `paths.test.ts`: contrato de los 8 paths / 59 lecciones (+24 asserts) | ~~P0~~ |
+| `src/components/appContent/` (shell del workspace) | 1302 | **RESUELTO 2026-09-27** — 4 archivos / 47 tests | ~~P0~~ |
 | `src/frameworks/metasploit/{core,orchestrators}` | 8 archivos | **RESUELTO 2026-09-30** — 141 tests; 100 % stmts en 7/8 (93,9 % en el 8.º) | ~~P1~~ |
 | `src/frameworks/{cron,fs,network,packages,process}` | 5 archivos | **RESUELTO 2026-09-30** — tests directos; 100 % stmts en 3, 96,6 y 98,7 en los otros | ~~P1~~ |
 | `src/frameworks/python/` | 14 | **RESUELTO 2026-09-30** — 8 archivos nuevos / 159 tests; 99,3 stmts / 99,0 ramas / 100 funcs | ~~P1~~ |
 | `src/hooks/` sin test | 25 hooks, 14 con test | **RESUELTO 2026-09-30** — `useMobileWindows` y `useDesktopWindows` → 100 % stmts; los 4 que quedaban por debajo de 75 % cerrados: `useKeyboardShortcuts` 70,4 → **100**, `useNanoSave` 70,8 → **100**, `terminalPrompt` 73,3 → **100**, `useIsMobile` 73,7 → **89,5** (2 ramas defensivas) | ~~P2~~ |
-| `src/video/` | 70 | 0 (riesgo bajo: no entra al bundle) | P2 |
+| `src/video/` | ~17k (59 composiciones Remotion) | **RESUELTO 2026-09-30** — `audioTimings` (12) + contrato de `Root.tsx` (10); encontró 14 composiciones EN registradas 2× | ~~P2~~ |
 | E2E | 9 specs / 24 tests | **RESUELTO 2026-09-30** — smoke de misión completada + `lab08.spec.ts` + specs type-chequeados | ~~P0~~ |
-| `src/laboratorios/__tests__/` | falta `laboratorio04.test.ts` | | P2 |
+| `src/laboratorios/__tests__/` | falta `laboratorio04.test.ts` | **RESUELTO 2026-09-30** — 10 tests: payload con placeholders resueltos, escaneo, flag, criteria LFI → RCE | ~~P2~~ |
 
 Además: `pnpm test:ui` **está roto** (`package.json:20` invoca `vitest --ui` pero `@vitest/ui` no está en `devDependencies`).
 
@@ -583,15 +583,64 @@ que costó entender: el mock de `setHistory` **tiene que ejecutar el updater**
 — con un `vi.fn()` plano el cuerpo de `setHistory(prev => [...])` nunca corre
 y las líneas 91/203/213 quedaban en 0 sin que ningún test fallara.
 
-**Tests:** 3174 → **3209** (+35), 250 → **254** archivos. Cobertura global
-84,45 / 72,97 / 80,78 / 86,78 → **84,77 / 73,30 / 80,89 / 87,08**.
+**Tests (octava tanda):** 3174 → **3209** (+35), 250 → **254** archivos.
+Cobertura global 84,45 / 72,97 / 80,78 / 86,78 → **84,77 / 73,30 / 80,89 / 87,08**.
 
-**Pendiente de 3.6 (P2):** `src/video/` y `laboratorio04.test.ts`. Los huecos
-que quedan en los hooks son **defensivos** y están documentados en los
-headers de sus tests: `useIsMobile` (los dos `typeof window === 'undefined'`
-de las líneas 9 y 14) y `terminalPrompt` (el `|| 'ftp> '` de la línea 35,
-que `getFtpPromptFor` nunca devuelve vacío porque el `if` de arriba ya
-cortó las sesiones inactivas).
+**Novena tanda (2026-09-30) — los dos últimos huecos de 3.6:** la fila de
+`src/video/` decía "70 LOC" — stale: son ~17k LOC de composiciones Remotion
+(59 archivos) que ninguna corrida de `vitest` veía, y `laboratorio04` era el
+único lab sin test. Tres archivos nuevos:
+
+- `video/remotion/__tests__/audioTimings.test.ts` (12 tests): `audioTimings`
+  (default ES, EN y clave inexistente → `[]`), `sceneStartFrames` (acumulado
+  audio + `SCENE_GAP`, con el array esperado hardcodeado para
+  `li-01-linux-history` y estrictamente creciente en los 59 videos),
+  `totalDurationSec`/`totalDurationFrames` (suma + gaps, `ceil` + 1s de
+  buffer, y distinto entre idiomas porque los audios EN duran otra cosa),
+  `audioBase`, `hasAudio` — más el contrato de los dos mapas: mismas claves
+  ES/EN, mismo número de escenas por video y duraciones > 0.
+- `video/remotion/__tests__/compositions-contract.test.ts` (10 tests): lee
+  `Root.tsx` como texto y valida el registro a mano de los 118 bloques
+  `<Composition>`: ids únicos, cada archivo de `compositions/` ↔ import ↔
+  componente registrado (ni huérfano ni colgante), `lang`/id/`durationInFrames`
+  apuntando todos al mismo idioma, 1280×720 a 30 fps, caracteres válidos para
+  Remotion, toda clave de `totalDurationFrames` existente en el mapa y
+  cobertura exacta de los dos mapas. Abajo: el `const VID` interno de cada
+  composición contra la clave de su registro, y el número de escenas
+  destructurado (`const [s1, s2, s3] = …`) contra las duraciones ES y EN —
+  si alguien suma un audio sin sumarlo al destructuring, la última escena
+  nunca se muestra; si sobra, `s3` queda `undefined`.
+- `laboratorios/__tests__/laboratorio04.test.ts` (10 tests): payload PHP con
+  los placeholders `ATTACKER_IP`/`LISTENER_PORT` ya resueltos (si quedan
+  literales la reverse shell sube apuntando a un host inexistente),
+  `/root/escaneo.txt` coincidiendo con el target, la flag en
+  `/var/www/html/flag.txt` y **no** copiada en el atacante, la tabla
+  `root/lucia/ivan`, los 7 criteria `fileRead`/`ncListener`/`blockingCommand`
+  con hints ES+EN, y la regresión del fix que sacó `/root/notas.txt`.
+
+**Bug encontrado y corregido:** el contrato de ids tiró **14 composiciones EN
+registradas dos veces** en `Root.tsx` (`re-02..re-05`, `re1-01..05`,
+`re2-01..05`): la sección "English versions — Redes" duplicaba bloques que ya
+estaban interleaved con sus versiones ES, y eran byte-idénticos. El
+`registerComposition` de Remotion hace `if (comps.find(c => c.id === comp.id))
+throw …Multiple composition with id X are registered.`, así que el studio y
+`pnpm remotion render` revientan al montar el Root. Se borró el bloque
+contiguo: `Root.tsx` 1144 → 1029 líneas. Dos detalles que costó encontrar
+estando el test en rojo: el regex `<Composition[\s\S]*?/>` corta en el `/>`
+del `component={() => <X lang="es" />}` (hay que contar llaves y paréntesis,
+como en `a11y-contract.test.ts`), y `li-01-linux-history` se registra en la
+forma corta `component={Li01LinuxHistory}` — la única, que usa el default
+`lang = 'es'` de la composición.
+
+**Tests:** 3209 → **3241** (+32), 254 → **257** archivos. Cobertura global
+84,77 / 73,30 / 80,89 / 87,08 → **84,82 / 73,34 / 81,00 / 87,13**.
+E2E en verde (**24/24**), corrido en este bloque porque sí se tocó `src/`.
+
+**3.6 cerrado.** Los únicos huecos que quedan son defensivos y están
+documentados en los headers de sus tests: `useIsMobile` (los dos
+`typeof window === 'undefined'` de las líneas 9 y 14) y `terminalPrompt`
+(el `|| 'ftp> '` de la línea 35, que `getFtpPromptFor` nunca devuelve vacío
+porque el `if` de arriba ya cortó las sesiones inactivas).
 
 ### [x] 3.7 Rendimiento en el camino caliente — **RESUELTO 2026-09-27 (parcial)**
 

@@ -3,8 +3,8 @@
 ## Resumen
 
 **Framework:** Vitest 4.x + React Testing Library + jsdom  
-**Total Tests:** 3209 en 254 archivos  
-**Cobertura (v8):** 84.77% stmts / 73.30% branches / 80.89% funcs / 87.08% lines (medido 2026-09-30)  
+**Total Tests:** 3241 en 257 archivos  
+**Cobertura (v8):** 84.82% stmts / 73.34% branches / 81.00% funcs / 87.13% lines (medido 2026-09-30)  
 **E2E:** Playwright (9 specs / 24 tests en `e2e/`, corren en el job `e2e` de la CI)
 
 ## Comandos
@@ -22,10 +22,10 @@ pnpm test -- src/path    # Ejecutar un archivo específico
 
 | Métrica | Umbral | Real (2026-09-30) |
 |---------|--------|-------------------|
-| statements | 80% | 84.77% |
-| branches | 68% | 73.30% |
-| functions | 77% | 80.89% |
-| lines | 83% | 87.08% |
+| statements | 80% | 84.82% |
+| branches | 68% | 73.34% |
+| functions | 77% | 81.00% |
+| lines | 83% | 87.13% |
 
 El piso se mide con `pnpm test:coverage` y va ~1 punto abajo del valor real
 (la corrida es determinista: ±0.03). **Subilo cuando suba la cobertura.**
@@ -57,6 +57,7 @@ src/
 ├── laboratorios/__tests__/  # Tests de definición de labs
 ├── fs-models/__tests__/     # Tests de filesystem virtual
 ├── i18n/__tests__/          # Tests de traducciones
+├── video/remotion/__tests__/ # Contrato de las composiciones Remotion (Root.tsx, audioTimings)
 └── test/setup.ts            # Setup global (mocks, store reset)
 ```
 
