@@ -190,7 +190,7 @@ validationCriteria: {
 - Estado global modularizado en 5 slices (`uiSlice`, `terminalSlice`, `scenarioSlice`, `identitySlice`, `academySlice`) en `src/store/slices/`.
 - Fachada unificada `useScenarioStore` en `src/store/scenarioStore.ts`.
 - Acciones centralizadas como `resetWorkspace()` para reiniciar el workspace de forma atómica.
-- **Persistencia Segura**: `partialize` almacena preferencias de UI y progreso Academy (`theme`, `language`, `termColor`, `view`, `completedLessons`, `quizResults`) en `localStorage`. El estado de escenarios, máquinas y credenciales se mantiene en memoria y se reinicia al recargar la página, garantizando que no se guarden credenciales en texto plano.
+- **Persistencia Segura**: `persistPartialize` almacena **sólo** preferencias de UI y progreso Academy (`language`, `theme`, `uiMode`, `activeApp`, `termColor`, `completedLessons`, `quizResults`) en `localStorage` — **nunca `view`** (la vista se deriva de la ruta al recargar) ni estado de laboratorio. La misma lista vive en `PERSIST_KEYS` de `src/store/persistMigrate.ts`, único lugar donde además se define la versión (`PERSIST_VERSION`) y el registro de migraciones `MIGRATIONS`: sin `migrate`, zustand **descarta** el snapshot cuando la versión guardada no coincide, así que todo bump de versión se hace ahí. El estado de escenarios, máquinas y credenciales se mantiene en memoria y se reinicia al recargar la página, garantizando que no se guarden credenciales en texto plano.
 
 ### CommandResponse (Discriminated Union)
 - `CommandResponse` en `src/types/command.ts` está definido como una **Discriminated Union** con 16 variantes fuertemente tipadas (`type: 'foundCredentials' | 'scanResults' | 'fileRead' | ...`), incluyendo `http` para Burp Suite.

@@ -29,7 +29,7 @@ The `CommandResponse` metadata fields are the contract (`src/types/command.ts`; 
 
 ## State Management
 
-Zustand (`src/store/scenarioStore.ts`) with localStorage persistence. Five slices: `uiSlice`, `terminalSlice`, `scenarioSlice`, `identitySlice`, `academySlice`. Only UI preferences and Academy progress are persisted via `partialize()` + `merge` (view, language, theme, uiMode, activeApp, termColor, completedLessons, quizResults). **`machines`/`missions`/`msfState`/`identityStack` etc. are NOT persisted** — reloading resets the lab to its initial state and never rehydrates credentials (see `docs/archive/MEJORAS.md` 7.1).
+Zustand (`src/store/scenarioStore.ts`) with localStorage persistence. Five slices: `uiSlice`, `terminalSlice`, `scenarioSlice`, `identitySlice`, `academySlice`. Only UI preferences and Academy progress are persisted via `persistPartialize()` + `merge` + `migrate` (language, theme, uiMode, activeApp, termColor, completedLessons, quizResults — **never `view`**: la vista se deriva de la ruta al recargar). La migración vive en `src/store/persistMigrate.ts` (`PERSIST_VERSION` + registro `MIGRATIONS`): sin `migrate`, zustand descarta el snapshot cuando la versión guardada no coincide. **`machines`/`missions`/`msfState`/`identityStack` etc. are NOT persisted** — reloading resets the lab to its initial state and never rehydrates credentials (see `docs/archive/MEJORAS.md` 7.1).
 
 In tests, reset with:
 ```typescript

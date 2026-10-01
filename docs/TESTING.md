@@ -64,7 +64,9 @@ src/
 ## Tipos de Tests
 
 ### 1. Happy Path por Laboratorio
-Flujos completos de cada lab (01-07): scan → enum → exploit → flag.
+Flujos completos de cada lab (01-08): scan → enum → exploit → flag. Los labs
+01-05 viven en `commands-scenario01..05.test.ts` y los 06-08 en
+`happyPath-scenario06 / 06-flow / 07-flow / 08.test.ts`.
 Helpers compartidos en `happyPathHelpers.ts` para crear máquinas mock, evolucionar estado y verificar resultados.
 
 ### 2. Tests de Fases (fase3-fase9)

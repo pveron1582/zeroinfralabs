@@ -18,10 +18,11 @@ export default defineConfig({
     hookTimeout: 30000,
     coverage: {
       provider: 'v8',
-      // Ratchet: piso medido con `pnpm test:coverage` el 2026-09-27 →
-      // 81.08 stmts / 68.80 branches / 77.52 funcs / 84.06 lines (la corrida
-      // es determinista: ±0.03 entre corridas). Los umbrales van ~1 punto
-      // abajo para no flakear, y suben cuando sube la cobertura.
+      // Ratchet: piso medido con `pnpm test:coverage` el 2026-10-01 →
+      // 84.88 stmts / 73.52 branches / 80.85 funcs / 87.23 lines (la corrida
+      // es determinista: ±0.03 entre corridas). Los umbrales de abajo son el
+      // piso que bloquea: quedan por debajo del medido y suben cuando sube
+      // la cobertura (próximo ratchet: subirlos y volver a medir).
       //
       // Antes eran 80/72/75/80 y NUNCA bloqueaban: `ci.yml` corría
       // `pnpm test:run` (sin --coverage), así que el branches=72 quedaba

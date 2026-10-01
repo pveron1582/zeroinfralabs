@@ -58,7 +58,8 @@ pnpm test -- -t "filter"  # Tests por nombre
 pnpm test:coverage        # Tests con cobertura
 pnpm test:ui              # Vitest UI mode
 pnpm test:e2e             # Smoke E2E con Playwright (chromium headless)
-pnpm exec tsc --noEmit    # Type check
+pnpm exec tsc --noEmit    # Type check (la app; excluye src/video)
+pnpm typecheck:video      # Type check de las composiciones Remotion
 ```
 
 Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
@@ -121,10 +122,10 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 ```
 src/
 ├── academy/          # 8 paths / 59 lecciones: path-*.ts + *-lessons.ts
-├── video/            # Composiciones Remotion de video-lecciones (39)
+├── video/            # Composiciones Remotion de video-lecciones (132)
 ├── commands/
-│   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, python3, etc. (51)
-│   └── tools/       # nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg (12)
+│   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, python3, etc. (69 archivos)
+│   └── tools/       # nmap, hydra, ssh, ftp, nc, gobuster, arp-scan, netdiscover, curl, msfconsole, apt, dpkg (17 archivos / 19 comandos)
 ├── components/
 │   ├── landing/     # SiteHeader, PageHero, LandingLabPreview, MarketingFooter
 │   ├── academy/     # Pantallas de la Academy (paths, lecciones, quizzes, simulador de red)
@@ -144,13 +145,13 @@ src/
 │   ├── cron/        # CronRunner (reloj virtual + cron jobs → syslog)
 │   ├── fs/          # mounts.ts (fstab + estado de montajes)
 │   └── python/      # Mini-intérprete de Python (lexer/parser/evaluator + stdlib simulada)
-├── hooks/           # 25 hooks especializados: useCommandRunner (orquestador),
+├── hooks/           # 22 hooks (use*) + 5 helpers: useCommandRunner (orquestador),
 │                    # useIdentityStack, useFtpSession, useSshSession, usePendingSu,
 │                    # usePendingPythonInput, useReverseShell, useAutoRefresh,
 │                    # useDownloadedFile, useTerminalEffects, useNanoSave,
 │                    # useMissionCompletion, useKeyboardShortcuts, streamingConfig
 ├── i18n/            # Traducciones español/inglés
-├── laboratorios/    # Definición de labs (01-07) + templates + attackers (Kali)
+├── laboratorios/    # Definición de labs (01-08, 07 hidden) + templates + attackers (Kali)
 ├── fs-models/       # Modelos de filesystem (Linux, Windows, Kali)
 ├── store/           # Zustand: 5 slices (ui, terminal, scenario, identity, academy) + persistencia segura
 ├── blog/            # Datos de artículos del blog
@@ -165,7 +166,8 @@ docs/
 ├── TESTING.md       # Estrategia de testing
 ├── ROADMAP.md       # Plan de implementación futura
 ├── OVERVIEW.md      # Detalle de analytics (webhook, Google Sheets) y visión de producto
-├── CHANGELOG.md     # Historial de cambios
+├── CHANGELOG.md     # Índice de los changelogs mensuales
+├── changelog/       # Changelogs mensuales (2026-10.md, 2026-09.md, …)
 ├── archive/         # Histórico de mejoras y planes completados (MEJORAS.md, etc.)
 └── nmap/            # Documentación del comando nmap (help.md, man.md)
 ```
@@ -176,7 +178,7 @@ docs/
 - ✅ 3278 tests pasando (262 test files unitarios + 9 specs / 24 tests E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
-- ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 17 variantes)
+- ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)
 - ✅ Validación universal (17 criteria types, 17 validators)
 - ✅ Permisos de sistema de archivos (SUID, SGID, Sticky bit, umask, ownership)
 - ✅ Metasploit simulado (sesiones, módulos aux/exploit/post)

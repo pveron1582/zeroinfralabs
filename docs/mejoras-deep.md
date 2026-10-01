@@ -214,10 +214,13 @@ progreso de Academy (`completedLessons`, `quizResults`), `theme`, `language`, `u
 
 **Acción propuesta:**
 
-- [ ] **2.2.1** Guardar la ruta: `{import.meta.env.DEV && <Route path="/test" …/>}`.
-- [ ] **2.2.2** Reemplazar `localStorage.clear()` por borrado selectivo de las claves propias
-      (`cyberops-store`, `cyberops-desktop-wallpaper`, `cyberops-session-id`) — helper tipo `clearZilabsStorage()`.
+- [x] **2.2.1** Guardar la ruta: `{import.meta.env.DEV && <Route path="/test" …/>}`. → **RESUELTO 2026-10-01:** `App.tsx:57` gatea `/test` con `import.meta.env.DEV`.
+- [x] **2.2.2** Reemplazar `localStorage.clear()` por borrado selectivo de las claves propias
+      (`cyberops-store`, `cyberops-desktop-wallpaper`, `cyberops-session-id`) — helper tipo `clearZilabsStorage()`. → **RESUELTO 2026-10-01:** helper `clearZilabsStorage()` en `src/utils/storage.ts` (lo usa TestLab) + `utils/__tests__/storage.test.ts`.
 - [ ] **2.2.3** Test que garantice que el reset **no** toca `completedLessons` de Academy.
+      *Estado 2026-10-01: `storage.test.ts` sólo fija claves ajenas al origen;
+      `clearZilabsStorage()` borra `cyberops-store` entero (y ahí vive
+      `completedLessons`), así que el reset del lab dev todavía lo pierde.*
 
 ### 2.3 No existe ruta catch-all → pantalla en blanco en URLs desconocidas
 
@@ -230,10 +233,10 @@ hace match con el rewrite → sirve `index.html` → React Router **no matchea n
 
 **Acción propuesta:**
 
-- [ ] **2.3.1** Agregar `<Route path="*" element={<NotFound />} />` (componente liviano, bilingüe, con link a
-      `/:lang/labs` y `/:lang/academy`).
+- [x] **2.3.1** Agregar `<Route path="*" element={<NotFound />} />` (componente liviano, bilingüe, con link a
+      `/:lang/labs` y `/:lang/academy`). → **RESUELTO 2026-10-01:** `<Route path="*">` + `components/NotFound.tsx` (App.tsx:59).
 - [ ] **2.3.2** Validar `:lang` (hoy `/:lang` acepta cualquier string; `RootRedirect` defaultea a `en` solo en `/`).
-- [ ] **2.3.3** Test de render de NotFound en ES/EN.
+- [x] **2.3.3** Test de render de NotFound en ES/EN. → **RESUELTO 2026-10-01:** `components/__tests__/NotFound.test.tsx` (404 en ES y en EN).
 
 ### 2.4 Hay una feature completa sin commitear (`python3`)
 
@@ -264,8 +267,8 @@ cambios de documentación con una feature.
 **Acción propuesta:**
 
 - [ ] **2.4.1** Commit de la feature en una rama (`feat/python3-interpreter`), separando docs si se quiere.
-- [ ] **2.4.2** Verificar la sección de Python en `AGENTS.md`/`CLAUDE.md`: agregar `python3` al listado de builtin
-      (hoy dice "60 system commands") y `frameworks/python/` al layout — **en el mismo commit**.
+- [x] **2.4.2** Verificar la sección de Python en `AGENTS.md`/`CLAUDE.md`: agregar `python3` al listado de builtin
+      (hoy dice "60 system commands") y `frameworks/python/` al layout — **en el mismo commit**. → **RESUELTO 2026-10-01:** `python3` en los listados builtin y `frameworks/python/` en el layout de AGENTS.md, CLAUDE.md y README.md.
 - [ ] **2.4.3** Sumar un test de integración de `python3` contra el FS virtual (hoy hay tests del intérprete y del
       comando por separado).
 
@@ -310,9 +313,9 @@ Ya pasó antes (el informe de `glm_mejoras.md` incluye una corrección de conteo
 
 - [ ] **3.1.1** Unificar la fuente de verdad: generar los conteos con un script (`scripts/`) o un test que falle si
       `AGENTS.md`/`README.md` no coinciden con la realidad (patrón "doc test").
-- [ ] **3.1.2** Reescribir `docs/TESTING.md` (está en estado 2025: "800+ tests", 5 escenarios, cobertura objetivo por
-      módulo sin números actuales).
-- [ ] **3.1.3** Agregar a `docs/TESTING.md` el flujo real: 3 corridas verdes antes de cerrar un PR de infra/tests.
+- [x] **3.1.2** Reescribir `docs/TESTING.md` (está en estado 2025: "800+ tests", 5 escenarios, cobertura objetivo por
+      módulo sin números actuales). → **RESUELTO 2026-10-01:** `docs/TESTING.md` reescrito: 3278 tests / 262 archivos, tabla de thresholds y flujos de CI.
+- [x] **3.1.3** Agregar a `docs/TESTING.md` el flujo real: 3 corridas verdes antes de cerrar un PR de infra/tests. → **RESUELTO 2026-10-01:** `docs/TESTING.md` §Flujos de CI: «3 corridas antes de mergear un PR de infra/tests».
 
 ### 3.2 `pnpm build` genera un `dist/` de 923 MB
 
@@ -465,12 +468,12 @@ Un único archivo para todo el historial (188.221 bytes, con `## [Unreleased] - 
 
 ### 4.7 Config y DX
 
-- [ ] **4.7.1** Quitar `"src/_deprecated"` del `exclude` de `tsconfig.json`: **ese directorio ya no existe** (se
-      eliminó en la Fase 0 de `docs/archive/MEJORAS.md`).
-- [ ] **4.7.2** Agregar script `"typecheck": "tsc --noEmit"` a `package.json` (hoy el CI usa `pnpm exec tsc --noEmit`;
-      un script evita divergencias y es más descubrible).
-- [ ] **4.7.3** Comentario de `coverage.thresholds` en `vitest.config.ts`: actualizarlo con los números reales
-      (81.91/70.28/78.65/84.2) — hoy cita los de `mejoras_glm.md` (82.5/71.1/77.8/84.3, ya viejos).
+- [x] **4.7.1** Quitar `"src/_deprecated"` del `exclude` de `tsconfig.json`: **ese directorio ya no existe** (se
+      eliminó en la Fase 0 de `docs/archive/MEJORAS.md`). → **RESUELTO 2026-10-01:** `tsconfig.json` ya no menciona `src/_deprecated` (el directorio no existe).
+- [x] **4.7.2** Agregar script `"typecheck": "tsc --noEmit"` a `package.json` (hoy el CI usa `pnpm exec tsc --noEmit`;
+      un script evita divergencias y es más descubrible). → **RESUELTO 2026-10-01:** script `"typecheck": "tsc --noEmit"` en `package.json` (más `typecheck:video`).
+- [x] **4.7.3** Comentario de `coverage.thresholds` en `vitest.config.ts`: actualizarlo con los números reales
+      (81.91/70.28/78.65/84.2) — hoy cita los de `mejoras_glm.md` (82.5/71.1/77.8/84.3, ya viejos). → **RESUELTO 2026-10-01:** comentario de `coverage.thresholds` actualizado con el piso del 2026-10-01.
 - [ ] **4.7.4** `i18n` tiene 100% de statements con **40% de branches**: los fallbacks (`??`, idioma inválido) no están
       cubiertos. Agregar 2-3 tests.
 
@@ -521,8 +524,8 @@ idioma).
 - [ ] **C. Commit de `python3`** en rama, con docs alineados (§2.4).
 - [ ] **D. `/test` seguro** → guard `import.meta.env.DEV` + borrado selectivo de claves (§2.2).
 - [ ] **E. `Route path="*"`** con `NotFound` bilingüe (§2.3).
-- [ ] **F. Docs sincronizados** → números reales (2022 tests / 153 archivos / 51 builtin) en README, AGENTS, CLAUDE y
-      TESTING (§3.1).
+- [x] **F. Docs sincronizados** → números reales (2022 tests / 153 archivos / 51 builtin) en README, AGENTS, CLAUDE y
+      TESTING (§3.1). → **RESUELTO 2026-10-01:** README / AGENTS / CLAUDE / TESTING con los números reales de hoy (3278/262, 69+19 comandos, 132 compositions).
 
 ### P1 — siguientes 1-2 semanas
 

@@ -38,6 +38,15 @@ pnpm build               # Genera bundle optimizado
 pnpm preview             # Preview del build
 ```
 
+### Calidad (en ese orden, es lo que corre la CI)
+```bash
+pnpm exec tsc --noEmit   # Type check de la app (excluye src/video)
+pnpm typecheck:video     # Type check de las compositions Remotion (no bloquea en la CI)
+pnpm lint                # ESLint (flat config, advertencias)
+pnpm test:coverage       # Tests + thresholds de cobertura que bloquean
+pnpm test:e2e            # Playwright (9 specs / 24 tests)
+```
+
 ## Estructura de Directorios
 
 ```
