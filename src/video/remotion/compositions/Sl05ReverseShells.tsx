@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Sl05ReverseShells.tsx ────────────
 // Video: pentesting II — automatización y reverse shells.
-// Clase 5 de Scripting/Bash (lección bash-05). Guiones: voicebox-scripts/sl-05-*.txt
+// Clase 5 de Scripting/Bash (lección bash-05). Guiones: voicebox-scripts/{es,en}/bash/bash-05-*.txt
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -22,7 +22,7 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-const VID = 'sl-05-reverse-shells';
+const VID = 'bash-05-reverse-shells';
 
 // ── COPY ────────────────────────────────────────────────────────────
 const COPY = {
@@ -208,15 +208,15 @@ export const Sl05ReverseShells: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/sl-05-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/bash-05-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/sl-05-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/bash-05-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/sl-05-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/bash-05-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

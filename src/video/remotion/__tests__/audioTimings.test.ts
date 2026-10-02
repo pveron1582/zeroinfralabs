@@ -23,9 +23,9 @@ const source = remotionSource('audioTimings.ts');
 
 describe('audioTimings — funciones puras', () => {
   it('devuelve las duraciones del idioma pedido (default es)', () => {
-    expect(audioTimings('li-01-linux-history')).toEqual([15.28, 20.4, 19.2, 17.92]);
-    expect(audioTimings('li-01-linux-history', 'es')).toEqual([15.28, 20.4, 19.2, 17.92]);
-    expect(audioTimings('li-01-linux-history', 'en')).toEqual([16.4, 20.96, 22.08, 16.64]);
+    expect(audioTimings('linux-01-linux-history')).toEqual([15.28, 20.4, 19.2, 17.92]);
+    expect(audioTimings('linux-01-linux-history', 'es')).toEqual([15.28, 20.4, 19.2, 17.92]);
+    expect(audioTimings('linux-01-linux-history', 'en')).toEqual([16.4, 20.96, 22.08, 16.64]);
   });
 
   it('una clave inexistente da [] y no revienta', () => {
@@ -35,10 +35,10 @@ describe('audioTimings — funciones puras', () => {
 
   it('sceneStartFrames acumula audios + gap y arranca en 0', () => {
     // 15.28s → 15.58 con gap → 467 frames; después +20.4+0.3 → 1088; +19.2+0.3 → 1673
-    expect(sceneStartFrames('li-01-linux-history', 30)).toEqual([0, 467, 1088, 1673]);
+    expect(sceneStartFrames('linux-01-linux-history', 30)).toEqual([0, 467, 1088, 1673]);
     expect(sceneStartFrames('no-existe', 30)).toEqual([]);
     // Con otro fps los frames cambian pero el primer cuadro sigue en 0
-    expect(sceneStartFrames('li-01-linux-history', 60)[0]).toBe(0);
+    expect(sceneStartFrames('linux-01-linux-history', 60)[0]).toBe(0);
   });
 
   it('sceneStartFrames es estrictamente creciente en cualquier video e idioma', () => {
@@ -53,18 +53,18 @@ describe('audioTimings — funciones puras', () => {
   it('totalDurationSec suma los audios y agrega el gap entre escenas', () => {
     expect(SCENE_GAP).toBe(0.3);
     // 15.28+20.40+19.20+17.92 = 72.80 + 3 gaps de 0.3
-    expect(totalDurationSec('li-01-linux-history')).toBeCloseTo(73.7, 5);
+    expect(totalDurationSec('linux-01-linux-history')).toBeCloseTo(73.7, 5);
     // Sin escenas no hay gaps (reduce sobre [] + max(0, -1))
     expect(totalDurationSec('no-existe')).toBe(0);
   });
 
   it('totalDurationFrames redondea hacia arriba y reserva 1s de buffer', () => {
-    expect(totalDurationFrames('li-01-linux-history', 30)).toBe(Math.ceil(73.7 * 30) + 30);
-    expect(totalDurationFrames('li-01-linux-history', 30)).toBe(2241);
+    expect(totalDurationFrames('linux-01-linux-history', 30)).toBe(Math.ceil(73.7 * 30) + 30);
+    expect(totalDurationFrames('linux-01-linux-history', 30)).toBe(2241);
     // El idioma EN tiene otras duraciones ⇒ otra duración en frames
-    expect(totalDurationFrames('li-01-linux-history', 30, 'en')).toBe(2340);
-    expect(totalDurationFrames('li-01-linux-history', 60, 'en')).toBeGreaterThan(
-      totalDurationFrames('li-01-linux-history', 30, 'en'),
+    expect(totalDurationFrames('linux-01-linux-history', 30, 'en')).toBe(2340);
+    expect(totalDurationFrames('linux-01-linux-history', 60, 'en')).toBeGreaterThan(
+      totalDurationFrames('linux-01-linux-history', 30, 'en'),
     );
   });
 
@@ -89,7 +89,8 @@ describe('audioTimings — contrato de los mapas de duraciones', () => {
   });
 
   it('las claves tienen el formato de id de video', () => {
-    for (const id of [...esKeys, ...enKeys]) expect(id).toMatch(/^[a-z0-9-]+$/);
+    // `<lessonId>-<slug>` — el id puede traer mayúscula (networksI, networksII).
+    for (const id of [...esKeys, ...enKeys]) expect(id).toMatch(/^[a-zA-Z0-9-]+$/);
   });
 
   it('toda duración es un número positivo y el ES y el EN tienen las mismas escenas', () => {
@@ -107,7 +108,7 @@ describe('audioTimings — contrato de los mapas de duraciones', () => {
   it('el archivo no deja timings huérfanos fuera de los dos mapas', () => {
     // Todas las claves literales del archivo tienen que pertenecer a un mapa
     // (si alguien agrega una línea suelta con formato 'id': [...]).
-    const allLiterals = [...source.matchAll(/^\s*'([a-z0-9-]+)':\s*\[/gm)].map(m => m[1]);
+    const allLiterals = [...source.matchAll(/^\s*'([a-zA-Z0-9-]+)':\s*\[/gm)].map(m => m[1]);
     expect(new Set(allLiterals).size).toBe(esKeys.length);
   });
 });

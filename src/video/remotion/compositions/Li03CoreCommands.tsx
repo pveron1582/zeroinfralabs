@@ -101,7 +101,7 @@ const BEATS = {
   },
 };
 
-const VID = 'li-03-commands';
+const VID = 'linux-03-commands';
 
 const HISTORY = [
   'ssh root@192.168.1.11',
@@ -280,19 +280,19 @@ export const Li03CoreCommands: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es'
 
       {/* Scene 1: intro */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-03-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-03-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       {/* Scene 2: los 4 comandos */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-03-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-03-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       {/* Scene 3: .bash_history */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-03-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-03-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

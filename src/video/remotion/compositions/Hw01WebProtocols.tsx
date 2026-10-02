@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Hw01WebProtocols.tsx ─────────────
 // Video: protocolos web — HTTP, HTTPS y más.
-// Clase 1 de Hacking Web (lección hackingweb-01). Guiones: voicebox-scripts/hw-01-*.txt
+// Clase 1 de Hacking Web (lección hackingweb-01). Guiones: voicebox-scripts/{es,en}/hackingweb/hackingweb-01-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 
@@ -127,7 +127,7 @@ const BEATS = {
   },
 };
 
-const VID = 'hw-01-web-protocols';
+const VID = 'hackingweb-01-web-protocols';
 
 // ── Scene components ────────────────────────────────────────────────
 
@@ -274,15 +274,15 @@ export const Hw01WebProtocols: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es'
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hw-01-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hackingweb-01-scene1.wav`)} />}
         {lang === 'es' ? <EsScene1 fps={fps} c={c.s1 as typeof COPY.es.s1} b={b.s1 as typeof BEATS.es.s1} /> : <EnScene1 fps={fps} c={c.s1 as typeof COPY.en.s1} b={b.s1 as typeof BEATS.en.s1} />}
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hw-01-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hackingweb-01-scene2.wav`)} />}
         {lang === 'es' ? <EsScene2 fps={fps} c={c.s2 as typeof COPY.es.s2} b={b.s2 as typeof BEATS.es.s2} /> : <EnScene2 fps={fps} c={c.s2 as typeof COPY.en.s2} b={b.s2 as typeof BEATS.en.s2} />}
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hw-01-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hackingweb-01-scene3.wav`)} />}
         {lang === 'es' ? <EsScene3 fps={fps} c={c.s3 as typeof COPY.es.s3} b={b.s3 as typeof BEATS.es.s3} /> : <EnScene3 fps={fps} c={c.s3 as typeof COPY.en.s3} b={b.s3 as typeof BEATS.en.s3} />}
       </Sequence>
     </AbsoluteFill>

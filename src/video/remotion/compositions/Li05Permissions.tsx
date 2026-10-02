@@ -319,7 +319,7 @@ export const Li05Permissions: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' 
   const { fps } = useVideoConfig();
   const c = COPY[lang];
   const b = BEATS[lang];
-  const vid = 'li-05-permissions';
+  const vid = 'linux-05-permissions';
 
   const [s1, s2, s3, s4] = audioTimings(vid, lang);
   const starts = sceneStartFrames(vid, fps, lang);
@@ -333,19 +333,19 @@ export const Li05Permissions: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' 
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        <Audio src={staticFile(`${base}/li-05-permissions/li-05-scene1.wav`)} />
+        <Audio src={staticFile(`${base}/linux-05-permissions/linux-05-scene1.wav`)} />
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        <Audio src={staticFile(`${base}/li-05-permissions/li-05-scene2.wav`)} />
+        <Audio src={staticFile(`${base}/linux-05-permissions/linux-05-scene2.wav`)} />
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        <Audio src={staticFile(`${base}/li-05-permissions/li-05-scene3.wav`)} />
+        <Audio src={staticFile(`${base}/linux-05-permissions/linux-05-scene3.wav`)} />
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        <Audio src={staticFile(`${base}/li-05-permissions/li-05-scene4.wav`)} />
+        <Audio src={staticFile(`${base}/linux-05-permissions/linux-05-scene4.wav`)} />
         <Scene4 fps={fps} c={c.s4} b={b.s4} />
       </Sequence>
     </AbsoluteFill>

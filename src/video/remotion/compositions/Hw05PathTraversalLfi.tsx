@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Hw05PathTraversalLfi.tsx ─────────
 // Video: Path Traversal & LFI — de leer archivos a ejecutar código.
-// Clase 5 de Hacking Web (lección hackingweb-05). Guiones: voicebox-scripts/hw-05-*.txt
+// Clase 5 de Hacking Web (lección hackingweb-05). Guiones: voicebox-scripts/{es,en}/hackingweb/hackingweb-05-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 
@@ -106,7 +106,7 @@ const BEATS = {
   },
 };
 
-const VID = 'hw-05-path-traversal-lfi';
+const VID = 'hackingweb-05-path-traversal-lfi';
 
 // ── Scene components ────────────────────────────────────────────────
 
@@ -223,15 +223,15 @@ export const Hw05PathTraversalLfi: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hw-05-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hackingweb-05-scene1.wav`)} />}
         {lang === 'es' ? <EsScene1 fps={fps} c={c.s1 as typeof COPY.es.s1} b={b.s1 as typeof BEATS.es.s1} /> : <EnScene1 fps={fps} c={c.s1 as typeof COPY.en.s1} b={b.s1 as typeof BEATS.en.s1} />}
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hw-05-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hackingweb-05-scene2.wav`)} />}
         {lang === 'es' ? <EsScene2 fps={fps} c={c.s2} b={b.s2} /> : <EnScene2 fps={fps} c={c.s2} b={b.s2} />}
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hw-05-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/hackingweb-05-scene3.wav`)} />}
         {lang === 'es' ? <EsScene3 fps={fps} c={c.s3} b={b.s3} /> : <EnScene3 fps={fps} c={c.s3} b={b.s3} />}
       </Sequence>
     </AbsoluteFill>

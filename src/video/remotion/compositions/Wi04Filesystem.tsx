@@ -177,7 +177,7 @@ const C_TREE: TreeItem[] = [
   },
 ];
 
-const VID = 'wi-04-filesystem';
+const VID = 'windows-04-filesystem';
 
 // ── Scene 1: el mapa de C:\ ───────────────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -304,19 +304,19 @@ export const Wi04Filesystem: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }
 
       {/* Scene 1: el mapa de C:\ */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/wi-04-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/windows-04-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       {/* Scene 2: SAM, cuentas y grupos */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/wi-04-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/windows-04-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       {/* Scene 3: permisos NTFS + dónde vive lo jugoso */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/wi-04-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/windows-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

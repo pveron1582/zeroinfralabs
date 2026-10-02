@@ -154,7 +154,7 @@ const BEATS = {
   },
 };
 
-const VID = 'pe-02-filesystem';
+const VID = 'pentesting-02-filesystem';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 function buildLinuxTree(descs: typeof COPY.es.s2.linuxDescs): TreeItem[] {
@@ -367,22 +367,22 @@ export const Pe02Filesystem: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pe-02-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pentesting-02-scene1.wav`)} />}
         <TitleScene title={c.s1.title} subtitle={c.s1.subtitle} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={mergedDur}>
         <Sequence from={0} durationInFrames={Math.ceil(s2 * fps)}>
-          {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pe-02-scene2.wav`)} />}
+          {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pentesting-02-scene2.wav`)} />}
         </Sequence>
         <Sequence from={s3Frame} durationInFrames={dur3}>
-          {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pe-02-scene3.wav`)} />}
+          {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pentesting-02-scene3.wav`)} />}
         </Sequence>
         <MergedScene fps={fps} s2={s2} lang={lang} c={c.s2} b={b} />
       </Sequence>
 
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pe-02-scene4.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pentesting-02-scene4.wav`)} />}
         <ClosingScene fps={fps} c={c.s4} b={b} />
       </Sequence>
     </AbsoluteFill>

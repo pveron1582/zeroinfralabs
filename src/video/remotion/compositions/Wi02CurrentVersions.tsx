@@ -129,7 +129,7 @@ const BEATS = {
   },
 };
 
-const VID = 'wi-02-current-versions';
+const VID = 'windows-02-current-versions';
 
 // ── Scene 1: Windows 10 ───────────────────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -231,19 +231,19 @@ export const Wi02CurrentVersions: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = '
 
       {/* Scene 1: Windows 10 */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/wi-02-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/windows-02-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       {/* Scene 2: Windows 11 y Server */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/wi-02-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/windows-02-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       {/* Scene 3: por qué importa + cierre */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/wi-02-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/windows-02-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

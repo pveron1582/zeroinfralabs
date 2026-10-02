@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Pe04OnlineCracking.tsx ─────────────
 // Video: cracking online — hydra, medusa y ncrack.
-// Lección pentesting-04, clase 4 de Pentesting. Guiones: voicebox-scripts/pe-04-*.txt
+// Lección pentesting-04, clase 4 de Pentesting. Guiones: voicebox-scripts/{es,en}/pentesting/pentesting-04-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 
@@ -129,7 +129,7 @@ const BEATS = {
   },
 };
 
-const VID = 'pe-04-online-cracking';
+const VID = 'pentesting-04-online-cracking';
 
 // ── Scene components ────────────────────────────────────────────────
 
@@ -262,17 +262,17 @@ export const Pe04OnlineCracking: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'e
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pe-04-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pentesting-04-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pe-04-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pentesting-04-scene2.wav`)} />}
         {lang === 'es'
           ? <EsScene2 fps={fps} c={c.s2 as typeof COPY.es.s2} b={b.s2 as typeof BEATS.es.s2} />
           : <EnScene2 fps={fps} c={c.s2 as typeof COPY.en.s2} b={b.s2 as typeof BEATS.en.s2} />}
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pe-04-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/pentesting-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} lang={lang} />
       </Sequence>
     </AbsoluteFill>

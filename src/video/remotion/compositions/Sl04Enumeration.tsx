@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Sl04Enumeration.tsx ──────────────
 // Video: pentesting I — enumeración con bash.
-// Clase 4 de Scripting/Bash (lección bash-04). Guiones: voicebox-scripts/sl-04-*.txt
+// Clase 4 de Scripting/Bash (lección bash-04). Guiones: voicebox-scripts/{es,en}/bash/bash-04-*.txt
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -22,7 +22,7 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-const VID = 'sl-04-enumeration';
+const VID = 'bash-04-enumeration';
 
 // ── COPY ────────────────────────────────────────────────────────────
 const COPY = {
@@ -219,15 +219,15 @@ export const Sl04Enumeration: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' 
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/sl-04-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/bash-04-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/sl-04-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/bash-04-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2 as typeof COPY.es.s2} b={b.s2 as typeof BEATS.es.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/sl-04-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/bash-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3 as typeof COPY.es.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

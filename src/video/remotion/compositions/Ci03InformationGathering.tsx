@@ -101,7 +101,7 @@ const BEATS = {
   },
 };
 
-const VID = 'ci-03-information-gathering';
+const VID = 'ciber-03-information-gathering';
 
 // ── Scene 1: qué es + pasivo vs activo ──────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -252,17 +252,17 @@ export const Ci03InformationGathering: React.FC<{ lang?: 'es' | 'en' }> = ({ lan
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile(`${base}/${VID}/ci-03-scene1.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/ciber-03-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile(`${base}/${VID}/ci-03-scene2.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/ciber-03-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile(`${base}/${VID}/ci-03-scene3.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/ciber-03-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} lang={lang} />
       </Sequence>
     </AbsoluteFill>

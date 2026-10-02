@@ -109,7 +109,7 @@ const BEATS = {
   },
 };
 
-const VID = 're-02-ip-addresses';
+const VID = 'fundaments-02-ip-addresses';
 
 // ── Scene 1: el formato de la IP ──────────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {

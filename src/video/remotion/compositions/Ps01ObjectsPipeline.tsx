@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Ps01ObjectsPipeline.tsx ──────────
 // Video: qué es PowerShell — objetos, no texto.
-// Clase 1 de Scripting/PowerShell (lección powershell-01). Guiones: voicebox-scripts/ps-01-*.txt
+// Clase 1 de Scripting/PowerShell (lección powershell-01). Guiones: voicebox-scripts/{es,en}/powershell/powershell-01-*.txt
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -22,7 +22,7 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-const VID = 'ps-01-objects-pipeline';
+const VID = 'powershell-01-objects-pipeline';
 
 // ── COPY ────────────────────────────────────────────────────────────
 const COPY = {
@@ -228,15 +228,15 @@ export const Ps01ObjectsPipeline: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = '
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ps-01-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/powershell-01-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ps-01-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/powershell-01-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ps-01-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/powershell-01-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

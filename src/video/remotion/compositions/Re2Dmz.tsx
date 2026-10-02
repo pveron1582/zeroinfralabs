@@ -1,8 +1,8 @@
 // ── video/remotion/compositions/Re2Dmz.tsx ───────────────────────────
 // Video: DMZ — separando lo público de lo privado.
-// Lección networksII-05 del Academy (Redes II). Guiones: voicebox-scripts/re2-05-*.txt
+// Lección networksII-05 del Academy (Redes II). Guiones: voicebox-scripts/{es,en}/networksII/networksII-05-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
-// a silencedetect (-50dB) de voicebox-scripts/re2-05-scene*.wav.
+// a silencedetect (-50dB) de voicebox-scripts/{es,en}/networksII/networksII-05-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -124,7 +124,7 @@ const BEATS = {
   },
 };
 
-const VID = 're2-05-dmz';
+const VID = 'networksII-05-dmz';
 
 // ── Escena 1: el concepto ──────────────────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -242,17 +242,17 @@ export const Re2Dmz: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re2-05-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksII-05-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re2-05-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksII-05-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re2-05-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksII-05-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Ps02VariablesConditions.tsx ──────
 // Video: variables, arrays y condiciones.
-// Clase 2 de Scripting/PowerShell (lección powershell-02). Guiones: voicebox-scripts/ps-02-*.txt
+// Clase 2 de Scripting/PowerShell (lección powershell-02). Guiones: voicebox-scripts/{es,en}/powershell/powershell-02-*.txt
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -17,7 +17,7 @@ const CENTERED: React.CSSProperties = {
   display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', textAlign: 'center',
 };
 
-const VID = 'ps-02-variables-conditionals';
+const VID = 'powershell-02-variables-conditionals';
 
 const COPY = {
   es: {
@@ -217,15 +217,15 @@ export const Ps02VariablesConditions: React.FC<{ lang?: 'es' | 'en' }> = ({ lang
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ps-02-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/powershell-02-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ps-02-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/powershell-02-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ps-02-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/powershell-02-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

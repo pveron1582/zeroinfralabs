@@ -97,7 +97,7 @@ const BEATS = {
 const PIECE_COLORS = [THEME.cyan, THEME.amber, THEME.green];
 const CLASS_COLORS = [THEME.purple, THEME.cyan, THEME.green];
 const CLASS_PREFIX = ['primer octeto ', 'first octet '];
-const VID = 're-05-addressing-dns';
+const VID = 'fundaments-05-addressing-dns';
 
 // ── Scene 1: las 3 piezas de la configuración ─────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1; lang: 'es' | 'en' }> = ({ fps, c, b, lang: _lang }) => {

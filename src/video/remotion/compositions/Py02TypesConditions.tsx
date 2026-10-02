@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Py02TypesConditions.tsx ──────────
 // Video: variables, tipos y condiciones.
-// Clase 2 de Scripting/Python (lección python-02). Guiones: voicebox-scripts/py-02-*.txt
+// Clase 2 de Scripting/Python (lección python-02). Guiones: voicebox-scripts/{es,en}/python/python-02-*.txt
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -22,7 +22,7 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-const VID = 'py-02-types-conditions';
+const VID = 'python-02-types-conditions';
 
 // ── COPY ────────────────────────────────────────────────────────────
 const COPY = {
@@ -216,15 +216,15 @@ export const Py02TypesConditions: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = '
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/py-02-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/python-02-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/py-02-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/python-02-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/py-02-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/python-02-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

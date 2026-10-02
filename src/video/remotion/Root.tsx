@@ -79,97 +79,97 @@ export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Composition
-        id="pe-01-pentest-phases"
+        id="pentesting-01-pentest-phases"
         component={() => <Pe01PentestPhases lang="es" />}
-        durationInFrames={totalDurationFrames('pe-01-pentest-phases', FPS)}
+        durationInFrames={totalDurationFrames('pentesting-01-pentest-phases', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-01-pentest-phases-en"
+        id="pentesting-01-pentest-phases-en"
         component={() => <Pe01PentestPhases lang="en" />}
-        durationInFrames={totalDurationFrames('pe-01-pentest-phases', FPS, 'en')}
+        durationInFrames={totalDurationFrames('pentesting-01-pentest-phases', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-02-filesystem"
+        id="pentesting-02-filesystem"
         component={() => <Pe02Filesystem lang="es" />}
-        durationInFrames={totalDurationFrames('pe-02-filesystem', FPS)}
+        durationInFrames={totalDurationFrames('pentesting-02-filesystem', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-02-filesystem-en"
+        id="pentesting-02-filesystem-en"
         component={() => <Pe02Filesystem lang="en" />}
-        durationInFrames={totalDurationFrames('pe-02-filesystem', FPS, 'en')}
+        durationInFrames={totalDurationFrames('pentesting-02-filesystem', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-03-information-gathering"
+        id="ciber-03-information-gathering"
         component={() => <Ci03InformationGathering lang="es" />}
-        durationInFrames={totalDurationFrames('ci-03-information-gathering', FPS)}
+        durationInFrames={totalDurationFrames('ciber-03-information-gathering', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-03-information-gathering-en"
+        id="ciber-03-information-gathering-en"
         component={() => <Ci03InformationGathering lang="en" />}
-        durationInFrames={totalDurationFrames('ci-03-information-gathering', FPS, 'en')}
+        durationInFrames={totalDurationFrames('ciber-03-information-gathering', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-04-cryptography"
+        id="ciber-04-cryptography"
         component={() => <Ci04Cryptography lang="es" />}
-        durationInFrames={totalDurationFrames('ci-04-cryptography', FPS)}
+        durationInFrames={totalDurationFrames('ciber-04-cryptography', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-04-cryptography-en"
+        id="ciber-04-cryptography-en"
         component={() => <Ci04Cryptography lang="en" />}
-        durationInFrames={totalDurationFrames('ci-04-cryptography', FPS, 'en')}
+        durationInFrames={totalDurationFrames('ciber-04-cryptography', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-05-owasp-top-ten"
+        id="ciber-05-owasp-top-ten"
         component={() => <Ci05OwaspTopTen lang="es" />}
-        durationInFrames={totalDurationFrames('ci-05-owasp-top-ten', FPS)}
+        durationInFrames={totalDurationFrames('ciber-05-owasp-top-ten', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-05-owasp-top-ten-en"
+        id="ciber-05-owasp-top-ten-en"
         component={() => <Ci05OwaspTopTen lang="en" />}
-        durationInFrames={totalDurationFrames('ci-05-owasp-top-ten', FPS, 'en')}
+        durationInFrames={totalDurationFrames('ciber-05-owasp-top-ten', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-01-linux-history"
+        id="linux-01-linux-history"
         component={Li01LinuxHistory}
-        durationInFrames={totalDurationFrames('li-01-linux-history', FPS)}
+        durationInFrames={totalDurationFrames('linux-01-linux-history', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-02-shell-anatomy"
+        id="linux-02-shell-anatomy"
         component={() => <Li02ShellAnatomy lang="es" />}
-        durationInFrames={totalDurationFrames('li-02-shell', FPS)}
+        durationInFrames={totalDurationFrames('linux-02-shell', FPS)}
         fps={FPS}
         width={1280}
         height={720}
@@ -177,848 +177,848 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="li-03-core-commands"
         component={() => <Li03CoreCommands lang="es" />}
-        durationInFrames={totalDurationFrames('li-03-commands', FPS)}
+        durationInFrames={totalDurationFrames('linux-03-commands', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-04-create-edit"
+        id="linux-04-create-edit"
         component={() => <Li04CreateEdit lang="es" />}
-        durationInFrames={totalDurationFrames('li-04-create-edit', FPS)}
+        durationInFrames={totalDurationFrames('linux-04-create-edit', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-05-permissions"
+        id="linux-05-permissions"
         component={() => <Li05Permissions lang="es" />}
-        durationInFrames={totalDurationFrames('li-05-permissions', FPS)}
+        durationInFrames={totalDurationFrames('linux-05-permissions', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-05-permissions-en"
+        id="linux-05-permissions-en"
         component={() => <Li05Permissions lang="en" />}
-        durationInFrames={totalDurationFrames('li-05-permissions', FPS, 'en')}
+        durationInFrames={totalDurationFrames('linux-05-permissions', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-01-windows-history"
+        id="windows-01-windows-history"
         component={() => <Wi01WindowsHistory lang="es" />}
-        durationInFrames={totalDurationFrames('wi-01-windows-history', FPS)}
+        durationInFrames={totalDurationFrames('windows-01-windows-history', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-01-windows-history-en"
+        id="windows-01-windows-history-en"
         component={() => <Wi01WindowsHistory lang="en" />}
-        durationInFrames={totalDurationFrames('wi-01-windows-history', FPS, 'en')}
+        durationInFrames={totalDurationFrames('windows-01-windows-history', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-02-current-versions"
+        id="windows-02-current-versions"
         component={() => <Wi02CurrentVersions lang="es" />}
-        durationInFrames={totalDurationFrames('wi-02-current-versions', FPS)}
+        durationInFrames={totalDurationFrames('windows-02-current-versions', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-02-current-versions-en"
+        id="windows-02-current-versions-en"
         component={() => <Wi02CurrentVersions lang="en" />}
-        durationInFrames={totalDurationFrames('wi-02-current-versions', FPS, 'en')}
+        durationInFrames={totalDurationFrames('windows-02-current-versions', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-03-security"
+        id="windows-03-security"
         component={() => <Wi03Security lang="es" />}
-        durationInFrames={totalDurationFrames('wi-03-security', FPS)}
+        durationInFrames={totalDurationFrames('windows-03-security', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-03-security-en"
+        id="windows-03-security-en"
         component={() => <Wi03Security lang="en" />}
-        durationInFrames={totalDurationFrames('wi-03-security', FPS, 'en')}
+        durationInFrames={totalDurationFrames('windows-03-security', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-04-filesystem"
+        id="windows-04-filesystem"
         component={() => <Wi04Filesystem lang="es" />}
-        durationInFrames={totalDurationFrames('wi-04-filesystem', FPS)}
+        durationInFrames={totalDurationFrames('windows-04-filesystem', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-04-filesystem-en"
+        id="windows-04-filesystem-en"
         component={() => <Wi04Filesystem lang="en" />}
-        durationInFrames={totalDurationFrames('wi-04-filesystem', FPS, 'en')}
+        durationInFrames={totalDurationFrames('windows-04-filesystem', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-05-network-services"
+        id="windows-05-network-services"
         component={() => <Wi05NetworkServices lang="es" />}
-        durationInFrames={totalDurationFrames('wi-05-network-services', FPS)}
+        durationInFrames={totalDurationFrames('windows-05-network-services', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="wi-05-network-services-en"
+        id="windows-05-network-services-en"
         component={() => <Wi05NetworkServices lang="en" />}
-        durationInFrames={totalDurationFrames('wi-05-network-services', FPS, 'en')}
+        durationInFrames={totalDurationFrames('windows-05-network-services', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-01-cia-triad"
+        id="ciber-01-cia-triad"
         component={() => <Ci01CiaTriad lang="es" />}
-        durationInFrames={totalDurationFrames('ci-01-cia-triad', FPS)}
+        durationInFrames={totalDurationFrames('ciber-01-cia-triad', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-01-cia-triad-en"
+        id="ciber-01-cia-triad-en"
         component={() => <Ci01CiaTriad lang="en" />}
-        durationInFrames={totalDurationFrames('ci-01-cia-triad', FPS, 'en')}
+        durationInFrames={totalDurationFrames('ciber-01-cia-triad', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-02-hashes-cracking"
+        id="ciber-02-hashes-cracking"
         component={() => <Ci02HashesCracking lang="es" />}
-        durationInFrames={totalDurationFrames('ci-02-hashes-cracking', FPS)}
+        durationInFrames={totalDurationFrames('ciber-02-hashes-cracking', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ci-02-hashes-cracking-en"
+        id="ciber-02-hashes-cracking-en"
         component={() => <Ci02HashesCracking lang="en" />}
-        durationInFrames={totalDurationFrames('ci-02-hashes-cracking', FPS, 'en')}
+        durationInFrames={totalDurationFrames('ciber-02-hashes-cracking', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-01-alternative-systems"
+        id="others-01-alternative-systems"
         component={() => <Ot01AlternativeSystems lang="es" />}
-        durationInFrames={totalDurationFrames('ot-01-alternative-systems', FPS)}
+        durationInFrames={totalDurationFrames('others-01-alternative-systems', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-01-alternative-systems-en"
+        id="others-01-alternative-systems-en"
         component={() => <Ot01AlternativeSystems lang="en" />}
-        durationInFrames={totalDurationFrames('ot-01-alternative-systems', FPS, 'en')}
+        durationInFrames={totalDurationFrames('others-01-alternative-systems', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-02-portable-devices"
+        id="others-02-portable-devices"
         component={() => <Ot02PortableDevices lang="es" />}
-        durationInFrames={totalDurationFrames('ot-02-portable-devices', FPS)}
+        durationInFrames={totalDurationFrames('others-02-portable-devices', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-02-portable-devices-en"
+        id="others-02-portable-devices-en"
         component={() => <Ot02PortableDevices lang="en" />}
-        durationInFrames={totalDurationFrames('ot-02-portable-devices', FPS, 'en')}
+        durationInFrames={totalDurationFrames('others-02-portable-devices', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-03-hacking-hardware"
+        id="others-03-hacking-hardware"
         component={() => <Ot03HackingHardware lang="es" />}
-        durationInFrames={totalDurationFrames('ot-03-hacking-hardware', FPS)}
+        durationInFrames={totalDurationFrames('others-03-hacking-hardware', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-03-hacking-hardware-en"
+        id="others-03-hacking-hardware-en"
         component={() => <Ot03HackingHardware lang="en" />}
-        durationInFrames={totalDurationFrames('ot-03-hacking-hardware', FPS, 'en')}
+        durationInFrames={totalDurationFrames('others-03-hacking-hardware', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-04-social-engineering"
+        id="others-04-social-engineering"
         component={() => <Ot04SocialEngineering lang="es" />}
-        durationInFrames={totalDurationFrames('ot-04-social-engineering', FPS)}
+        durationInFrames={totalDurationFrames('others-04-social-engineering', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ot-04-social-engineering-en"
+        id="others-04-social-engineering-en"
         component={() => <Ot04SocialEngineering lang="en" />}
-        durationInFrames={totalDurationFrames('ot-04-social-engineering', FPS, 'en')}
+        durationInFrames={totalDurationFrames('others-04-social-engineering', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-01-protocols-by-layer"
+        id="networksI-01-protocols-by-layer"
         component={() => <Re1ProtocolsByLayer lang="es" />}
-        durationInFrames={totalDurationFrames('re1-01-protocols-by-layer', FPS)}
+        durationInFrames={totalDurationFrames('networksI-01-protocols-by-layer', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-01-protocols-by-layer-en"
+        id="networksI-01-protocols-by-layer-en"
         component={() => <Re1ProtocolsByLayer lang="en" />}
-        durationInFrames={totalDurationFrames('re1-01-protocols-by-layer', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksI-01-protocols-by-layer', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-02-services"
+        id="networksI-03-services"
         component={() => <Re1Services lang="es" />}
-        durationInFrames={totalDurationFrames('re1-02-services', FPS)}
+        durationInFrames={totalDurationFrames('networksI-03-services', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-02-services-en"
+        id="networksI-03-services-en"
         component={() => <Re1Services lang="en" />}
-        durationInFrames={totalDurationFrames('re1-02-services', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksI-03-services', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-03-ports"
+        id="networksI-02-ports"
         component={() => <Re1Ports lang="es" />}
-        durationInFrames={totalDurationFrames('re1-03-ports', FPS)}
+        durationInFrames={totalDurationFrames('networksI-02-ports', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-03-ports-en"
+        id="networksI-02-ports-en"
         component={() => <Re1Ports lang="en" />}
-        durationInFrames={totalDurationFrames('re1-03-ports', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksI-02-ports', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-04-devices"
+        id="networksI-04-devices"
         component={() => <Re1Devices lang="es" />}
-        durationInFrames={totalDurationFrames('re1-04-devices', FPS)}
+        durationInFrames={totalDurationFrames('networksI-04-devices', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-04-devices-en"
+        id="networksI-04-devices-en"
         component={() => <Re1Devices lang="en" />}
-        durationInFrames={totalDurationFrames('re1-04-devices', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksI-04-devices', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-05-vlans"
+        id="networksI-05-vlans"
         component={() => <Re1Vlans lang="es" />}
-        durationInFrames={totalDurationFrames('re1-05-vlans', FPS)}
+        durationInFrames={totalDurationFrames('networksI-05-vlans', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re1-05-vlans-en"
+        id="networksI-05-vlans-en"
         component={() => <Re1Vlans lang="en" />}
-        durationInFrames={totalDurationFrames('re1-05-vlans', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksI-05-vlans', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-01-dhcp"
+        id="networksII-01-dhcp"
         component={() => <Re2Dhcp lang="es" />}
-        durationInFrames={totalDurationFrames('re2-01-dhcp', FPS)}
+        durationInFrames={totalDurationFrames('networksII-01-dhcp', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-01-dhcp-en"
+        id="networksII-01-dhcp-en"
         component={() => <Re2Dhcp lang="en" />}
-        durationInFrames={totalDurationFrames('re2-01-dhcp', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksII-01-dhcp', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-02-nat"
+        id="networksII-02-nat"
         component={() => <Re2Nat lang="es" />}
-        durationInFrames={totalDurationFrames('re2-02-nat', FPS)}
+        durationInFrames={totalDurationFrames('networksII-02-nat', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-02-nat-en"
+        id="networksII-02-nat-en"
         component={() => <Re2Nat lang="en" />}
-        durationInFrames={totalDurationFrames('re2-02-nat', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksII-02-nat', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-03-dns"
+        id="networksII-03-dns"
         component={() => <Re2Dns lang="es" />}
-        durationInFrames={totalDurationFrames('re2-03-dns', FPS)}
+        durationInFrames={totalDurationFrames('networksII-03-dns', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-03-dns-en"
+        id="networksII-03-dns-en"
         component={() => <Re2Dns lang="en" />}
-        durationInFrames={totalDurationFrames('re2-03-dns', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksII-03-dns', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-04-vpn"
+        id="networksII-04-vpn"
         component={() => <Re2Vpn lang="es" />}
-        durationInFrames={totalDurationFrames('re2-04-vpn', FPS)}
+        durationInFrames={totalDurationFrames('networksII-04-vpn', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-04-vpn-en"
+        id="networksII-04-vpn-en"
         component={() => <Re2Vpn lang="en" />}
-        durationInFrames={totalDurationFrames('re2-04-vpn', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksII-04-vpn', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-05-dmz"
+        id="networksII-05-dmz"
         component={() => <Re2Dmz lang="es" />}
-        durationInFrames={totalDurationFrames('re2-05-dmz', FPS)}
+        durationInFrames={totalDurationFrames('networksII-05-dmz', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re2-05-dmz-en"
+        id="networksII-05-dmz-en"
         component={() => <Re2Dmz lang="en" />}
-        durationInFrames={totalDurationFrames('re2-05-dmz', FPS, 'en')}
+        durationInFrames={totalDurationFrames('networksII-05-dmz', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-01-network-types"
+        id="fundaments-01-network-types"
         component={() => <Re01NetworkTypes lang="es" />}
-        durationInFrames={totalDurationFrames('re-01-network-types', FPS)}
+        durationInFrames={totalDurationFrames('fundaments-01-network-types', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-01-network-types-en"
+        id="fundaments-01-network-types-en"
         component={() => <Re01NetworkTypes lang="en" />}
-        durationInFrames={totalDurationFrames('re-01-network-types', FPS, 'en')}
+        durationInFrames={totalDurationFrames('fundaments-01-network-types', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-02-ip-addresses"
+        id="fundaments-02-ip-addresses"
         component={() => <Re02IpAddresses lang="es" />}
-        durationInFrames={totalDurationFrames('re-02-ip-addresses', FPS)}
+        durationInFrames={totalDurationFrames('fundaments-02-ip-addresses', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-02-ip-addresses-en"
+        id="fundaments-02-ip-addresses-en"
         component={() => <Re02IpAddresses lang="en" />}
-        durationInFrames={totalDurationFrames('re-02-ip-addresses', FPS, 'en')}
+        durationInFrames={totalDurationFrames('fundaments-02-ip-addresses', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-03-devices-topologies"
+        id="fundaments-03-devices-topologies"
         component={() => <Re03DevicesTopologies lang="es" />}
-        durationInFrames={totalDurationFrames('re-03-devices-topologies', FPS)}
+        durationInFrames={totalDurationFrames('fundaments-03-devices-topologies', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-03-devices-topologies-en"
+        id="fundaments-03-devices-topologies-en"
         component={() => <Re03DevicesTopologies lang="en" />}
-        durationInFrames={totalDurationFrames('re-03-devices-topologies', FPS, 'en')}
+        durationInFrames={totalDurationFrames('fundaments-03-devices-topologies', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-04-osi-layers"
+        id="fundaments-04-osi-layers"
         component={() => <Re04OsiLayers lang="es" />}
-        durationInFrames={totalDurationFrames('re-04-osi-layers', FPS)}
+        durationInFrames={totalDurationFrames('fundaments-04-osi-layers', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-04-osi-layers-en"
+        id="fundaments-04-osi-layers-en"
         component={() => <Re04OsiLayers lang="en" />}
-        durationInFrames={totalDurationFrames('re-04-osi-layers', FPS, 'en')}
+        durationInFrames={totalDurationFrames('fundaments-04-osi-layers', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-05-addressing-dns"
+        id="fundaments-05-addressing-dns"
         component={() => <Re05AddressingDns lang="es" />}
-        durationInFrames={totalDurationFrames('re-05-addressing-dns', FPS)}
+        durationInFrames={totalDurationFrames('fundaments-05-addressing-dns', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="re-05-addressing-dns-en"
+        id="fundaments-05-addressing-dns-en"
         component={() => <Re05AddressingDns lang="en" />}
-        durationInFrames={totalDurationFrames('re-05-addressing-dns', FPS, 'en')}
+        durationInFrames={totalDurationFrames('fundaments-05-addressing-dns', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-03-offline-cracking"
+        id="pentesting-03-offline-cracking"
         component={() => <Pe03OfflineCracking lang="es" />}
-        durationInFrames={totalDurationFrames('pe-03-offline-cracking', FPS)}
+        durationInFrames={totalDurationFrames('pentesting-03-offline-cracking', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-03-offline-cracking-en"
+        id="pentesting-03-offline-cracking-en"
         component={() => <Pe03OfflineCracking lang="en" />}
-        durationInFrames={totalDurationFrames('pe-03-offline-cracking', FPS, 'en')}
+        durationInFrames={totalDurationFrames('pentesting-03-offline-cracking', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-04-online-cracking"
+        id="pentesting-04-online-cracking"
         component={() => <Pe04OnlineCracking lang="es" />}
-        durationInFrames={totalDurationFrames('pe-04-online-cracking', FPS)}
+        durationInFrames={totalDurationFrames('pentesting-04-online-cracking', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-04-online-cracking-en"
+        id="pentesting-04-online-cracking-en"
         component={() => <Pe04OnlineCracking lang="en" />}
-        durationInFrames={totalDurationFrames('pe-04-online-cracking', FPS, 'en')}
+        durationInFrames={totalDurationFrames('pentesting-04-online-cracking', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-05-man-in-the-middle"
+        id="pentesting-05-man-in-the-middle"
         component={() => <Pe05ManInTheMiddle lang="es" />}
-        durationInFrames={totalDurationFrames('pe-05-man-in-the-middle', FPS)}
+        durationInFrames={totalDurationFrames('pentesting-05-man-in-the-middle', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="pe-05-man-in-the-middle-en"
+        id="pentesting-05-man-in-the-middle-en"
         component={() => <Pe05ManInTheMiddle lang="en" />}
-        durationInFrames={totalDurationFrames('pe-05-man-in-the-middle', FPS, 'en')}
+        durationInFrames={totalDurationFrames('pentesting-05-man-in-the-middle', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-01-web-protocols"
+        id="hackingweb-01-web-protocols"
         component={() => <Hw01WebProtocols lang="es" />}
-        durationInFrames={totalDurationFrames('hw-01-web-protocols', FPS)}
+        durationInFrames={totalDurationFrames('hackingweb-01-web-protocols', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-01-web-protocols-en"
+        id="hackingweb-01-web-protocols-en"
         component={() => <Hw01WebProtocols lang="en" />}
-        durationInFrames={totalDurationFrames('hw-01-web-protocols', FPS, 'en')}
+        durationInFrames={totalDurationFrames('hackingweb-01-web-protocols', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-02-domains-subdirectories"
+        id="hackingweb-02-domains-subdirectories"
         component={() => <Hw02DomainsSubdirectories lang="es" />}
-        durationInFrames={totalDurationFrames('hw-02-domains-subdirectories', FPS)}
+        durationInFrames={totalDurationFrames('hackingweb-02-domains-subdirectories', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-02-domains-subdirectories-en"
+        id="hackingweb-02-domains-subdirectories-en"
         component={() => <Hw02DomainsSubdirectories lang="en" />}
-        durationInFrames={totalDurationFrames('hw-02-domains-subdirectories', FPS, 'en')}
+        durationInFrames={totalDurationFrames('hackingweb-02-domains-subdirectories', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-03-xss"
+        id="hackingweb-03-xss"
         component={() => <Hw03Xss lang="es" />}
-        durationInFrames={totalDurationFrames('hw-03-xss', FPS)}
+        durationInFrames={totalDurationFrames('hackingweb-03-xss', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-03-xss-en"
+        id="hackingweb-03-xss-en"
         component={() => <Hw03Xss lang="en" />}
-        durationInFrames={totalDurationFrames('hw-03-xss', FPS, 'en')}
+        durationInFrames={totalDurationFrames('hackingweb-03-xss', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-04-sql-injection"
+        id="hackingweb-04-sql-injection"
         component={() => <Hw04SqlInjection lang="es" />}
-        durationInFrames={totalDurationFrames('hw-04-sql-injection', FPS)}
+        durationInFrames={totalDurationFrames('hackingweb-04-sql-injection', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-04-sql-injection-en"
+        id="hackingweb-04-sql-injection-en"
         component={() => <Hw04SqlInjection lang="en" />}
-        durationInFrames={totalDurationFrames('hw-04-sql-injection', FPS, 'en')}
+        durationInFrames={totalDurationFrames('hackingweb-04-sql-injection', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-05-path-traversal-lfi"
+        id="hackingweb-05-path-traversal-lfi"
         component={() => <Hw05PathTraversalLfi lang="es" />}
-        durationInFrames={totalDurationFrames('hw-05-path-traversal-lfi', FPS)}
+        durationInFrames={totalDurationFrames('hackingweb-05-path-traversal-lfi', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="hw-05-path-traversal-lfi-en"
+        id="hackingweb-05-path-traversal-lfi-en"
         component={() => <Hw05PathTraversalLfi lang="en" />}
-        durationInFrames={totalDurationFrames('hw-05-path-traversal-lfi', FPS, 'en')}
+        durationInFrames={totalDurationFrames('hackingweb-05-path-traversal-lfi', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-01-bash-intro"
+        id="bash-01-bash-intro"
         component={() => <Sl01BashIntro lang="es" />}
-        durationInFrames={totalDurationFrames('sl-01-bash-intro', FPS)}
+        durationInFrames={totalDurationFrames('bash-01-bash-intro', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-01-bash-intro-en"
+        id="bash-01-bash-intro-en"
         component={() => <Sl01BashIntro lang="en" />}
-        durationInFrames={totalDurationFrames('sl-01-bash-intro', FPS, 'en')}
+        durationInFrames={totalDurationFrames('bash-01-bash-intro', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-02-variables-conditionals"
+        id="bash-02-variables-conditionals"
         component={() => <Sl02VariablesConditionals lang="es" />}
-        durationInFrames={totalDurationFrames('sl-02-variables-conditionals', FPS)}
+        durationInFrames={totalDurationFrames('bash-02-variables-conditionals', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-02-variables-conditionals-en"
+        id="bash-02-variables-conditionals-en"
         component={() => <Sl02VariablesConditionals lang="en" />}
-        durationInFrames={totalDurationFrames('sl-02-variables-conditionals', FPS, 'en')}
+        durationInFrames={totalDurationFrames('bash-02-variables-conditionals', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-03-loops-functions"
+        id="bash-03-loops-functions"
         component={() => <Sl03LoopsFunctions lang="es" />}
-        durationInFrames={totalDurationFrames('sl-03-loops-functions', FPS)}
+        durationInFrames={totalDurationFrames('bash-03-loops-functions', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-03-loops-functions-en"
+        id="bash-03-loops-functions-en"
         component={() => <Sl03LoopsFunctions lang="en" />}
-        durationInFrames={totalDurationFrames('sl-03-loops-functions', FPS, 'en')}
+        durationInFrames={totalDurationFrames('bash-03-loops-functions', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-04-enumeration"
+        id="bash-04-enumeration"
         component={() => <Sl04Enumeration lang="es" />}
-        durationInFrames={totalDurationFrames('sl-04-enumeration', FPS)}
+        durationInFrames={totalDurationFrames('bash-04-enumeration', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-04-enumeration-en"
+        id="bash-04-enumeration-en"
         component={() => <Sl04Enumeration lang="en" />}
-        durationInFrames={totalDurationFrames('sl-04-enumeration', FPS, 'en')}
+        durationInFrames={totalDurationFrames('bash-04-enumeration', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-05-reverse-shells"
+        id="bash-05-reverse-shells"
         component={() => <Sl05ReverseShells lang="es" />}
-        durationInFrames={totalDurationFrames('sl-05-reverse-shells', FPS)}
+        durationInFrames={totalDurationFrames('bash-05-reverse-shells', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="sl-05-reverse-shells-en"
+        id="bash-05-reverse-shells-en"
         component={() => <Sl05ReverseShells lang="en" />}
-        durationInFrames={totalDurationFrames('sl-05-reverse-shells', FPS, 'en')}
+        durationInFrames={totalDurationFrames('bash-05-reverse-shells', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-01-objects-pipeline"
+        id="powershell-01-objects-pipeline"
         component={() => <Ps01ObjectsPipeline lang="es" />}
-        durationInFrames={totalDurationFrames('ps-01-objects-pipeline', FPS)}
+        durationInFrames={totalDurationFrames('powershell-01-objects-pipeline', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-01-objects-pipeline-en"
+        id="powershell-01-objects-pipeline-en"
         component={() => <Ps01ObjectsPipeline lang="en" />}
-        durationInFrames={totalDurationFrames('ps-01-objects-pipeline', FPS, 'en')}
+        durationInFrames={totalDurationFrames('powershell-01-objects-pipeline', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-02-variables-conditionals"
+        id="powershell-02-variables-conditionals"
         component={() => <Ps02VariablesConditions lang="es" />}
-        durationInFrames={totalDurationFrames('ps-02-variables-conditionals', FPS)}
+        durationInFrames={totalDurationFrames('powershell-02-variables-conditionals', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-02-variables-conditionals-en"
+        id="powershell-02-variables-conditionals-en"
         component={() => <Ps02VariablesConditions lang="en" />}
-        durationInFrames={totalDurationFrames('ps-02-variables-conditionals', FPS, 'en')}
+        durationInFrames={totalDurationFrames('powershell-02-variables-conditionals', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-03-loops-cmdlets"
+        id="powershell-03-loops-cmdlets"
         component={() => <Ps03LoopsCmdlets lang="es" />}
-        durationInFrames={totalDurationFrames('ps-03-loops-cmdlets', FPS)}
+        durationInFrames={totalDurationFrames('powershell-03-loops-cmdlets', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-03-loops-cmdlets-en"
+        id="powershell-03-loops-cmdlets-en"
         component={() => <Ps03LoopsCmdlets lang="en" />}
-        durationInFrames={totalDurationFrames('ps-03-loops-cmdlets', FPS, 'en')}
+        durationInFrames={totalDurationFrames('powershell-03-loops-cmdlets', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-04-windows-enumeration"
+        id="powershell-04-windows-enumeration"
         component={() => <Ps04WindowsEnumeration lang="es" />}
-        durationInFrames={totalDurationFrames('ps-04-windows-enumeration', FPS)}
+        durationInFrames={totalDurationFrames('powershell-04-windows-enumeration', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-04-windows-enumeration-en"
+        id="powershell-04-windows-enumeration-en"
         component={() => <Ps04WindowsEnumeration lang="en" />}
-        durationInFrames={totalDurationFrames('ps-04-windows-enumeration', FPS, 'en')}
+        durationInFrames={totalDurationFrames('powershell-04-windows-enumeration', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-05-credentials-obfuscation"
+        id="powershell-05-credentials-obfuscation"
         component={() => <Ps05CredentialsObfuscation lang="es" />}
-        durationInFrames={totalDurationFrames('ps-05-credentials-obfuscation', FPS)}
+        durationInFrames={totalDurationFrames('powershell-05-credentials-obfuscation', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ps-05-credentials-obfuscation-en"
+        id="powershell-05-credentials-obfuscation-en"
         component={() => <Ps05CredentialsObfuscation lang="en" />}
-        durationInFrames={totalDurationFrames('ps-05-credentials-obfuscation', FPS, 'en')}
+        durationInFrames={totalDurationFrames('powershell-05-credentials-obfuscation', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-01-python-intro"
+        id="python-01-python-intro"
         component={() => <Py01PythonIntro lang="es" />}
-        durationInFrames={totalDurationFrames('py-01-python-intro', FPS)}
+        durationInFrames={totalDurationFrames('python-01-python-intro', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-01-python-intro-en"
+        id="python-01-python-intro-en"
         component={() => <Py01PythonIntro lang="en" />}
-        durationInFrames={totalDurationFrames('py-01-python-intro', FPS, 'en')}
+        durationInFrames={totalDurationFrames('python-01-python-intro', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-02-types-conditions"
+        id="python-02-types-conditions"
         component={() => <Py02TypesConditions lang="es" />}
-        durationInFrames={totalDurationFrames('py-02-types-conditions', FPS)}
+        durationInFrames={totalDurationFrames('python-02-types-conditions', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-02-types-conditions-en"
+        id="python-02-types-conditions-en"
         component={() => <Py02TypesConditions lang="en" />}
-        durationInFrames={totalDurationFrames('py-02-types-conditions', FPS, 'en')}
+        durationInFrames={totalDurationFrames('python-02-types-conditions', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-03-loops-libraries"
+        id="python-03-loops-libraries"
         component={() => <Py03LoopsLibraries lang="es" />}
-        durationInFrames={totalDurationFrames('py-03-loops-libraries', FPS)}
+        durationInFrames={totalDurationFrames('python-03-loops-libraries', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-03-loops-libraries-en"
+        id="python-03-loops-libraries-en"
         component={() => <Py03LoopsLibraries lang="en" />}
-        durationInFrames={totalDurationFrames('py-03-loops-libraries', FPS, 'en')}
+        durationInFrames={totalDurationFrames('python-03-loops-libraries', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-04-socket-networking"
+        id="python-04-socket-networking"
         component={() => <Py04SocketNetworking lang="es" />}
-        durationInFrames={totalDurationFrames('py-04-socket-networking', FPS)}
+        durationInFrames={totalDurationFrames('python-04-socket-networking', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-04-socket-networking-en"
+        id="python-04-socket-networking-en"
         component={() => <Py04SocketNetworking lang="en" />}
-        durationInFrames={totalDurationFrames('py-04-socket-networking', FPS, 'en')}
+        durationInFrames={totalDurationFrames('python-04-socket-networking', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-05-http-requests"
+        id="python-05-http-requests"
         component={() => <Py05HttpRequests lang="es" />}
-        durationInFrames={totalDurationFrames('py-05-http-requests', FPS)}
+        durationInFrames={totalDurationFrames('python-05-http-requests', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="py-05-http-requests-en"
+        id="python-05-http-requests-en"
         component={() => <Py05HttpRequests lang="en" />}
-        durationInFrames={totalDurationFrames('py-05-http-requests', FPS, 'en')}
+        durationInFrames={totalDurationFrames('python-05-http-requests', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       {/* English versions (audio-en) — Sistemas Operativos (li/wi/ot) */}
       <Composition
-        id="li-01-linux-history-en"
+        id="linux-01-linux-history-en"
         component={() => <Li01LinuxHistory lang="en" />}
-        durationInFrames={totalDurationFrames('li-01-linux-history', FPS, 'en')}
+        durationInFrames={totalDurationFrames('linux-01-linux-history', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-02-shell-en"
+        id="linux-02-shell-en"
         component={() => <Li02ShellAnatomy lang="en" />}
-        durationInFrames={totalDurationFrames('li-02-shell', FPS, 'en')}
+        durationInFrames={totalDurationFrames('linux-02-shell', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-03-commands-en"
+        id="linux-03-commands-en"
         component={() => <Li03CoreCommands lang="en" />}
-        durationInFrames={totalDurationFrames('li-03-commands', FPS, 'en')}
+        durationInFrames={totalDurationFrames('linux-03-commands', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="li-04-create-edit-en"
+        id="linux-04-create-edit-en"
         component={() => <Li04CreateEdit lang="en" />}
-        durationInFrames={totalDurationFrames('li-04-create-edit', FPS, 'en')}
+        durationInFrames={totalDurationFrames('linux-04-create-edit', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}

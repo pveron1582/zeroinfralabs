@@ -32,14 +32,17 @@ Las video-lecciones se renderizan con **Remotion** (118 composiciones) y se expo
 **Servicio actual:** [jsDelivr](https://www.jsdelivr.com/) sirviendo un repo público de GitHub con los videos:
 - Repo: `https://github.com/pveron1582/zilabs-videos` (público, sin LFS — jsDelivr necesita el archivo crudo)
 - URL base: `https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main`
-- Ejemplo: `https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main/videos/li01-linux-history.mp4`
+- Ejemplo: `https://cdn.jsdelivr.net/gh/pveron1582/zilabs-videos@main/videos/es/linux-01-linux-history.mp4`
+- Estructura: `videos/es/<lessonId>-<slug>.mp4` y `videos/en/<lessonId>-<slug>.mp4` — el nombre base es **exactamente el de la lección** (`linux-01`, `networksI-03`, `pentesting-05`…), así cualquier archivo se encuentra por el id que figura en la ruta.
+
+**`media/videos/`** es el espejo local de ese repo (trackeado con LFS en este repo): ahí están los `.mp4` originales y los `.wav` de `audio-es/` y `audio-en/` que usa Remotion al renderizar; `src/academy/__tests__/media-naming.test.ts` verifica que coincidan 1:1 con las lecciones.
 
 **Flujo para agregar o actualizar un video:**
-1. Renderizá la composición con Remotion → obtiene el `.mp4` en `public/videos/` — `pnpm remotion` abre el estudio (entry y config en `remotion.config.ts`), o desde CLI `pnpm remotion render <id> public/videos/<nombre>.mp4`
-2. Subí el mp4 al repo `zilabs-videos` (estructura `videos/<nombre>.mp4`, máx. 20MB por archivo)
+1. Renderizá la composición con Remotion — `pnpm remotion` abre el estudio (entry y config en `remotion.config.ts`), o desde CLI `pnpm remotion render <lessonId>-<slug> media/videos/es/<lessonId>-<slug>.mp4` (el id de la composición es el mismo `<lessonId>-<slug>` del `.mp4`, de la lección y de los audios)
+2. Copiá el mp4 al repo `zilabs-videos` en `videos/es/` y `videos/en/` (máx. 20MB por archivo)
 3. jsDelivr lo cachea automáticamente (TTL ~7 días) y lo sirve desde el nodo más cercano
 
-**En el código:** la base se define en un solo lugar — `src/utils/videoUrl.ts` (`VIDEO_BASE_URL`). Si algún día se cambia de proveedor (R2, Cloudflare Stream, etc.), es un cambio de 1 línea y las 96 lecciones que referencian `videos/*.mp4` apuntan al nuevo origen sin tocar sus datos.
+**En el código:** la base se define en un solo lugar — `src/utils/videoUrl.ts` (`VIDEO_BASE_URL`). Si algún día se cambia de proveedor (R2, Cloudflare Stream, etc.), es un cambio de 1 línea y las 59 lecciones que referencian `videos/*.mp4` apuntan al nuevo origen sin tocar sus datos.
 
 **Ventajas:** deploy de Vercel liviano (los videos no entran al bundle), CDN global, carga diferida del video (solo se descarga al abrir la lección), y sin costos de ancho de banda para el proyecto.
 
@@ -102,7 +105,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **3332 Tests** — Vitest + React Testing Library + Playwright E2E (269 archivos unitarios + 9 specs / 24 tests E2E)
+- **3337 Tests** — Vitest + React Testing Library + Playwright E2E (270 archivos unitarios + 9 specs / 24 tests E2E)
 
 ## 🏗️ Tech Stack
 
@@ -175,7 +178,7 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales (01-06 + 08; 07 hidden)
-- ✅ 3332 tests pasando (269 test files unitarios + 9 specs / 24 tests E2E con Playwright)
+- ✅ 3337 tests pasando (270 test files unitarios + 9 specs / 24 tests E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
 - ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)

@@ -111,7 +111,7 @@ const BEATS = {
   },
 };
 
-const VID = 'li-04-create-edit';
+const VID = 'linux-04-create-edit';
 
 // ── Scene 1: intro — 3 comandos en orden ────────────────────────────
 const OrderChip: React.FC<{ step: typeof COPY.es.s1.orderSteps[0]; fps: number }> = ({ step, fps }) => {
@@ -292,19 +292,19 @@ export const Li04CreateEdit: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }
 
       {/* Scene 1: intro */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-04-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-04-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       {/* Scene 2: pipeline */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-04-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-04-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       {/* Scene 3: dónde podés crear */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/li-04-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

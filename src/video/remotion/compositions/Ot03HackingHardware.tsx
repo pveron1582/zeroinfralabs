@@ -160,7 +160,7 @@ const COPY = {
   },
 };
 
-const VID = 'ot-03-hacking-hardware';
+const VID = 'others-03-hacking-hardware';
 
 // ── Escena 1: título + disclaimer de doble uso ──────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1 }> = ({ fps, c }) => {
@@ -297,25 +297,25 @@ export const Ot03HackingHardware: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = '
 
       {/* Scene 1: título + doble uso */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-03-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-03-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} />
       </Sequence>
 
       {/* Scene 2: Pineapple + USB HID */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-03-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-03-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} />
       </Sequence>
 
       {/* Scene 3: Flipper + compañía */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-03-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-03-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} />
       </Sequence>
 
       {/* Scene 4: cierre */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-03-scene4.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-03-scene4.wav`)} />}
         <Scene4 fps={fps} c={c.s4} />
       </Sequence>
     </AbsoluteFill>

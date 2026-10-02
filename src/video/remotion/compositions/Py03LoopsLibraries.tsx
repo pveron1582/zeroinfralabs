@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Py03LoopsLibraries.tsx ───────────
 // Video: bucles, funciones y librerías.
-// Clase 3 de Scripting/Python (lección python-03). Guiones: voicebox-scripts/py-03-*.txt
+// Clase 3 de Scripting/Python (lección python-03). Guiones: voicebox-scripts/{es,en}/python/python-03-*.txt
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -22,7 +22,7 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-const VID = 'py-03-loops-libraries';
+const VID = 'python-03-loops-libraries';
 
 // ── COPY ────────────────────────────────────────────────────────────
 const COPY = {
@@ -214,15 +214,15 @@ export const Py03LoopsLibraries: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'e
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/py-03-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/python-03-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/py-03-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/python-03-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/py-03-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/python-03-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

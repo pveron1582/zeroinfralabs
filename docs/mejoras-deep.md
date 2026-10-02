@@ -368,17 +368,29 @@ hace **tsc + lint + test + build**.
 - [x] **3.4.1** Job de Playwright en CI (o nightly): `playwright install --with-deps chromium` + `pnpm test:e2e`. → **RESUELTO 2026-10-01:** job `e2e` en `ci.yml` (`needs: verify`: Playwright install + `pnpm test:e2e`).
 - [x] **3.4.2** Publicar el reporte (`playwright-report/`) como artefacto en fallo (ya está gitignored). → **RESUELTO 2026-10-01:** step "Upload Playwright report" con `if: failure()` (7 días de retención).
 
-### 3.5 Duplicación ES/EN en Remotion (116 archivos)
+### 3.5 Duplicación ES/EN en Remotion (unificado, queda Root.tsx)
 
-`src/video/remotion/compositions/` tiene **116 archivos** para **39 composiciones**, en pares
-`X.tsx` / `XEn.tsx` con el mismo árbol de animación y distinto texto/audio (`Li05Permissions.tsx` 342 LOC +
-`Li05PermissionsEn.tsx` 333 LOC; `Pe02Filesystem.tsx` 318 + `Pe02FilesystemEn.tsx` 308…). Y `video/remotion/Root.tsx`
-tiene **1.083 líneas** (registro de las 39 composiciones × idioma).
+> **Actualizado 2026-10-01:** la duplicación ya no existe — `src/video/remotion/compositions/` tiene
+> **59 archivos** (uno por lección, sin pares `*En.tsx`) con `lang: 'es' | 'en'`, y los audios siguen el
+> esquema `videos/audio-<idioma>/<lessonId>-<slug>/<lessonId>-sceneN.wav`.
 
-- [ ] **3.5.1** Parametrizar por prop: una composición con `lang: 'es' | 'en'` y un `t()` local (o un objeto
+- [x] **3.5.1** Parametrizar por prop: una composición con `lang: 'es' | 'en'` y un `t()` local (o un objeto
       `copy[lang]`) → se elimina ~50% de archivos y el riesgo de que ES/EN diverjan visualmente.
-- [ ] **3.5.2** `Root.tsx`: generar el registro con un array de metadata en lugar de 1.083 líneas repetidas.
-- [ ] **3.5.3** Aprovechar para unificar la ruta de assets de audio (ya hay `audio-es` / `audio-en` por idioma).
+      → **RESUELTO** commits `766941d` (piloto) + `570d984` (unificación): 0 archivos `*En.tsx` en el repo,
+      59 composiciones con `lang` prop (ver `compositions-contract.test.ts`).
+- [ ] **3.5.2** `Root.tsx`: generar el registro con un array de metadata en lugar de **1.029 líneas** repetidas
+      (59 composiciones × 2 bloques ES/EN, `totalDurationFrames` dos veces por lección).
+- [x] **3.5.3** Aprovechar para unificar la ruta de assets de audio (ya hay `audio-es` / `audio-en` por idioma).
+      → **RESUELTO 2026-10-01** (bloque de renombre de media): todas las carpetas son
+      `<lessonId>-<slug>` y todos los wavs `<lessonId>-sceneN.wav` (antes convivían `li-01-linux-history-scene1.wav`
+      con `ot-01-scene1.wav`); lo garantiza `media-naming.test.ts`.
+- [ ] **3.5.4** **Render con audio roto desde `73b3b72`:** `staticFile('videos/audio-…')` resuelve contra
+      `public/`, pero los wavs se mudaron a `media/videos/audio-{es,en}/` (fuera del `publicDir`) → un
+      `pnpm remotion render` falla al cargar el audio. Opciones: (a) `Config.setPublicDir('media')` + resolver
+      que `fonts.tsx` (`staticFile('fonts/jetbrains-mono/…')`, que vive en `public/fonts`) siga funcionando,
+      (b) symlink/copia temporal `public/videos → media/videos` antes de renderizar (ojo: Vite sigue el symlink
+      y el `dist/` vuelve a 923 MB), (c) copiar sólo `audio-*` al renderizar. **Necesita verificar con un render
+      real** (la verificación acá es sólo de nombres de archivo: `media-naming.test.ts`).
 
 ### 3.6 El wrapper de comandos posicional sigue vivo
 

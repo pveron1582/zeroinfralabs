@@ -1,8 +1,8 @@
 // ── video/remotion/compositions/Re2Vpn.tsx ───────────────────────────
 // Video: VPN — túneles cifrados que extienden la red.
-// Lección networksII-04 del Academy (Redes II). Guiones: voicebox-scripts/re2-04-*.txt
+// Lección networksII-04 del Academy (Redes II). Guiones: voicebox-scripts/{es,en}/networksII/networksII-04-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
-// a silencedetect (-50dB) de voicebox-scripts/re2-04-scene*.wav.
+// a silencedetect (-50dB) de voicebox-scripts/{es,en}/networksII/networksII-04-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -137,7 +137,7 @@ const BEATS = {
   },
 };
 
-const VID = 're2-04-vpn';
+const VID = 'networksII-04-vpn';
 
 // ── Escena 1: qué es ───────────────────────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -262,17 +262,17 @@ export const Re2Vpn: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re2-04-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksII-04-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re2-04-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksII-04-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re2-04-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksII-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

@@ -4,7 +4,7 @@
 > Decidido el 2026-08-08 como prioridad tras el Admin Panel UI; desarrollado
 > durante agosto 2026. Estado real: **10 paths / 59 lecciones** bilingües ES/EN,
 > con quizzes + progreso persistido (`completedLessons`/`quizResults` en
-> `partialize`), videos Remotion (`public/videos/`), FoxyNarrator, simuladores
+> `partialize`), videos Remotion (`media/videos/`), FoxyNarrator, simuladores
 > de red interactivos y LessonBuilder en el AdminPanel. Diseño visual unificado
 > con el landing (ver `docs/ACADEMY_DESIGN.md`). Suite academy verde.
 > Este documento conserva el plan original como referencia histórica.

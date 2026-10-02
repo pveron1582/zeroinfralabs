@@ -102,7 +102,7 @@ const BEATS = {
   },
 };
 
-const VID = 're-03-devices-topologies';
+const VID = 'fundaments-03-devices-topologies';
 
 const TOPO_COLORS = [THEME.amber, THEME.green, THEME.cyan, THEME.purple];
 const TOPO_SHAPES = ['bus', 'estrella', 'anillo', 'malla'];

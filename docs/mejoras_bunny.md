@@ -594,7 +594,7 @@ Cobertura global 84,45 / 72,97 / 80,78 / 86,78 → **84,77 / 73,30 / 80,89 / 87,
 - `video/remotion/__tests__/audioTimings.test.ts` (12 tests): `audioTimings`
   (default ES, EN y clave inexistente → `[]`), `sceneStartFrames` (acumulado
   audio + `SCENE_GAP`, con el array esperado hardcodeado para
-  `li-01-linux-history` y estrictamente creciente en los 59 videos),
+  `linux-01-linux-history` y estrictamente creciente en los 59 videos),
   `totalDurationSec`/`totalDurationFrames` (suma + gaps, `ceil` + 1s de
   buffer, y distinto entre idiomas porque los audios EN duran otra cosa),
   `audioBase`, `hasAudio` — más el contrato de los dos mapas: mismas claves
@@ -628,7 +628,7 @@ throw …Multiple composition with id X are registered.`, así que el studio y
 contiguo: `Root.tsx` 1144 → 1029 líneas. Dos detalles que costó encontrar
 estando el test en rojo: el regex `<Composition[\s\S]*?/>` corta en el `/>`
 del `component={() => <X lang="es" />}` (hay que contar llaves y paréntesis,
-como en `a11y-contract.test.ts`), y `li-01-linux-history` se registra en la
+como en `a11y-contract.test.ts`), y `linux-01-linux-history` se registra en la
 forma corta `component={Li01LinuxHistory}` — la única, que usa el default
 `lang = 'es'` de la composición.
 

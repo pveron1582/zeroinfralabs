@@ -26,7 +26,7 @@ const CENTERED: React.CSSProperties = {
   textAlign: 'center',
 };
 
-const VID = 'li-01-linux-history';
+const VID = 'linux-01-linux-history';
 
 // ── COPY ────────────────────────────────────────────────────────────
 const COPY = {
@@ -310,25 +310,25 @@ export const Li01LinuxHistory: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es'
 
       {/* Scene 1: 1991, el hobby */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/${VID}-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-01-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       {/* Scene 2: kernel + GNU/Linux */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/${VID}-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-01-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       {/* Scene 3: las 4 libertades */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/${VID}-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-01-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
 
       {/* Scene 4: por qué es el SO del hacking */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/${VID}-scene4.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/linux-01-scene4.wav`)} />}
         <Scene4 fps={fps} c={c.s4} b={b.s4} />
       </Sequence>
     </AbsoluteFill>

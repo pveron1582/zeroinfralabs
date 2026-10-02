@@ -1,8 +1,8 @@
 // ── video/remotion/compositions/Re1Devices.tsx ──────────────────────
 // Video: dispositivos esenciales — hub, switch y router (+ cables + AP).
-// Lección networksI-04 del Academy (Redes I). Guiones: voicebox-scripts/re1-04-*.txt
+// Lección networksI-04 del Academy (Redes I). Guiones: voicebox-scripts/{es,en}/networksI/networksI-04-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
-// a silencedetect (-50dB) de voicebox-scripts/re1-04-scene*.wav.
+// a silencedetect (-50dB) de voicebox-scripts/{es,en}/networksI/networksI-04-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -103,7 +103,7 @@ const BEATS = {
 };
 
 const MEDIA_COLORS = [THEME.amber, THEME.cyan, THEME.green];
-const VID = 're1-04-devices';
+const VID = 'networksI-04-devices';
 
 // ── Scene 1: el hub ──────────────────────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -207,17 +207,17 @@ export const Re1Devices: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) =>
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-04-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-04-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-04-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-04-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-04-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

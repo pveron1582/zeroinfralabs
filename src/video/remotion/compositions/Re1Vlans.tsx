@@ -1,8 +1,8 @@
 // ── video/remotion/compositions/Re1Vlans.tsx ───────────────────────
 // Video: VLANs — segmentación por diseño.
-// Lección networksI-05 del Academy (Redes I). Guiones: voicebox-scripts/re1-05-*.txt
+// Lección networksI-05 del Academy (Redes I). Guiones: voicebox-scripts/{es,en}/networksI/networksI-05-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
-// a silencedetect (-50dB) de voicebox-scripts/re1-05-scene*.wav.
+// a silencedetect (-50dB) de voicebox-scripts/{es,en}/networksI/networksI-05-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -128,7 +128,7 @@ const BEATS = {
 
 const DEPT_COLORS = [THEME.cyan, THEME.green, THEME.amber, THEME.purple];
 const PLAN_COLORS = [THEME.cyan, THEME.green, THEME.amber, THEME.purple];
-const VID = 're1-05-vlans';
+const VID = 'networksI-05-vlans';
 
 const NODES_CONFIG = [
   { label: 'PC', color: THEME.cyan },
@@ -300,17 +300,17 @@ export const Re1Vlans: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) => {
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-05-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-05-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-05-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-05-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-05-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-05-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

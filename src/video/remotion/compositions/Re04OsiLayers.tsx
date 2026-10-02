@@ -115,7 +115,7 @@ const BEATS = {
 const OSI_COLORS = [THEME.purple, THEME.purple, THEME.cyan, THEME.cyan, THEME.green, THEME.green, THEME.amber];
 const TCP_COLORS = [THEME.purple, THEME.cyan, THEME.green, THEME.amber];
 
-const VID = 're-04-osi-layers';
+const VID = 'fundaments-04-osi-layers';
 
 // ── Escena 1: ¿por qué capas? analogía del correo ──────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {

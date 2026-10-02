@@ -1,8 +1,8 @@
 // ── video/remotion/compositions/Re1Services.tsx ─────────────────────
 // Video: servicios de red comunes — SMB, FTP, SSH, VNC.
-// Lección networksI-03 del Academy (Redes I). Guiones: voicebox-scripts/re1-02-*.txt
+// Lección networksI-03 del Academy (Redes I). Guiones: voicebox-scripts/{es,en}/networksI/networksI-03-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
-// a silencedetect (-50dB) de voicebox-scripts/re1-02-scene*.wav.
+// a silencedetect (-50dB) de voicebox-scripts/{es,en}/networksI/networksI-03-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';
@@ -95,7 +95,7 @@ const BEATS = {
 };
 
 const SVC_COLORS = [THEME.amber, THEME.red, THEME.cyan];
-const VID = 're1-02-services';
+const VID = 'networksI-03-services';
 
 // ── Scene 1: SSH ──────────────────────────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -191,17 +191,17 @@ export const Re1Services: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es' }) =
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-02-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-03-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-02-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-03-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/re1-02-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/networksI-03-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

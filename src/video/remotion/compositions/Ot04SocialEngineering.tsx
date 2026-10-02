@@ -125,7 +125,7 @@ const COPY = {
   },
 };
 
-const VID = 'ot-04-social-engineering';
+const VID = 'others-04-social-engineering';
 
 // ── Escena 1: disclaimer educativo ──────────────────────────────────
 const Scene1: React.FC<{ c: typeof COPY.es.s1 }> = ({ c }) => {
@@ -242,25 +242,25 @@ export const Ot04SocialEngineering: React.FC<{ lang?: 'es' | 'en' }> = ({ lang =
 
       {/* Scene 1: disclaimer */}
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene1.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-04-scene1.wav`)} />}
         <Scene1 c={c.s1} />
       </Sequence>
 
       {/* Scene 2: skimmers + clonadores */}
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene2.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-04-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} />
       </Sequence>
 
       {/* Scene 3: técnicas de ingeniería social */}
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene3.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} />
       </Sequence>
 
       {/* Scene 4: cierre */}
       <Sequence from={starts[3]} durationInFrames={dur4}>
-        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/ot-04-scene4.wav`)} />}
+        {hasAudio(VID) && <Audio src={staticFile(`${base}/${VID}/others-04-scene4.wav`)} />}
         <Scene4 fps={fps} c={c.s4} />
       </Sequence>
     </AbsoluteFill>
