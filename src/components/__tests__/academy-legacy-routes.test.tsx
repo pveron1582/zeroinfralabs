@@ -43,9 +43,19 @@ describe('Academy — URLs legacy', () => {
     expect(screen.getByText('¿Qué es una red? Tipos: LAN, MAN, WAN y VPN')).toBeInTheDocument();
   });
 
-  it('redirige la URL legacy /academy/ciberseguridad a /academy/ciber', () => {
+  it('redirige la URL legacy /academy/ciberseguridad a /academy/cyber', () => {
     renderAcademy('/es/academy/ciberseguridad');
     expect(screen.getByText('La triada CID con ejemplos reales')).toBeInTheDocument();
+  });
+
+  it('redirige la URL legacy /academy/ciber a /academy/cyber (id del path pasado a inglés)', () => {
+    renderAcademy('/es/academy/ciber');
+    expect(screen.getByText('La triada CID con ejemplos reales')).toBeInTheDocument();
+  });
+
+  it('redirige la URL legacy de una lección ciber/ciber-01 → cyber/cyber-01', () => {
+    renderAcademy('/es/academy/ciber/ciber-01');
+    expect(screen.getByRole('link', { name: /Regresar/ })).toHaveAttribute('href', '/es/academy/cyber');
   });
 
   it('redirige la URL legacy /academy/hacking a /academy/pentesting', () => {

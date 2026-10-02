@@ -5,8 +5,8 @@ import type { Lesson } from '../types';
 
 export const CIBERSEG_LESSONS: Lesson[] = [
   {
-    id: 'ciber-01',
-    pathId: 'ciber',
+    id: 'cyber-01',
+    pathId: 'cyber',
     order: 1,
     title: 'The CIA triad with real examples',
     titleEs: 'La triada CID con ejemplos reales',
@@ -24,8 +24,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/es/ciber-01-cia-triad.mp4',
-        srcEn: '/videos/en/ciber-01-cia-triad.mp4',
+        src: '/videos/es/cyber-01-cia-triad.mp4',
+        srcEn: '/videos/en/cyber-01-cia-triad.mp4',
         durationSec: 52,
         caption: 'The CIA triad: Confidentiality (only authorized eyes read the data), Integrity (data is not silently modified) and Availability (the system works when needed). Every attack breaks one of the three.',
         captionEs: 'La triada CID: Confidencialidad (solo ojos autorizados leen el dato), Integridad (el dato no se modifica en silencio) y Disponibilidad (el sistema funciona cuando se lo necesita). Cada ataque rompe una de las tres.',
@@ -66,8 +66,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'ciber-02',
-    pathId: 'ciber',
+    id: 'cyber-02',
+    pathId: 'cyber',
     order: 2,
     title: 'Hashes, encryption and how passwords get cracked',
     titleEs: 'Hashes, cifrado y cómo se crackean las contraseñas',
@@ -85,8 +85,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/es/ciber-02-hashes-cracking.mp4',
-        srcEn: '/videos/en/ciber-02-hashes-cracking.mp4',
+        src: '/videos/es/cyber-02-hashes-cracking.mp4',
+        srcEn: '/videos/en/cyber-02-hashes-cracking.mp4',
         durationSec: 47,
         caption: 'A hash is a one-way fingerprint: you cannot "unhash". MD5/SHA1 are broken, SHA512 is the Linux standard, bcrypt/argon2 are slow on purpose. Crack weak hashes with john + rockyou.',
         captionEs: 'Un hash es una huella de un solo sentido: no se puede "deshashear". MD5/SHA1 están rotos, SHA512 es el estándar de Linux, bcrypt/argon2 son lentos a propósito. Crackeá hashes débiles con john + rockyou.',
@@ -127,8 +127,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'ciber-03',
-    pathId: 'ciber',
+    id: 'cyber-03',
+    pathId: 'cyber',
     order: 3,
     title: 'Information gathering: what it is, the law and the tools',
     titleEs: 'Information gathering: qué es, la ley y las herramientas',
@@ -145,8 +145,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/es/ciber-03-information-gathering.mp4',
-        srcEn: '/videos/en/ciber-03-information-gathering.mp4',
+        src: '/videos/es/cyber-03-information-gathering.mp4',
+        srcEn: '/videos/en/cyber-03-information-gathering.mp4',
         durationSec: 70,
         caption: 'Information gathering turns your target into a map: who, what, where and how it is exposed — before you send a single packet.',
         captionEs: 'El information gathering convierte a tu objetivo en un mapa: quién, qué, dónde y cómo está expuesto — antes de enviar un solo paquete.',
@@ -201,8 +201,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'ciber-04',
-    pathId: 'ciber',
+    id: 'cyber-04',
+    pathId: 'cyber',
     order: 4,
     title: 'Cryptography basics: encrypting vs hashing',
     titleEs: 'Bases de criptografía: cifrar vs hashear',
@@ -220,8 +220,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/es/ciber-04-cryptography.mp4',
-        srcEn: '/videos/en/ciber-04-cryptography.mp4',
+        src: '/videos/es/cyber-04-cryptography.mp4',
+        srcEn: '/videos/en/cyber-04-cryptography.mp4',
         durationSec: 68,
         caption: 'Cryptography is the art of scrambling data so only the right key unscrambles it. Encryption is reversible (with the key); hashing is a one-way fingerprint. Two families: symmetric (one shared key) and asymmetric (public + private key).',
         captionEs: 'La criptografía es el arte de mezclar datos para que solo la clave correcta los vuelva legibles. El cifrado es reversible (con la clave); el hash es una huella de un solo sentido. Dos familias: simétrica (una clave compartida) y asimétrica (clave pública + privada).',
@@ -276,8 +276,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'ciber-05',
-    pathId: 'ciber',
+    id: 'cyber-05',
+    pathId: 'cyber',
     order: 5,
     title: 'The OWASP Top Ten: where to look first',
     titleEs: 'El OWASP Top Ten: dónde mirar primero',
@@ -295,8 +295,8 @@ export const CIBERSEG_LESSONS: Lesson[] = [
       },
       {
         type: 'video',
-        src: '/videos/es/ciber-05-owasp-top-ten.mp4',
-        srcEn: '/videos/en/ciber-05-owasp-top-ten.mp4',
+        src: '/videos/es/cyber-05-owasp-top-ten.mp4',
+        srcEn: '/videos/en/cyber-05-owasp-top-ten.mp4',
         durationSec: 70,
         caption: 'The OWASP Top Ten is the ranked list of the most critical web risks. The top 3: injection, broken authentication, and sensitive data exposure. Every entry is both a defense checklist and an attack checklist.',
         captionEs: 'El OWASP Top Ten es la lista ordenada de los riesgos web más críticos. El top 3: inyección, autenticación rota y exposición de datos sensibles. Cada entrada es a la vez checklist de defensa y de ataque.',

@@ -56,7 +56,7 @@ describe('Academy', () => {
     });
 
     it('muestra el progreso general correctamente', () => {
-      useScenarioStore.setState({ completedLessons: ['linux-01', 'linux-02', 'networksII-05', 'ciber-01', 'pentesting-01'] });
+      useScenarioStore.setState({ completedLessons: ['linux-01', 'linux-02', 'networksII-05', 'cyber-01', 'pentesting-01'] });
       renderAcademy('/es/academy');
 
       expect(screen.getByText('Tu progreso general')).toBeInTheDocument();
@@ -197,7 +197,7 @@ describe('Academy', () => {
     });
 
     it('muestra las 5 lecciones de Fundamentos de Ciberseguridad (incluye Information Gathering y OWASP)', () => {
-      renderAcademy('/es/academy/ciber');
+      renderAcademy('/es/academy/cyber');
       expect(screen.getByText('La triada CID con ejemplos reales')).toBeInTheDocument();
       expect(screen.getByText('Hashes, cifrado y cómo se crackean las contraseñas')).toBeInTheDocument();
       expect(screen.getByText('Information gathering: qué es, la ley y las herramientas')).toBeInTheDocument();

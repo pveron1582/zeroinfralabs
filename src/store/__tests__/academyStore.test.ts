@@ -33,11 +33,11 @@ describe('academySlice', () => {
   });
 
   it('completedLessons se persiste en localStorage vía partialize', () => {
-    useScenarioStore.getState().markLessonCompleted('ciber-01');
+    useScenarioStore.getState().markLessonCompleted('cyber-01');
     const raw = localStorage.getItem('cyberops-store');
     expect(raw).toBeTruthy();
     const persisted = JSON.parse(raw!);
-    expect(persisted.state.completedLessons).toContain('ciber-01');
+    expect(persisted.state.completedLessons).toContain('cyber-01');
   });
 
   describe('quiz results', () => {

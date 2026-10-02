@@ -2,7 +2,7 @@
 // Tipos de la Academy: contenido educativo guiado (Foxy Academy)
 // Ver docs/PROYECTO_ACADEMY.md
 
-export type AcademyPathId = 'linux' | 'windows' | 'others' | 'fundaments' | 'networksI' | 'networksII' | 'ciber' | 'pentesting' | 'hackingweb' | 'scripting';
+export type AcademyPathId = 'linux' | 'windows' | 'others' | 'fundaments' | 'networksI' | 'networksII' | 'cyber' | 'pentesting' | 'hackingweb' | 'scripting';
 
 /** Claves de ilustración por módulo (linux, windows, redes, bash, etc.). */
 export type ModuleIllustrationKey =

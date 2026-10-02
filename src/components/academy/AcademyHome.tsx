@@ -92,7 +92,7 @@ export function AcademyHome() {
     completedLessons: s.completedLessons,
   })));
 
-  const ciberPath = ACADEMY_PATHS.find(p => p.id === 'ciber')!;
+  const cyberPath = ACADEMY_PATHS.find(p => p.id === 'cyber')!;
   const pentestPath = ACADEMY_PATHS.find(p => p.id === 'pentesting')!;
   const hackingWebPath = ACADEMY_PATHS.find(p => p.id === 'hackingweb')!;
   const scriptingPath = ACADEMY_PATHS.find(p => p.id === 'scripting')!;
@@ -192,15 +192,15 @@ export function AcademyHome() {
           <GroupTitle icon="⚔️" title={isEs ? 'Hacking Ético' : 'Ethical Hacking'} count={3 + scriptingPath.subSections!.length} isEs={isEs} />
           <div className="space-y-3">
             <ModuleCard
-              title={isEs ? ciberPath.titleEs : ciberPath.title}
-              description={isEs ? ciberPath.descriptionEs : ciberPath.description}
+              title={isEs ? cyberPath.titleEs : cyberPath.title}
+              description={isEs ? cyberPath.descriptionEs : cyberPath.description}
               icon="🛡️"
               moduleId="ciberseguridad"
               index={0}
-              done={doneOf(ciberPath.lessons)}
-              total={ciberPath.lessons.length}
+              done={doneOf(cyberPath.lessons)}
+              total={cyberPath.lessons.length}
               isEs={isEs}
-              to={`/${lang}/academy/ciber`}
+              to={`/${lang}/academy/cyber`}
             />
             <ModuleCard
               title={isEs ? pentestPath.titleEs : pentestPath.title}

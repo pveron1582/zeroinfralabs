@@ -20,7 +20,9 @@ export const LEGACY_PATH_IDS: Record<string, AcademyPathId> = {
   redes: 'fundaments',
   protocolos: 'networksI',
   'protocolos-ii': 'networksII',
-  ciberseguridad: 'ciber',
+  ciberseguridad: 'cyber',
+  // El id del path pasó a inglés (2026-10): `/academy/ciber` → `/academy/cyber`
+  ciber: 'cyber',
   hacking: 'pentesting',
   'hacking-web': 'hackingweb',
 };
@@ -51,6 +53,12 @@ export const LEGACY_LESSON_IDS: Record<string, string> = {
   'hacking-05': 'pentesting-03',
   'hacking-06': 'pentesting-04',
   'network-05': 'pentesting-05',
+  // Ciberseguridad → Cyber (el id pasó a inglés; el contenido no cambió)
+  'ciber-01': 'cyber-01',
+  'ciber-02': 'cyber-02',
+  'ciber-03': 'cyber-03',
+  'ciber-04': 'cyber-04',
+  'ciber-05': 'cyber-05',
   // Hacking Web (antes path `hacking-web`)
   'proto-02': 'hackingweb-01',
   'web-04': 'hackingweb-02',

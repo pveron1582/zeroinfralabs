@@ -112,7 +112,7 @@ const BEATS = {
   },
 };
 
-const VID = 'ciber-04-cryptography';
+const VID = 'cyber-04-cryptography';
 
 // ── Scene 1: qué es + cifrado vs hash ───────────────────────────────
 const Scene1: React.FC<{ fps: number; c: typeof COPY.es.s1; b: typeof BEATS.es.s1 }> = ({ fps, c, b }) => {
@@ -250,17 +250,17 @@ export const Ci04Cryptography: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es'
       <FontFace />
 
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile(`${base}/${VID}/ciber-04-scene1.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/cyber-04-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} />
       </Sequence>
 
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile(`${base}/${VID}/ciber-04-scene2.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/cyber-04-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
 
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile(`${base}/${VID}/ciber-04-scene3.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/${VID}/cyber-04-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>

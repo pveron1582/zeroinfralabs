@@ -70,11 +70,20 @@ describe('migratePersistedState', () => {
 
   it('v4 renombra los ids de Pentesting y Hacking Web (2ª tanda del rework)', () => {
     const out = migratePersistedState({
-      completedLessons: ['hacking-01', 'network-05', 'web-03', 'ciber-01'],
+      completedLessons: ['hacking-01', 'network-05', 'web-03', 'cyber-01'],
       quizResults: { 'proto-02-q2': { firstTryCorrect: true } },
     }, 3);
-    expect(out.completedLessons).toEqual(['pentesting-01', 'pentesting-05', 'hackingweb-05', 'ciber-01']);
+    expect(out.completedLessons).toEqual(['pentesting-01', 'pentesting-05', 'hackingweb-05', 'cyber-01']);
     expect(Object.keys(out.quizResults ?? {})).toEqual(['hackingweb-01-q2']);
+  });
+
+  it('v5 renombra los ids de Ciberseguridad → Cyber (el path pasó a inglés)', () => {
+    const out = migratePersistedState({
+      completedLessons: ['ciber-01', 'ciber-05', 'linux-01'],
+      quizResults: { 'ciber-03-q0': { firstTryCorrect: true } },
+    }, 4);
+    expect(out.completedLessons).toEqual(['cyber-01', 'cyber-05', 'linux-01']);
+    expect(Object.keys(out.quizResults ?? {})).toEqual(['cyber-03-q0']);
   });
 
   it('de v2 a la versión actual aplican todas las tandas del rework', () => {
@@ -99,7 +108,7 @@ describe('contrato de la versión persistida', () => {
   it('PERSIST_KEYS y PERSIST_VERSION son el mapa que hay que tocar al subir versión', () => {
     // Tripwire a propósito: subir PERSIST_VERSION o agregar una clave
     // persistida obliga a revisar este archivo (y el registro MIGRATIONS).
-    expect(PERSIST_VERSION).toBe(4);
+    expect(PERSIST_VERSION).toBe(5);
     expect(PERSIST_KEYS.length).toBe(7);
   });
 });

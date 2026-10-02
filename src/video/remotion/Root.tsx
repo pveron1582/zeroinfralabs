@@ -111,49 +111,49 @@ export const RemotionRoot: React.FC = () => {
         height={720}
       />
       <Composition
-        id="ciber-03-information-gathering"
+        id="cyber-03-information-gathering"
         component={() => <Ci03InformationGathering lang="es" />}
-        durationInFrames={totalDurationFrames('ciber-03-information-gathering', FPS)}
+        durationInFrames={totalDurationFrames('cyber-03-information-gathering', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-03-information-gathering-en"
+        id="cyber-03-information-gathering-en"
         component={() => <Ci03InformationGathering lang="en" />}
-        durationInFrames={totalDurationFrames('ciber-03-information-gathering', FPS, 'en')}
+        durationInFrames={totalDurationFrames('cyber-03-information-gathering', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-04-cryptography"
+        id="cyber-04-cryptography"
         component={() => <Ci04Cryptography lang="es" />}
-        durationInFrames={totalDurationFrames('ciber-04-cryptography', FPS)}
+        durationInFrames={totalDurationFrames('cyber-04-cryptography', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-04-cryptography-en"
+        id="cyber-04-cryptography-en"
         component={() => <Ci04Cryptography lang="en" />}
-        durationInFrames={totalDurationFrames('ciber-04-cryptography', FPS, 'en')}
+        durationInFrames={totalDurationFrames('cyber-04-cryptography', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-05-owasp-top-ten"
+        id="cyber-05-owasp-top-ten"
         component={() => <Ci05OwaspTopTen lang="es" />}
-        durationInFrames={totalDurationFrames('ciber-05-owasp-top-ten', FPS)}
+        durationInFrames={totalDurationFrames('cyber-05-owasp-top-ten', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-05-owasp-top-ten-en"
+        id="cyber-05-owasp-top-ten-en"
         component={() => <Ci05OwaspTopTen lang="en" />}
-        durationInFrames={totalDurationFrames('ciber-05-owasp-top-ten', FPS, 'en')}
+        durationInFrames={totalDurationFrames('cyber-05-owasp-top-ten', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
@@ -287,33 +287,33 @@ export const RemotionRoot: React.FC = () => {
         height={720}
       />
       <Composition
-        id="ciber-01-cia-triad"
+        id="cyber-01-cia-triad"
         component={() => <Ci01CiaTriad lang="es" />}
-        durationInFrames={totalDurationFrames('ciber-01-cia-triad', FPS)}
+        durationInFrames={totalDurationFrames('cyber-01-cia-triad', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-01-cia-triad-en"
+        id="cyber-01-cia-triad-en"
         component={() => <Ci01CiaTriad lang="en" />}
-        durationInFrames={totalDurationFrames('ciber-01-cia-triad', FPS, 'en')}
+        durationInFrames={totalDurationFrames('cyber-01-cia-triad', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-02-hashes-cracking"
+        id="cyber-02-hashes-cracking"
         component={() => <Ci02HashesCracking lang="es" />}
-        durationInFrames={totalDurationFrames('ciber-02-hashes-cracking', FPS)}
+        durationInFrames={totalDurationFrames('cyber-02-hashes-cracking', FPS)}
         fps={FPS}
         width={1280}
         height={720}
       />
       <Composition
-        id="ciber-02-hashes-cracking-en"
+        id="cyber-02-hashes-cracking-en"
         component={() => <Ci02HashesCracking lang="en" />}
-        durationInFrames={totalDurationFrames('ciber-02-hashes-cracking', FPS, 'en')}
+        durationInFrames={totalDurationFrames('cyber-02-hashes-cracking', FPS, 'en')}
         fps={FPS}
         width={1280}
         height={720}

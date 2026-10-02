@@ -151,7 +151,7 @@ export function LessonBuilder({ onBack, isEs }: { onBack: () => void; isEs: bool
                   <option value="fundaments">Fundamentos de redes</option>
                   <option value="networksI">Redes I</option>
                   <option value="networksII">Redes II</option>
-                  <option value="ciber">Ciberseguridad</option>
+                  <option value="cyber">Ciberseguridad</option>
                   <option value="pentesting">Pentesting</option>
                   <option value="hackingweb">Hacking Web</option>
                 </select>

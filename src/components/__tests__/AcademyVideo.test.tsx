@@ -109,63 +109,63 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/Primero, entendé el mapa/)).toBeInTheDocument();
   });
 
-  it('la lección ciber-01 incluye el video de la triada CID (ci-01) como paso 2', () => {
-    renderLesson('/es/academy/ciber/ciber-01');
+  it('la lección cyber-01 incluye el video de la triada CID (ci-01) como paso 2', () => {
+    renderLesson('/es/academy/cyber/cyber-01');
     expect(screen.getByText(/Toda la seguridad gira alrededor/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ciber-01-cia-triad.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/cyber-01-cia-triad.mp4'));
     expect(screen.getByText(/La triada CID: Confidencialidad/)).toBeInTheDocument();
   });
 
-  it('la lección ciber-02 incluye el video de hashes (ci-02) como paso 2', () => {
-    renderLesson('/es/academy/ciber/ciber-02');
+  it('la lección cyber-02 incluye el video de hashes (ci-02) como paso 2', () => {
+    renderLesson('/es/academy/cyber/cyber-02');
     expect(screen.getByText(/Los hashes son como huellas/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ciber-02-hashes-cracking.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/cyber-02-hashes-cracking.mp4'));
     expect(screen.getByText(/Un hash es una huella de un solo sentido/)).toBeInTheDocument();
   });
 
-  it('la lección ciber-03 incluye el video de information gathering (ci-03) como paso 2', () => {
-    renderLesson('/es/academy/ciber/ciber-03');
+  it('la lección cyber-03 incluye el video de information gathering (ci-03) como paso 2', () => {
+    renderLesson('/es/academy/cyber/cyber-03');
     expect(screen.getByText(/Antes de tocar un solo sistema/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ciber-03-information-gathering.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/cyber-03-information-gathering.mp4'));
     expect(screen.getByText(/convierte a tu objetivo en un mapa/)).toBeInTheDocument();
   });
 
-  it('la lección ciber-04 incluye el video de criptografía (ci-04) como paso 2', () => {
-    renderLesson('/es/academy/ciber/ciber-04');
+  it('la lección cyber-04 incluye el video de criptografía (ci-04) como paso 2', () => {
+    renderLesson('/es/academy/cyber/cyber-04');
     expect(screen.getByText(/En la clase 2 viste hashes/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ciber-04-cryptography.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/cyber-04-cryptography.mp4'));
     expect(screen.getByText(/es el arte de mezclar datos/)).toBeInTheDocument();
   });
 
-  it('la lección ciber-05 incluye el video de OWASP Top Ten (ci-05) como paso 2', () => {
-    renderLesson('/es/academy/ciber/ciber-05');
+  it('la lección cyber-05 incluye el video de OWASP Top Ten (ci-05) como paso 2', () => {
+    renderLesson('/es/academy/cyber/cyber-05');
     expect(screen.getByText(/¿Dónde apuntás cuando defendés/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/ciber-05-owasp-top-ten.mp4'));
+    expect(video).toHaveAttribute('src', resolveVideos('/videos/es/cyber-05-owasp-top-ten.mp4'));
     expect(screen.getByText(/es la lista ordenada de los riesgos web/)).toBeInTheDocument();
   });
 

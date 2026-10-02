@@ -22,7 +22,7 @@ import type { ScenarioState } from './types';
 import { LEGACY_LESSON_IDS } from '../academy/legacyIds';
 
 /** Versión del snapshot persistido. Única fuente: la consume scenarioStore. */
-export const PERSIST_VERSION = 4;
+export const PERSIST_VERSION = 5;
 
 /** Claves que sobreviven en el snapshot. TODO lo demás se tira. */
 export const PERSIST_KEYS = [
@@ -77,11 +77,15 @@ const MIGRATIONS: MigrationMap = {
   // guardado con los ids viejos dejaría de matchear y el alumno "pierde"
   // lo completado sin ningún aviso.
   3: (snapshot) => renombrarIdsDeLeccion(snapshot),
-  // 3 → 4 (2026-10): misma serie, segunda tanda — paths ciber, pentesting
-  // y hackingweb con 10 lecciones más. Salto aparte por si un snapshot ya
-  // quedó en v3 (los renombres son idempotentes: el mapa no tiene ids
-  // actuales como clave).
+  // 3 → 4 (2026-10): misma serie, segunda tanda — paths cyber (entonces
+  // `ciber`), pentesting y hackingweb con 10 lecciones más. Salto aparte por
+  // si un snapshot ya quedó en v3 (los renombres son idempotentes: el mapa
+  // no tiene ids actuales como clave).
   4: (snapshot) => renombrarIdsDeLeccion(snapshot),
+  // 4 → 5 (2026-10): el id del path `ciber` pasó a `cyber` (rutas en
+  // inglés) y con él sus 5 lecciones. Mismo motivo que los saltos anteriores:
+  // sin esto, el progreso con los ids viejos deja de matchear.
+  5: (snapshot) => renombrarIdsDeLeccion(snapshot),
 };
 
 /** Mapa `versión que inicia el cambio → transformación del snapshot viejo`. */

@@ -51,7 +51,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     lessons: PROTOCOLOS2_LESSONS,
   },
   {
-    id: 'ciber',
+    id: 'cyber',
     title: 'Cybersecurity Fundamentals',
     titleEs: 'Fundamentos de Ciberseguridad',
     description: 'CIA triad, encryption vs hashing, and how passwords are cracked.',
