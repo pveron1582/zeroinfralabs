@@ -25,6 +25,9 @@ export const LEGACY_PATH_IDS: Record<string, AcademyPathId> = {
   ciber: 'cyber',
   hacking: 'pentesting',
   'hacking-web': 'hackingweb',
+  // El path 'scripting' se partió en 3 paths de primer nivel (2026-10):
+  // /academy/scripting → /academy/bash (y con subId, el subId manda).
+  scripting: 'bash',
 };
 
 /** Lección renombrada: id viejo → id actual. */

@@ -10,7 +10,7 @@ import type { Lesson } from '../types';
 export const POWERSHELL_LESSONS: Lesson[] = [
   {
     id: 'powershell-01',
-    pathId: 'scripting',
+    pathId: 'powershell',
     order: 1,
     title: 'What is PowerShell: objects, not text',
     titleEs: 'Qué es PowerShell: objetos, no texto',
@@ -70,7 +70,7 @@ export const POWERSHELL_LESSONS: Lesson[] = [
   },
   {
     id: 'powershell-02',
-    pathId: 'scripting',
+    pathId: 'powershell',
     order: 2,
     title: 'Basics: variables, arrays and conditions',
     titleEs: 'Bases: variables, arrays y condiciones',
@@ -130,7 +130,7 @@ export const POWERSHELL_LESSONS: Lesson[] = [
   },
   {
     id: 'powershell-03',
-    pathId: 'scripting',
+    pathId: 'powershell',
     order: 3,
     title: 'Loops, functions and useful cmdlets',
     titleEs: 'Bucles, funciones y cmdlets útiles',
@@ -190,7 +190,7 @@ export const POWERSHELL_LESSONS: Lesson[] = [
   },
   {
     id: 'powershell-04',
-    pathId: 'scripting',
+    pathId: 'powershell',
     order: 4,
     title: 'Pentesting I: Windows enumeration',
     titleEs: 'Pentesting I: enumeración de Windows',
@@ -250,7 +250,7 @@ export const POWERSHELL_LESSONS: Lesson[] = [
   },
   {
     id: 'powershell-05',
-    pathId: 'scripting',
+    pathId: 'powershell',
     order: 5,
     title: 'Pentesting II: credentials, obfuscation and exfiltration',
     titleEs: 'Pentesting II: credenciales, ofuscación y exfiltración',

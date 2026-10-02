@@ -1,6 +1,6 @@
 # AGENTS.md - ZeroInfra Labs
 
-Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 10 paths / 59 lessons, and Remotion video lessons. 3337 tests across 270 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
+Browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 visible labs (laboratorio01-06; laboratorio07/08 hidden but reachable by direct URL), an Academy with 12 paths / 59 lessons, and Remotion video lessons. 3346 tests across 270 files, plus 9 Playwright E2E specs / 24 tests in `e2e/` (`pnpm test:e2e`, corre en CI).
 
 ## Commands
 
@@ -145,7 +145,7 @@ src/
 │   ├── builtin/        # 69 system commands (Tier 1 completo: fs, permisos, procesos, red, aliases, man/whatis, text utils, hashes, sysinfo)
 │   ├── tools/          # 19 comandos en 17 archivos (nmap, hydra, gobuster, curl, wget, dns (dig/nslookup), scp, whois, tcpdump, nc, ssh, ftp, arp-scan, netdiscover, msfconsole, xrdp, apt, dpkg)
 │   └── index.ts        # Central registry: COMMANDS Map + executeCommand() entry point
-├── academy/            # 10 paths / 59 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
+├── academy/            # 12 paths / 59 lessons: path-*.ts (per-path lesson sets) + *-lessons.ts (shared lesson content)
 ├── video/              # Remotion video lessons (remotion/compositions/ — 118 compositions registradas en Root.tsx)
 ├── components/         # Terminal, FakeBrowser, NetworkMap, MissionPanel, LandingPage, LabGrid, academy/, tour/, ...
 ├── frameworks/

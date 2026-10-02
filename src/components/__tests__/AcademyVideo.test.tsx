@@ -266,7 +266,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección bash-01 incluye el video de intro a bash (sl-01) como paso 2', () => {
-    renderLesson('/es/academy/scripting/bash-01');
+    renderLesson('/es/academy/bash/bash-01');
     expect(screen.getByText(/Antes de escribir exploits/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -277,7 +277,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección bash-02 incluye el video de variables y condicionales (sl-02) como paso 2', () => {
-    renderLesson('/es/academy/scripting/bash-02');
+    renderLesson('/es/academy/bash/bash-02');
     expect(screen.getByText(/Un script que hace siempre lo mismo no sirve/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -288,7 +288,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección bash-03 incluye el video de bucles y funciones (sl-03) como paso 2', () => {
-    renderLesson('/es/academy/scripting/bash-03');
+    renderLesson('/es/academy/bash/bash-03');
     expect(screen.getByText(/El pentesting es repetir cosas a escala/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -299,7 +299,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección bash-04 incluye el video de enumeración (sl-04) como paso 2', () => {
-    renderLesson('/es/academy/scripting/bash-04');
+    renderLesson('/es/academy/bash/bash-04');
     expect(screen.getByText(/Ahora sí: el primer caso real/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -310,7 +310,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección bash-05 incluye el video de reverse shells (sl-05) como paso 2', () => {
-    renderLesson('/es/academy/scripting/bash-05');
+    renderLesson('/es/academy/bash/bash-05');
     expect(screen.getByText(/Dos jugadas finales con bash/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -321,7 +321,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección powershell-01 incluye el video de objetos y pipeline (ps-01) como paso 2', () => {
-    renderLesson('/es/academy/scripting/powershell-01');
+    renderLesson('/es/academy/powershell/powershell-01');
     expect(screen.getByText(/el lenguaje con el que se mueven los atacantes es PowerShell/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -332,7 +332,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección powershell-02 incluye el video de variables y condiciones (ps-02) como paso 2', () => {
-    renderLesson('/es/academy/scripting/powershell-02');
+    renderLesson('/es/academy/powershell/powershell-02');
     expect(screen.getByText(/nació pensando en la consola/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -343,7 +343,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección powershell-03 incluye el video de bucles y cmdlets (ps-03) como paso 2', () => {
-    renderLesson('/es/academy/scripting/powershell-03');
+    renderLesson('/es/academy/powershell/powershell-03');
     expect(screen.getByText(/un puñado de cmdlets/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -354,7 +354,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección powershell-04 incluye el video de enumeración de Windows (ps-04) como paso 2', () => {
-    renderLesson('/es/academy/scripting/powershell-04');
+    renderLesson('/es/academy/powershell/powershell-04');
     expect(screen.getByText(/tu navaja suiza para enumerar/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -365,7 +365,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección powershell-05 incluye el video de credenciales y ofuscación (ps-05) como paso 2', () => {
-    renderLesson('/es/academy/scripting/powershell-05');
+    renderLesson('/es/academy/powershell/powershell-05');
     expect(screen.getByText(/el lenguaje favorito en post-explotación de Windows/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -376,7 +376,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección python-01 incluye el video de intro a Python (py-01) como paso 2', () => {
-    renderLesson('/es/academy/scripting/python-01');
+    renderLesson('/es/academy/python/python-01');
     expect(screen.getByText(/Si hay un lenguaje que domina el hacking/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -387,7 +387,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección python-02 incluye el video de tipos y condiciones (py-02) como paso 2', () => {
-    renderLesson('/es/academy/scripting/python-02');
+    renderLesson('/es/academy/python/python-02');
     expect(screen.getByText(/Python tiene pocos tipos y muy intuitivos/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -398,7 +398,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección python-03 incluye el video de bucles y librerías (py-03) como paso 2', () => {
-    renderLesson('/es/academy/scripting/python-03');
+    renderLesson('/es/academy/python/python-03');
     expect(screen.getByText(/El 80% de tus scripts serán bucles/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -409,7 +409,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección python-04 incluye el video de scanner con socket (py-04) como paso 2', () => {
-    renderLesson('/es/academy/scripting/python-04');
+    renderLesson('/es/academy/python/python-04');
     expect(screen.getByText(/un scanner de puertos en Python/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -420,7 +420,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección python-05 incluye el video de HTTP con requests (py-05) como paso 2', () => {
-    renderLesson('/es/academy/scripting/python-05');
+    renderLesson('/es/academy/python/python-05');
     expect(screen.getByText(/La web es el blanco número uno/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));

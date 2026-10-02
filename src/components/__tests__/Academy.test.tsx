@@ -206,13 +206,19 @@ describe('Academy', () => {
       expect(screen.queryByText('Man-in-the-middle: interceptando tráfico')).not.toBeInTheDocument();
     });
 
-    it('redirige /academy/scripting al primer módulo (/module/bash)', () => {
+    it('redirige la URL legacy /academy/scripting al primer path (/academy/bash)', () => {
       renderAcademy('/es/academy/scripting');
       expect(screen.getByText('Qué es bash: la shell que se volvió lenguaje')).toBeInTheDocument();
     });
 
-    it('muestra el módulo Bash con sus 5 lecciones en /module/bash', () => {
-      renderAcademy('/es/academy/scripting/module/bash');
+    it('redirige la URL legacy /academy/scripting/module/python a /academy/python', () => {
+      renderAcademy('/es/academy/scripting/module/python');
+      expect(screen.getByRole('heading', { name: 'Python' })).toBeInTheDocument();
+      expect(screen.getByText('Qué es Python: el lenguaje del hacking')).toBeInTheDocument();
+    });
+
+    it('muestra el módulo Bash con sus 5 lecciones en /academy/bash', () => {
+      renderAcademy('/es/academy/bash');
       expect(screen.getByRole('heading', { name: 'Bash' })).toBeInTheDocument();
       expect(screen.getByText('Qué es bash: la shell que se volvió lenguaje')).toBeInTheDocument();
       expect(screen.getByText('Bases: variables, argumentos y condicionales')).toBeInTheDocument();
@@ -222,8 +228,8 @@ describe('Academy', () => {
       expect(screen.queryByText('Qué es PowerShell: objetos, no texto')).not.toBeInTheDocument();
     });
 
-    it('muestra el módulo PowerShell con sus 5 lecciones en /module/powershell', () => {
-      renderAcademy('/es/academy/scripting/module/powershell');
+    it('muestra el módulo PowerShell con sus 5 lecciones en /academy/powershell', () => {
+      renderAcademy('/es/academy/powershell');
       expect(screen.getByRole('heading', { name: 'PowerShell' })).toBeInTheDocument();
       expect(screen.getByText('Qué es PowerShell: objetos, no texto')).toBeInTheDocument();
       expect(screen.getByText('Bases: variables, arrays y condiciones')).toBeInTheDocument();
@@ -232,8 +238,8 @@ describe('Academy', () => {
       expect(screen.getByText('Pentesting II: credenciales, ofuscación y exfiltración')).toBeInTheDocument();
     });
 
-    it('muestra el módulo Python con sus 5 lecciones en /module/python', () => {
-      renderAcademy('/es/academy/scripting/module/python');
+    it('muestra el módulo Python con sus 5 lecciones en /academy/python', () => {
+      renderAcademy('/es/academy/python');
       expect(screen.getByRole('heading', { name: 'Python' })).toBeInTheDocument();
       expect(screen.getByText('Qué es Python: el lenguaje del hacking')).toBeInTheDocument();
       expect(screen.getByText('Bases: variables, tipos y condiciones')).toBeInTheDocument();
@@ -262,10 +268,16 @@ describe('Academy', () => {
       expect(link).toHaveAttribute('href', '/es/academy/networksII');
     });
 
-    it('el back link de una lección de scripting vuelve a su módulo', () => {
-      renderAcademy('/es/academy/scripting/bash-01');
+    it('el back link de una lección de scripting vuelve a su path', () => {
+      renderAcademy('/es/academy/bash/bash-01');
       const link = screen.getByRole('link', { name: /Regresar/ });
-      expect(link).toHaveAttribute('href', '/es/academy/scripting/module/bash');
+      expect(link).toHaveAttribute('href', '/es/academy/bash');
+    });
+
+    it('la URL legacy de una lección de scripting redirige a su path nuevo', () => {
+      renderAcademy('/es/academy/scripting/python-01');
+      const link = screen.getByRole('link', { name: /Regresar/ });
+      expect(link).toHaveAttribute('href', '/es/academy/python');
     });
 
     it('avanza con Siguiente desde el narrator al content', () => {

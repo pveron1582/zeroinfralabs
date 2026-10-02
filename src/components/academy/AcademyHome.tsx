@@ -95,7 +95,7 @@ export function AcademyHome() {
   const cyberPath = ACADEMY_PATHS.find(p => p.id === 'cyber')!;
   const pentestPath = ACADEMY_PATHS.find(p => p.id === 'pentesting')!;
   const hackingWebPath = ACADEMY_PATHS.find(p => p.id === 'hackingweb')!;
-  const scriptingPath = ACADEMY_PATHS.find(p => p.id === 'scripting')!;
+  const scriptingPaths = ACADEMY_PATHS.filter(p => ['bash', 'powershell', 'python'].includes(p.id));
   // Los 3 paths de redes: fundamentos → protocolos → avanzado
   const networkPaths = ACADEMY_PATHS.filter(p => ['fundaments', 'networksI', 'networksII'].includes(p.id));
 
@@ -189,7 +189,7 @@ export function AcademyHome() {
 
         {/* HACKING ÉTICO */}
         <section>
-          <GroupTitle icon="⚔️" title={isEs ? 'Hacking Ético' : 'Ethical Hacking'} count={3 + scriptingPath.subSections!.length} isEs={isEs} />
+          <GroupTitle icon="⚔️" title={isEs ? 'Hacking Ético' : 'Ethical Hacking'} count={3 + scriptingPaths.length} isEs={isEs} />
           <div className="space-y-3">
             <ModuleCard
               title={isEs ? cyberPath.titleEs : cyberPath.title}
@@ -227,18 +227,18 @@ export function AcademyHome() {
             <div className="pt-2 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: FONT_MONO, color: colors.textMuted }}>
               <span aria-hidden>💻 </span><span>{isEs ? 'Scripting para pentesting' : 'Pentesting Scripting'}</span>
             </div>
-            {scriptingPath.subSections!.map((sub, i) => (
+            {scriptingPaths.map((p, i) => (
               <ModuleCard
-                key={sub.id}
-                title={isEs ? sub.titleEs : sub.title}
-                description={isEs ? scriptingPath.descriptionEs : scriptingPath.description}
-                icon={sub.icon}
-                moduleId={sub.id}
+                key={p.id}
+                title={isEs ? p.titleEs : p.title}
+                description={isEs ? p.descriptionEs : p.description}
+                icon={p.icon}
+                moduleId={p.id}
                 index={i + 3}
-                done={doneOf(sub.lessons)}
-                total={sub.lessons.length}
+                done={doneOf(p.lessons)}
+                total={p.lessons.length}
                 isEs={isEs}
-                to={`/${lang}/academy/scripting/module/${sub.id}`}
+                to={`/${lang}/academy/${p.id}`}
               />
             ))}
           </div>

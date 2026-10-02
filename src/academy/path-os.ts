@@ -5,7 +5,8 @@
 //   /academy/linux  →  /academy/linux/linux-01
 //   /academy/windows →  /academy/windows/windows-01
 //   /academy/others  →  /academy/others/others-01
-// (el resto de los paths, p. ej. scripting, todavía usa /module/<sub>).
+// (lo mismo para los 3 paths de scripting; las URLs /module/<sub> que
+// quedaron en bookmarks resuelven por legacyIds.ts).
 
 import type { AcademyPath } from '../types';
 import { LINUX_LESSONS } from './linux-lessons';

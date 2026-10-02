@@ -18,7 +18,8 @@ const lessonIds = new Set<string>(ACADEMY_PATHS.flatMap(p => p.lessons.map(l => 
 describe('alias de paths (LEGACY_PATH_IDS)', () => {
   it('lista exactamente las rutas que cambiaron de id', () => {
     expect(Object.keys(LEGACY_PATH_IDS).sort()).toEqual([
-      'ciber', 'ciberseguridad', 'hacking', 'hacking-web', 'os', 'protocolos', 'protocolos-ii', 'redes',
+      'ciber', 'ciberseguridad', 'hacking', 'hacking-web', 'os', 'protocolos',
+      'protocolos-ii', 'redes', 'scripting',
     ]);
   });
 
@@ -41,6 +42,9 @@ describe('alias de paths (LEGACY_PATH_IDS)', () => {
     expect(legacyPathId('hacking')).toBe('pentesting');
     expect(legacyPathId('hacking-web')).toBe('hackingweb');
     expect(legacyPathId('fundaments')).toBeUndefined(); // ya es la ruta nueva
+    expect(legacyPathId('scripting')).toBe('bash'); // partido en 3 paths
+    expect(legacyPathId('scripting', 'python')).toBe('python'); // el subId manda
+    expect(legacyPathId('bash')).toBeUndefined(); // ya es la ruta nueva
     expect(legacyPathId('no-existe')).toBeUndefined();
     // claves del prototipo de Object: nunca deben caer en el mapa
     expect(legacyPathId('constructor')).toBeUndefined();

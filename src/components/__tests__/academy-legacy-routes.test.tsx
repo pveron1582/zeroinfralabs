@@ -68,6 +68,21 @@ describe('Academy — URLs legacy', () => {
     expect(screen.getByText('Protocolos en hacking web: HTTP, HTTPS y más')).toBeInTheDocument();
   });
 
+  it('redirige la URL legacy /academy/scripting a /academy/bash (el path se partió en 3)', () => {
+    renderAcademy('/es/academy/scripting');
+    expect(screen.getByText('Qué es bash: la shell que se volvió lenguaje')).toBeInTheDocument();
+  });
+
+  it('redirige la URL legacy /academy/scripting/module/powershell a /academy/powershell', () => {
+    renderAcademy('/es/academy/scripting/module/powershell');
+    expect(screen.getByRole('heading', { name: 'PowerShell' })).toBeInTheDocument();
+  });
+
+  it('redirige la URL legacy de una lección de scripting (scripting/python-01 → python/python-01)', () => {
+    renderAcademy('/es/academy/scripting/python-01');
+    expect(screen.getByRole('link', { name: /Regresar/ })).toHaveAttribute('href', '/es/academy/python');
+  });
+
   it('redirige la URL legacy /academy/protocolos a /academy/networksI', () => {
     renderAcademy('/es/academy/protocolos');
     expect(screen.getByText('Protocolos por capa: los imprescindibles')).toBeInTheDocument();

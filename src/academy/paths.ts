@@ -10,7 +10,7 @@ import { PROTOCOLOS2_LESSONS } from './path-protocolos-ii';
 import { CIBERSEG_LESSONS } from './path-ciberseguridad';
 import { HACKING_LESSONS } from './path-hacking';
 import { HACKING_WEB_LESSONS } from './path-hacking-web';
-import { SCRIPTING_LESSONS, SCRIPTING_SUBSECTIONS } from './path-scripting';
+import { SCRIPTING_PATHS } from './path-scripting';
 
 export const ACADEMY_PATHS: AcademyPath[] = [
   // Los 3 paths de Sistemas Operativos: antes eran una sola entrada 'os'
@@ -83,17 +83,10 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     illustration: 'hacking-web',
     lessons: HACKING_WEB_LESSONS,
   },
-  {
-    id: 'scripting',
-    title: 'Pentesting Scripting',
-    titleEs: 'Scripting para pentesting',
-    description: 'Bash, PowerShell and Python: the languages attackers automate with. 5 lessons per language: what they are, the basics, and pentest examples.',
-    descriptionEs: 'Bash, PowerShell y Python: los lenguajes con los que se automatizan los ataques. 5 clases por lenguaje: qué son, las bases y ejemplos de pentesting.',
-    icon: '💻',
-    accentColor: '#f97316',
-    lessons: SCRIPTING_LESSONS,
-    subSections: SCRIPTING_SUBSECTIONS,
-  },
+  // Los 3 paths de scripting: antes eran UNA entrada 'scripting' con
+  // subsecciones (rutas /academy/scripting/module/<sub>), hoy cada
+  // lenguaje es un path de primer nivel (rutas /academy/bash/bash-01).
+  ...SCRIPTING_PATHS,
 ];
 
 export function getPath(pathId: string): AcademyPath | undefined {
@@ -102,12 +95,6 @@ export function getPath(pathId: string): AcademyPath | undefined {
 
 export function getLesson(pathId: string, lessonId: string): Lesson | undefined {
   return getPath(pathId)?.lessons.find(l => l.id === lessonId);
-}
-
-// Subsección a la que pertenece una lección (ej: linux-01 → 'linux').
-// Devuelve undefined si el path no tiene subsecciones.
-export function getSubIdForLesson(pathId: string, lessonId: string): string | undefined {
-  return getPath(pathId)?.subSections?.find(s => s.lessons.some(l => l.id === lessonId))?.id;
 }
 
 export function getAllLessons(): Lesson[] {

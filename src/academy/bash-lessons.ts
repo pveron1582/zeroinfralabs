@@ -8,7 +8,7 @@ import type { Lesson } from '../types';
 export const BASH_LESSONS: Lesson[] = [
   {
     id: 'bash-01',
-    pathId: 'scripting',
+    pathId: 'bash',
     order: 1,
     title: 'What is bash: the shell that became a language',
     titleEs: 'Qué es bash: la shell que se volvió lenguaje',
@@ -77,7 +77,7 @@ export const BASH_LESSONS: Lesson[] = [
   },
   {
     id: 'bash-02',
-    pathId: 'scripting',
+    pathId: 'bash',
     order: 2,
     title: 'Basics: variables, arguments and conditionals',
     titleEs: 'Bases: variables, argumentos y condicionales',
@@ -138,7 +138,7 @@ export const BASH_LESSONS: Lesson[] = [
   },
   {
     id: 'bash-03',
-    pathId: 'scripting',
+    pathId: 'bash',
     order: 3,
     title: 'Loops, functions and text filters',
     titleEs: 'Bucles, funciones y filtros de texto',
@@ -199,7 +199,7 @@ export const BASH_LESSONS: Lesson[] = [
   },
   {
     id: 'bash-04',
-    pathId: 'scripting',
+    pathId: 'bash',
     order: 4,
     title: 'Pentesting I: enumeration with bash',
     titleEs: 'Pentesting I: enumeración con bash',
@@ -268,7 +268,7 @@ export const BASH_LESSONS: Lesson[] = [
   },
   {
     id: 'bash-05',
-    pathId: 'scripting',
+    pathId: 'bash',
     order: 5,
     title: 'Pentesting II: automation and reverse shells',
     titleEs: 'Pentesting II: automatización y reverse shells',

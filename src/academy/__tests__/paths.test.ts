@@ -1,6 +1,6 @@
 // ── academy/__tests__/paths.test.ts ────────────────────────────────
 // @vitest-environment node  (lógica pura, sin DOM: más rápido y sin jsdom)
-// Contrato de datos del Academy: 10 paths y ~59 lecciones escritas a mano.
+// Contrato de datos del Academy: 12 paths y ~59 lecciones escritas a mano.
 // Antes había CERO tests acá, así que un `id` duplicado o desalineado con
 // su path rompía la navegación en runtime (las rutas /:lang/academy/:pathId
 // y /:lang/academy/:pathId/:lessonId se arman con estos ids).
@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  ACADEMY_PATHS, getPath, getLesson, getAllLessons, getSubIdForLesson, isValidPathId,
+  ACADEMY_PATHS, getPath, getLesson, getAllLessons, isValidPathId,
 } from '../paths';
 import type { AcademyPath, Lesson, LessonStep } from '../../types';
 
@@ -22,7 +22,8 @@ const lessonById = new Map(ALL.map(l => [l.id, l]));
 const PATHS_DECLARADOS = [
   'linux', 'windows', 'others',
   'fundaments', 'networksI', 'networksII',
-  'cyber', 'pentesting', 'hackingweb', 'scripting',
+  'cyber', 'pentesting', 'hackingweb',
+  'bash', 'powershell', 'python',
 ];
 
 const nonEmpty = (s: string | undefined) => typeof s === 'string' && s.trim().length > 0;
@@ -34,8 +35,8 @@ const SCENARIO_IDS = [
 ];
 
 describe('Academy — paths', () => {
-  it('tiene 10 paths con ids únicos', () => {
-    expect(ACADEMY_PATHS).toHaveLength(10);
+  it('tiene 12 paths con ids únicos', () => {
+    expect(ACADEMY_PATHS).toHaveLength(12);
     const ids = ACADEMY_PATHS.map(p => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -85,19 +86,14 @@ describe('Academy — lecciones', () => {
     }
   });
 
-  it('el order es único dentro de cada módulo (subsección o path)', () => {
-    // Ojo: `order` es POR SECCIÓN, no por path. El path `os` tiene 14
-    // lecciones y solo 5 orders distintos (Linux 1-5, Windows 1-5, ...):
-    // el orden que ve el alumno es el de su módulo.
+  it('el order es único dentro de cada path y arranca en 1', () => {
+    // Ojo: `order` es POR PATH. Desde que cada módulo de SO y cada
+    // lenguaje de scripting son su propio path, no hay subsecciones:
+    // el orden que ve el alumno es el del path.
     for (const p of ACADEMY_PATHS) {
-      const grupos = p.subSections?.length
-        ? p.subSections.map(s => [s.id, s.lessons] as const)
-        : [[p.id, p.lessons] as const];
-      for (const [gid, lecciones] of grupos) {
-        const orders = lecciones.map(l => l.order);
-        expect(new Set(orders).size, `${p.id}/${gid}: orders repetidos`).toBe(orders.length);
-        expect(Math.min(...orders), `${p.id}/${gid} no arranca en 1`).toBe(1);
-      }
+      const orders = p.lessons.map(l => l.order);
+      expect(new Set(orders).size, `${p.id}: orders repetidos`).toBe(orders.length);
+      expect(Math.min(...orders), `${p.id} no arranca en 1`).toBe(1);
     }
   });
 
@@ -123,60 +119,24 @@ describe('Academy — lecciones', () => {
   });
 });
 
-describe('Academy — subsecciones', () => {
-  const conSub = ACADEMY_PATHS.filter(p => p.subSections?.length);
-
-  it('los ids de subsección son únicos dentro del path', () => {
-    for (const p of conSub) {
-      const ids = (p.subSections ?? []).map(s => s.id);
-      expect(new Set(ids).size, p.id).toBe(ids.length);
+describe('Academy — scripting como paths de primer nivel', () => {
+  // Antes había UN path 'scripting' con subsecciones y rutas
+  // /academy/scripting/module/<sub>; hoy cada lenguaje es su path.
+  it('los 3 lenguajes son paths propios, en orden, con sus 5 lecciones', () => {
+    const ids = ACADEMY_PATHS
+      .filter(p => ['bash', 'powershell', 'python'].includes(p.id))
+      .map(p => p.id);
+    expect(ids).toEqual(['bash', 'powershell', 'python']);
+    for (const id of ids) {
+      const p = getPath(id);
+      expect(p?.lessons, `${id} sin 5 lecciones`).toHaveLength(5);
+      for (const l of p?.lessons ?? []) expect(l.pathId).toBe(id);
     }
   });
 
-  it('cada subsección contiene lecciones que están en el path y le pertenecen', () => {
-    // Las subsecciones guardan Lesson[] (no ids), y el array flat del path
-    // es la compatibilidad para callers viejos: tienen que coincidir.
-    for (const p of conSub) {
-      const ids = new Set(p.lessons.map(l => l.id));
-      for (const s of p.subSections ?? []) {
-        expect(s.lessons.length, `${p.id}/${s.id} sin lecciones`).toBeGreaterThan(0);
-        for (const l of s.lessons) {
-          expect(ids.has(l.id), `${p.id}/${s.id} tiene ${l.id}, que no está en el path`).toBe(true);
-          expect(l.pathId, `${l.id} dice pathId=${l.pathId} pero está en ${p.id}`).toBe(p.id);
-        }
-      }
-    }
-  });
-
-  it('el flat de cada path es exactamente la unión de sus subsecciones', () => {
-    // Si divergen, el conteo de lecciones y el progreso se desalinean con
-    // lo que muestra la navegación por módulos.
-    for (const p of conSub) {
-      const enSubs = new Set((p.subSections ?? []).flatMap(s => s.lessons.map(l => l.id)));
-      expect(enSubs.size, `${p.id}: el flat y las subsecciones no coinciden`).toBe(p.lessons.length);
-      for (const l of p.lessons) {
-        expect(enSubs.has(l.id), `${p.id}: ${l.id} no está en ninguna subsección`).toBe(true);
-      }
-    }
-  });
-
-  it('toda lección de un path con subsecciones tiene subsección asignada', () => {
-    // getSubIdForLesson arma el breadcrumb y el selector de módulo: si
-    // devuelve undefined, la UI pierde el módulo de esa lección.
-    for (const p of conSub) {
-      for (const l of p.lessons) {
-        expect(getSubIdForLesson(p.id, l.id), `${p.id}/${l.id} sin subsección`).toBeTruthy();
-      }
-    }
-  });
-
-  it('getSubIdForLesson devuelve undefined en paths sin subsecciones', () => {
-    const sinSub = ACADEMY_PATHS.filter(p => !p.subSections?.length);
-    for (const p of sinSub) {
-      for (const l of p.lessons) {
-        expect(getSubIdForLesson(p.id, l.id), `${p.id} no debería tener subsecciones`).toBeUndefined();
-      }
-    }
+  it('el path único "scripting" dejó de existir (es legacy, no vigente)', () => {
+    expect(getPath('scripting')).toBeUndefined();
+    expect(isValidPathId('scripting')).toBe(false);
   });
 });
 

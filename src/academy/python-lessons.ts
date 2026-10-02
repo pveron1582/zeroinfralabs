@@ -8,7 +8,7 @@ import type { Lesson } from '../types';
 export const PYTHON_LESSONS: Lesson[] = [
   {
     id: 'python-01',
-    pathId: 'scripting',
+    pathId: 'python',
     order: 1,
     title: 'What is Python: the hacker language',
     titleEs: 'Qué es Python: el lenguaje del hacking',
@@ -77,7 +77,7 @@ export const PYTHON_LESSONS: Lesson[] = [
   },
   {
     id: 'python-02',
-    pathId: 'scripting',
+    pathId: 'python',
     order: 2,
     title: 'Basics: variables, types and conditions',
     titleEs: 'Bases: variables, tipos y condiciones',
@@ -138,7 +138,7 @@ export const PYTHON_LESSONS: Lesson[] = [
   },
   {
     id: 'python-03',
-    pathId: 'scripting',
+    pathId: 'python',
     order: 3,
     title: 'Loops, functions and libraries',
     titleEs: 'Bucles, funciones y librerías',
@@ -199,7 +199,7 @@ export const PYTHON_LESSONS: Lesson[] = [
   },
   {
     id: 'python-04',
-    pathId: 'scripting',
+    pathId: 'python',
     order: 4,
     title: 'Pentesting I: networking with socket',
     titleEs: 'Pentesting I: redes con socket',
@@ -268,7 +268,7 @@ export const PYTHON_LESSONS: Lesson[] = [
   },
   {
     id: 'python-05',
-    pathId: 'scripting',
+    pathId: 'python',
     order: 5,
     title: 'Pentesting II: HTTP with requests',
     titleEs: 'Pentesting II: HTTP con requests',

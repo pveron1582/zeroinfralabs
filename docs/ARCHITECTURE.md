@@ -127,7 +127,7 @@ src/
 │   └── types.ts                      #   Tipos del store
 │
 ├── academy/                          # Sistema de aprendizaje
-│   ├── paths.ts                      #   10 paths con metadata y lecciones
+│   ├── paths.ts                      #   12 paths con metadata y lecciones
 │   ├── path-*.ts                     #   Definiciones por path (redes, protocolos, hacking...)
 │   └── *-lessons.ts                  #   Lecciones compartidas (linux, windows, bash, python...)
 │
@@ -163,7 +163,7 @@ src/
     ├── command.ts                    #   CommandResponse (16 variantes), CmdResponseBase
     ├── machine.ts                    #   Machine, FileEntry, User, Group
     ├── mission.ts                    #   Mission, ValidationCriteria, MissionCriteriaType (17 tipos)
-    ├── academy.ts                    #   AcademyPath, Lesson, AcademySubSection
+    ├── academy.ts                    #   AcademyPath, Lesson
     └── index.ts                      #   Barrel re-export
 ```
 

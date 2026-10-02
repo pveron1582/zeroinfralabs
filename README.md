@@ -4,17 +4,17 @@
 
 ## 🎓 ZILabs Academy
 
-La **Academy** es el área de formación teórica de la plataforma: **10 paths de estudio con 59 lecciones** (quiz final incluido por lección), progreso persistente por usuario (guardado en `localStorage`, sin datos personales) y navegación ES/EN.
+La **Academy** es el área de formación teórica de la plataforma: **12 paths de estudio con 59 lecciones** (quiz final incluido por lección), progreso persistente por usuario (guardado en `localStorage`, sin datos personales) y navegación ES/EN.
 
 | Path | Tema |
 |------|------|
-| `os` | Operating Systems (Linux/Windows) |
-| `redes` | Network Fundamentals |
-| `protocolos` / `protocolos-ii` | Networking I y II |
-| `ciberseguridad` | Cybersecurity Fundamentals |
-| `hacking` | Pentesting |
-| `hacking-web` | Web Hacking |
-| `scripting` | Pentesting Scripting (Bash / PowerShell / Python) |
+| `linux` / `windows` / `others` | Operating Systems |
+| `fundaments` | Network Fundamentals |
+| `networksI` / `networksII` | Networking I y II |
+| `cyber` | Cybersecurity Fundamentals |
+| `pentesting` | Pentesting |
+| `hackingweb` | Web Hacking |
+| `bash` / `powershell` / `python` | Pentesting Scripting |
 
 Cada lección se compone de pasos de distinto tipo:
 - **`narrator`** — intro hablada del tema
@@ -85,7 +85,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ## 🎯 Características Principales
 
-- **Academy** — 10 paths de estudio con 59 lecciones (Linux, Windows, Otros SO, Fundamentos de redes, Redes I, Redes II, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
+- **Academy** — 12 paths de estudio con 59 lecciones (Linux, Windows, Otros SO, Fundamentos de redes, Redes I, Redes II, Ciberseguridad, Pentesting, Hacking Web, Scripting) con quizzes y progreso persistente
 - **Video-lecciones Remotion** — 118 composiciones animadas que acompañan las lecciones de la Academy
 - **Terminal Linux realista** — 71 comandos funcionales con auto-registro (ls, cd, cat, nano, sudo, nmap, hydra, ssh, msfconsole, iptables, cron...)
 - **Modelo de permisos Linux avanzado** — Simulación de SUID, SGID, Sticky bit, umask y ownership por usuario
@@ -124,7 +124,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 
 ```
 src/
-├── academy/          # 10 paths / 59 lecciones: path-*.ts + *-lessons.ts
+├── academy/          # 12 paths / 59 lecciones: path-*.ts + *-lessons.ts
 ├── video/            # Composiciones Remotion de video-lecciones (118)
 ├── commands/
 │   ├── builtin/     # help, ls, cd, cat, mkdir, rmdir, sudo, whoami, ps, top, ping, nano, iptables, cron, python3, etc. (69 archivos)
@@ -189,7 +189,7 @@ docs/
 - ✅ Shells interactivas (SSH, FTP, Netcat)
 - ✅ Desktop mode con ventanas flotantes y wallpapers
 - ✅ Network map con panel de enumeración
-- ✅ Academy: 10 paths / 59 lecciones con quizzes y progreso persistente
+- ✅ Academy: 12 paths / 59 lecciones con quizzes y progreso persistente
 - ✅ Video-lecciones Remotion (118 composiciones)
 - ✅ Blog con artículos ES/EN
 - ✅ Landing page + selección de labs

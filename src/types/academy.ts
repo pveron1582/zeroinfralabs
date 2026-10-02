@@ -2,7 +2,7 @@
 // Tipos de la Academy: contenido educativo guiado (Foxy Academy)
 // Ver docs/PROYECTO_ACADEMY.md
 
-export type AcademyPathId = 'linux' | 'windows' | 'others' | 'fundaments' | 'networksI' | 'networksII' | 'cyber' | 'pentesting' | 'hackingweb' | 'scripting';
+export type AcademyPathId = 'linux' | 'windows' | 'others' | 'fundaments' | 'networksI' | 'networksII' | 'cyber' | 'pentesting' | 'hackingweb' | 'bash' | 'powershell' | 'python';
 
 /** Claves de ilustración por módulo (linux, windows, redes, bash, etc.). */
 export type ModuleIllustrationKey =
@@ -102,18 +102,6 @@ export interface AcademyPath {
   accentColor: string;
   /** Clave de la ilustración del módulo (renderizada por ModuleIllustration). */
   illustration?: ModuleIllustrationKey;
-  /** Subsecciones con lecciones agrupadas. Si `lessons` está presente, legacy-flat. */
-  subSections?: AcademySubSection[];
-  /** Compat: lecciones flat cuando no hay subsecciones */
+  /** Lecciones del path, en orden de portada. */
   lessons: Lesson[];
-}
-
-export interface AcademySubSection {
-  id: string;
-  title: string;
-  titleEs: string;
-  icon: string;
-  /** Clave de la ilustración del módulo (renderizada por ModuleIllustration). */
-  illustration?: ModuleIllustrationKey;
-  lessons: Lesson[];
-}
+};

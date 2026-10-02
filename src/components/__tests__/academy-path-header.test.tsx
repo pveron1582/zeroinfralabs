@@ -48,13 +48,14 @@ describe('AcademyPathPage — barra del sitio', () => {
   });
 
   // Una entrada por tipo de página de módulo: paths de SO nuevos, un path
-  // plano, un path con subsecciones (scripting) y la URL legacy de SO.
+  // de scripting (ahora de primer nivel) y las URLs legacy de SO/scripting.
   const paginas: Array<[ruta: string, titulo: string]> = [
     ['/es/academy/linux', 'Linux'],
     ['/es/academy/windows', 'Windows'],
     ['/es/academy/others', 'Otros sistemas operativos y hardware'],
     ['/es/academy/fundaments', 'Fundamentos de redes'],
-    ['/es/academy/scripting/module/bash', 'Bash'],
+    ['/es/academy/bash', 'Bash'],
+    ['/es/academy/scripting/module/python', 'Python'], // legacy → /academy/python
     ['/es/academy/os', 'Linux'], // legacy: redirige a /academy/linux
   ];
 

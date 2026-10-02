@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**ZeroInfra Labs** — a browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 progressive labs in the grid + 2 by direct URL, an Academy (10 paths / 59 lessons), and Remotion video lessons that teach offensive security through simulated Linux/Windows machines, a functional terminal, and a fake browser. No VMs, no real exploits — everything runs in the browser with deterministic, scripted responses.
+**ZeroInfra Labs** — a browser-based pentesting simulator (React 18 + TypeScript + Vite). 6 progressive labs in the grid + 2 by direct URL, an Academy (12 paths / 59 lessons), and Remotion video lessons that teach offensive security through simulated Linux/Windows machines, a functional terminal, and a fake browser. No VMs, no real exploits — everything runs in the browser with deterministic, scripted responses.
 
 > All hashes and credentials in this repo are fictitious and for educational use only. See `docs/SECURITY.md`.
 
@@ -46,7 +46,7 @@ Commands (in `src/commands/`) know nothing about labs. Labs (in `src/laboratorio
 
 ```
 src/
-├── academy/            # 10 paths / 59 lessons + video-lesson metadata
+├── academy/            # 12 paths / 59 lessons + video-lesson metadata
 ├── video/              # Remotion video compositions (118 registradas en Root.tsx)
 ├── commands/
 │   ├── builtin/        # 69 comandos: python3, ls, cd, cat, sudo, whoami, ifconfig, hashcat, ping, traceroute, ps, top, htop, which, vi, awk, sed, man, ...

@@ -13,8 +13,6 @@ describe('paths de Sistemas Operativos (rutas /academy/<módulo>)', () => {
   it('existen como paths de primer nivel con sus lecciones', () => {
     expect(OS_PATHS.map(p => p.id)).toEqual(['linux', 'windows', 'others']);
     expect(OS_PATHS.flatMap(p => p.lessons)).toHaveLength(14); // 5 + 5 + 4
-    // Ninguno conserva subsecciones: la ruta es /academy/<path>/<lección>
-    for (const p of OS_PATHS) expect(p.subSections).toBeUndefined();
     // Y están los 3 en el registro general, antes que el resto de los paths
     expect(ACADEMY_PATHS.slice(0, 3)).toEqual(OS_PATHS);
   });
@@ -32,7 +30,8 @@ describe('paths de Sistemas Operativos (rutas /academy/<módulo>)', () => {
     expect(legacyPathId('os')).toBe('linux'); // /academy/os
     expect(legacyPathId('os', 'windows')).toBe('windows'); // /academy/os/module/windows
     expect(legacyPathId('os', 'no-existe')).toBe('linux'); // subId inválido → primer módulo
-    expect(legacyPathId('scripting')).toBeUndefined(); // path vigente, no legacy
+    expect(legacyPathId('scripting')).toBe('bash'); // partido en 3 paths
+    expect(legacyPathId('scripting', 'python')).toBe('python'); // /academy/scripting/module/python
     expect(legacyPathId('linux')).toBeUndefined(); // ya es la ruta nueva
   });
 
@@ -40,7 +39,7 @@ describe('paths de Sistemas Operativos (rutas /academy/<módulo>)', () => {
     expect(findPathIdForLesson('linux-01')).toBe('linux');
     expect(findPathIdForLesson('windows-01')).toBe('windows');
     expect(findPathIdForLesson('others-03')).toBe('others');
-    expect(findPathIdForLesson('bash-01')).toBe('scripting');
+    expect(findPathIdForLesson('bash-01')).toBe('bash');
     expect(findPathIdForLesson('no-existe')).toBeUndefined();
   });
 });

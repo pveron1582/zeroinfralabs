@@ -2,7 +2,7 @@
 
 > Plan de diseño. Estado: **IMPLEMENTADO** (actualizado 2026-08-22).
 > Decidido el 2026-08-08 como prioridad tras el Admin Panel UI; desarrollado
-> durante agosto 2026. Estado real: **10 paths / 59 lecciones** bilingües ES/EN,
+> durante agosto 2026. Estado real: **12 paths / 59 lecciones** bilingües ES/EN,
 > con quizzes + progreso persistido (`completedLessons`/`quizResults` en
 > `partialize`), videos Remotion (`media/videos/`), FoxyNarrator, simuladores
 > de red interactivos y LessonBuilder en el AdminPanel. Diseño visual unificado
@@ -128,7 +128,7 @@ el AcademyPath muestra badges "Completada" basado en `completedLessons`.
 ```
 /:lang/academy                 → AcademyHome
 /:lang/academy/:pathId         → AcademyPath
-/:lang/academy/:pathId/module/:subId → AcademyPath (paths con subsecciones: scripting)
+/:lang/academy/:pathId/module/:subId → AcademyPath (URLs legacy; ningún path vigente usa subsecciones)
 /:lang/academy/:pathId/:lessonId → LessonViewer
 ```
 
@@ -138,7 +138,11 @@ el AcademyPath muestra badges "Completada" basado en `completedLessons`.
 > `/es/academy/others/others-01`; y los paths de Redes se renombraron →
 > `redes` → `fundaments`, `protocolos` → `networksI`, `protocolos-ii` →
 > `networksII` (lecciones `fundaments-01…05`, `networksI-01…05`,
-> `networksII-01…05`).
+> `networksII-01…05`); y el path `scripting` se partió en 3 paths de primer
+> nivel → `/es/academy/bash`, `/es/academy/powershell`, `/es/academy/python`
+> (mismas lecciones `bash-01…05` / `powershell-01…05` / `python-01…05`).
+> El path `ciber` pasó a `cyber` (rutas en inglés; el idioma sólo vive en el
+> prefijo `/es` · `/en`) y sus lecciones `ciber-01…05` → `cyber-01…05`.
 >
 > Las URLs viejas redirigen: los alias viven en `src/academy/legacyIds.ts`
 > (hoja sin contenido, también la consume el store) y los resuelven

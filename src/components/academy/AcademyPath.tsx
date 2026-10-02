@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
 import { getPath, legacyPathId } from '../../academy';
-import type { Lesson, AcademySubSection, ModuleIllustrationKey } from '../../types';
+import type { Lesson, ModuleIllustrationKey } from '../../types';
 import { SiteHeader } from '../landing/SiteHeader';
 import { PageHero } from '../landing/PageHero';
 import { useColors, FONT_MONO, FONT_SANS } from '../landing/constants';
@@ -86,25 +86,18 @@ export function AcademyPathPage() {
     return <Navigate to={legacy ? `/${lang}/academy/${legacy}` : `/${lang}/academy`} replace />;
   }
 
-  const subSections: AcademySubSection[] = path.subSections ?? [];
+  // Ningún path tiene subsecciones desde que cada módulo pasó a ser path
+  // de primer nivel: un /module/<sub> que llegue con un path vigente es
+  // una URL vieja (p. ej. /academy/bash/module/python) → ruta canónica.
+  if (subId) return <Navigate to={`/${lang}/academy/${path.id}`} replace />;
 
-  // Sin sidebar: si el path tiene subsecciones, la ruta SIEMPRE es /module/:subId.
-  if (subSections.length > 0) {
-    const validSub = subId && subSections.some(s => s.id === subId);
-    if (!validSub) return <Navigate to={`/${lang}/academy/${path.id}/module/${subSections[0].id}`} replace />;
-  }
+  // Ilustración del módulo
+  const illustrationKey: ModuleIllustrationKey | undefined = path.illustration;
+  const illustrationTitle = isEs ? path.titleEs : path.title;
 
-  const currentSub = subId ? subSections.find(s => s.id === subId) : undefined;
-  const lessonsToShow = currentSub?.lessons ?? path.lessons;
-
-  // Ilustración del módulo activo (path o subsección)
-  const illustrationKey: ModuleIllustrationKey | undefined = currentSub?.illustration ?? path.illustration;
-  const illustrationTitle = isEs ? (currentSub?.titleEs ?? path.titleEs) : (currentSub?.title ?? path.title);
-
-  // Progreso global del path: todas las lecciones
-  const allLessons = subSections.length > 0 ? subSections.flatMap(s => s.lessons) : path.lessons;
-  const done = allLessons.filter(l => completedLessons.includes(l.id)).length;
-  const total = allLessons.length;
+  // Progreso del path
+  const done = path.lessons.filter(l => completedLessons.includes(l.id)).length;
+  const total = path.lessons.length;
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
 
   return (
@@ -115,7 +108,7 @@ export function AcademyPathPage() {
 
       <PageHero
         eyebrow={isEs ? 'Academia · Ciberseguridad' : 'Cybersecurity Academy'}
-        title={isEs ? (currentSub?.titleEs ?? path.titleEs) : (currentSub?.title ?? path.title)}
+        title={isEs ? path.titleEs : path.title}
         subtitle={isEs ? path.descriptionEs : path.description}
       />
 
@@ -142,7 +135,7 @@ export function AcademyPathPage() {
           {/* Lista de lecciones del módulo activo */}
           <div className="relative">
             <div className="space-y-3">
-              {lessonsToShow.map(lesson => (
+              {path.lessons.map(lesson => (
                 <LessonRow
                   key={lesson.id}
                   lesson={lesson}

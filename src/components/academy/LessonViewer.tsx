@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { getPath, getLesson, getSubIdForLesson, resolveLessonRoute } from '../../academy';
+import { getPath, getLesson, resolveLessonRoute } from '../../academy';
 import { SiteHeader } from '../landing/SiteHeader';
 import { LessonContent } from './LessonContent';
 import { useColors, FONT_MONO, FONT_SANS } from '../landing/constants';
@@ -38,10 +38,10 @@ export function LessonViewer() {
     return <Navigate to={`/${lang}/academy`} replace />;
   }
 
-  // Destino de "salir de la lección": la subsección del path si existe (module/x), si no el path.
-  // Antes se usaba lesson.labRef (id de scenario, no de módulo) → devolvía a /academy/os.
-  const subId = getSubIdForLesson(path.id, lesson.id);
-  const backTarget = `/${lang}/academy/${path.id}${subId ? `/module/${subId}` : ''}`;
+  // Destino de "salir de la lección": su path (los paths ya no tienen
+  // subsecciones, así que siempre es /academy/<path>). Antes se usaba
+  // lesson.labRef (id de scenario, no de módulo) → devolvía a /academy/os.
+  const backTarget = `/${lang}/academy/${path.id}`;
 
   const step = lesson.steps[stepIdx];
   const isLast = stepIdx === lesson.steps.length - 1;
@@ -52,7 +52,7 @@ export function LessonViewer() {
   const goNext = () => {
     if (isLast) {
       markLessonCompleted(lesson.id);
-      // Vuelve a la subsección del path (module/x) si la tiene, si no al path
+      // Vuelve al path de la lección
       navigate(backTarget);
       return;
     }
