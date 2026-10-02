@@ -192,7 +192,7 @@ y el equipo aprende a re-ejecutar hasta que pase → el gate pierde valor.
       `MachineLoader.test.tsx` y `FoxyTour-app.test.tsx`. (estado 2026-10-01: `MachineLoader.test.tsx` ya usa `vi.useFakeTimers()`; `FoxyTour-app.test.tsx` sigue con `waitFor … { timeout: 3000/5000 }` ⇒ sigue abierto.)
 - [ ] **2.1.3** **Acelerar la suite** (esto además baja el flakeo): marcar con `// @vitest-environment node` los tests
       que no tocan DOM (comandos, utils, fs-models, frameworks). Hoy los 153 archivos levantan jsdom.
-      Objetivo: bajar `environment` de ~336 s a la mitad o menos. (estado 2026-10-01: 140 de 266 archivos ya llevan `@vitest-environment node` y `environment` bajó de ~336 s a **176 s**, todavía por encima de la mitad ⇒ sigue abierto.)
+      Objetivo: bajar `environment` de ~336 s a la mitad o menos. (estado 2026-10-01: 140 de 267 archivos ya llevan `@vitest-environment node` y `environment` bajó de ~336 s a **176 s**, todavía por encima de la mitad ⇒ sigue abierto.)
 - [x] **2.1.4** Envolver los updates async en `act()` para eliminar los warnings (ruido que esconde fallos reales). → **RESUELTO 2026-10-01:** **0 warnings `act()`** en las 3 corridas consecutivas (grep sobre los logs de `pnpm test:run` y `test:coverage`), y `src/test/setup.ts` no silencia `console.error` — no queda ruido que eliminar.
 - [x] **2.1.5** Criterio de cierre: **3 corridas consecutivas verdes** de `pnpm test:run` sin tocar código. → **RESUELTO 2026-10-01:** 3 corridas consecutivas verdes el 2026-10-01 sin tocar código entre ellas: 91,4 s / 91,5 s / 111,7 s — **3295/3295** cada una.
 

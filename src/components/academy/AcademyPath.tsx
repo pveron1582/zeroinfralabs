@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
 import { getPath, legacyOsPathId } from '../../academy';
 import type { Lesson, AcademySubSection, ModuleIllustrationKey } from '../../types';
+import { SiteHeader } from '../landing/SiteHeader';
 import { PageHero } from '../landing/PageHero';
 import { useColors, FONT_MONO, FONT_SANS } from '../landing/constants';
 import { ModuleIllustration } from './ModuleIllustration';
@@ -107,6 +108,10 @@ export function AcademyPathPage() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: colors.pageBg, fontFamily: FONT_SANS }}>
+      {/* Misma barra que el home del Academy y las lecciones (labs, academy,
+          blog, tema e idioma) — era lo único que faltaba en este layout. */}
+      <SiteHeader activeNav="academy" />
+
       <PageHero
         eyebrow={isEs ? 'Academia · Ciberseguridad' : 'Cybersecurity Academy'}
         title={isEs ? (currentSub?.titleEs ?? path.titleEs) : (currentSub?.title ?? path.title)}
