@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { AcademyHome } from '../academy/AcademyHome';
-import { AcademyPathPage } from '../academy/AcademyPath';
-import { LessonViewer } from '../academy/LessonViewer';
 import { useScenarioStore } from '../../store/scenarioStore';
 import { ACADEMY_PATHS, getAllLessons } from '../../academy';
+import { renderAcademy } from './academyRender';
 
 vi.mock('../landing/SiteHeader', () => ({
   SiteHeader: () => <header data-testid="site-header">header</header>,
@@ -15,19 +12,6 @@ vi.mock('../landing/SiteHeader', () => ({
 vi.mock('../landing/MarketingFooter', () => ({
   MarketingFooter: () => <footer data-testid="footer">footer</footer>,
 }));
-
-function renderAcademy(initialPath: string) {
-  return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/:lang/academy" element={<AcademyHome />} />
-        <Route path="/:lang/academy/:pathId" element={<AcademyPathPage />} />
-        <Route path="/:lang/academy/:pathId/module/:subId" element={<AcademyPathPage />} />
-        <Route path="/:lang/academy/:pathId/:lessonId" element={<LessonViewer />} />
-      </Routes>
-    </MemoryRouter>
-  );
-}
 
 describe('Academy', () => {
   beforeEach(() => {
@@ -72,7 +56,7 @@ describe('Academy', () => {
     });
 
     it('muestra el progreso general correctamente', () => {
-      useScenarioStore.setState({ completedLessons: ['linux-01', 'linux-02', 'network-04', 'ciber-01', 'hacking-01'] });
+      useScenarioStore.setState({ completedLessons: ['linux-01', 'linux-02', 'networksII-05', 'ciber-01', 'hacking-01'] });
       renderAcademy('/es/academy');
 
       expect(screen.getByText('Tu progreso general')).toBeInTheDocument();
@@ -98,19 +82,6 @@ describe('Academy', () => {
   });
 
   describe('AcademyPathPage', () => {
-    it('redirige la URL legacy /academy/os a /academy/linux', () => {
-      renderAcademy('/es/academy/os');
-      expect(screen.getByRole('heading', { name: 'Linux' })).toBeInTheDocument();
-      expect(screen.getByText('Por qué Linux: historia, software libre y dónde vive')).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /^Windows/ })).not.toBeInTheDocument();
-    });
-
-    it('redirige la URL legacy /academy/os/module/<sub> a /academy/<sub>', () => {
-      renderAcademy('/es/academy/os/module/windows');
-      expect(screen.getByRole('heading', { name: 'Windows' })).toBeInTheDocument();
-      expect(screen.getByText('Historia de Windows: orígenes, versiones y el modelo privativo')).toBeInTheDocument();
-    });
-
     it('muestra las 5 lecciones de Linux en /academy/linux', () => {
       renderAcademy('/es/academy/linux');
       expect(screen.getByRole('heading', { name: 'Linux' })).toBeInTheDocument();
@@ -169,7 +140,7 @@ describe('Academy', () => {
     });
 
     it('muestra las 5 lecciones de Fundamentos de redes', () => {
-      renderAcademy('/es/academy/redes');
+      renderAcademy('/es/academy/fundaments');
       expect(screen.getByText('¿Qué es una red? Tipos: LAN, MAN, WAN y VPN')).toBeInTheDocument();
       expect(screen.getByText('Cómo se comunican: direcciones IP públicas y privadas')).toBeInTheDocument();
       expect(screen.getByText('Dispositivos básicos: hub, switch y router + topologías')).toBeInTheDocument();
@@ -178,7 +149,7 @@ describe('Academy', () => {
     });
 
     it('muestra las 5 lecciones de Redes I (switch y router unificadas + VLANs)', () => {
-      renderAcademy('/es/academy/protocolos');
+      renderAcademy('/es/academy/networksI');
       expect(screen.getByText('Protocolos por capa: los imprescindibles')).toBeInTheDocument();
       expect(screen.getByText('Puertos: qué son, cuántos hay y los que tenés que conocer')).toBeInTheDocument();
       expect(screen.getByText('Servicios de red comunes: SMB, FTP, SSH y VNC')).toBeInTheDocument();
@@ -190,7 +161,7 @@ describe('Academy', () => {
     });
 
     it('muestra las 5 lecciones de Redes II (DHCP, NAT, DNS, DMZ y VPN)', () => {
-      renderAcademy('/es/academy/protocolos-ii');
+      renderAcademy('/es/academy/networksII');
       expect(screen.getByText('DHCP: el servicio que reparte las direcciones IP')).toBeInTheDocument();
       expect(screen.getByText('NAT: cómo toda tu red sale a internet con una sola IP')).toBeInTheDocument();
       expect(screen.getByText('DNS: cómo busca los nombres la internet')).toBeInTheDocument();
@@ -285,10 +256,10 @@ describe('Academy', () => {
       expect(link).toHaveAttribute('href', '/es/academy/linux');
     });
 
-    it('el back link de una lección flat (protocolos-ii) vuelve al path', () => {
-      renderAcademy('/es/academy/protocolos-ii/network-04');
+    it('el back link de una lección flat (networksII) vuelve al path', () => {
+      renderAcademy('/es/academy/networksII/networksII-05');
       const link = screen.getByRole('link', { name: /Regresar/ });
-      expect(link).toHaveAttribute('href', '/es/academy/protocolos-ii');
+      expect(link).toHaveAttribute('href', '/es/academy/networksII');
     });
 
     it('el back link de una lección de scripting vuelve a su módulo', () => {
@@ -344,9 +315,9 @@ describe('Academy', () => {
       expect(useScenarioStore.getState().completedLessons).toContain('windows-01');
     });
 
-    it('el matching (proto-07) bloquea el avance hasta emparejar todos los pares', () => {
-      renderAcademy('/es/academy/protocolos/proto-07');
-      const total = getAllLessons().find(l => l.id === 'proto-07')!.steps.length;
+    it('el matching (networksI-04) bloquea el avance hasta emparejar todos los pares', () => {
+      renderAcademy('/es/academy/networksI/networksI-04');
+      const total = getAllLessons().find(l => l.id === 'networksI-04')!.steps.length;
       expect(total).toBe(9); // narrator + video + 4 contents + matching + sim + quiz
       // Avanzar hasta el paso de matching (paso 7 de 9)
       for (let i = 0; i < 6; i++) {
@@ -371,7 +342,7 @@ describe('Academy', () => {
       expect(screen.getByText(/Comprobá lo aprendido/)).toBeInTheDocument();
       fireEvent.click(screen.getByText(/^Capa 2$/));
       fireEvent.click(screen.getByRole('button', { name: /Completar lección ✓/ }));
-      expect(useScenarioStore.getState().completedLessons).toContain('proto-07');
+      expect(useScenarioStore.getState().completedLessons).toContain('networksI-04');
     }, 15000);
 
     it('redirige si la lección no existe', () => {
@@ -379,10 +350,5 @@ describe('Academy', () => {
       expect(screen.getByText('Sistemas Operativos')).toBeInTheDocument(); // volvió al home
     });
 
-    it('redirige la URL legacy /academy/os/linux-01 a /academy/linux/linux-01', () => {
-      renderAcademy('/es/academy/os/linux-01');
-      expect(screen.getByText(/Antes de hackear un Linux/)).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /Regresar/ })).toHaveAttribute('href', '/es/academy/linux');
-    });
   });
 });

@@ -1,5 +1,6 @@
 // ── video/remotion/compositions/Re01NetworkTypes.tsx ───────────────
-// Video: ¿qué es una red? Nodos, tamaños (PAN/LAN/MAN/WAN) y la VPN.
+// Video de la lección fundaments-01 (Fundamentos de redes): ¿qué es una
+// red? Nodos, tamaños (PAN/LAN/MAN/WAN) y la VPN.
 // Versión unificada ES/EN con `lang` prop.
 
 import React from 'react';

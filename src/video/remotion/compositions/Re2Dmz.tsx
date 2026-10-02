@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re2Dmz.tsx ───────────────────────────
 // Video: DMZ — separando lo público de lo privado.
-// Lección network-04 del Academy (Redes II). Guiones: voicebox-scripts/re2-05-*.txt
+// Lección networksII-05 del Academy (Redes II). Guiones: voicebox-scripts/re2-05-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re2-05-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

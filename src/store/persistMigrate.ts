@@ -19,9 +19,10 @@
 // PERSIST_VERSION, 3) correr los tests de acá.
 
 import type { ScenarioState } from './types';
+import { LEGACY_LESSON_IDS } from '../academy/legacyIds';
 
 /** Versión del snapshot persistido. Única fuente: la consume scenarioStore. */
-export const PERSIST_VERSION = 2;
+export const PERSIST_VERSION = 3;
 
 /** Claves que sobreviven en el snapshot. TODO lo demás se tira. */
 export const PERSIST_KEYS = [
@@ -39,14 +40,41 @@ export type PersistKey = (typeof PERSIST_KEYS)[number];
 /** Snapshot persistido: lo mismo que devuelve `partialize`, pero opcional. */
 export type PersistedState = Partial<Pick<ScenarioState, PersistKey>>;
 
+/** `${idDeLección}-q${n}` → el id de lección de la clave (o la clave entera). */
+const QUIZ_KEY = /^(.*)-q(\d+)$/;
+
+/** Reescribe las claves de quiz cuya lección cambió de id. */
+function renombrarQuizResults(quizResults: unknown): unknown {
+  if (!quizResults || typeof quizResults !== 'object' || Array.isArray(quizResults)) return quizResults;
+  const out: Record<string, unknown> = {};
+  for (const [clave, valor] of Object.entries(quizResults as Record<string, unknown>)) {
+    const [, id, n] = clave.match(QUIZ_KEY) ?? [];
+    out[id !== undefined ? `${LEGACY_LESSON_IDS[id] ?? id}-q${n}` : clave] = valor;
+  }
+  return out;
+}
+
 /**
  * Migración de cada salto: `MIGRATIONS[n]` recibe el snapshot guardado con
- * versión `n - 1` y lo deja listo para `n`. Hoy vacío — 2 es la primera
- * versión con forma estable y los snapshots más viejos sólo necesitan el
- * recorte de claves (lo que falte lo cubre `merge`). Alta de una versión:
- * `3: (s) => ({ ...s, termFont: 'monospace' })`.
+ * versión `n - 1` y lo deja listo para `n`. 2 es la primera versión con
+ * forma estable (los snapshots más viejos sólo necesitan el recorte de
+ * claves, que lo que falte lo cubre `merge`). Alta de una versión:
+ * `4: (s) => ({ ...s, termFont: 'monospace' })`.
  */
-const MIGRATIONS: MigrationMap = {};
+const MIGRATIONS: MigrationMap = {
+  // 2 → 3 (2026-10): los paths de Redes se renombraron (fundaments,
+  // networksI, networksII) y con ellos 15 lecciones. Sin renombrar acá,
+  // el progreso guardado con los ids viejos dejaría de matchear y el
+  // alumno "pierde" lo completado sin ningún aviso.
+  3: (snapshot) => {
+    const out: Record<string, unknown> = { ...snapshot };
+    if (Array.isArray(out.completedLessons)) {
+      out.completedLessons = (out.completedLessons as string[]).map(id => LEGACY_LESSON_IDS[id] ?? id);
+    }
+    if (out.quizResults !== undefined) out.quizResults = renombrarQuizResults(out.quizResults);
+    return out;
+  },
+};
 
 /** Mapa `versión que inicia el cambio → transformación del snapshot viejo`. */
 export type MigrationMap = Record<number, (snapshot: Record<string, unknown>) => Record<string, unknown>>;

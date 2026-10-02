@@ -5,8 +5,8 @@ import type { Lesson } from '../types';
 
 export const REDES_LESSONS: Lesson[] = [
   {
-    id: 'redes-01',
-    pathId: 'redes',
+    id: 'fundaments-01',
+    pathId: 'fundaments',
     order: 1,
     title: 'What is a network? Types: LAN, MAN, WAN and VPN',
     titleEs: '¿Qué es una red? Tipos: LAN, MAN, WAN y VPN',
@@ -65,8 +65,8 @@ export const REDES_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'redes-02',
-    pathId: 'redes',
+    id: 'fundaments-02',
+    pathId: 'fundaments',
     order: 2,
     title: 'How networks communicate: public and private IP addresses',
     titleEs: 'Cómo se comunican: direcciones IP públicas y privadas',
@@ -132,8 +132,8 @@ export const REDES_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'redes-03',
-    pathId: 'redes',
+    id: 'fundaments-03',
+    pathId: 'fundaments',
     order: 3,
     title: 'Basic devices: hub, switch and router + network topologies',
     titleEs: 'Dispositivos básicos: hub, switch y router + topologías',
@@ -199,8 +199,8 @@ export const REDES_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'redes-04',
-    pathId: 'redes',
+    id: 'fundaments-04',
+    pathId: 'fundaments',
     order: 4,
     title: 'OSI and TCP/IP models: the layers',
     titleEs: 'Modelo OSI y TCP/IP: las capas',
@@ -259,8 +259,8 @@ export const REDES_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'redes-05',
-    pathId: 'redes',
+    id: 'fundaments-05',
+    pathId: 'fundaments',
     order: 5,
     title: 'Addressing: address, mask, gateway and DNS',
     titleEs: 'Direccionamiento: dirección, máscara, puerta de enlace y DNS',

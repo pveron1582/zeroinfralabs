@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re04OsiLayers.tsx ──────────────────
 // Video: modelo OSI (las 7 capas) vs TCP/IP (las 4 capas).
-// Lección redes-04 del Academy. Guiones: voicebox-scripts/re-04-*.txt
+// Lección fundaments-04 del Academy. Guiones: voicebox-scripts/re-04-*.txt
 // Audio real cargado (wavs Voicebox, ffprobe 2026-08-17). Los syncs internos
 // (RevealLine/KeyCapsule/TitleScene) están alineados a silencedetect (-50dB).
 // Versión unificada ES/EN con `lang` prop.

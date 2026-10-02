@@ -97,7 +97,7 @@ export function AcademyHome() {
   const hackingWebPath = ACADEMY_PATHS.find(p => p.id === 'hacking-web')!;
   const scriptingPath = ACADEMY_PATHS.find(p => p.id === 'scripting')!;
   // Los 3 paths de redes: fundamentos → protocolos → avanzado
-  const networkPaths = ACADEMY_PATHS.filter(p => ['redes', 'protocolos', 'protocolos-ii'].includes(p.id));
+  const networkPaths = ACADEMY_PATHS.filter(p => ['fundaments', 'networksI', 'networksII'].includes(p.id));
 
   const doneOf = (lessons: Lesson[]) => lessons.filter(l => completedLessons.includes(l.id)).length;
   const totalAll = ACADEMY_PATHS.reduce((acc, p) => acc + p.lessons.length, 0);

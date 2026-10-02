@@ -6,7 +6,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { getPath, legacyOsPathId } from '../../academy';
+import { getPath, legacyPathId } from '../../academy';
 import type { Lesson, AcademySubSection, ModuleIllustrationKey } from '../../types';
 import { SiteHeader } from '../landing/SiteHeader';
 import { PageHero } from '../landing/PageHero';
@@ -79,9 +79,10 @@ export function AcademyPathPage() {
   })));
 
   if (!path) {
-    // URL legacy de SO (2026-10): /academy/os → /academy/linux y
-    // /academy/os/module/<sub> → /academy/<sub>. Otras rutas inválidas → home.
-    const legacy = legacyOsPathId(pathId ?? '', subId);
+    // URL legacy (2026-10): /academy/os → /academy/linux,
+    // /academy/os/module/<sub> → /academy/<sub>, /academy/redes →
+    // /academy/fundaments… (ver legacyIds.ts). Otras → home.
+    const legacy = legacyPathId(pathId ?? '', subId);
     return <Navigate to={legacy ? `/${lang}/academy/${legacy}` : `/${lang}/academy`} replace />;
   }
 

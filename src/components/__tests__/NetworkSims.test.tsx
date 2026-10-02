@@ -1,7 +1,7 @@
 // ── components/__tests__/NetworkSims.test.tsx ──────────────────────
-// Tests de los simuladores de red: NetworkHomeLab (network-03),
-// NetworkDMZLab (network-04), NetworkMitmLab (network-05) y
-// NetworkTopologyLab (proto-07).
+// Tests de los simuladores de red: NetworkHomeLab (fundaments-03),
+// NetworkDMZLab (networksII-05), NetworkMitmLab (network-05) y
+// NetworkTopologyLab (networksI-04).
 // Se usan los motores drag&drop del NetworkSimCore via testerids handle-*.
 
 import { describe, it, expect, beforeEach } from 'vitest';

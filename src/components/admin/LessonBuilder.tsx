@@ -148,9 +148,9 @@ export function LessonBuilder({ onBack, isEs }: { onBack: () => void; isEs: bool
                   <option value="linux">Linux</option>
                   <option value="windows">Windows</option>
                   <option value="others">Otros SO y hardware</option>
-                  <option value="redes">Fundamentos de redes</option>
-                  <option value="protocolos">Redes I</option>
-                  <option value="protocolos-ii">Redes II</option>
+                  <option value="fundaments">Fundamentos de redes</option>
+                  <option value="networksI">Redes I</option>
+                  <option value="networksII">Redes II</option>
                   <option value="ciberseguridad">Ciberseguridad</option>
                   <option value="hacking">Pentesting</option>
                 </select>

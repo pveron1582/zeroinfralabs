@@ -7,8 +7,8 @@ import type { Lesson } from '../types';
 
 export const PROTOCOLOS_LESSONS: Lesson[] = [
   {
-    id: 'proto-01',
-    pathId: 'protocolos',
+    id: 'networksI-01',
+    pathId: 'networksI',
     order: 1,
     title: 'Protocols by layer: the essentials',
     titleEs: 'Protocolos por capa: los imprescindibles',
@@ -75,8 +75,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'proto-06',
-    pathId: 'protocolos',
+    id: 'networksI-02',
+    pathId: 'networksI',
     order: 2,
     title: 'Ports: what they are, how many exist and the ones you must know',
     titleEs: 'Puertos: qué son, cuántos hay y los que tenés que conocer',
@@ -150,8 +150,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'proto-03',
-    pathId: 'protocolos',
+    id: 'networksI-03',
+    pathId: 'networksI',
     order: 3,
     title: 'Common network services: SMB, FTP, SSH and VNC',
     titleEs: 'Servicios de red comunes: SMB, FTP, SSH y VNC',
@@ -226,9 +226,10 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
   },
   {
     // Unifica las antiguas proto-04 (switch) y proto-05 (router) en una
-    // sola clase de dispositivos físicos (2026-08-17). Id nuevo `proto-07`.
-    id: 'proto-07',
-    pathId: 'protocolos',
+    // sola clase de dispositivos físicos (2026-08-17). Id nuevo `proto-07`
+    // (renombrado a `networksI-04` en el rework de rutas de 2026-10).
+    id: 'networksI-04',
+    pathId: 'networksI',
     order: 4,
     title: 'Essential network devices: hub, switch and router',
     titleEs: 'Dispositivos esenciales de red: hub, switch y router',
@@ -339,8 +340,8 @@ export const PROTOCOLOS_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'proto-08',
-    pathId: 'protocolos',
+    id: 'networksI-05',
+    pathId: 'networksI',
     order: 5,
     title: 'VLANs: segmentation by design',
     titleEs: 'VLANs: segmentación por diseño',

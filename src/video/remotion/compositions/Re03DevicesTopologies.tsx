@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re03DevicesTopologies.tsx ──────────
 // Video: los 3 dispositivos de la LAN (hub/switch/router) + topologías.
-// Lección redes-03 del Academy. Guiones: voicebox-scripts/re-03-*.txt
+// Lección fundaments-03 del Academy. Guiones: voicebox-scripts/re-03-*.txt
 // Audio real cargado (wavs Voicebox, ffprobe 2026-08-17). Los syncs internos
 // (RevealLine/KeyCapsule/TitleScene) están alineados a silencedetect (-50dB).
 // Versión unificada ES/EN con `lang` prop.

@@ -132,11 +132,20 @@ el AcademyPath muestra badges "Completada" basado en `completedLessons`.
 /:lang/academy/:pathId/:lessonId → LessonViewer
 ```
 
-> **Rutas de SO (2026-10):** los 3 módulos de Sistemas Operativos dejaron de
-> ser subsecciones de un único path `os` y hoy son paths de primer nivel:
+> **Rutas de primer nivel (2026-10):** cada módulo es su propio path. Los 3
+> módulos de Sistemas Operativos dejaron de ser subsecciones del path `os` →
 > `/es/academy/linux`, `/es/academy/linux/linux-01`, `/es/academy/windows/windows-01`,
-> `/es/academy/others/others-01`. Las URLs viejas (`/academy/os/...`) redirigen
-> a las nuevas (`legacyOsPathId` / `findPathIdForLesson` en `src/academy/paths.ts`).
+> `/es/academy/others/others-01`; y los paths de Redes se renombraron →
+> `redes` → `fundaments`, `protocolos` → `networksI`, `protocolos-ii` →
+> `networksII` (lecciones `fundaments-01…05`, `networksI-01…05`,
+> `networksII-01…05`).
+>
+> Las URLs viejas redirigen: los alias viven en `src/academy/legacyIds.ts`
+> (hoja sin contenido, también la consume el store) y los resuelven
+> `legacyPathId` / `resolveLessonRoute` en `src/academy/paths.ts`. El progreso
+> persistido con ids anteriores se migra en `store/persistMigrate.ts` (v3).
+> Contrato en `academy/__tests__/legacy-ids.test.ts` (alias) y
+> `components/__tests__/academy-legacy-routes.test.tsx` (render de las rutas).
 
 ## Estética y tono
 

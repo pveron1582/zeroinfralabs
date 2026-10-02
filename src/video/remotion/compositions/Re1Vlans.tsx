@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re1Vlans.tsx ───────────────────────
 // Video: VLANs — segmentación por diseño.
-// Lección proto-05 del Academy (Redes I). Guiones: voicebox-scripts/re1-05-*.txt
+// Lección networksI-05 del Academy (Redes I). Guiones: voicebox-scripts/re1-05-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re1-05-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

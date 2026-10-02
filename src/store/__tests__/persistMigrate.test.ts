@@ -53,6 +53,20 @@ describe('migratePersistedState', () => {
     migratePersistedState(guardado, 2);
     expect(guardado).toEqual({ language: 'es', basura: 1 });
   });
+
+  it('v3 renombra los ids de lección de los paths de Redes (progreso y quizzes)', () => {
+    const out = migratePersistedState({
+      completedLessons: ['redes-01', 'proto-07', 'network-04', 'linux-01'],
+      quizResults: { 'proto-07-q0': { firstTryCorrect: true }, 'linux-01-q1': { firstTryCorrect: false } },
+    }, 2);
+    expect(out.completedLessons).toEqual(['fundaments-01', 'networksI-04', 'networksII-05', 'linux-01']);
+    expect(Object.keys(out.quizResults ?? {})).toEqual(['networksI-04-q0', 'linux-01-q1']);
+  });
+
+  it('v3 no toca los snapshots que ya están en la versión actual', () => {
+    const out = migratePersistedState({ completedLessons: ['networksI-01'] }, PERSIST_VERSION);
+    expect(out.completedLessons).toEqual(['networksI-01']);
+  });
 });
 
 describe('contrato de la versión persistida', () => {
@@ -67,7 +81,7 @@ describe('contrato de la versión persistida', () => {
   it('PERSIST_KEYS y PERSIST_VERSION son el mapa que hay que tocar al subir versión', () => {
     // Tripwire a propósito: subir PERSIST_VERSION o agregar una clave
     // persistida obliga a revisar este archivo (y el registro MIGRATIONS).
-    expect(PERSIST_VERSION).toBe(2);
+    expect(PERSIST_VERSION).toBe(3);
     expect(PERSIST_KEYS.length).toBe(7);
   });
 });

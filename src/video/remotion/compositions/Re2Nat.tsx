@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re2Nat.tsx ───────────────────────────
 // Video: NAT — cómo toda tu red sale a internet con una sola IP.
-// Lección network-07 del Academy (Redes II). Guiones: voicebox-scripts/re2-02-*.txt
+// Lección networksII-02 del Academy (Redes II). Guiones: voicebox-scripts/re2-02-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re2-02-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

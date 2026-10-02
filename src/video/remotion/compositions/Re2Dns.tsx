@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re2Dns.tsx ───────────────────────────
 // Video: DNS — cómo busca los nombres la internet.
-// Lección network-08 del Academy (Redes II). Guiones: voicebox-scripts/re2-03-*.txt
+// Lección networksII-03 del Academy (Redes II). Guiones: voicebox-scripts/re2-03-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re2-03-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

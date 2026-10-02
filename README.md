@@ -102,7 +102,7 @@ Abre `http://localhost:5173` y selecciona un laboratorio para comenzar.
 - **Dark/Light Theme** — Alternancia entre temas en landing y workspace
 - **Feedback y Analytics** — Encuestas post-lab, tracking de progreso, donaciones
 - **i18n** — Español e Inglés
-- **3308 Tests** — Vitest + React Testing Library + Playwright E2E (267 archivos unitarios + 9 specs / 24 tests E2E)
+- **3325 Tests** — Vitest + React Testing Library + Playwright E2E (269 archivos unitarios + 9 specs / 24 tests E2E)
 
 ## 🏗️ Tech Stack
 
@@ -175,7 +175,7 @@ docs/
 ## 📊 Estado del Proyecto
 
 - ✅ 7 Laboratorios funcionales (01-06 + 08; 07 hidden)
-- ✅ 3308 tests pasando (267 test files unitarios + 9 specs / 24 tests E2E con Playwright)
+- ✅ 3325 tests pasando (269 test files unitarios + 9 specs / 24 tests E2E con Playwright)
 - ✅ TypeScript `strict: true` con 0 errores (`pnpm exec tsc --noEmit`)
 - ✅ Persistencia segura en `localStorage` (solo UI preferences y progreso Academy; secrets no expuestos)
 - ✅ `CommandResponse` fuertemente tipado (Discriminated Union de 16 variantes)

@@ -6,7 +6,7 @@
 // bookmarks y SEO viejo. Ver docs/PROYECTO_ACADEMY.md.
 
 import { describe, it, expect } from 'vitest';
-import { ACADEMY_PATHS, legacyOsPathId, findPathIdForLesson, getLesson } from '../paths';
+import { ACADEMY_PATHS, legacyPathId, findPathIdForLesson, getLesson } from '../paths';
 import { OS_PATHS } from '../path-os';
 
 describe('paths de Sistemas Operativos (rutas /academy/<módulo>)', () => {
@@ -28,12 +28,12 @@ describe('paths de Sistemas Operativos (rutas /academy/<módulo>)', () => {
     expect(getLesson('others', 'others-03')?.pathId).toBe('others');
   });
 
-  it('legacyOsPathId resuelve las URLs viejas de SO', () => {
-    expect(legacyOsPathId('os')).toBe('linux'); // /academy/os
-    expect(legacyOsPathId('os', 'windows')).toBe('windows'); // /academy/os/module/windows
-    expect(legacyOsPathId('os', 'no-existe')).toBe('linux'); // subId inválido → primer módulo
-    expect(legacyOsPathId('redes')).toBeUndefined(); // no es legacy
-    expect(legacyOsPathId('linux')).toBeUndefined(); // ya es la ruta nueva
+  it('legacyPathId resuelve las URLs viejas de SO', () => {
+    expect(legacyPathId('os')).toBe('linux'); // /academy/os
+    expect(legacyPathId('os', 'windows')).toBe('windows'); // /academy/os/module/windows
+    expect(legacyPathId('os', 'no-existe')).toBe('linux'); // subId inválido → primer módulo
+    expect(legacyPathId('hacking')).toBeUndefined(); // path vigente, no legacy
+    expect(legacyPathId('linux')).toBeUndefined(); // ya es la ruta nueva
   });
 
   it('findPathIdForLesson encuentra el path de una lección sin importar su pathId', () => {

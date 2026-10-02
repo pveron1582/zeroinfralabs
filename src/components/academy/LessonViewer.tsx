@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useScenarioStore } from '../../store/scenarioStore';
-import { getPath, getLesson, getSubIdForLesson, findPathIdForLesson } from '../../academy';
+import { getPath, getLesson, getSubIdForLesson, resolveLessonRoute } from '../../academy';
 import { SiteHeader } from '../landing/SiteHeader';
 import { LessonContent } from './LessonContent';
 import { useColors, FONT_MONO, FONT_SANS } from '../landing/constants';
@@ -29,11 +29,12 @@ export function LessonViewer() {
   const [matchSolved, setMatchSolved] = useState(false);
 
   if (!path || !lesson) {
-    // URL legacy (2026-10): la lección puede haber cambiado de path, p. ej.
-    // /academy/os/linux-01 → /academy/linux/linux-01. La buscamos por id en
-    // todos los paths y redirigimos a su ruta nueva; si no existe, al home.
-    const destino = lessonId ? findPathIdForLesson(lessonId) : undefined;
-    if (destino && lessonId) return <Navigate to={`/${lang}/academy/${destino}/${lessonId}`} replace />;
+    // URL legacy (2026-10): la lección puede haber cambiado de path (p. ej.
+    // /academy/os/linux-01 → /academy/linux/linux-01) o de id (p. ej.
+    // /academy/protocolos-ii/network-04 → /academy/networksII/networksII-05).
+    // Resolvemos su ruta actual por id o alias y redirigimos; si no existe, al home.
+    const ruta = lessonId ? resolveLessonRoute(lessonId) : undefined;
+    if (ruta) return <Navigate to={`/${lang}/academy/${ruta.pathId}/${ruta.lessonId}`} replace />;
     return <Navigate to={`/${lang}/academy`} replace />;
   }
 

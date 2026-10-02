@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re1Ports.tsx ───────────────────────
 // Video: puertos — qué son, cuántos hay y los que hay que conocer.
-// Lección proto-03 del Academy (Redes I). Guiones: voicebox-scripts/re1-03-*.txt
+// Lección networksI-02 del Academy (Redes I). Guiones: voicebox-scripts/re1-03-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re1-03-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

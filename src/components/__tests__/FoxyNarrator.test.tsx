@@ -80,7 +80,7 @@ describe('FoxyNarrator (Fase D)', () => {
   });
 
   it('el paso narrator no bloquea el avance (a diferencia del quiz)', () => {
-    renderLesson('/es/academy/protocolos-ii/network-06');
+    renderLesson('/es/academy/networksII/networksII-01');
     expect(screen.getByText(/Cuando enchufás un cable/)).toBeInTheDocument();
     // No es quiz, así que Siguiente está habilitado desde el vamos
     const nextBtn = screen.getByRole('button', { name: /Siguiente/ });

@@ -13,7 +13,7 @@ export interface QuizResult {
 }
 
 export interface AcademySlice {
-  /** IDs de lecciones completadas, ej. ["os-01", "network-02"] */
+  /** IDs de lecciones completadas, ej. ["linux-01", "networksI-02"] */
   completedLessons: string[];
   /** Resultados de quizzes, para analytics/metricas futuras */
   quizResults: Record<string, QuizResult>; // key = quiz identifier (lessonId+quizIdx)

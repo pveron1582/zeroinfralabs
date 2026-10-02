@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re05AddressingDns.tsx ──────────────
 // Video: direccionamiento — IP, máscara, gateway y el DNS.
-// Lección redes-05 del Academy. Guiones: voicebox-scripts/re-05-*.txt
+// Lección fundaments-05 del Academy. Guiones: voicebox-scripts/re-05-*.txt
 // Audio real cargado (wavs Voicebox, ffprobe 2026-08-17). Los syncs internos
 // (RevealLine/KeyCapsule/TitleScene) están alineados a silencedetect (-50dB).
 // Versión unificada ES/EN con `lang` prop.

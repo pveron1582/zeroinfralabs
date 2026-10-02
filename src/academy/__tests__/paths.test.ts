@@ -21,7 +21,7 @@ const lessonById = new Map(ALL.map(l => [l.id, l]));
 /** Paths declarados en el union type AcademyPathId. */
 const PATHS_DECLARADOS = [
   'linux', 'windows', 'others',
-  'redes', 'protocolos', 'protocolos-ii',
+  'fundaments', 'networksI', 'networksII',
   'ciberseguridad', 'hacking', 'hacking-web', 'scripting',
 ];
 

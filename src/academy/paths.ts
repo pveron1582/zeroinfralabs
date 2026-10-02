@@ -3,6 +3,7 @@
 
 import type { AcademyPath, AcademyPathId, Lesson } from '../types';
 import { OS_PATHS } from './path-os';
+import { LEGACY_PATH_IDS, LEGACY_LESSON_IDS } from './legacyIds';
 import { REDES_LESSONS } from './path-redes';
 import { PROTOCOLOS_LESSONS } from './path-protocolos';
 import { PROTOCOLOS2_LESSONS } from './path-protocolos-ii';
@@ -17,7 +18,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
   // es un path de primer nivel (rutas /academy/linux, /academy/linux/linux-01).
   ...OS_PATHS,
   {
-    id: 'redes',
+    id: 'fundaments',
     title: 'Network Fundamentals',
     titleEs: 'Fundamentos de redes',
     description: 'What networks are, how they are shaped, and the addressing that makes them work.',
@@ -28,7 +29,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     lessons: REDES_LESSONS,
   },
   {
-    id: 'protocolos',
+    id: 'networksI',
     title: 'Networking I',
     titleEs: 'Redes I',
     description: 'The protocols you see in every scan, the essential devices that move them, and the VLANs that segment them.',
@@ -39,7 +40,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     lessons: PROTOCOLOS_LESSONS,
   },
   {
-    id: 'protocolos-ii',
+    id: 'networksII',
     title: 'Networking II',
     titleEs: 'Redes II',
     description: 'The services and architectures that make a network tick: DHCP, NAT, DNS, VPN, DMZ.',
@@ -118,21 +119,36 @@ export function isValidPathId(id: string): id is AcademyPathId {
 }
 
 // ── URLs legacy de la Academy ──────────────────────────────────────
-// En 2026-10 los módulos de SO dejaron de vivir bajo `/academy/os/...`:
-// cada módulo pasó a ser path de primer nivel. Estas funciones resuelven
-// las URLs viejas (bookmarks y SEO) hacia las rutas nuevas.
+// En 2026-10 cambiaron dos veces los ids: los módulos de SO dejaron de
+// vivir bajo `/academy/os/...` y los paths de Redes pasaron de `redes` /
+// `protocolos` / `protocolos-ii` a `fundaments` / `networksI` /
+// `networksII`. Los alias están en `legacyIds.ts` (hoja sin contenido,
+// también la consume el store para migrar el progreso persistido); acá
+// están las funciones que resuelven las URLs viejas (bookmarks y SEO).
 
 /**
- * `/academy/os` → `linux` (primer módulo) y `/academy/os/module/<sub>` →
- * `<sub>`. Devuelve undefined si el path no es el legacy de SO.
+ * Path actual de una URL vieja: `/academy/os` → `linux`,
+ * `/academy/os/module/<sub>` → `<sub>`, `/academy/redes` → `fundaments`.
+ * Devuelve undefined si el path está vigente (no es legacy).
  */
-export function legacyOsPathId(pathId: string, subId?: string): AcademyPathId | undefined {
-  if (pathId !== 'os') return undefined;
+export function legacyPathId(pathId: string, subId?: string): AcademyPathId | undefined {
+  if (!Object.prototype.hasOwnProperty.call(LEGACY_PATH_IDS, pathId)) return undefined;
+  // Los módulos de SO ya son paths de primer nivel: el subId manda
   if (subId && isValidPathId(subId)) return subId;
-  return 'linux';
+  return LEGACY_PATH_IDS[pathId];
 }
 
-/** Path que contiene una lección, sin importar su `pathId` actual. */
+/** Ruta actual de una lección, buscando también los ids renombrados. */
+export function resolveLessonRoute(lessonId: string): { pathId: AcademyPathId; lessonId: string } | undefined {
+  const actual = ACADEMY_PATHS.find(p => p.lessons.some(l => l.id === lessonId));
+  if (actual) return { pathId: actual.id, lessonId };
+  const viejo = LEGACY_LESSON_IDS[lessonId];
+  // Los valores del mapa son ids actuales: un salto llega (el contrato
+  // de no-cadenas está en legacy-ids.test.ts), así que no hay recursión infinita.
+  return viejo && viejo !== lessonId ? resolveLessonRoute(viejo) : undefined;
+}
+
+/** Path que contiene una lección, con id actual o renombrado. */
 export function findPathIdForLesson(lessonId: string): AcademyPathId | undefined {
-  return ACADEMY_PATHS.find(p => p.lessons.some(l => l.id === lessonId))?.id;
+  return resolveLessonRoute(lessonId)?.pathId;
 }

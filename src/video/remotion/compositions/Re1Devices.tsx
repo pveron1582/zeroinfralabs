@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re1Devices.tsx ──────────────────────
 // Video: dispositivos esenciales — hub, switch y router (+ cables + AP).
-// Lección proto-04 del Academy (Redes I). Guiones: voicebox-scripts/re1-04-*.txt
+// Lección networksI-04 del Academy (Redes I). Guiones: voicebox-scripts/re1-04-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re1-04-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

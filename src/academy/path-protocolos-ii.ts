@@ -10,8 +10,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
     // históricas (network-01 puertos, network-02 servicios clásicos y
     // network-03 red doméstica), cuyo contenido ya se cubre en
     // Fundamentos de redes y Redes I. Nuevo orden: DHCP (1) + DMZ (2).
-    id: 'network-06',
-    pathId: 'protocolos-ii',
+    id: 'networksII-01',
+    pathId: 'networksII',
     order: 1,
     title: 'DHCP: the service that hands out IP addresses',
     titleEs: 'DHCP: el servicio que reparte las direcciones IP',
@@ -91,8 +91,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'network-07',
-    pathId: 'protocolos-ii',
+    id: 'networksII-02',
+    pathId: 'networksII',
     order: 2,
     title: 'NAT: how your whole network goes out with one IP',
     titleEs: 'NAT: cómo toda tu red sale a internet con una sola IP',
@@ -172,8 +172,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'network-08',
-    pathId: 'protocolos-ii',
+    id: 'networksII-03',
+    pathId: 'networksII',
     order: 3,
     title: 'DNS: how the internet looks up names',
     titleEs: 'DNS: cómo busca los nombres la internet',
@@ -253,8 +253,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'network-09',
-    pathId: 'protocolos-ii',
+    id: 'networksII-04',
+    pathId: 'networksII',
     order: 4,
     title: 'VPN: encrypted tunnels that extend the network',
     titleEs: 'VPN: túneles cifrados que extienden la red',
@@ -334,8 +334,8 @@ export const PROTOCOLOS2_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'network-04',
-    pathId: 'protocolos-ii',
+    id: 'networksII-05',
+    pathId: 'networksII',
     order: 5,
     title: 'DMZ: separating the public from the private',
     titleEs: 'DMZ: separando lo público de lo privado',

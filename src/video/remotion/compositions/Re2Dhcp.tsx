@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re2Dhcp.tsx ──────────────────────────
 // Video: DHCP — el servicio que reparte las direcciones IP.
-// Lección network-06 del Academy (Redes II). Guiones: voicebox-scripts/re2-01-*.txt
+// Lección networksII-01 del Academy (Redes II). Guiones: voicebox-scripts/re2-01-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re2-01-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

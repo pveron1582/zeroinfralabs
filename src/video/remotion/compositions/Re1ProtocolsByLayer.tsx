@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re1ProtocolsByLayer.tsx ───────────
 // Video: protocolos por capa — los imprescindibles.
-// Lección proto-01 del Academy (Redes I). Guiones: voicebox-scripts/re1-01-*.txt
+// Lección networksI-01 del Academy (Redes I). Guiones: voicebox-scripts/re1-01-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re1-01-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

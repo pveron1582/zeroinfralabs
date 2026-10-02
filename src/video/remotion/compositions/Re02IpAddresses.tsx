@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re02IpAddresses.tsx ────────────────
 // Video: direcciones IP — formato, públicas vs privadas y NAT.
-// Lección redes-02 del Academy. Guiones: voicebox-scripts/re-02-*.txt
+// Lección fundaments-02 del Academy. Guiones: voicebox-scripts/re-02-*.txt
 // Audio real cargado (wavs Voicebox, ffprobe 2026-08-17). Los syncs internos
 // (RevealLine/KeyCapsule/TitleScene) están alineados a silencedetect (-50dB).
 // Versión unificada ES/EN con `lang` prop.

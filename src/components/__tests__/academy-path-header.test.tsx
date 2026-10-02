@@ -53,7 +53,7 @@ describe('AcademyPathPage — barra del sitio', () => {
     ['/es/academy/linux', 'Linux'],
     ['/es/academy/windows', 'Windows'],
     ['/es/academy/others', 'Otros sistemas operativos y hardware'],
-    ['/es/academy/redes', 'Fundamentos de redes'],
+    ['/es/academy/fundaments', 'Fundamentos de redes'],
     ['/es/academy/scripting/module/bash', 'Bash'],
     ['/es/academy/os', 'Linux'], // legacy: redirige a /academy/linux
   ];

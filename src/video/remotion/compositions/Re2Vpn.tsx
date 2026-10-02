@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Re2Vpn.tsx ───────────────────────────
 // Video: VPN — túneles cifrados que extienden la red.
-// Lección network-09 del Academy (Redes II). Guiones: voicebox-scripts/re2-04-*.txt
+// Lección networksII-04 del Academy (Redes II). Guiones: voicebox-scripts/re2-04-*.txt
 // Audio real cargado: timings de audioTimings.ts; syncs internos alineados
 // a silencedetect (-50dB) de voicebox-scripts/re2-04-scene*.wav.
 // Versión unificada ES/EN con `lang` prop.

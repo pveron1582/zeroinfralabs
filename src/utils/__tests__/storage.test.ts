@@ -32,7 +32,7 @@ describe('clearZilabsStorage', () => {
 
   it('no debe tocar completedLessons ni quizResults de Academy (§2.2.3)', () => {
     const snapshot = JSON.stringify({
-      state: { language: 'es', completedLessons: ['linux-01', 'redes-02'], quizResults: { 'li-01': 4 } },
+      state: { language: 'es', completedLessons: ['linux-01', 'fundaments-02'], quizResults: { 'li-01': 4 } },
     });
     localStorage.setItem(LOCAL_STORAGE_KEYS.store, snapshot);
 
@@ -40,12 +40,12 @@ describe('clearZilabsStorage', () => {
 
     expect(localStorage.getItem(LOCAL_STORAGE_KEYS.store)).toBe(snapshot);
     const guardado = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.store) ?? '{}');
-    expect(guardado.state.completedLessons).toEqual(['linux-01', 'redes-02']);
+    expect(guardado.state.completedLessons).toEqual(['linux-01', 'fundaments-02']);
     expect(guardado.state.quizResults).toEqual({ 'li-01': 4 });
   });
 
   it('no debe tocar el progreso de Academy de otras claves', () => {
-    const academyProgress = JSON.stringify({ state: { completedLessons: ['linux-01', 'redes-02'] } });
+    const academyProgress = JSON.stringify({ state: { completedLessons: ['linux-01', 'fundaments-02'] } });
     localStorage.setItem('otra-clave-de-progreso', academyProgress);
 
     clearZilabsStorage();
