@@ -1,7 +1,12 @@
 // ── video/remotion/fonts.ts ────────────────────────────────────────
-// Inyecta JetBrains Mono (woff2 bundleado en /public/fonts) dentro de la
-// composición. Se importa en cada composición para que ANDE en el render
-// y en el <Player> del Academy. staticFile() resuelve la ruta en ambos.
+// Inyecta JetBrains Mono dentro de la composición. Se importa en cada
+// composición para que ANDE en el studio y en el render (el <Player> del
+// Academy no se usa: las video-lecciones son un <video> apuntando al CDN).
+// staticFile() resuelve contra el publicDir de Remotion — media/, ver
+// remotion.config.ts — por eso los woff2 están también en
+// media/fonts/jetbrains-mono/: copia byte a byte de public/fonts/,
+// que es la que sigue sirviendo el sitio (la comprueba
+// compositions-contract.test.ts).
 
 import React from 'react';
 import { staticFile } from 'remotion';

@@ -384,13 +384,18 @@ hace **tsc + lint + test + build**.
       → **RESUELTO 2026-10-01** (bloque de renombre de media): todas las carpetas son
       `<lessonId>-<slug>` y todos los wavs `<lessonId>-sceneN.wav` (antes convivían `li-01-linux-history-scene1.wav`
       con `ot-01-scene1.wav`); lo garantiza `media-naming.test.ts`.
-- [ ] **3.5.4** **Render con audio roto desde `73b3b72`:** `staticFile('videos/audio-…')` resuelve contra
-      `public/`, pero los wavs se mudaron a `media/videos/audio-{es,en}/` (fuera del `publicDir`) → un
-      `pnpm remotion render` falla al cargar el audio. Opciones: (a) `Config.setPublicDir('media')` + resolver
-      que `fonts.tsx` (`staticFile('fonts/jetbrains-mono/…')`, que vive en `public/fonts`) siga funcionando,
-      (b) symlink/copia temporal `public/videos → media/videos` antes de renderizar (ojo: Vite sigue el symlink
-      y el `dist/` vuelve a 923 MB), (c) copiar sólo `audio-*` al renderizar. **Necesita verificar con un render
-      real** (la verificación acá es sólo de nombres de archivo: `media-naming.test.ts`).
+- [x] **3.5.4** **Render con audio roto desde `73b3b72`:** `staticFile('videos/audio-…')` resolvía contra
+      `public/`, pero los wavs se mudaron a `media/videos/audio-{es,en}/` (fuera del `publicDir`) → todo
+      `pnpm remotion render` moría con `404 …/videos/audio-es/<vid>/<vid>-scene1.wav`.
+      → **RESUELTO 2026-10-02:** `Config.setPublicDir('media')` en `remotion.config.ts` (opción (a); la (b) del
+      symlink queda descartada: el `copyDir` de Vite hace `statSync` y sigue el enlace ⇒ 923 MB en el `dist`).
+      Las fuentes que `fonts.tsx` pide por `staticFile('fonts/jetbrains-mono/…')` se copiaron a
+      `media/fonts/jetbrains-mono/` (byte a byte de `public/fonts/`, que es la que sigue sirviendo el sitio).
+      **Verificado con render real**: 12 frames + pista `aac` en el mp4, y el control rojo (publicDir=`public`)
+      reproduce el 404. Verja en `compositions-contract.test.ts` → bloque *"publicDir de Remotion"*: el
+      `setPublicDir('media')`, que las fuentes existan bajo `media/` y que **cada wav pedido por un
+      `staticFile()`** exista en `media/videos/audio-{es,en}/`; de paso cazó 15 referencias rotas
+      `re-0N-sceneN.wav` (→ `fundaments-0N-sceneN.wav`) en `Re01…Re05`, que renderizaban sin audio.
 
 ### 3.6 El wrapper de comandos posicional sigue vivo
 

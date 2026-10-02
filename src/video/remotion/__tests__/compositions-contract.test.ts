@@ -9,7 +9,7 @@
 // como texto y es la verja del registro.
 
 import { describe, it, expect } from 'vitest';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REMOTION_DIR, remotionSource, mapKeys, timingCounts, compositionBlocks } from './remotionFixtures';
 
@@ -154,6 +154,63 @@ describe('composiciones ↔ timings', () => {
       expect(src, imp.file).toMatch(
         new RegExp(`export const ${imp.name}: React\\.FC<\\{ lang\\?: 'es' \\| 'en' \\}>`),
       );
+    }
+  });
+});
+
+// §3.5.4: desde que audios y fuentes salieron de public/ (commit 73b3b72,
+// que bajó el dist de 923 MB a 20) el publicDir de Remotion quedó apuntando
+// a un dir sin nada ⇒ todo render moría con "Failed to load audio".
+describe('publicDir de Remotion — lo que staticFile() sirve (§3.5.4)', () => {
+  const config = readFileSync(join(process.cwd(), 'remotion.config.ts'), 'utf8');
+
+  it("remotion.config.ts fija el publicDir en 'media/'", () => {
+    expect(config).toContain("Config.setPublicDir('media')");
+  });
+
+  it('las fuentes que inyecta fonts.tsx existen bajo media/', () => {
+    const rutas = [...remotionSource('fonts.tsx').matchAll(/staticFile\('([^']+)'\)/g)].map(m => m[1]);
+    expect(rutas).toHaveLength(2);
+    for (const ruta of rutas) {
+      expect(existsSync(join(process.cwd(), 'media', ruta)), `media/${ruta}`).toBe(true);
+    }
+  });
+
+  it('las woff2 de media/ son byte a byte las de public/fonts (la que sirve el sitio)', () => {
+    for (const rel of ['fonts/jetbrains-mono/jetbrains-mono-400.woff2',
+                       'fonts/jetbrains-mono/jetbrains-mono-700.woff2']) {
+      expect(readFileSync(join(process.cwd(), 'media', rel)), rel)
+        .toEqual(readFileSync(join(process.cwd(), 'public', rel)));
+    }
+  });
+
+  it('cada wav que pide un staticFile() existe en el publicDir (audio-es y audio-en)', () => {
+    // Algunas composiciones arman el nombre con un template
+    // (`pentesting-01-scene${i + 2}.wav`), así que se compara como glob:
+    // se parte por los `${…}`, se escapa cada trozo literal y lo que
+    // sobra entre medio se convierte en `.*`.
+    const coincide = (plantilla: string, archivo: string): boolean => {
+      const trozos = plantilla
+        .split(/\$\{[^}]*\}/)
+        .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('.*');
+      return new RegExp(`^${trozos}$`).test(archivo);
+    };
+
+    for (const imp of imports) {
+      const { vid } = compositionInfo(imp.file);
+      const src = remotionSource(`compositions/${imp.file}.tsx`);
+      const pedidos = [...src.matchAll(/staticFile\(`\$\{base\}\/(?:\$\{VID\}|([^`]+))\/([^`]+)`\)/g)];
+      expect(pedidos.length, `${imp.file} sin staticFile de audio`).toBeGreaterThan(0);
+      for (const m of pedidos) {
+        const dir = m[1] ?? vid;
+        for (const lang of ['es', 'en'] as const) {
+          const ruta = join(process.cwd(), 'media', `videos/audio-${lang}`, dir);
+          const archivos = existsSync(ruta) ? readdirSync(ruta) : [];
+          const ok = archivos.some(a => coincide(m[2], a));
+          expect(ok, `${imp.file} → media/videos/audio-${lang}/${dir}/${m[2]}`).toBe(true);
+        }
+      }
     }
   });
 });

@@ -208,15 +208,15 @@ export const Re01NetworkTypes: React.FC<{ lang?: 'es' | 'en' }> = ({ lang = 'es'
     <AbsoluteFill style={{ background: THEME.bg, padding: 60, fontFamily: MONO }}>
       <FontFace />
       <Sequence from={starts[0]} durationInFrames={dur1}>
-        {withAudio && <Audio src={staticFile(`${base}/fundaments-01-network-types/re-01-scene1.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/fundaments-01-network-types/fundaments-01-scene1.wav`)} />}
         <Scene1 fps={fps} c={c.s1} b={b.s1} nodes={c.nodes} />
       </Sequence>
       <Sequence from={starts[1]} durationInFrames={dur2}>
-        {withAudio && <Audio src={staticFile(`${base}/fundaments-01-network-types/re-01-scene2.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/fundaments-01-network-types/fundaments-01-scene2.wav`)} />}
         <Scene2 fps={fps} c={c.s2} b={b.s2} />
       </Sequence>
       <Sequence from={starts[2]} durationInFrames={dur3}>
-        {withAudio && <Audio src={staticFile(`${base}/fundaments-01-network-types/re-01-scene3.wav`)} />}
+        {withAudio && <Audio src={staticFile(`${base}/fundaments-01-network-types/fundaments-01-scene3.wav`)} />}
         <Scene3 fps={fps} c={c.s3} b={b.s3} />
       </Sequence>
     </AbsoluteFill>
