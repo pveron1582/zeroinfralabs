@@ -17,7 +17,9 @@ const lessonIds = new Set<string>(ACADEMY_PATHS.flatMap(p => p.lessons.map(l => 
 
 describe('alias de paths (LEGACY_PATH_IDS)', () => {
   it('lista exactamente las rutas que cambiaron de id', () => {
-    expect(Object.keys(LEGACY_PATH_IDS).sort()).toEqual(['os', 'protocolos', 'protocolos-ii', 'redes']);
+    expect(Object.keys(LEGACY_PATH_IDS).sort()).toEqual([
+      'ciberseguridad', 'hacking', 'hacking-web', 'os', 'protocolos', 'protocolos-ii', 'redes',
+    ]);
   });
 
   it('los ids viejos ya no existen y los nuevos sí', () => {
@@ -33,6 +35,9 @@ describe('alias de paths (LEGACY_PATH_IDS)', () => {
     expect(legacyPathId('protocolos-ii')).toBe('networksII');
     expect(legacyPathId('os')).toBe('linux');
     expect(legacyPathId('os', 'linux')).toBe('linux'); // /academy/os/module/linux
+    expect(legacyPathId('ciberseguridad')).toBe('ciber');
+    expect(legacyPathId('hacking')).toBe('pentesting');
+    expect(legacyPathId('hacking-web')).toBe('hackingweb');
     expect(legacyPathId('fundaments')).toBeUndefined(); // ya es la ruta nueva
     expect(legacyPathId('no-existe')).toBeUndefined();
     // claves del prototipo de Object: nunca deben caer en el mapa
@@ -42,8 +47,8 @@ describe('alias de paths (LEGACY_PATH_IDS)', () => {
 });
 
 describe('alias de lecciones (LEGACY_LESSON_IDS)', () => {
-  it('lista 15 renombres (los 15 ids de los 3 paths de Redes)', () => {
-    expect(Object.keys(LEGACY_LESSON_IDS)).toHaveLength(15);
+  it('lista 25 renombres (15 de Redes + 10 de Pentesting/Hacking Web)', () => {
+    expect(Object.keys(LEGACY_LESSON_IDS)).toHaveLength(25);
   });
 
   it('los ids viejos dejaron de existir y los nuevos están en su path', () => {
@@ -59,11 +64,12 @@ describe('alias de lecciones (LEGACY_LESSON_IDS)', () => {
     }
   });
 
-  it('los ids conservados en otros paths (network-05, proto-02) no se tocaron', () => {
-    expect(lessonIds.has('network-05')).toBe(true); // Pentesting
-    expect(lessonIds.has('proto-02')).toBe(true); // Hacking Web
-    expect(resolveLessonRoute('network-05')?.pathId).toBe('hacking');
-    expect(resolveLessonRoute('proto-02')?.pathId).toBe('hacking-web');
+  it('resuelve los renombres de Pentesting y Hacking Web', () => {
+    expect(resolveLessonRoute('hacking-05')).toEqual({ pathId: 'pentesting', lessonId: 'pentesting-03' });
+    expect(resolveLessonRoute('network-05')).toEqual({ pathId: 'pentesting', lessonId: 'pentesting-05' });
+    expect(resolveLessonRoute('proto-02')).toEqual({ pathId: 'hackingweb', lessonId: 'hackingweb-01' });
+    expect(resolveLessonRoute('web-03')?.lessonId).toBe('hackingweb-05');
+    expect(resolveLessonRoute('ciber-01')?.pathId).toBe('ciber'); // id sin cambios
   });
 });
 

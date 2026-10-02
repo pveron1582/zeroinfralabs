@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Pe04OnlineCracking.tsx ─────────────
 // Video: cracking online — hydra, medusa y ncrack.
-// Lección hacking-06, clase 4 de Pentesting. Guiones: voicebox-scripts/pe-04-*.txt
+// Lección pentesting-04, clase 4 de Pentesting. Guiones: voicebox-scripts/pe-04-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 

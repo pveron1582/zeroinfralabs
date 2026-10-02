@@ -51,7 +51,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     lessons: PROTOCOLOS2_LESSONS,
   },
   {
-    id: 'ciberseguridad',
+    id: 'ciber',
     title: 'Cybersecurity Fundamentals',
     titleEs: 'Fundamentos de Ciberseguridad',
     description: 'CIA triad, encryption vs hashing, and how passwords are cracked.',
@@ -62,7 +62,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     lessons: CIBERSEG_LESSONS,
   },
   {
-    id: 'hacking',
+    id: 'pentesting',
     title: 'Pentesting',
     titleEs: 'Pentesting',
     description: 'The 5-phase methodology: recon, scanning, exploitation, post-exploitation, reporting.',
@@ -73,7 +73,7 @@ export const ACADEMY_PATHS: AcademyPath[] = [
     lessons: HACKING_LESSONS,
   },
   {
-    id: 'hacking-web',
+    id: 'hackingweb',
     title: 'Web Hacking',
     titleEs: 'Hacking Web',
     description: 'Web vulnerabilities and the protocols they ride on: HTTP, HTTPS, cookies, sessions.',

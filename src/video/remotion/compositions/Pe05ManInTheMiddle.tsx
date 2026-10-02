@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Pe05ManInTheMiddle.tsx ─────────────
 // Video: man-in-the-middle — ARP spoofing en la LAN.
-// Clase 5 de Pentesting (lección network-05). Guiones: voicebox-scripts/pe-05-*.txt
+// Clase 5 de Pentesting (lección pentesting-05). Guiones: voicebox-scripts/pe-05-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 

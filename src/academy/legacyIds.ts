@@ -20,6 +20,9 @@ export const LEGACY_PATH_IDS: Record<string, AcademyPathId> = {
   redes: 'fundaments',
   protocolos: 'networksI',
   'protocolos-ii': 'networksII',
+  ciberseguridad: 'ciber',
+  hacking: 'pentesting',
+  'hacking-web': 'hackingweb',
 };
 
 /** Lección renombrada: id viejo → id actual. */
@@ -42,4 +45,16 @@ export const LEGACY_LESSON_IDS: Record<string, string> = {
   'network-08': 'networksII-03',
   'network-09': 'networksII-04',
   'network-04': 'networksII-05',
+  // Pentesting (antes path `hacking`; el orden es el de la portada)
+  'hacking-01': 'pentesting-01',
+  'hacking-02': 'pentesting-02',
+  'hacking-05': 'pentesting-03',
+  'hacking-06': 'pentesting-04',
+  'network-05': 'pentesting-05',
+  // Hacking Web (antes path `hacking-web`)
+  'proto-02': 'hackingweb-01',
+  'web-04': 'hackingweb-02',
+  'web-01': 'hackingweb-03',
+  'web-02': 'hackingweb-04',
+  'web-03': 'hackingweb-05',
 };

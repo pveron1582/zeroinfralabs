@@ -32,7 +32,7 @@ describe('paths de Sistemas Operativos (rutas /academy/<módulo>)', () => {
     expect(legacyPathId('os')).toBe('linux'); // /academy/os
     expect(legacyPathId('os', 'windows')).toBe('windows'); // /academy/os/module/windows
     expect(legacyPathId('os', 'no-existe')).toBe('linux'); // subId inválido → primer módulo
-    expect(legacyPathId('hacking')).toBeUndefined(); // path vigente, no legacy
+    expect(legacyPathId('scripting')).toBeUndefined(); // path vigente, no legacy
     expect(legacyPathId('linux')).toBeUndefined(); // ya es la ruta nueva
   });
 

@@ -43,6 +43,21 @@ describe('Academy — URLs legacy', () => {
     expect(screen.getByText('¿Qué es una red? Tipos: LAN, MAN, WAN y VPN')).toBeInTheDocument();
   });
 
+  it('redirige la URL legacy /academy/ciberseguridad a /academy/ciber', () => {
+    renderAcademy('/es/academy/ciberseguridad');
+    expect(screen.getByText('La triada CID con ejemplos reales')).toBeInTheDocument();
+  });
+
+  it('redirige la URL legacy /academy/hacking a /academy/pentesting', () => {
+    renderAcademy('/es/academy/hacking');
+    expect(screen.getByText('Las 5 fases: el método, no el caos')).toBeInTheDocument();
+  });
+
+  it('redirige la URL legacy /academy/hacking-web a /academy/hackingweb', () => {
+    renderAcademy('/es/academy/hacking-web');
+    expect(screen.getByText('Protocolos en hacking web: HTTP, HTTPS y más')).toBeInTheDocument();
+  });
+
   it('redirige la URL legacy /academy/protocolos a /academy/networksI', () => {
     renderAcademy('/es/academy/protocolos');
     expect(screen.getByText('Protocolos por capa: los imprescindibles')).toBeInTheDocument();
@@ -69,5 +84,15 @@ describe('Academy — URLs legacy', () => {
   it('redirige la URL legacy de una lección de Redes I (protocolos/proto-07 → networksI/networksI-04)', () => {
     renderAcademy('/es/academy/protocolos/proto-07');
     expect(screen.getByRole('link', { name: /Regresar/ })).toHaveAttribute('href', '/es/academy/networksI');
+  });
+
+  it('redirige la URL legacy de una lección de Pentesting (hacking/network-05 → pentesting/pentesting-05)', () => {
+    renderAcademy('/es/academy/hacking/network-05');
+    expect(screen.getByRole('link', { name: /Regresar/ })).toHaveAttribute('href', '/es/academy/pentesting');
+  });
+
+  it('redirige la URL legacy de una lección de Hacking Web (hacking-web/proto-02 → hackingweb/hackingweb-01)', () => {
+    renderAcademy('/es/academy/hacking-web/proto-02');
+    expect(screen.getByRole('link', { name: /Regresar/ })).toHaveAttribute('href', '/es/academy/hackingweb');
   });
 });

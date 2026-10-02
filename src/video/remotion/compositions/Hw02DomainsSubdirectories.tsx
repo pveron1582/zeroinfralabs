@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Hw02DomainsSubdirectories.tsx ─────
 // Video: dominios, subdominios y subdirectorios — mapeando el objetivo.
-// Clase 2 de Hacking Web (lección web-04). Guiones: voicebox-scripts/hw-02-*.txt
+// Clase 2 de Hacking Web (lección hackingweb-02). Guiones: voicebox-scripts/hw-02-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 

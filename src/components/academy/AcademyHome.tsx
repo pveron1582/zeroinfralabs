@@ -92,9 +92,9 @@ export function AcademyHome() {
     completedLessons: s.completedLessons,
   })));
 
-  const ciberPath = ACADEMY_PATHS.find(p => p.id === 'ciberseguridad')!;
-  const pentestPath = ACADEMY_PATHS.find(p => p.id === 'hacking')!;
-  const hackingWebPath = ACADEMY_PATHS.find(p => p.id === 'hacking-web')!;
+  const ciberPath = ACADEMY_PATHS.find(p => p.id === 'ciber')!;
+  const pentestPath = ACADEMY_PATHS.find(p => p.id === 'pentesting')!;
+  const hackingWebPath = ACADEMY_PATHS.find(p => p.id === 'hackingweb')!;
   const scriptingPath = ACADEMY_PATHS.find(p => p.id === 'scripting')!;
   // Los 3 paths de redes: fundamentos → protocolos → avanzado
   const networkPaths = ACADEMY_PATHS.filter(p => ['fundaments', 'networksI', 'networksII'].includes(p.id));
@@ -200,7 +200,7 @@ export function AcademyHome() {
               done={doneOf(ciberPath.lessons)}
               total={ciberPath.lessons.length}
               isEs={isEs}
-              to={`/${lang}/academy/ciberseguridad`}
+              to={`/${lang}/academy/ciber`}
             />
             <ModuleCard
               title={isEs ? pentestPath.titleEs : pentestPath.title}
@@ -211,7 +211,7 @@ export function AcademyHome() {
               done={doneOf(pentestPath.lessons)}
               total={pentestPath.lessons.length}
               isEs={isEs}
-              to={`/${lang}/academy/hacking`}
+              to={`/${lang}/academy/pentesting`}
             />
             <ModuleCard
               title={isEs ? hackingWebPath.titleEs : hackingWebPath.title}
@@ -222,7 +222,7 @@ export function AcademyHome() {
               done={doneOf(hackingWebPath.lessons)}
               total={hackingWebPath.lessons.length}
               isEs={isEs}
-              to={`/${lang}/academy/hacking-web`}
+              to={`/${lang}/academy/hackingweb`}
             />
             <div className="pt-2 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: FONT_MONO, color: colors.textMuted }}>
               <span aria-hidden>💻 </span><span>{isEs ? 'Scripting para pentesting' : 'Pentesting Scripting'}</span>

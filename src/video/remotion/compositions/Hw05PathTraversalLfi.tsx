@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Hw05PathTraversalLfi.tsx ─────────
 // Video: Path Traversal & LFI — de leer archivos a ejecutar código.
-// Clase 5 de Hacking Web (lección web-03). Guiones: voicebox-scripts/hw-05-*.txt
+// Clase 5 de Hacking Web (lección hackingweb-05). Guiones: voicebox-scripts/hw-05-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 

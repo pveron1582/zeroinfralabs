@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Hw03Xss.tsx ──────────────────────
 // Video: XSS — inyectando scripts en el navegador.
-// Clase 3 de Hacking Web (lección web-01). Guiones: voicebox-scripts/hw-03-*.txt
+// Clase 3 de Hacking Web (lección hackingweb-03). Guiones: voicebox-scripts/hw-03-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 

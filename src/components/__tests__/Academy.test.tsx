@@ -56,7 +56,7 @@ describe('Academy', () => {
     });
 
     it('muestra el progreso general correctamente', () => {
-      useScenarioStore.setState({ completedLessons: ['linux-01', 'linux-02', 'networksII-05', 'ciber-01', 'hacking-01'] });
+      useScenarioStore.setState({ completedLessons: ['linux-01', 'linux-02', 'networksII-05', 'ciber-01', 'pentesting-01'] });
       renderAcademy('/es/academy');
 
       expect(screen.getByText('Tu progreso general')).toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('Academy', () => {
     });
 
     it('muestra la ilustración correcta para un path sin subsecciones (hacking web)', () => {
-      renderAcademy('/es/academy/hacking-web');
+      renderAcademy('/es/academy/hackingweb');
       expect(screen.getByText('Módulo · Hacking Web')).toBeInTheDocument();
     });
 
@@ -174,7 +174,7 @@ describe('Academy', () => {
     });
 
     it('muestra las 5 lecciones de Pentesting (sin la de hacking web, movida a su módulo)', () => {
-      renderAcademy('/es/academy/hacking');
+      renderAcademy('/es/academy/pentesting');
       expect(screen.getByText('Las 5 fases: el método, no el caos')).toBeInTheDocument();
       expect(screen.getByText('Dónde está la información en cada sistema')).toBeInTheDocument();
       expect(screen.getByText('Man-in-the-middle: interceptando tráfico')).toBeInTheDocument();
@@ -185,7 +185,7 @@ describe('Academy', () => {
     });
 
     it('muestra las 5 lecciones en el módulo Hacking Web', () => {
-      renderAcademy('/es/academy/hacking-web');
+      renderAcademy('/es/academy/hackingweb');
       expect(screen.getByRole('heading', { name: 'Hacking Web' })).toBeInTheDocument();
       expect(screen.getByText('Protocolos en hacking web: HTTP, HTTPS y más')).toBeInTheDocument();
       expect(screen.getByText('Dominios, subdominios y subdirectorios: mapeando el objetivo')).toBeInTheDocument();
@@ -197,7 +197,7 @@ describe('Academy', () => {
     });
 
     it('muestra las 5 lecciones de Fundamentos de Ciberseguridad (incluye Information Gathering y OWASP)', () => {
-      renderAcademy('/es/academy/ciberseguridad');
+      renderAcademy('/es/academy/ciber');
       expect(screen.getByText('La triada CID con ejemplos reales')).toBeInTheDocument();
       expect(screen.getByText('Hashes, cifrado y cómo se crackean las contraseñas')).toBeInTheDocument();
       expect(screen.getByText('Information gathering: qué es, la ley y las herramientas')).toBeInTheDocument();

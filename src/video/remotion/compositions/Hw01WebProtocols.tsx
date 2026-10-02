@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Hw01WebProtocols.tsx ─────────────
 // Video: protocolos web — HTTP, HTTPS y más.
-// Clase 1 de Hacking Web (lección proto-02). Guiones: voicebox-scripts/hw-01-*.txt
+// Clase 1 de Hacking Web (lección hackingweb-01). Guiones: voicebox-scripts/hw-01-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 

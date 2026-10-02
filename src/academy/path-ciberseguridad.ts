@@ -6,7 +6,7 @@ import type { Lesson } from '../types';
 export const CIBERSEG_LESSONS: Lesson[] = [
   {
     id: 'ciber-01',
-    pathId: 'ciberseguridad',
+    pathId: 'ciber',
     order: 1,
     title: 'The CIA triad with real examples',
     titleEs: 'La triada CID con ejemplos reales',
@@ -67,7 +67,7 @@ export const CIBERSEG_LESSONS: Lesson[] = [
   },
   {
     id: 'ciber-02',
-    pathId: 'ciberseguridad',
+    pathId: 'ciber',
     order: 2,
     title: 'Hashes, encryption and how passwords get cracked',
     titleEs: 'Hashes, cifrado y cómo se crackean las contraseñas',
@@ -128,7 +128,7 @@ export const CIBERSEG_LESSONS: Lesson[] = [
   },
   {
     id: 'ciber-03',
-    pathId: 'ciberseguridad',
+    pathId: 'ciber',
     order: 3,
     title: 'Information gathering: what it is, the law and the tools',
     titleEs: 'Information gathering: qué es, la ley y las herramientas',
@@ -202,7 +202,7 @@ export const CIBERSEG_LESSONS: Lesson[] = [
   },
   {
     id: 'ciber-04',
-    pathId: 'ciberseguridad',
+    pathId: 'ciber',
     order: 4,
     title: 'Cryptography basics: encrypting vs hashing',
     titleEs: 'Bases de criptografía: cifrar vs hashear',
@@ -277,7 +277,7 @@ export const CIBERSEG_LESSONS: Lesson[] = [
   },
   {
     id: 'ciber-05',
-    pathId: 'ciberseguridad',
+    pathId: 'ciber',
     order: 5,
     title: 'The OWASP Top Ten: where to look first',
     titleEs: 'El OWASP Top Ten: dónde mirar primero',

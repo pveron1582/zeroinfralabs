@@ -22,7 +22,7 @@ const lessonById = new Map(ALL.map(l => [l.id, l]));
 const PATHS_DECLARADOS = [
   'linux', 'windows', 'others',
   'fundaments', 'networksI', 'networksII',
-  'ciberseguridad', 'hacking', 'hacking-web', 'scripting',
+  'ciber', 'pentesting', 'hackingweb', 'scripting',
 ];
 
 const nonEmpty = (s: string | undefined) => typeof s === 'string' && s.trim().length > 0;

@@ -5,10 +5,11 @@ import type { Lesson } from '../types';
 
 export const HACKING_WEB_LESSONS: Lesson[] = [
   {
-    // Movida desde Pentesting (path-hacking) el 2026-08-17: conserva su id
-    // `proto-02` para no perder el progreso guardado de quien ya la completó.
-    id: 'proto-02',
-    pathId: 'hacking-web',
+    // Movida desde Pentesting (path-hacking) el 2026-08-17 con id `proto-02`;
+    // en el rework de rutas (2026-10) pasó a `hackingweb-01` (el progreso se
+    // migra en store/persistMigrate.ts).
+    id: 'hackingweb-01',
+    pathId: 'hackingweb',
     order: 1,
     title: 'Web hacking protocols: HTTP, HTTPS and more',
     titleEs: 'Protocolos en hacking web: HTTP, HTTPS y más',
@@ -75,8 +76,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'web-04',
-    pathId: 'hacking-web',
+    id: 'hackingweb-02',
+    pathId: 'hackingweb',
     order: 2,
     title: 'Domains, subdomains and subdirectories: mapping the target',
     titleEs: 'Dominios, subdominios y subdirectorios: mapeando el objetivo',
@@ -142,8 +143,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'web-01',
-    pathId: 'hacking-web',
+    id: 'hackingweb-03',
+    pathId: 'hackingweb',
     order: 3,
     title: 'XSS: injecting scripts into the browser',
     titleEs: 'XSS: inyectando scripts en el navegador',
@@ -209,8 +210,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'web-02',
-    pathId: 'hacking-web',
+    id: 'hackingweb-04',
+    pathId: 'hackingweb',
     order: 4,
     title: 'SQL Injection: talking to the database',
     titleEs: 'SQL Injection: hablándole a la base de datos',
@@ -277,8 +278,8 @@ export const HACKING_WEB_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'web-03',
-    pathId: 'hacking-web',
+    id: 'hackingweb-05',
+    pathId: 'hackingweb',
     order: 5,
     title: 'Path Traversal & LFI: reading files to get code execution',
     titleEs: 'Path Traversal y LFI: de leer archivos a ejecutar código',

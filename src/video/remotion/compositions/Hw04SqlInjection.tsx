@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Hw04SqlInjection.tsx ─────────────
 // Video: SQL Injection — hablándole a la base de datos.
-// Clase 4 de Hacking Web (lección web-02). Guiones: voicebox-scripts/hw-04-*.txt
+// Clase 4 de Hacking Web (lección hackingweb-04). Guiones: voicebox-scripts/hw-04-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 

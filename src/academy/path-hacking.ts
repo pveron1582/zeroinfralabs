@@ -5,8 +5,8 @@ import type { Lesson } from '../types';
 
 export const HACKING_LESSONS: Lesson[] = [
   {
-    id: 'hacking-01',
-    pathId: 'hacking',
+    id: 'pentesting-01',
+    pathId: 'pentesting',
     order: 1,
     title: 'The 5 phases: method, not chaos',
     titleEs: 'Las 5 fases: el método, no el caos',
@@ -66,8 +66,8 @@ export const HACKING_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'hacking-02',
-    pathId: 'hacking',
+    id: 'pentesting-02',
+    pathId: 'pentesting',
     order: 2,
     title: 'Where the info lives in each OS',
     titleEs: 'Dónde está la información en cada sistema',
@@ -126,8 +126,8 @@ export const HACKING_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'hacking-05',
-    pathId: 'hacking',
+    id: 'pentesting-03',
+    pathId: 'pentesting',
     order: 3,
     title: 'Offline password cracking: john and hashcat',
     titleEs: 'Cracking offline: john y hashcat',
@@ -208,8 +208,8 @@ export const HACKING_LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'hacking-06',
-    pathId: 'hacking',
+    id: 'pentesting-04',
+    pathId: 'pentesting',
     order: 4,
     title: 'Online password cracking: medusa, hydra and ncrack',
     titleEs: 'Cracking online: medusa, hydra y ncrack',
@@ -290,11 +290,12 @@ export const HACKING_LESSONS: Lesson[] = [
     ],
   },
   {
-    // Movida desde Redes II (2026-08-17): conserva su id `network-05` para
-    // no perder el progreso guardado de quien ya la completó. Al final del
-    // path (2026-08-18): MITM se ve después de las 2 de cracking.
-    id: 'network-05',
-    pathId: 'hacking',
+    // Movida desde Redes II (2026-08-17) con id `network-05`; en el rework
+    // de rutas (2026-10) pasó a `pentesting-05` (el progreso se migra en
+    // store/persistMigrate.ts). Al final del path (2026-08-18): MITM se ve
+    // después de las 2 de cracking.
+    id: 'pentesting-05',
+    pathId: 'pentesting',
     order: 5,
     title: 'Man-in-the-middle: intercepting traffic',
     titleEs: 'Man-in-the-middle: interceptando tráfico',

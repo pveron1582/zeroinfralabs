@@ -97,8 +97,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/Nació en 1985 como interfaz sobre MS-DOS/)).toBeInTheDocument();
   });
 
-  it('la lección hacking-02 incluye el video de filesystems (pe-02) como paso 2', () => {
-    renderLesson('/es/academy/hacking/hacking-02');
+  it('la lección pentesting-02 incluye el video de filesystems (pe-02) como paso 2', () => {
+    renderLesson('/es/academy/pentesting/pentesting-02');
     expect(screen.getByText(/Para hackear no necesitás adivinar/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -110,7 +110,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección ciber-01 incluye el video de la triada CID (ci-01) como paso 2', () => {
-    renderLesson('/es/academy/ciberseguridad/ciber-01');
+    renderLesson('/es/academy/ciber/ciber-01');
     expect(screen.getByText(/Toda la seguridad gira alrededor/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -122,7 +122,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección ciber-02 incluye el video de hashes (ci-02) como paso 2', () => {
-    renderLesson('/es/academy/ciberseguridad/ciber-02');
+    renderLesson('/es/academy/ciber/ciber-02');
     expect(screen.getByText(/Los hashes son como huellas/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -134,7 +134,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección ciber-03 incluye el video de information gathering (ci-03) como paso 2', () => {
-    renderLesson('/es/academy/ciberseguridad/ciber-03');
+    renderLesson('/es/academy/ciber/ciber-03');
     expect(screen.getByText(/Antes de tocar un solo sistema/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -146,7 +146,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección ciber-04 incluye el video de criptografía (ci-04) como paso 2', () => {
-    renderLesson('/es/academy/ciberseguridad/ciber-04');
+    renderLesson('/es/academy/ciber/ciber-04');
     expect(screen.getByText(/En la clase 2 viste hashes/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -158,7 +158,7 @@ describe('AcademyVideo (paso tipo video)', () => {
   });
 
   it('la lección ciber-05 incluye el video de OWASP Top Ten (ci-05) como paso 2', () => {
-    renderLesson('/es/academy/ciberseguridad/ciber-05');
+    renderLesson('/es/academy/ciber/ciber-05');
     expect(screen.getByText(/¿Dónde apuntás cuando defendés/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -169,8 +169,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/es la lista ordenada de los riesgos web/)).toBeInTheDocument();
   });
 
-  it('la lección hacking-05 incluye el video de cracking offline (pe-03) como paso 2', () => {
-    renderLesson('/es/academy/hacking/hacking-05');
+  it('la lección pentesting-03 incluye el video de cracking offline (pe-03) como paso 2', () => {
+    renderLesson('/es/academy/pentesting/pentesting-03');
     expect(screen.getByText(/En la clase de ciberseguridad viste qué es un hash/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -181,8 +181,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/vos tenés el hash, así que lo crackeás a tu ritmo/)).toBeInTheDocument();
   });
 
-  it('la lección hacking-06 incluye el video de cracking online (pe-04) como paso 2', () => {
-    renderLesson('/es/academy/hacking/hacking-06');
+  it('la lección pentesting-04 incluye el video de cracking online (pe-04) como paso 2', () => {
+    renderLesson('/es/academy/pentesting/pentesting-04');
     expect(screen.getByText(/No siempre tenés el hash/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -193,8 +193,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/ataca el servicio vivo: no hace falta el hash/)).toBeInTheDocument();
   });
 
-  it('la lección network-05 incluye el video de man-in-the-middle (pe-05) como paso 2', () => {
-    renderLesson('/es/academy/hacking/network-05');
+  it('la lección pentesting-05 incluye el video de man-in-the-middle (pe-05) como paso 2', () => {
+    renderLesson('/es/academy/pentesting/pentesting-05');
     expect(screen.getByText(/La red no te miente/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -205,8 +205,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/el atacante inunda a la víctima con respuestas ARP falsas/)).toBeInTheDocument();
   });
 
-  it('la lección proto-02 incluye el video de protocolos web (hw-01) como paso 2', () => {
-    renderLesson('/es/academy/hacking-web/proto-02');
+  it('la lección hackingweb-01 incluye el video de protocolos web (hw-01) como paso 2', () => {
+    renderLesson('/es/academy/hackingweb/hackingweb-01');
     expect(screen.getByText(/La web es el campo de batalla/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -217,8 +217,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/La web es el campo de batalla: HTTP manda todo en texto plano/)).toBeInTheDocument();
   });
 
-  it('la lección web-04 incluye el video de dominios (hw-02) como paso 2', () => {
-    renderLesson('/es/academy/hacking-web/web-04');
+  it('la lección hackingweb-02 incluye el video de dominios (hw-02) como paso 2', () => {
+    renderLesson('/es/academy/hackingweb/hackingweb-02');
     expect(screen.getByText(/Antes de dispararle a una web/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -229,8 +229,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/Mapeá el objetivo: dominio, subdominio y subdirectorio/)).toBeInTheDocument();
   });
 
-  it('la lección web-01 incluye el video de XSS (hw-03) como paso 2', () => {
-    renderLesson('/es/academy/hacking-web/web-01');
+  it('la lección hackingweb-03 incluye el video de XSS (hw-03) como paso 2', () => {
+    renderLesson('/es/academy/hackingweb/hackingweb-03');
     expect(screen.getByText(/Hay una vulnerabilidad que no se ejecuta/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -241,8 +241,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/XSS ejecuta JavaScript en el navegador de la víctima/)).toBeInTheDocument();
   });
 
-  it('la lección web-02 incluye el video de SQL injection (hw-04) como paso 2', () => {
-    renderLesson('/es/academy/hacking-web/web-02');
+  it('la lección hackingweb-04 incluye el video de SQL injection (hw-04) como paso 2', () => {
+    renderLesson('/es/academy/hackingweb/hackingweb-04');
     expect(screen.getByText(/Si una app arma su consulta/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video
@@ -253,8 +253,8 @@ describe('AcademyVideo (paso tipo video)', () => {
     expect(screen.getByText(/La inyección SQL te hace hablar directo con la base/)).toBeInTheDocument();
   });
 
-  it('la lección web-03 incluye el video de path traversal y LFI (hw-05) como paso 2', () => {
-    renderLesson('/es/academy/hacking-web/web-03');
+  it('la lección hackingweb-05 incluye el video de path traversal y LFI (hw-05) como paso 2', () => {
+    renderLesson('/es/academy/hackingweb/hackingweb-05');
     expect(screen.getByText(/Si la app usa tu input para elegir/)).toBeInTheDocument();
 
     // paso 1=narrator, paso 2=video

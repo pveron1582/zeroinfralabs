@@ -22,7 +22,7 @@ import type { ScenarioState } from './types';
 import { LEGACY_LESSON_IDS } from '../academy/legacyIds';
 
 /** Versión del snapshot persistido. Única fuente: la consume scenarioStore. */
-export const PERSIST_VERSION = 3;
+export const PERSIST_VERSION = 4;
 
 /** Claves que sobreviven en el snapshot. TODO lo demás se tira. */
 export const PERSIST_KEYS = [
@@ -61,19 +61,27 @@ function renombrarQuizResults(quizResults: unknown): unknown {
  * claves, que lo que falte lo cubre `merge`). Alta de una versión:
  * `4: (s) => ({ ...s, termFont: 'monospace' })`.
  */
+/** Renombra ids de lección con LEGACY_LESSON_IDS (progreso + quizzes). */
+function renombrarIdsDeLeccion(snapshot: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...snapshot };
+  if (Array.isArray(out.completedLessons)) {
+    out.completedLessons = (out.completedLessons as string[]).map(id => LEGACY_LESSON_IDS[id] ?? id);
+  }
+  if (out.quizResults !== undefined) out.quizResults = renombrarQuizResults(out.quizResults);
+  return out;
+}
+
 const MIGRATIONS: MigrationMap = {
-  // 2 → 3 (2026-10): los paths de Redes se renombraron (fundaments,
-  // networksI, networksII) y con ellos 15 lecciones. Sin renombrar acá,
-  // el progreso guardado con los ids viejos dejaría de matchear y el
-  // alumno "pierde" lo completado sin ningún aviso.
-  3: (snapshot) => {
-    const out: Record<string, unknown> = { ...snapshot };
-    if (Array.isArray(out.completedLessons)) {
-      out.completedLessons = (out.completedLessons as string[]).map(id => LEGACY_LESSON_IDS[id] ?? id);
-    }
-    if (out.quizResults !== undefined) out.quizResults = renombrarQuizResults(out.quizResults);
-    return out;
-  },
+  // 2 → 3 (2026-10): paths de Redes renombrados (fundaments, networksI,
+  // networksII) y con ellos 15 lecciones. Sin renombrar acá, el progreso
+  // guardado con los ids viejos dejaría de matchear y el alumno "pierde"
+  // lo completado sin ningún aviso.
+  3: (snapshot) => renombrarIdsDeLeccion(snapshot),
+  // 3 → 4 (2026-10): misma serie, segunda tanda — paths ciber, pentesting
+  // y hackingweb con 10 lecciones más. Salto aparte por si un snapshot ya
+  // quedó en v3 (los renombres son idempotentes: el mapa no tiene ids
+  // actuales como clave).
+  4: (snapshot) => renombrarIdsDeLeccion(snapshot),
 };
 
 /** Mapa `versión que inicia el cambio → transformación del snapshot viejo`. */

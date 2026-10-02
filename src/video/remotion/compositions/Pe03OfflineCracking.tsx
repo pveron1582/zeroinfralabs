@@ -1,6 +1,6 @@
 // ── video/remotion/compositions/Pe03OfflineCracking.tsx ────────────
 // Video: cracking offline — john the ripper + hashcat.
-// Lección hacking-05, clase 3 de Pentesting. Guiones: voicebox-scripts/pe-03-*.txt
+// Lección pentesting-03, clase 3 de Pentesting. Guiones: voicebox-scripts/pe-03-*.txt
 // Versión unificada ES/EN con `lang` prop.
 // Timings por silencedetect.
 
