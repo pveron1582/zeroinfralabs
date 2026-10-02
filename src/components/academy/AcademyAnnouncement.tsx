@@ -3,14 +3,22 @@
 // Estética: diseño moderno tipo SaaS matching Landing Page (Inter font,
 // glassmorphism dark slate, bordes sutiles, glow esmeralda, badges limpios).
 //
-// IMAGEN: si existe `public/academy-announcement.png` se muestra en el
-// contenedor dedicado; si no, muestra un placeholder elegante con Foxy.
+// IMAGEN: slot opcional. Si existe `public/academy-announcement.png` se
+// muestra en el contenedor dedicado; si no, fallback con Foxy. El browser
+// sólo se lo pide cuando `HAS_ANNOUNCEMENT_IMG` está en true: con el slot
+// vacío (estado por defecto) la petición de la imagen se disparaba igual y
+// tiraba un 404 en CADA visita al landing. La verja de
+// AcademyAnnouncement.test.tsx exige que el flag coincida con el archivo,
+// así no se desincronizan. (Ojo: no escribir la etiqueta de imagen literal
+// en este archivo — a11y-contract.test.ts escanea el fuente.)
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../i18n/translations';
 import { FoxyAcademyIllustration } from './FoxyAcademyIllustration';
 import { FONT_SANS, FONT_MONO } from '../landing/constants';
+
+export const HAS_ANNOUNCEMENT_IMG = false;
 
 const MODULES = [
   { icon: '🐧', es: 'Linux', en: 'Linux' },
@@ -95,7 +103,7 @@ export function AcademyAnnouncement() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-0">
           {/* Espacio dedicado para la imagen / ilustración */}
           <div className="md:col-span-5 relative min-h-[220px] md:min-h-full bg-slate-950/90 border-b md:border-b-0 md:border-r border-slate-800/80 flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden">
-            {!imgFailed ? (
+            {HAS_ANNOUNCEMENT_IMG && !imgFailed ? (
               <img
                 src="/academy-announcement.png"
                 alt="ZeroInfra Academy"

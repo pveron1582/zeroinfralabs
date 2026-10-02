@@ -1,8 +1,9 @@
 // ── components/__tests__/AcademyAnnouncement.test.tsx ──────────────
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { existsSync } from 'node:fs';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { AcademyAnnouncement } from '../academy/AcademyAnnouncement';
+import { AcademyAnnouncement, HAS_ANNOUNCEMENT_IMG } from '../academy/AcademyAnnouncement';
 import { useScenarioStore } from '../../store/scenarioStore';
 
 const renderIt = () =>
@@ -95,5 +96,18 @@ describe('AcademyAnnouncement', () => {
     });
     expect(screen.getByText('Ir a la Academy')).toBeInTheDocument();
     expect(screen.getByText('Ahora no')).toBeInTheDocument();
+  });
+
+  it('el <img> del slot sólo se emite si el flag está en true (sin 404 en consola)', () => {
+    renderIt();
+    act(() => {
+      vi.advanceTimersByTime(1400);
+    });
+    const img = screen.queryByAltText('ZeroInfra Academy');
+    expect(img !== null).toBe(HAS_ANNOUNCEMENT_IMG);
+  });
+
+  it('el flag del slot debe coincidir con public/academy-announcement.png', () => {
+    expect(HAS_ANNOUNCEMENT_IMG).toBe(existsSync('public/academy-announcement.png'));
   });
 });
